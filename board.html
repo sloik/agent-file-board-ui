@@ -107,8 +107,8 @@ body.resizing{cursor:col-resize;user-select:none}
 .history-nav span{flex:1;text-align:center}
 .day{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-weight:600;margin:20px 0 10px}
 .day::before,.day::after{content:"";flex:1;height:1px;background:var(--line)}
-.msg{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:10px;max-width:var(--bubble);align-self:flex-start;background:color-mix(in srgb,var(--c) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--c) 22%,var(--line))}
-.msg:hover{background:color-mix(in srgb,var(--c) 11%,var(--panel))}
+.msg{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:10px;max-width:var(--bubble);align-self:flex-start;background:color-mix(in srgb,var(--c) 16%,var(--panel));border:2px solid color-mix(in srgb,var(--c) 45%,var(--line))}
+.msg:hover{background:color-mix(in srgb,var(--c) 20%,var(--panel))}
 .avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:color-mix(in srgb,var(--c) 22%,var(--panel));border:2px solid var(--c);position:relative}
 .avatar b{position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;border-radius:50%;background:var(--c);color:#fff;font-size:10px;display:grid;place-items:center;border:2px solid var(--panel)}
 .kind{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-radius:4px;padding:0 5px}
@@ -178,7 +178,7 @@ body.resizing{cursor:col-resize;user-select:none}
 .mention{background:var(--mention);color:var(--mention-ink);border-radius:4px;padding:0 3px;font-weight:600}
 .mention[data-party]{color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel))}
 .sugg button[data-party]{color:var(--c)}
-.msg.to-me{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.msg.to-me{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 55%,transparent)}
 mark{background:var(--mark);color:inherit;border-radius:3px}
 .tools{display:flex;gap:12px;margin-top:4px;opacity:0;transition:opacity .15s}
 .msg:hover .tools,.msg:focus-within .tools{opacity:1}
@@ -397,7 +397,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.5.4";
+const VIEWER_VERSION = "1.5.5";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};

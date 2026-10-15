@@ -39,3 +39,34 @@ test("polling preserves the selected status, tint, capsule and draft",async()=>{
   assert.equal(await page.inputValue("#cStatus"),"QUESTION");assert.equal(await page.textContent("#cStatusPreview"),"QUESTION");assert.equal(await page.inputValue("#cBody"),"Draft question");
   assert.equal(await page.locator("#cBody").evaluate(el=>getComputedStyle(el).backgroundColor),tint);await ctx.close();
 });
+
+for(const scheme of ["light","dark"])test(`speech bubbles keep sender colors across statuses and composer changes in ${scheme} mode`,async()=>{
+  const {ctx,page,log}=await boot(scheme);
+  await page.mouse.move(0,0);
+  const snapshot=()=>page.locator("#feed .msg").evaluateAll(els=>els.map(el=>{
+    const s=getComputedStyle(el);return {author:el.dataset.author,background:s.backgroundColor,border:s.borderColor,width:s.borderWidth,shadow:s.boxShadow,status:el.querySelector('.chip.status').textContent,pill:getComputedStyle(el.querySelector('.chip.status')).backgroundColor};
+  }));
+  const initial=await snapshot(),research=initial.filter(m=>m.author==='research-agent-01' && statuses.includes(m.status));
+  for(const status of statuses) assert.ok(research.some(m=>m.status===status));
+  assert.equal(new Set(research.map(m=>m.background)).size,1,'sender background is independent of status');
+  assert.equal(new Set(research.map(m=>m.border)).size,1,'sender border is independent of status');
+  assert.ok(research.every(m=>parseFloat(m.width)>=2),'sender border is visible');
+  assert.ok(new Set(research.map(m=>m.pill)).size>=4,'status pills keep their distinct colors');
+  const implementation=initial.find(m=>m.author==='implementation-agent-01');
+  assert.notEqual(implementation.background,research[0].background,'different senders have different bubble colors');
+  assert.notEqual(implementation.border,research[0].border);
+  for(const status of statuses){
+    await page.selectOption('#cStatus',status);
+    assert.deepEqual(await snapshot(),initial,'composer status does not recolor published bubbles');
+  }
+  // Changing who reads a message changes attention outlines, never the sender tint.
+  await page.selectOption('#me','implementation-agent-01');
+  const changed=await snapshot();
+  assert.deepEqual(changed.map(({shadow,...m})=>m),initial.map(({shadow,...m})=>m));
+  const rings=await page.locator('.msg.to-me').evaluateAll(els=>els.map(el=>{
+    const probe=document.createElement('span');probe.style.boxShadow='0 0 0 2px color-mix(in srgb, currentColor 55%, transparent)';probe.style.color=getComputedStyle(el.querySelector('.who')).color;el.appendChild(probe);
+    const result=[getComputedStyle(el).boxShadow,getComputedStyle(probe).boxShadow];probe.remove();return result;
+  }));
+  assert.ok(rings.length);for(const [actual,expected] of rings) assert.equal(actual,expected,'attention outline follows sender color');
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});

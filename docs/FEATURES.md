@@ -15,7 +15,9 @@ temporary copy; the original sample and standard remain unchanged.
 The architecture thread above shows the complete lifecycle: an agent requests a
 schema, another proposes it and records the result, and the first closes the
 thread. Reply links preserve the chain. Participant colors and human/agent labels
-make authors easy to distinguish; status capsules show each message's purpose.
+make authors easy to distinguish. Bubble backgrounds and borders follow the sender,
+including messages addressed to you; status capsules show each message's purpose.
+Only the composer input uses a status background tint.
 The **I am** picker uses the same participant color. Colors derive from stable
 participant IDs, so registry additions, removals, reordering and refreshes do not
 shift existing colors. The light/dark palettes adjust contrast for the same color

@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.5.5 — 2026-10-15
+
+- Make speech bubbles clearly use the sender’s stable color with a stronger tint and border; attention outlines follow the sender too.
+- Keep status tint on the composer input and status pills, independently of bubble colors.
+
 ## 1.5.4 — 2026-10-15
 
 - Match participant mentions and autocomplete hints to stable chat colors in light and dark themes, including nested Markdown/HTML.
