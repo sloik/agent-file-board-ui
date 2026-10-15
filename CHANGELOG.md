@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.5.3 — 2026-10-15
+
+- Read the lazy header index in bounded parallel batches for faster opening of large native and uploaded boards.
+- Keep the lazy scrolling, bounded body cache and stable identity/chat colors introduced in 1.5.2.
+- Synchronize post-render assertions with completed UI refresh; preserve exact output/order checks and the existing large-board timeout.
+
 ## 1.5.2 — 2026-10-15
 
 - Fetch history bodies lazily when scrolling, preserving the visible message anchor. Start with 100 messages and keep at most 200 rendered and 300 full bodies cached. Explicit history buttons remain available.

@@ -395,7 +395,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.5.2";
+const VIEWER_VERSION = "1.5.3";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -856,6 +856,12 @@ async function writeNewFile(rel, text){
 }
 
 /* ===== reading ===== */
+async function readInBatches(items,action){
+  let at=0;
+  await Promise.all(Array.from({length:Math.min(8,items.length)},async()=>{
+    while(at<items.length) await action(items[at++]);
+  }));
+}
 async function readMessageIndex(file){
   // Read only enough bytes to find the header separator plus a short preview.
   // A long structured QUESTION header can span more than one chunk.
@@ -934,7 +940,7 @@ async function readFromHandle(preserve = true){
     for(const [dn,dh] of await entriesOf(td)){
       if(dh.kind!=="directory" || dn.startsWith(".")) continue;
       dirs.push(top+"/"+dn);
-      for(const [fn,fh] of await entriesOf(dh)){
+      await readInBatches(await entriesOf(dh),async([fn,fh])=>{
         if(fh.kind==="file" && fn.endsWith(".txt")){
           const file=await fh.getFile(), path=top+"/"+dn+"/"+fn, old=previousFiles.get(path);
           const reliable=Number.isFinite(file.size) && Number.isFinite(file.lastModified);
@@ -945,7 +951,7 @@ async function readFromHandle(preserve = true){
           }
           files.push(row); nextFiles.set(path,row);
         }
-      }
+      });
     }
   }
   if(generation!==readGeneration || dirHandle!==root) return false;
@@ -964,8 +970,8 @@ async function readFromInput(list){
   const strip = hasAB ? 2 : 1;
   const files = [], dirs = new Set(), sources=new Map();
   let name = list.length ? segs(list[0])[0] : "";
-  for(const f of list){
-    const p = segs(f); if(hasAB && p[1]!==".agent-board") continue;
+  await readInBatches(list,async f=>{
+    const p = segs(f); if(hasAB && p[1]!==".agent-board") return;
     const rel = p.slice(strip).join("/");
     if(/^(participants\.json|config\.json|CONVENTION\.md|GLOSSARY\.md|time-corrections\.txt|korekty-czasu\.txt)$/.test(rel) ||
        /^[^/]+\/[^/]+\/[^/]+\.txt$/.test(rel)){
@@ -974,7 +980,7 @@ async function readFromInput(list){
       }else files.push({path:rel,text:await f.text(),lastModified:f.lastModified});
     }
     const q = rel.split("/"); if(q.length>=3){ dirs.add(q[0]); dirs.add(q[0]+"/"+q[1]); }
-  }
+  });
   if(generation!==readGeneration) return;
   dirHandle = null; baseHandle = null; boardStorageId=""; forgetBodies(); messageFiles=sources; historyPage={key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
   const model=buildModel(files,[...dirs],{name}); await prepareModel(model);

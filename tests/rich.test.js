@@ -136,6 +136,7 @@ test("composer format selector writes CONTENT-TYPE; missing header retains legac
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.endsWith(".txt")&&f.text.includes("## A composed heading")));
   const post=(await page.evaluate(()=>window.__fakefs.dump())).find(f=>f.path.endsWith(".txt")&&f.text.includes("## A composed heading"));
   assert.match(post.text,/^CONTENT-TYPE: text\/markdown$/m);
+  await page.waitForSelector("article .body h2:has-text('A composed heading')");
   assert.equal(await page.locator("article .body h2:has-text('A composed heading')").count(),1);
   assert.equal(await page.locator("article .body ul ul li:has-text('Child')").count(),1);await ctx.close();
 });
