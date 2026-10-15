@@ -35,6 +35,18 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
 
+      - name: DIAG localStorage on file://
+        continue-on-error: true
+        run: |
+          echo '<!doctype html><title>x</title>' > /tmp/d.html
+          node -e "
+          const {chromium}=require('playwright');
+          (async()=>{const b=await chromium.launch();const c=await b.newContext();const p=await c.newPage();
+          await p.goto('file:///tmp/d.html');
+          console.log('set', await p.evaluate(()=>{try{localStorage.setItem('a','1');return localStorage.getItem('a')}catch(e){return 'ERR '+e.name+' '+e.message}}));
+          await p.reload();
+          console.log('after reload', await p.evaluate(()=>{try{return localStorage.getItem('a')}catch(e){return 'ERR '+e.name}}));
+          await b.close();})();"
       - name: Test (Playwright viewer tests + release_check unit tests)
         run: npm test
 
