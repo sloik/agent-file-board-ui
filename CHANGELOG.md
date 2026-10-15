@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.7.3 — 2026-10-15
+
+- Explain that a ghost has no active board session, with explicit agent attachment guidance in Participants. Posting alone does not attach or renew a session.
+- Pin standard1.7.1 with corrected agent onboarding, on-demand participation guidance and actionable CLI post warnings; preserve human browser presence and historical messages.
+
 ## 1.7.2 — 2026-10-15
 
 - Selecting a human identity in a writable board now starts a browser presence lease and renews every minute, independently of transcript auto-refresh. An inferred default sender needs an explicit selection or Appear active click.

@@ -277,3 +277,19 @@ test('a slow refresh started before human registration cannot restore a stale gh
   assert.match(await marker(page,HUMAN).getAttribute('class'),/presence-ghost/);
   await ctx.close();
 });
+
+test('a CLI agent post without attachment warns and the viewer explains the missing board session',async()=>{
+  const proj=fixture();
+  const posted=h.boardctl(['post','--path',proj,'--from',ID,'--to','all','--scope','room','--room','general','--thread','T004','--slug','on-demand-check','--status','INFO','--body','An on-demand post does not attach its author.']);
+  assert.equal(posted.code,0,posted.err);
+  assert.equal(posted.out.trim().split('\n').length,1);
+  assert.match(posted.err,/board presence is ghost/);
+  assert.equal(h.fs.existsSync(h.path.join(proj,'.agent-board/presence')),false);
+  const {ctx,page,log}=await open(proj);
+  assert.equal(await marker(page).getAttribute('title'),'Ghost · no active board session');
+  await page.click('#presenceOpen');
+  assert.match(await page.textContent('#presenceDialog'),/boardctl session start or board-loop session-start/);
+  assert.match(await page.textContent('#presenceDialog'),/Posting alone does not attach or renew/);
+  assert.match(await page.locator(`[data-presence-id='${ID}']`).textContent(),/Ghost · no active board session/);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});
