@@ -169,6 +169,25 @@ test("R11 storage failures degrade silently", async () => {
   await ctx.close();
 });
 
+// Wait for the reopen banner; on failure report the state that decides whether it appears (CI flake evidence).
+async function bannerShown(page) {
+  try { await page.waitForSelector("#banner.show", { timeout: 10000 }); return; } catch (e) {}
+  const state = await page.evaluate(async () => {
+    const idb = await new Promise((res) => {
+      const r = indexedDB.open("agent-file-board-ui", 1);
+      r.onerror = () => res("open-error");
+      r.onsuccess = () => { try { const q = r.result.transaction("kv").objectStore("kv").get("lastDir");
+        q.onsuccess = () => res(q.result === undefined ? "undefined" : q.result === null ? "null" : typeof q.result + ":" + (q.result.name || "?"));
+        q.onerror = () => res("get-error"); } catch (err) { res("tx-error " + err.name); } };
+    });
+    const s = window.__boardTest.getSettings();
+    return { perm: localStorage.getItem("__fakefs_perm"), idbLastDir: idb, autoOpen: s.autoOpen,
+      model: window.__boardTest.getModel() !== null, banner: document.querySelector("#banner").className,
+      hasPicker: typeof window.showDirectoryPicker, url: location.href };
+  });
+  throw new Error("banner did not show; state=" + JSON.stringify(state));
+}
+
 test("R9 remembered folder: reopen silently when permission still granted, else one-click banner", async () => {
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   const tree = h.readTree(proj);
@@ -182,7 +201,7 @@ test("R9 remembered folder: reopen silently when permission still granted, else 
   // permission needs a gesture: banner offers one-click reopen
   await page.evaluate(() => window.__fakefs.setPermission("prompt"));
   await h.reloadSettled(ctx, page, { perm: "prompt", lastDir: true });
-  await page.waitForSelector("#banner.show");
+  await bannerShown(page);
   assert.match(await page.textContent("#lastName"), /proj/);
   assert.equal(await page.evaluate(() => window.__boardTest.getModel()), null);
   await page.click("#reopen");
@@ -191,7 +210,7 @@ test("R9 remembered folder: reopen silently when permission still granted, else 
   // "forget" removes the offer
   await page.evaluate(() => window.__fakefs.setPermission("prompt"));
   await h.reloadSettled(ctx, page, { perm: "prompt", lastDir: true });
-  await page.waitForSelector("#banner.show");
+  await bannerShown(page);
   await page.click("#forget");
   await page.waitForSelector("#banner:not(.show)", { state: "attached" });
   await h.reloadSettled(ctx, page, { lastDir: false });
