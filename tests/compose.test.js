@@ -26,7 +26,7 @@ test("baseline: the laid-out example passes boardctl validate", () => {
   assert.equal(r.code, 0, r.err);
 });
 
-test("AC4: new-thread room post equals `boardctl post` output and validates", async () => {
+test("AC4: new-thread room post matches boardctl byte for byte with precise posting timestamp and validates", async () => {
   const { ctx, page, tmp } = await boot();
   await page.selectOption("#me", "human-owner-01");
   await page.selectOption("#cWhere", "room:architecture");
@@ -46,7 +46,7 @@ test("AC4: new-thread room post equals `boardctl post` output and validates", as
   const ref = h.path.join(tmp, "ref"); h.copyDir(h.path.join(tmp, "proj"), ref);
   const p = h.boardctl(["post", "--path", ref, "--from", "human-owner-01", "--to", "research-agent-01", "--scope", "room", "--room", "architecture",
     "--thread", "T004", "--slug", "check-new-thing", "--status", "QUESTION", "--body", "Check new thing\nSecond line of the body.",
-    "--at", "2026-10-15 12:30", "--runtime", "agent-file-board-ui 1.4.0"]);
+    "--at", "2026-10-15 12:30:05.000", "--runtime", "agent-file-board-ui 1.5.0"]);
   assert.equal(p.code, 0, p.err);
   const refText = h.fs.readFileSync(h.path.join(ref, ".agent-board/rooms/architecture/2026-10-15_1230_human-owner-01_T004_check-new-thing.txt"), "utf8");
   assert.equal(msg.text, refText);
@@ -74,7 +74,7 @@ test("AC4: reply in an existing thread keeps THREAD, sets REPLY-TO, validates; c
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /human-owner-01_T001_/.test(f.path));
-  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 1\.4\.0\nSTATUS: REPLY\n---\n/);
+  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 1\.5\.0\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -108,7 +108,7 @@ test("AC4: agent sender requires confirmation; accepted post validates and is ma
   assert.match(log.dialogs[0].message, /research-agent-01.*agent/);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
-  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 1\.4\.0 \(manual post, sender is an agent\)/);
+  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 1\.5\.0 \(manual post, sender is an agent\)/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });

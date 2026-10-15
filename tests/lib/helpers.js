@@ -83,7 +83,7 @@ function fakeFsScript(tree, rootName) {
   const nf = n => new DOMException("not found: " + n, "NotFoundError");
   const nodeAt = p => p.reduce((n, k) => n && n.children && n.children[k], root);
   class FakeFile { constructor(path) { this.kind = "file"; this.name = path[path.length - 1]; this.__path = path; }
-    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); return { name: this.name, text: async () => n.text }; }
+    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); return { name: this.name, lastModified: n.lastModified, text: async () => n.text }; }
     async createWritable() { const p = this.__path; let buf = ""; return { write: async t => { buf += t; }, close: async () => { nodeAt(p).text = buf; save(); } }; } }
   class FakeDir { constructor(path) { this.kind = "directory"; this.name = path.length ? path[path.length - 1] : ${JSON.stringify(rootName)}; this.__path = path; }
     async getDirectoryHandle(name, o) { const n = nodeAt(this.__path); let c = n.children[name];
@@ -130,7 +130,13 @@ async function openPage(browser, opts = {}) {
   page.on("request", r => log.requests.push(r.url()));
   if (opts.dialog) page.on("dialog", async d => { log.dialogs.push({ type: d.type(), message: d.message() }); if (opts.dialog === "accept") await d.accept(); else await d.dismiss(); });
   if (opts.tree) await page.addInitScript({ content: fakeFsScript(opts.tree, opts.rootName || "proj") });
-  if (opts.clock) await page.clock.install({ time: opts.clock });
+  if (opts.clock) {
+    await page.clock.install({ time: opts.clock });
+    // Freeze before navigation: slow concurrent page loads must not run past
+    // a test's intended pauseAt deadline. No application timers exist yet.
+    await page.clock.pauseAt(new Date(opts.clock.getTime() + 86400000));
+    await page.clock.setSystemTime(opts.clock);
+  }
   await page.goto(pathToFileURL(opts.html || BOARD_HTML).href);
   return { ctx, page, log };
 }
@@ -139,7 +145,10 @@ async function openBoardViaUi(page) {
   await page.waitForFunction(() => window.__boardTest.getModel() !== null, null, { timeout: 5000 });
 }
 function boardctl(args) {
-  const r = spawnSync("python3", ["-I", BOARDCTL, ...args], { encoding: "utf8" });
+  // Isolated Python omits the script directory; admit only the pinned CLI's
+  // own module directory so its adjacent message_extensions import works.
+  const bootstrap = "import pathlib,runpy,sys; entry=sys.argv.pop(1); sys.path.insert(0,str(pathlib.Path(entry).resolve().parent)); runpy.run_path(entry,run_name='__main__')";
+  const r = spawnSync("python3", ["-I", "-c", bootstrap, BOARDCTL, ...args], { encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 // Copy the in-page fake file system back to disk under dir (mirrors the picked folder).

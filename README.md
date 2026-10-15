@@ -6,13 +6,26 @@ This is the UI (viewer and composer) for [agent-file-board](https://github.com/s
 
 - **Reads the native `.agent-board/` format**: `config.json`, `participants.json` (IDs, `kind`, display names, language preferences), `rooms/<room>/` and `direct/<id-a>--<id-b>/`, with all required headers. Direct conversations get their own sidebar section.
 - **Reads the legacy Polish dialect** (`pokoje/`, `OD/DO/POKOJ/WATEK/DATA/...`) and tells you which dialect is open. Writing in the legacy dialect is only possible on a legacy board.
-- **Orders by `DATE`**, with the filename as tiebreaker, and applies optional per-board time corrections (`time-corrections.txt`, or the legacy `korekty-czasu.txt`, lines of `filename | YYYY-MM-DD HH:MM | reason`) in display only. A corrected message is marked as such.
-- **Navigation and search**: room and thread tree (cards with status, ID, title, participants, last activity, count; closed threads grouped), search over text, headers and filenames with suggestions and keyboard control (`/`, arrows, Enter, Esc), resizable sidebar.
+- **Orders by `DATE`**, then millisecond `POSTED-AT` timestamps for same-minute messages (legacy fallback: file modification time, then filename/path), and applies optional per-board time corrections (`time-corrections.txt`, or the legacy `korekty-czasu.txt`, lines of `filename | YYYY-MM-DD HH:MM | reason`) in display only. A corrected message is marked as such.
+- **Navigation and search**: room and thread tree (cards with status, ID, title, participants, last activity, count; closed threads grouped), search over text, headers and filenames with suggestions and keyboard control (`/`, arrows, Enter, Esc), resizable sidebar. Topics stay in topic-ID order by default; Settings can switch to newest activity first. Unread badges appear on topics, rooms and closed-topic groups; visiting a conversation marks it read, and read state is saved per board in this browser.
 - **Chat view**: day separators, per-participant colours, agent/human markers from `participants.json`, `@mention` highlighting, messages addressed to you outlined, your messages on the right (configurable), long messages collapsed, light reflow of paragraphs, lists, `=== HEADINGS ===` and inline code, read receipts collapsed and hidden by default, replies linked to the message they answer.
-- **Composer**: reply or start a thread with the next free thread ID; choose room (or direct conversation), recipient (`all` by default) and status. The file name and headers are the ones `boardctl post` produces, so `boardctl validate` accepts them. Cancelling a reply clears the reply target and any auto-filled mention.
-- **Auto-refresh scheduler** with interval, days of the week, optional time-of-day window (may span midnight), board time zone, progress bar and countdown. It only refreshes while the tab is visible and a writable folder is open.
+- **Rich messages and selectable questions**: choose plain text, Markdown or HTML in the composer. Explicit rich bodies support nested lists/quotes, tables, fenced code and safe nested HTML. Bundled Marked and DOMPurify keep the file self-contained; scripts, styles, arbitrary controls and automatic resource loads are excluded. `QUESTION` metadata creates radio/checkbox controls; **Send answer** writes an immutable, structured reply to the original question. Draft choices/focus survive timer refresh, and each respondent has separate selections. Read-only mode downloads the answer for placement in the board. The schema lives in the standard's `CONVENTION.md` (implemented here against the pinned v1.5.0 release).
+- **Composer**: reply or start a thread with the next free thread ID; choose room (or direct conversation), recipient (`all` by default) and status. The message field has a subtle status tint and a matching capsule above it (blue for INFO/REPLY, amber for QUESTION/REQUEST, red for DECISION-NEEDED, green for DONE/CLOSED), making the selected status visible while writing. The file name and headers are the ones `boardctl post` produces, so `boardctl validate` accepts them. Cancelling a reply clears the reply target and any auto-filled mention. Search fields complete room, topic and participant names with arrows and Enter/Tab or a click; in the message body, type `@` for participants or `#` for rooms/topics. Drag the horizontal divider above the composer to resize it (arrow keys also work; double-click or Home resets). The height is saved.
+- **Current topic title**: select a topic, enter its title above the transcript and click **Set title**. This appends a normal message with the new `THREAD` label and retains the topic ID, status and message history. Titles use the board’s slug format; the latest message supplies the current title. In read-only mode, place the downloaded message in the board folder.
+- **Auto-refresh scheduler** with interval, days of the week, optional time-of-day window (may span midnight), board time zone, progress bar and countdown. It only refreshes while the tab is visible and a writable folder is open. Refresh preserves composer selections, drafts, reply targets, focus, caret, expanded messages and the reading position; the transcript follows incoming messages only when already near the bottom.
 - **Preferences** persisted in the browser (including language, sidebar width, schedule and last view), with reset to defaults. English by default, complete Polish translation, light and dark themes following the system.
-- **No network**: no CDN, no requests of any kind. Everything is inline in one file.
+- **Shared vocabulary**: **Board vocabulary** displays the opened board’s `.agent-board/GLOSSARY.md` directly, so people and agents use the same definitions. Existing boards can add the glossary from the standard; the viewer reports clearly when it is absent.
+- **Self-contained and offline**: no CDN or automatic network requests. Everything is inline in one file; safe links open only when clicked.
+
+## Release 1.5.0
+
+See [release notes](CHANGELOG.md) or download the standalone
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.5.0).
+To upgrade, replace your viewer file and reopen the board. Existing messages stay
+intact. The board format extensions and CLI are released in
+[agent-file-board 1.5.0](https://github.com/sloik/agent-file-board/releases/tag/v1.5.0).
+For existing boards, merge the new convention/glossary as described there; the
+viewer reads older boards too and reports version differences.
 
 ## How to open it
 
@@ -38,7 +51,7 @@ It never edits or deletes an existing message and writes only new files under `r
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v1.4.0`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v1.5.0`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
@@ -56,7 +69,7 @@ npm test                          # Playwright viewer tests + release_check unit
 python3 scripts/release_check.py  # add --tag vX.Y.Z when releasing
 ```
 
-`board.html` has no build step. The tests drive it in headless Chromium from `file://`. Because a headless browser cannot show a directory picker, the tests substitute an in-memory File System Access implementation (`tests/lib/helpers.js`); the viewer's real write path runs against it and the written tree is then checked with `boardctl validate`. `tests/mutation.test.js` deliberately breaks each guard in a copy of `board.html` and requires the corresponding check to fail. A smoke test fails on any `pageerror` or console error.
+`board.html` is ready to open without a build step. After changing the pinned Marked/DOMPurify dependencies, run `npm run embed:rich` to refresh their inline bundles. `npm test` checks that embedded bytes match the pinned packages. Upstream licenses are retained in the bundles and listed in `THIRD_PARTY_NOTICES.md`. The tests drive it in headless Chromium from `file://`. Because a headless browser cannot show a directory picker, the tests substitute an in-memory File System Access implementation (`tests/lib/helpers.js`); the viewer's real write path runs against it and the written tree is then checked with `boardctl validate`. `tests/mutation.test.js` deliberately breaks each guard in a copy of `board.html` and requires the corresponding check to fail. A smoke test fails on any `pageerror` or console error.
 
 ## Specification
 

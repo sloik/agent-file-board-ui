@@ -146,3 +146,14 @@ test("R7 chat rendering: day separators, kind markers, @mentions, addressed-to-m
   assert.equal(await page.locator(".receipt").count(), 0);             // receipts hidden by default
   await ctx.close();
 });
+
+test("search suggestions remain open when focus returns before an earlier blur timeout", async () => {
+  const {ctx,page}=await c.openExample(browser,h.BOARD_HTML,{clock:new Date("2026-10-15T10:30:00Z")});
+  await page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));
+  await page.fill("#q","schema");await page.focus("#cBody");await page.fill("#q","pro");
+  await page.clock.runFor(200);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),"q");
+  assert.equal(await page.isVisible("#sugg"),true);
+  assert.match(await page.textContent("#sugg"),/Rooms/);
+  await ctx.close();
+});

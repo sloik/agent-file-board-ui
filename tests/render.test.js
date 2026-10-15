@@ -48,9 +48,9 @@ test("AC2: example laid out as proj/.agent-board renders in DATE order with kind
   const direct = await page.textContent("#tree h3:has-text('Direct')");
   assert.match(direct, /Direct conversations/i);
   assert.ok(await page.isVisible("#tree .folder:has-text('implementation-agent-01 \u2194 research-agent-01')"));
-  // versions: viewer 1.4.0 and board 1.4.0 (from CONVENTION.md); no mismatch warning
+  // versions: viewer 1.5.0 and board 1.5.0 (from CONVENTION.md); no mismatch warning
   const bar = await page.textContent("#verbar");
-  assert.match(bar, /Viewer v1\.4\.0/); assert.match(bar, /Board v1\.4\.0/);
+  assert.match(bar, /Viewer v1\.5\.0/); assert.match(bar, /Board v1\.5\.0/);
   assert.equal(await page.isVisible("#verwarn"), false);
   await ctx.close();
 });
@@ -121,7 +121,7 @@ test("AC3: writing to a legacy board uses the legacy dialect under pokoje/ and n
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /^pokoje\/00_ogolne\/2026-03-04_1000_ada_T001_/.test(f.path)));
   const files = await page.evaluate(() => window.__fakefs.dump());
   const f = files.find(x => /^pokoje\/00_ogolne\/2026-03-04_1000_ada_T001_/.test(x.path));
-  assert.match(f.text, /^OD: Ada\nDO: wszyscy\nPOKOJ: 00_ogolne\nWATEK: T001-plan-lata\nDATA: 2026-03-04 10:00\nODPOWIEDZ-NA: -\nRUNTIME: .*\nSTATUS: DECYZJA-MISI\nPRZECZYTANE-DO: 2026-03-02_2300_kit_T001_zrobione.txt\n---\nDecyzja potrzebna w sprawie lata\n$/);
+  assert.match(f.text, /^OD: Ada\nDO: wszyscy\nPOKOJ: 00_ogolne\nWATEK: T001-plan-lata\nDATA: 2026-03-04 10:00\nODPOWIEDZ-NA: -\nRUNTIME: .*\nSTATUS: DECYZJA-MISI\nPRZECZYTANE-DO: 2026-03-02_2300_kit_T001_zrobione.txt\nPOSTED-AT: 2026-03-04T09:00:05\.000Z\n---\nDecyzja potrzebna w sprawie lata\n$/);
   // legacy registry file (01_POKOJE.txt) is an existing file: untouched
   assert.equal(files.find(x => x.path === "01_POKOJE.txt").text, h.fs.readFileSync(h.path.join(dir, "01_POKOJE.txt"), "utf8"));
   // the legacy board refuses native paths
