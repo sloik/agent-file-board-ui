@@ -25,6 +25,8 @@ async function refresh(page){
 test("5000-message board opens with only the latest 100 rendered; older pages preserve drafts and unread history",async()=>{
   const {ctx,page,log}=await boot(5000);
   assert.equal(await page.locator("#feed article.msg").count(),100);
+  assert.equal(await page.evaluate(()=>window.__boardTest.stats.messageReads),100);
+  assert.equal(await page.evaluate(()=>window.__boardTest.stats.indexReads),5010);
   assert.deepEqual(await indices(page),Array.from({length:100},(_,i)=>4900+i));
   assert.match(await page.textContent("#subtitle"),/5010 messages/);
   await page.click(".tcard[data-tk='room:bulk|T010']");
@@ -78,15 +80,19 @@ test("native refresh reuses unchanged message bytes, reads changed/new files, an
   const reads=()=>page.evaluate(()=>window.__boardTest.stats.messageReads);
   const initial=await reads();
   await refresh(page);
-  // The 10 old canonical fixtures have no metadata in the adapter and must be reread.
-  assert.equal(await reads()-initial,10);
+  // Missing metadata rechecks headers; bodies outside the visible window stay unloaded.
+  assert.equal(await reads()-initial,0);
+  const indexes=()=>page.evaluate(()=>window.__boardTest.stats.indexReads);
+  assert.equal(await indexes(),270);
   await page.evaluate(({first,newPath,changed,newText})=>{
     window.__fakefs.addFile(first,changed,2000);
     window.__fakefs.addFile(newPath,newText,2000);
   },{first:".agent-board/rooms/bulk/"+filename(0),changed:message(0,"Changed old content"),newPath:".agent-board/rooms/bulk/"+filename(250),newText:message(250)});
-  const before=await reads();await refresh(page);
-  assert.equal(await reads()-before,12);
+  const before=await reads(),beforeIndexes=await indexes();await refresh(page);
+  assert.equal(await reads()-before,1);
+  assert.equal(await indexes()-beforeIndexes,12);
   await page.fill("#q","Changed old content");
+  await page.waitForFunction(()=>!window.__boardTest.loading());
   assert.deepEqual(await indices(page),[0]);
   await page.evaluate(path=>window.__fakefs.removeFile(path),".agent-board/rooms/bulk/"+filename(0));
   await refresh(page);
@@ -94,8 +100,12 @@ test("native refresh reuses unchanged message bytes, reads changed/new files, an
   assert.equal(await page.evaluate(()=>window.__boardTest.getModel().msgs.some(m=>m.body==="Changed old content")),false);
   await page.press("#q","Escape");
   assert.equal(await page.isVisible("#sugg"),false);
-  const beforeReopen=await reads();await page.click("#open");await page.waitForFunction(n=>window.__boardTest.stats.messageReads>=n+260,beforeReopen);
-  assert.equal(await reads()-beforeReopen,260);
+  await page.fill("#q",""); await page.press("#q","Escape");
+  await page.waitForFunction(()=>!window.__boardTest.loading());
+  const beforeReopen=await reads(),beforeReopenIndexes=await indexes(),builds=await page.evaluate(()=>window.__boardTest.stats.builds);
+  await page.click("#open");await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);
+  assert.equal(await reads()-beforeReopen,100);
+  assert.equal(await indexes()-beforeReopenIndexes,260);
   await ctx.close();
 });
 

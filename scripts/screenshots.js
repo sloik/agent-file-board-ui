@@ -30,6 +30,9 @@ async function main() {
       console.log(`docs/images/${name}`);
     };
     await capture("board-overview.png");
+    await page.selectOption("#me", "implementation-agent-01");
+    await capture("board-identity.png");
+    await page.selectOption("#me", "human-owner-01");
 
     await page.selectOption("#cStatus", "DECISION-NEEDED");
     await page.fill("#cBody", "Please confirm the schema before implementation starts.\n\nNext action: @rese");

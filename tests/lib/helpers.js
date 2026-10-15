@@ -83,7 +83,7 @@ function fakeFsScript(tree, rootName) {
   const nf = n => new DOMException("not found: " + n, "NotFoundError");
   const nodeAt = p => p.reduce((n, k) => n && n.children && n.children[k], root);
   class FakeFile { constructor(path) { this.kind = "file"; this.name = path[path.length - 1]; this.__path = path; }
-    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); return { name: this.name, size: new TextEncoder().encode(n.text).length, lastModified: n.lastModified, text: async () => n.text }; }
+    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); return { name: this.name, size: new TextEncoder().encode(n.text).length, lastModified: n.lastModified, slice: (start,end) => new Blob([n.text]).slice(start,end), text: async () => n.text }; }
     async createWritable() { const p = this.__path; let buf = ""; return { write: async t => { buf += t; }, close: async () => { nodeAt(p).text = buf; save(); } }; } }
   class FakeDir { constructor(path) { this.kind = "directory"; this.name = path.length ? path[path.length - 1] : ${JSON.stringify(rootName)}; this.__path = path; }
     async getDirectoryHandle(name, o) { const n = nodeAt(this.__path); let c = n.children[name];

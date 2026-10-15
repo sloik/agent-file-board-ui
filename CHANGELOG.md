@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.5.2 — 2026-10-15
+
+- Fetch history bodies lazily when scrolling, preserving the visible message anchor. Start with 100 messages and keep at most 200 rendered and 300 full bodies cached. Explicit history buttons remain available.
+- Index headers and short previews on open instead of eagerly fetching every full body; native and upload readers share this behavior.
+- Search unloaded bodies on demand with progress, cancellation and bounded retention.
+- Derive participant colors from stable IDs and match the identity picker to chat colors, including after registry updates and reloads.
+
 ## 1.5.1 — 2026-10-15
 
 - Render the newest 100 matching messages with Older/Newer/Latest controls, including full-board search and read-only uploads.

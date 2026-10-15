@@ -35,6 +35,9 @@ button{cursor:pointer}
 .search::before{content:"\2315";position:absolute;left:12px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:16px}
 .spacer{flex:1}
 .pill{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:6px 12px;font-size:13px;white-space:nowrap}
+.me{border-color:color-mix(in srgb,var(--c,var(--p-unknown)) 45%,var(--line))}
+.me::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c,var(--p-unknown));margin-right:6px}
+.me select{color:var(--c,var(--p-unknown))}
 .pill select{border:none;background:transparent;font-weight:600;padding:0 2px}
 .btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;font-size:13px}
 .btn:hover{background:var(--hover)}
@@ -267,7 +270,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
   <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
   <section class="feed-wrap">
     <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div></div>
-    <div class="feed" id="feed"></div>
+    <div class="feed" id="feed" tabindex="0"></div>
     <div class="composer-resizer" id="composerResizer" role="separator" aria-orientation="horizontal" tabindex="0" data-i18n-aria="composer_resize" data-i18n-title="composer_resize"></div>
     <div class="composer status-tone s-INFO" id="composer">
       <div class="inner">
@@ -392,7 +395,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.5.1";
+const VIEWER_VERSION = "1.5.2";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -409,11 +412,15 @@ const DEF = {lang:"en",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showRece
   sideW:270,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
   me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null};
 const $ = s => document.querySelector(s);
-const stats = {autoRefreshes:0,builds:0,messageReads:0};
+const stats = {autoRefreshes:0,builds:0,messageReads:0,indexReads:0};
 const MESSAGE_PAGE_SIZE = 100;
+const MAX_RENDERED_MESSAGES = 200, MAX_CACHED_BODIES = 300;
+const bodyCache = new Map();
+let bodyRenderToken = 0, historyLoading = false, activeBodyReads = 0;
+let bodySearch = {model:null,query:"",pending:false,hits:new Set()};
 let messageFiles = new Map();
 let readGeneration = 0;
-let historyPage = {key:"",end:null,last:null};
+let historyPage = {key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
 
 let S = {...DEF};
 let B = null;              // loaded board model, or null
@@ -460,6 +467,8 @@ const STRINGS = {
   feed_empty_p:"Choose a project folder containing .agent-board/ (or the .agent-board folder itself).",
   feed_empty_hint:"Chrome and Edge: read and write. Safari and Firefox: read-only; \"Post\" downloads the file to place manually in the room folder.",
   no_messages_h:"No messages", no_messages_p:"Change the filter or the search.",
+  message_loading:"Loading message…",
+  message_error:"Could not load message: {m}", searching_history:"Searching message bodies…", search_incomplete:"Search incomplete; refresh to retry",
   history_label:"Message history", history_older:"Older 100", history_newer:"Newer 100", history_latest:"Latest", history_range:"Showing {start}–{end} of {total}",
   n_messages:"{n} messages", last_status:"last status: {s}", results_for:"results for \"{q}\"",
   sg_threads:"Threads", sg_rooms:"Rooms", sg_direct:"Direct conversations", sg_messages:"Messages",
@@ -526,6 +535,8 @@ const STRINGS = {
   feed_empty_p:"Wskaż folder projektu zawierający .agent-board/ (albo sam folder .agent-board).",
   feed_empty_hint:"Chrome i Edge: czytanie i pisanie. Safari i Firefox: tylko czytanie - „Wyślij” pobierze plik do ręcznego wrzucenia do folderu pokoju.",
   no_messages_h:"Brak wiadomości", no_messages_p:"Zmień filtr albo wyszukiwanie.",
+  message_loading:"Wczytywanie wiadomości…",
+  message_error:"Nie można wczytać wiadomości: {m}", searching_history:"Przeszukiwanie treści wiadomości…", search_incomplete:"Wyszukiwanie niepełne; odśwież, aby ponowić",
   history_label:"Historia wiadomości", history_older:"Starsze 100", history_newer:"Nowsze 100", history_latest:"Najnowsze", history_range:"Wyświetlono {start}–{end} z {total}",
   n_messages:"{n} wiadomości", last_status:"ostatni status: {s}", results_for:"wyniki dla „{q}”",
   sg_threads:"Wątki", sg_rooms:"Pokoje", sg_direct:"Rozmowy bezpośrednie", sg_messages:"Wiadomości",
@@ -649,7 +660,8 @@ function buildModel(files, dirs, meta){
   for(const f of src){
     const [top, dir, file] = f.path.split("/");
     const scope = (!legacy && top===directDir) ? "direct" : "room";
-    const {h, body, duplicates} = f.parsed || parseHeaders(f.text);
+    const parsed = f.parsed || parseHeaders(f.text), {h, duplicates} = parsed;
+    const body = f.body ?? parsed.body;
     let time = timeOf(h, file, legacy), fixed = null, fixReason = "";
     if(corr[file]){ fixed = time; time = corr[file].time; fixReason = corr[file].reason; }
     let author, authorName;
@@ -666,7 +678,7 @@ function buildModel(files, dirs, meta){
     const replyTo = (legacy ? h["ODPOWIEDZ-NA"] : h["REPLY-TO"]) || "-";
     const receipt = (legacy && dir==="potwierdzenia") || /^(read receipt only|potwierdzenie odczytu)/i.test(body) || !!h["READ-MESSAGE-IDS"];
     const dkey = scope+":"+dir;
-    msgs.push({duplicates,file, path:f.path, scope, dir, dkey, h, body, time, fixed, fixReason, label, tid, tkey:dkey+"|"+(tid||label),
+    msgs.push({duplicates,source:f.lazy?f:null,bodyLoaded:!f.lazy || f.body!==undefined,preview:parsed.body,file, path:f.path, scope, dir, dkey, h, body, time, fixed, fixReason, label, tid, tkey:dkey+"|"+(tid||label),
       author, authorName, to, status, statusRaw, replyTo, postedAt:postingTime(h["POSTED-AT"]), modifiedAt:Number.isFinite(f.lastModified)?f.lastModified:0, language:h["LANGUAGE"]||"", runtime:h["RUNTIME"]||"", receipt});
   }
   msgs.sort((a,b)=> (a.time<b.time?-1:a.time>b.time?1:0) || ((a.postedAt ?? a.modifiedAt)-(b.postedAt ?? b.modifiedAt)) || (a.file<b.file?-1:a.file>b.file?1:0) || (a.path<b.path?-1:a.path>b.path?1:0));
@@ -701,7 +713,7 @@ function buildModel(files, dirs, meta){
   const ver = (String(byPath["CONVENTION.md"]||"").match(/^Version:\s*(\S+)/m)||[])[1] || null;
   const langs = cfg.language && Array.isArray(cfg.language.allowed) && cfg.language.allowed.length ? cfg.language.allowed : ["en"];
   return {
-    layout, cfg, people, msgs, messageIndex, rooms:[...roomSet].sort(), directs:[...directSet].sort(), corrections:corr,
+    layout, cfg, people, msgs, messageIndex, byPath:new Map(msgs.map(m=>[m.path,m])), rooms:[...roomSet].sort(), directs:[...directSet].sort(), corrections:corr,
     glossary: byPath["GLOSSARY.md"] || "",
     boardVersion: ver, statuses: legacy ? DEFAULT_STATUSES : (Array.isArray(cfg.statuses)&&cfg.statuses.length? cfg.statuses : DEFAULT_STATUSES),   // legacy: shown natively, written as legacy codes
     languages: langs, defaultLanguage: (cfg.language && cfg.language.default) || langs[0] || "en",
@@ -844,6 +856,58 @@ async function writeNewFile(rel, text){
 }
 
 /* ===== reading ===== */
+async function readMessageIndex(file){
+  // Read only enough bytes to find the header separator plus a short preview.
+  // A long structured QUESTION header can span more than one chunk.
+  let end=Math.min(file.size,2048), text;
+  if(typeof file.slice!=="function" || !Number.isFinite(file.size)) text=await file.text();
+  else for(;;){
+    text=await file.slice(0,end).text();
+    const separator=/(?:^|\n)---\r?\n/.exec(text);
+    if(end>=file.size || (separator && text.length-separator.index>=300)) break;
+    end=Math.min(file.size,Math.max(end*2,end+2048));
+  }
+  const parsed=parseHeaders(text); parsed.body=parsed.body.slice(0,256); stats.indexReads++;
+  return parsed;
+}
+function forgetBodies(){ bodyCache.clear(); messageFiles.clear(); bodyRenderToken++; bodySearch={model:null,query:"",pending:false,hits:new Set()}; }
+async function messageBody(m){
+  if(m.bodyLoaded) return m.body;
+  const row=m.source;
+  if(row.body!==undefined) return row.body;
+  if(!row.loading){ activeBodyReads++; row.loading=row.file.text().then(text=>{ stats.messageReads++; return parseHeaders(text).body; }).finally(()=>{ row.loading=null; activeBodyReads--; }); }
+  return row.loading;
+}
+function retainBody(m,body,model,pinned){
+  const row=m.source;
+  if(!row || messageFiles.get(m.path)!==row) return;
+  row.body=body; m.body=body; m.bodyLoaded=true;
+  bodyCache.delete(m.path); bodyCache.set(m.path,row);
+  for(const [path,old] of bodyCache){
+    if(bodyCache.size<=MAX_CACHED_BODIES) break;
+    if(pinned.has(path)) continue;
+    delete old.body; bodyCache.delete(path);
+    for(const target of new Set([model,B])){
+      const previous=target?.byPath.get(path);
+      if(previous && previous.source===old){ previous.body=previous.preview; previous.bodyLoaded=false; }
+    }
+  }
+}
+async function hydrateMessages(rows,model){
+  const pinned=new Set(rows.map(m=>m.path));
+  // Keep I/O bounded even on a large window; source promises deduplicate reads.
+  let at=0;
+  await Promise.all(Array.from({length:Math.min(8,rows.length)},async()=>{
+    while(at<rows.length){ const m=rows[at++]; if(!m.bodyLoaded){ const body=await messageBody(m); retainBody(m,body,model,pinned); } }
+  }));
+}
+async function prepareModel(model){
+  const selection=sel.scope?sel:(S.lastScope?{scope:S.lastScope,dir:S.lastDir,thread:S.lastThread}:sel);
+  const view=model.msgs.filter(m=>(!selection.scope || m.dkey===selection.scope+":"+selection.dir) && (!selection.thread || m.tkey===selection.thread) && (S.showReceipts||!m.receipt));
+  const anchor=historyPage.end && view.findIndex(m=>m.path===historyPage.end)+1;
+  const end=anchor>0?anchor:view.length;
+  await hydrateMessages(view.slice(Math.max(0,end-(historyPage.count||MESSAGE_PAGE_SIZE)),end),model);
+}
 async function readText(dir, name){ try{ const fh = await dir.getFileHandle(name); return await (await fh.getFile()).text(); }catch(e){ return null; } }
 async function entriesOf(dir){ const out=[]; try{ for await(const [n,h] of dir.entries()) out.push([n,h]); }catch(e){} return out; }
 async function subDir(dir, name){ try{ return await dir.getDirectoryHandle(name); }catch(e){ return null; } }
@@ -876,7 +940,8 @@ async function readFromHandle(preserve = true){
           const reliable=Number.isFinite(file.size) && Number.isFinite(file.lastModified);
           let row=old;
           if(!reliable || !old || old.size!==file.size || old.lastModified!==file.lastModified){
-            row={path,parsed:parseHeaders(await file.text()),size:file.size,lastModified:file.lastModified}; stats.messageReads++;
+            row={path,parsed:await readMessageIndex(file),file,lazy:true,size:file.size,lastModified:file.lastModified};
+          }else{ row.file=file;
           }
           files.push(row); nextFiles.set(path,row);
         }
@@ -885,7 +950,11 @@ async function readFromHandle(preserve = true){
   }
   if(generation!==readGeneration || dirHandle!==root) return false;
   baseHandle=base; messageFiles=nextFiles;
-  loadBoard(buildModel(files, dirs, {name:root.name}), preserve && !!B);
+  for(const [path,row] of bodyCache) if(nextFiles.get(path)!==row) bodyCache.delete(path);
+  const model=buildModel(files,dirs,{name:root.name});
+  await prepareModel(model);
+  if(generation!==readGeneration || dirHandle!==root) return false;
+  loadBoard(model, preserve && !!B);
   return true;
 }
 async function readFromInput(list){
@@ -893,23 +962,27 @@ async function readFromInput(list){
   const segs = f => (f.webkitRelativePath||f.name).split("/");
   const hasAB = list.some(f=>segs(f)[1]===".agent-board");
   const strip = hasAB ? 2 : 1;
-  const files = [], dirs = new Set();
+  const files = [], dirs = new Set(), sources=new Map();
   let name = list.length ? segs(list[0])[0] : "";
   for(const f of list){
     const p = segs(f); if(hasAB && p[1]!==".agent-board") continue;
     const rel = p.slice(strip).join("/");
     if(/^(participants\.json|config\.json|CONVENTION\.md|GLOSSARY\.md|time-corrections\.txt|korekty-czasu\.txt)$/.test(rel) ||
        /^[^/]+\/[^/]+\/[^/]+\.txt$/.test(rel)){
-      files.push({path:rel, text: await f.text(),lastModified:f.lastModified});
+      if(rel.endsWith(".txt") && rel.includes("/")){
+        const row={path:rel,parsed:await readMessageIndex(f),file:f,lazy:true,size:f.size,lastModified:f.lastModified}; files.push(row); sources.set(rel,row);
+      }else files.push({path:rel,text:await f.text(),lastModified:f.lastModified});
     }
     const q = rel.split("/"); if(q.length>=3){ dirs.add(q[0]); dirs.add(q[0]+"/"+q[1]); }
   }
   if(generation!==readGeneration) return;
-  dirHandle = null; baseHandle = null; boardStorageId=""; messageFiles.clear(); historyPage={key:"",end:null,last:null};
-  loadBoard(buildModel(files, [...dirs], {name}));
+  dirHandle = null; baseHandle = null; boardStorageId=""; forgetBodies(); messageFiles=sources; historyPage={key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
+  const model=buildModel(files,[...dirs],{name}); await prepareModel(model);
+  if(generation!==readGeneration) return;
+  loadBoard(model);
 }
 function loadBoard(model, background = false){
-  B = model;
+  B = model; bodySearch={model:null,query:"",pending:false,hits:new Set()};
   const key = "agent-file-board-ui.read."+JSON.stringify([boardStorageId || B.name,B.layout.dialect]);
   if(key!==seenKey){ seenKey=key; try{ seen=JSON.parse(lsGet(key)||"{}"); if(!seen || typeof seen!=="object" || Array.isArray(seen)) seen={}; }catch(e){ seen={}; } }
   stats.builds++;
@@ -920,21 +993,49 @@ function loadBoard(model, background = false){
       if(S.lastThread && B.msgs.some(m=>m.tkey===S.lastThread)) sel.thread = S.lastThread; }
   }
   if(sel.scope && !(sel.scope==="room"?B.rooms:B.directs).includes(sel.dir)) sel = {scope:null,dir:null,thread:null};
-  renderChrome(); build({background, preserveComposer:background});
+  renderChrome(); build({background, preserveComposer:background}); startBodySearch();
 }
 
 /* ===== sidebar, feed ===== */
 function personOf(id, fallbackName){ return B.people[id] || {id, kind:"unknown", name:fallbackName||id, registered:false}; }
 function colorOf(id){
-  if(!B || !B.people[id]) return "var(--p-unknown)";
-  const ids = Object.keys(B.people).sort();
-  return "var(--p"+(ids.indexOf(id)%8)+")";
+  if(!id || id==="unknown") return "var(--p-unknown)";
+  // FNV-1a over the stable ID: registry order/membership never affects a color.
+  let hash=2166136261;
+  for(const char of id){ hash^=char.codePointAt(0); hash=Math.imul(hash,16777619); }
+  return "var(--p"+((hash>>>0)%8)+")";
 }
 function iconOf(p){ return p.kind==="agent" ? "\u{1F916}" : p.kind==="human" ? "\u{1F464}" : "\u2754"; }
 function kindLabel(p){ return t(p.kind==="agent"?"kind_agent":p.kind==="human"?"kind_human":"kind_unknown"); }
 function dirTitle(scope, dir){ return scope==="direct" ? dir.replace("--"," \u2194 ") : dir; }
 function visibleMsg(m){ return $("#showReceipts").checked || !m.receipt; }
-function msgMatches(m, ql){ return (m.body+" "+m.file+" "+Object.values(m.h).join(" ")).toLowerCase().includes(ql); }
+function msgMatches(m, ql){
+  if(bodySearch.model===B && bodySearch.query===ql && bodySearch.hits.has(m.path)) return true;
+  return (m.body+" "+m.file+" "+Object.values(m.h).join(" ")).toLowerCase().includes(ql);
+}
+function startBodySearch(){
+  const query=$("#q").value.trim().toLowerCase(), model=B;
+  if(!model || !query){ bodySearch={model:null,query:"",pending:false,hits:new Set()}; return; }
+  if(bodySearch.model===model && bodySearch.query===query) return;
+  const state={model,query,pending:true,hits:new Set()}; bodySearch=state;
+  (async()=>{
+    for(const m of model.msgs){
+      if(bodySearch!==state || $("#q").value.trim().toLowerCase()!==query) return;
+      let matched;
+      if(m.source?.search?.query===query) matched=m.source.search.matched;
+      else{
+        const text=m.bodyLoaded?m.body:await messageBody(m);
+        if(bodySearch!==state) return;
+        matched=(text+" "+m.file+" "+Object.values(m.h).join(" ")).toLowerCase().includes(query);
+        if(m.source) m.source.search={query,matched};
+      }
+      if(matched) state.hits.add(m.path);
+    }
+    if(bodySearch!==state || B!==model) return;
+    state.pending=false; build({background:true,preserveComposer:true});
+    if(document.activeElement===$("#q")) suggest();
+  })().catch(e=>{ if(bodySearch===state){ state.pending=false; state.error=true; build({background:true,preserveComposer:true}); toast(t("message_error",{m:e.message})); } });
+}
 
 function threadsOf(){
   if(B.threadIndex) return B.threadIndex;
@@ -954,14 +1055,42 @@ function matchingMessages(){
 }
 function messagePage(view, background=false){
   const key=JSON.stringify([seenKey,sel,$("#q").value.trim().toLowerCase(),$("#showReceipts").checked]);
-  if(historyPage.key!==key) historyPage={key,end:null,last:null};
+  if(historyPage.key!==key) historyPage={key,end:null,last:null,count:MESSAGE_PAGE_SIZE};
   const feed=$("#feed");
   if(background && !historyPage.end && historyPage.last && feed.scrollHeight-feed.scrollTop-feed.clientHeight>=80 && view.at(-1)?.path!==historyPage.last) historyPage.end=historyPage.last;
   let end=historyPage.end ? view.findIndex(m=>m.path===historyPage.end)+1 : view.length;
   if(end<=0){ historyPage.end=null; end=view.length; }
-  const start=Math.max(0,end-MESSAGE_PAGE_SIZE);
+  const start=Math.max(0,end-(historyPage.count||MESSAGE_PAGE_SIZE));
   historyPage.last=view[end-1]?.path || null;
   return {start,end,rows:view.slice(start,end)};
+}
+async function loadHistoryOnScroll(direction){
+  if(!B || historyLoading || (bodySearch.pending && $("#q").value.trim())) return;
+  const feed=$("#feed"), view=matchingMessages(), page=messagePage(view), model=B, state=historyPage;
+  const amount=Math.min(MESSAGE_PAGE_SIZE,direction<0?page.start:view.length-page.end);
+  if(!amount) return;
+  const edge=feed.getBoundingClientRect().top+(feed.querySelector(".history-nav")?.getBoundingClientRect().height||0);
+  const anchor=[...feed.querySelectorAll("article.msg")].find(el=>el.getBoundingClientRect().bottom>edge);
+  const anchorId=anchor?.id, anchorTop=anchor?.getBoundingClientRect().top;
+  const previousState={end:state.end,last:state.last,count:state.count};
+  let end=page.end;
+  if(direction<0 && page.rows.length>=MAX_RENDERED_MESSAGES) end-=amount;
+  else if(direction>0) end+=amount;
+  state.count=Math.min(MAX_RENDERED_MESSAGES,page.rows.length+amount);
+  state.end=end===view.length?null:view[end-1].path;
+  historyLoading=true;
+  const expectedEnd=state.end, expectedCount=state.count;
+  const subtitle=$("#subtitle"), oldSubtitle=subtitle.textContent, loadingSubtitle=oldSubtitle+" · "+t("message_loading");
+  subtitle.textContent=loadingSubtitle; feed.setAttribute("aria-busy","true");
+  try{
+    const next=messagePage(view);
+    await hydrateMessages(next.rows,model);
+    if(B!==model || historyPage!==state || state.end!==expectedEnd || state.count!==expectedCount) return;
+    build({background:true,preserveComposer:true});
+    const current=anchorId && document.getElementById(anchorId);
+    if(current) feed.scrollTop+=current.getBoundingClientRect().top-anchorTop;
+  }catch(e){ if(historyPage===state && B===model) Object.assign(state,previousState); toast(t("message_error",{m:e.message})); }
+  finally{ historyLoading=false; feed.setAttribute("aria-busy","false"); if(subtitle.textContent===loadingSubtitle) subtitle.textContent=oldSubtitle; }
 }
 function markViewRead(rows){
   for(const m of rows) if(visibleMsg(m)) seen[m.path]=true;
@@ -984,7 +1113,7 @@ function build({background = false, preserveComposer = false} = {}){
     return (x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q) || matchedTopics.has(key); };
   const order = Object.keys(th).filter(match).sort((a,b)=> (S.threadOrder==="newest" ? (th[b].last.localeCompare(th[a].last) || (th[b].lastOrder||0)-(th[a].lastOrder||0)) : 0) || th[a].tid.localeCompare(th[b].tid) || a.localeCompare(b));
   const card = key => { const x = th[key], ht = humanThread(x.label);
-    const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
+    const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i data-party="${esc(w)}" style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
     return `<button class="tcard ${unreadTopics.get(key)?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
       <div class="row1"><span class="sdot s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(unreadTopics.get(key)||0)}</div>
       <div class="ttl">${esc(ht.title||t("no_title"))}</div>
@@ -1161,7 +1290,11 @@ function render(background = false){
   $("#titleEditor").hidden = !sel.thread;
   const lastSt = sel.thread ? ((view.filter(m=>!m.receipt).pop()||{}).status||"") : "";
   $("#subtitle").textContent = t("n_messages",{n:view.length}) + (lastSt?" \u00b7 "+t("last_status",{s:lastSt}):"") + (q?" \u00b7 "+t("results_for",{q}):"");
+  if(q && bodySearch.pending) $("#subtitle").textContent+=" · "+t("searching_history");
+  if(q && bodySearch.error) $("#subtitle").textContent+=" · "+t("search_incomplete");
   if(!view.length){ $("#feed").innerHTML = `<div class="empty"><h2>${esc(t("no_messages_h"))}</h2><p>${esc(t("no_messages_p"))}</p></div>`; return; }
+  const missing=page.rows.some(m=>!m.bodyLoaded), token=++bodyRenderToken;
+  if(missing) hydrateMessages(page.rows,B).then(()=>{ if(token===bodyRenderToken) render(background); }).catch(e=>{ if(token===bodyRenderToken) toast(t("message_error",{m:e.message})); });
   let html = view.length>MESSAGE_PAGE_SIZE ? `<nav class="history-nav" aria-label="${esc(t("history_label"))}"><button class="btn" data-history="older" ${page.start===0?"disabled":""}>${esc(t("history_older"))}</button><span>${esc(t("history_range",{start:page.start+1,end:page.end,total:view.length}))}</span><button class="btn" data-history="newer" ${page.end===view.length?"disabled":""}>${esc(t("history_newer"))}</button><button class="btn" data-history="latest" ${page.end===view.length?"disabled":""}>${esc(t("history_latest"))}</button></nav>` : "", lastDay = "";
   for(const m of page.rows){
     const day = m.time.slice(0,10);
@@ -1186,7 +1319,7 @@ function render(background = false){
         ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
         ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}</div>
         ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
-        <div class="body ${long?"clamp":""}">${formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"])}</div>
+        <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
         ${m.metadataError?`<p class="metadata-error">${esc(t("invalid_metadata"))}</p>`:choiceHtml(m)}
         ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
         <div class="tools"><button data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button><button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
@@ -1245,9 +1378,11 @@ function optionsInto(el, html){
 function fillMe(){
   const people = B ? Object.values(B.people).sort((a,b)=>a.id<b.id?-1:1) : [];
   const cur = currentUser();
-  optionsInto($("#me"), (people.length ? "" : `<option value="">${esc(t("choose_me"))}</option>`) + people.map(p=>`<option value="${esc(p.id)}">${iconOf(p)} ${esc(p.name)}</option>`).join(""));
+  optionsInto($("#me"), (people.length ? "" : `<option value="">${esc(t("choose_me"))}</option>`) + people.map(p=>`<option value="${esc(p.id)}" style="color:${colorOf(p.id)};background:var(--panel)">${iconOf(p)} ${esc(p.name)}</option>`).join(""));
   $("#me").value = cur;
+  updateIdentityColor();
 }
+function updateIdentityColor(){ $("#me").closest(".me").style.setProperty("--c",colorOf(currentUser())); }
 
 /* ===== composer ===== */
 function whereOptions(){
@@ -1394,7 +1529,7 @@ function pickSuggestion(btn){
   if(kind==="thread"){ const x = threadsOf()[btn.dataset.tk]; sel = {scope:x.scope,dir:x.dir,thread:x.key}; $("#q").value=""; }
   else if(kind==="room" || kind==="direct"){ sel = {scope:kind,dir:btn.dataset.dir,thread:null}; $("#q").value=""; }
   $("#sugg").classList.remove("show");
-  rememberView(); build();
+  startBodySearch(); rememberView(); build();
 }
 function rememberView(){ S.lastScope = sel.scope; S.lastDir = sel.dir; S.lastThread = sel.thread; saveSettings(); }
 
@@ -1535,7 +1670,7 @@ async function boardIdentity(h){
   }catch(e){ return h.name; }
 }
 async function useDir(h){
-  dirHandle = h; messageFiles.clear(); historyPage={key:"",end:null,last:null};
+  dirHandle = h; forgetBodies(); historyPage={key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
   $("#banner").classList.remove("show");
   try{ await idbSet("lastDir", h); }catch(e){ /* storage failures degrade silently */ }
   boardStorageId=await boardIdentity(h);
@@ -1631,15 +1766,15 @@ function wire(){
   $("#sLang").onchange = ()=>{ S.lang=$("#sLang").value; saveSettings(); refreshAll(); };
   $("#showReceipts").onchange = ()=>{ S.showReceipts=$("#showReceipts").checked; saveSettings(); build(); };
   $("#expandAll").onchange = ()=>{ S.expandAll=$("#expandAll").checked; saveSettings(); render(); };
-  $("#me").onchange = ()=>{ S.me=$("#me").value; saveSettings(); updateComposerInfo(); syncLang(); render(); };
+  $("#me").onchange = ()=>{ S.me=$("#me").value; saveSettings(); updateComposerInfo(); syncLang(); updateIdentityColor(); render(); };
   $("#menu").onclick = ()=>$("#side").classList.toggle("open");
 
-  $("#q").oninput = ()=>{ suggest(); build({preserveComposer:true}); };
+  $("#q").oninput = ()=>{ scrollIntent=0; startBodySearch(); suggest(); build({preserveComposer:true}); };
   $("#q").onfocus = suggest;
   $("#q").onblur = ()=>setTimeout(()=>{ if(document.activeElement!==$("#q")) $("#sugg").classList.remove("show"); },150);
   $("#q").onkeydown = e=>{
     const items = [...$("#sugg").querySelectorAll("button")];
-    if(e.key==="Escape"){ $("#sugg").classList.remove("show"); return; }
+    if(e.key==="Escape"){ e.preventDefault(); $("#sugg").classList.remove("show"); return; }
     if(!items.length) return;
     if(e.key==="ArrowDown"||e.key==="ArrowUp"){
       e.preventDefault();
@@ -1660,6 +1795,7 @@ function wire(){
     if(fold){ const k = fold.dataset.fold; S.collapsed[k] = !S.collapsed[k]; saveSettings(); build({preserveComposer:true}); return; }
     if(cl){ const k = cl.dataset.closed; S.closedGroups[k] = !S.closedGroups[k]; saveSettings(); build({preserveComposer:true}); return; }
     if(nav){
+      scrollIntent=0;
       const kind = nav.dataset.nav;
       if(kind==="all") sel = {scope:null,dir:null,thread:null};
       else if(kind==="thread") sel = {scope:nav.dataset.scope, dir:nav.dataset.dir, thread:nav.dataset.tk};
@@ -1686,7 +1822,8 @@ function wire(){
   $("#feed").addEventListener("click", e=>{
     const history=e.target.closest("[data-history]");
     if(history){
-      const view=matchingMessages(), page=messagePage(view);
+      scrollIntent=0;
+      const view=matchingMessages(), page=messagePage(view); historyPage.count=MESSAGE_PAGE_SIZE;
       if(history.dataset.history==="latest") historyPage.end=null;
       else{ const end=history.dataset.history==="older"?page.start:Math.min(view.length,page.end+MESSAGE_PAGE_SIZE); historyPage.end=end===view.length?null:view[Math.max(0,end-1)].path; }
       build({preserveComposer:true});
@@ -1710,8 +1847,32 @@ function wire(){
       else toast(t("outside_filter"));
     }
   });
-  let readFrame=0;
+  let readFrame=0, scrollIntent=0;
+  const checkHistory=()=>{
+    const feed=$("#feed"), direction=scrollIntent;
+    if(!direction || historyLoading) return;
+    if((direction<0 && feed.scrollTop<160) || (direction>0 && feed.scrollHeight-feed.scrollTop-feed.clientHeight<160)){
+      scrollIntent=0; loadHistoryOnScroll(direction);
+    }
+  };
+  $("#feed").addEventListener("wheel",e=>{ scrollIntent=Math.sign(e.deltaY); checkHistory(); },{passive:true});
+  let touchY=null;
+  $("#feed").addEventListener("touchstart",e=>{ touchY=e.touches[0]?.clientY; },{passive:true});
+  $("#feed").addEventListener("touchmove",e=>{ const y=e.touches[0]?.clientY; if(touchY!==null && y!==undefined){ scrollIntent=Math.sign(touchY-y); touchY=y; checkHistory(); } },{passive:true});
+  $("#feed").addEventListener("keydown",e=>{
+    if(e.target.closest("input,textarea,select,button,summary,a")) return;
+    if(["ArrowUp","PageUp","Home"].includes(e.key)) scrollIntent=-1;
+    if(["ArrowDown","PageDown","End"].includes(e.key)) scrollIntent=1;
+    checkHistory();
+  });
+  let dragTop=null;
+  $("#feed").addEventListener("pointerdown",()=>{ dragTop=$("#feed").scrollTop; });
+  document.addEventListener("pointerup",()=>{
+    if(dragTop!==null){ scrollIntent=Math.sign($("#feed").scrollTop-dragTop)||scrollIntent; dragTop=null; checkHistory(); }
+  });
   $("#feed").addEventListener("scroll",()=>{
+    if(dragTop!==null){ scrollIntent=Math.sign($("#feed").scrollTop-dragTop); dragTop=$("#feed").scrollTop; }
+    checkHistory();
     if(readFrame || !B || !sel.scope) return;
     readFrame=requestAnimationFrame(()=>{ readFrame=0; const feed=$("#feed");
       if(document.visibilityState==="visible" && feed.scrollHeight-feed.scrollTop-feed.clientHeight<80 && messagePage(matchingMessages()).rows.some(unread)) build({background:true,preserveComposer:true});
@@ -1756,7 +1917,7 @@ function init(){
 }
 /* test hooks: pure functions and state accessors; they add no capability the UI does not have */
 window.__boardTest = {STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
-  parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
+  parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loading:()=>historyLoading || activeBodyReads>0 || bodySearch.pending || !!(B && messagePage(matchingMessages()).rows.some(m=>!m.bodyLoaded)), cachedBodies:()=>bodyCache.size, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
 init();
 </script>
 </body>

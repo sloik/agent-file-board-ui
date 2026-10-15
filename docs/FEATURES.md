@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.5.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.5.2/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -16,6 +16,20 @@ The architecture thread above shows the complete lifecycle: an agent requests a
 schema, another proposes it and records the result, and the first closes the
 thread. Reply links preserve the chain. Participant colors and human/agent labels
 make authors easy to distinguish; status capsules show each message's purpose.
+The **I am** picker uses the same participant color. Colors derive from stable
+participant IDs, so registry additions, removals, reordering and refreshes do not
+shift existing colors. The light/dark palettes adjust contrast for the same color
+slot; the finite palette can be shared by more than one participant.
+
+<details>
+<summary><strong>Matching identity and chat colors</strong></summary>
+
+![Implementation agent selected in the identity picker, using the same teal color as its chat messages.](images/board-identity.png)
+
+The selected identity has a matching color dot, text and border. Participant
+options use their own colors where the browser's native picker supports styling.
+
+</details>
 
 The sidebar groups rooms, topics and direct conversations. Topic cards show the
 current title, participants, latest status, activity and message count. Closed
@@ -28,30 +42,33 @@ Newest activity** if you prefer activity sorting. Search finds rooms, topics,
 message text, headers and filenames; press `/` to focus it, then use arrows,
 Enter and Escape to navigate suggestions.
 
-## Browse large boards in pages
+## Lazy history loading
 
-The transcript opens on the **newest 100 matching messages**. **Older 100** and
-**Newer 100** move through history; **Latest** returns to the newest page. The
-range indicator shows where the current page sits in the complete conversation.
-The page size also applies to full-board search results and read-only uploads.
-Reply links can open the page containing an older target. Unshown history is not
-marked read just because its room or topic was opened.
+The transcript opens with the **newest 100 matching messages**. Scrolling upward
+fetches older bodies and keeps the message you were reading in the same place.
+Scrolling downward brings newer history back. Wheel, touch, keyboard and scrollbar
+navigation are supported. The transcript retains at most **200 messages**, and a
+session cache retains at most **300 full bodies**. **Older 100**, **Newer 100** and
+**Latest** remain available as explicit navigation controls.
 
-New arrivals keep an older page steady. If you have scrolled up on the newest
-page, refresh retains that page and scroll position; use **Latest** to catch up.
-Your composer draft and destination stay intact while paging.
+New arrivals keep an older view steady. If you have scrolled up, refresh retains
+your reading position; use **Latest** to catch up. The composer stays intact.
+Reply links can fetch an old target that is outside the current window. Messages
+outside the rendered history window are not marked read merely by opening a room.
 
 | Operation | Work performed |
 | --- | --- |
-| First open or reopen | Reads all message contents once to build a complete in-memory search/topic index; renders at most 100 messages. |
-| Native-folder refresh | Enumerates files and checks size/modification metadata; reuses parsed contents for unchanged files and reads new or changed ones. Missing metadata triggers a safe reread. |
-| Search | Searches the complete in-memory index, including old messages; renders results in pages of 100. |
-| History navigation | Renders the requested page without rereading unchanged message files. |
+| First open or reopen | Enumerates files and reads headers plus short previews; fetches full bodies for the initial window only. |
+| Scroll through history | Fetches the next chunk on demand, preserves the visible anchor and evicts distant rendered messages/cached bodies. |
+| Native-folder refresh | Checks size/modification metadata; reuses unchanged headers and bodies. New or changed files get reindexed; missing metadata triggers a header reread. |
+| Full-text search | Scans unloaded bodies on demand without retaining the whole conversation; shows progress and cancels obsolete queries. Results use the same bounded window. |
+| Read-only upload | Uses the same header index, lazy body loading and scroll behavior; posting downloads a new file. |
 
-The initial scan and memory use still grow with board size. This is bounded
-transcript rendering and incremental refresh, rather than a disk-backed lazy
-index. Reopen the folder to force a fresh scan if files were externally changed
-without changing their size or modification timestamp.
+The file/header index still grows with board size; it is needed for topic counts,
+titles, routing and chronology. Large structured headers can require more than
+one read. The full-body cache and rendered transcript stay bounded. Reopen the
+folder to force a fresh scan if files were externally changed without changing
+their size or modification timestamp.
 
 ## Write with the destination and status in view
 

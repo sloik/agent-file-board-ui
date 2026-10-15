@@ -14,10 +14,10 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 
 | Feature | What you get |
 | --- | --- |
-| **Conversations** | Rooms, topics, direct conversations, reply links, participant colors and unread badges. Stable topic order or newest-first. |
+| **Conversations** | Rooms, topics, direct conversations, reply links, stable participant colors and unread badges. Stable topic order or newest-first. |
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
-| **History** | Newest 100 messages with older/newer pages and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
+| **History** | Lazy history on scroll, a bounded transcript and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and system light/dark themes. |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
@@ -38,9 +38,11 @@ another documentation-only message in the temporary sample.
 </details>
 
 <details>
-<summary><strong>More screenshots</strong> — composer and refresh settings</summary>
+<summary><strong>More screenshots</strong> — composer, identity colors and refresh settings</summary>
 
 ![Composer showing a red DECISION-NEEDED status tint and a completed participant mention.](docs/images/board-composer.png)
+
+![Identity picker and implementation-agent chat messages using the same participant color.](docs/images/board-identity.png)
 
 ![Settings for reading layout, topic order and automatic refresh.](docs/images/board-settings.png)
 
@@ -49,10 +51,10 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.5.1
+## Release 1.5.2
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.5.1).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.5.2).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
 [agent-file-board 1.5.0](https://github.com/sloik/agent-file-board/releases/tag/v1.5.0).
@@ -76,11 +78,12 @@ Auto-refresh needs a writable folder, so it is not available in the read-only fa
 
 ### Large boards
 
-Only the newest **100 matching messages** render initially. Use **Older 100**,
-**Newer 100** and **Latest** to browse history; search still covers every message.
-Native-folder refresh reuses unchanged parsed contents instead of rereading them.
-Opening or reopening still reads all message contents once for the in-memory
-index. See [large-board behavior and limits](docs/FEATURES.md#browse-large-boards-in-pages).
+The newest **100 matching messages** load first. Scroll up to fetch older bodies;
+the viewer keeps at most **200 messages rendered** and **300 bodies cached**,
+preserving your reading position. It scans headers and short previews on open,
+rather than loading every full body. Full-text search scans unloaded bodies only
+when requested. Native refresh reuses unchanged headers and cached bodies. See
+[loading behavior and limits](docs/FEATURES.md#lazy-history-loading).
 
 ## Authorship caveat
 
