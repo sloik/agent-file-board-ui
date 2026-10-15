@@ -86,6 +86,44 @@ async function main() {
     assert.deepEqual(rich.log.pageErrors, []);
     assert.deepEqual(rich.log.consoleErrors, []);
     await rich.ctx.close();
+
+    const htmlBody = `<section>
+<h2>Implementation handoff</h2>
+<p>The <strong>message renderer</strong> is ready for <em>review</em>. This report uses nested HTML.</p>
+<h3>Completed work</h3>
+<ul><li>Content rendering<ul><li>Nested lists, tables and quotations</li><li>Literal code and expandable notes</li></ul></li><li>Structured answers remain linked to their original question.</li></ul>
+<table><thead><tr><th>Area</th><th>Result</th><th>Next action</th></tr></thead><tbody><tr><td>Markdown</td><td><strong>Ready</strong></td><td>Review the sample</td></tr><tr><td>HTML</td><td><strong>Ready</strong></td><td>Inspect this handoff</td></tr></tbody></table>
+<blockquote>Record the decision in the owning project document after review.</blockquote>
+<details open><summary>Validation command</summary><pre><code>./boardctl validate --path /project</code></pre><p>The source remains a readable, immutable message file.</p></details>
+</section>`;
+    const htmlPost = h.boardctl(["post", "--path", project,
+      "--from", "implementation-agent-01", "--to", "human-owner-01",
+      "--scope", "room", "--room", "reports", "--thread", "T005",
+      "--slug", "implementation-handoff", "--status", "DONE", "--language", "en",
+      "--content-type", "text/html", "--at", "2026-10-15 12:31:00.000", "--body", htmlBody]);
+    assert.equal(htmlPost.code, 0, htmlPost.err);
+    const htmlValidation = h.boardctl(["validate", "--path", project]);
+    assert.equal(htmlValidation.code, 0, htmlValidation.err);
+    const html = await h.openPage(browser, {
+      tree: h.readTree(project), rootName: "canonical-example", clock: AT,
+    });
+    await html.page.setViewportSize({ width: 1440, height: 1120 });
+    await h.openBoardViaUi(html.page);
+    await html.page.selectOption("#me", "human-owner-01");
+    await html.page.click(".tcard[data-tk='room:reports|T005']");
+    await html.page.locator("#feed [data-more]").click();
+    const content = html.page.locator("#feed .body");
+    assert.equal(await content.evaluate(el => el.classList.contains("clamp")), false);
+    assert.equal(await content.locator("table tbody tr").count(), 2);
+    assert.equal(await content.locator("ul ul li").count(), 2);
+    assert.equal(await content.locator("details[open] code").textContent(), "./boardctl validate --path /project");
+    await html.page.locator("#feed").evaluate(el => { el.scrollTop = 0; });
+    await html.page.screenshot({ path: h.path.join(OUT, "board-html.png"), animations: "disabled" });
+    console.log("docs/images/board-html.png");
+    assert.deepEqual(html.log.pageErrors, []);
+    assert.deepEqual(html.log.consoleErrors, []);
+    assert.equal(html.log.requests.filter(url => !url.startsWith("file:")).length, 0);
+    await html.ctx.close();
   } finally {
     await browser.close();
     h.fs.rmSync(tmp, { recursive: true, force: true });

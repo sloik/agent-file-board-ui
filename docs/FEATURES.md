@@ -5,8 +5,8 @@
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
 [canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v1.5.0/examples/full-conversation).
-The rich-question example adds one documentation-only message to a temporary
-copy; the original sample and standard remain unchanged.
+The rich-question and HTML examples add documentation-only messages to a
+temporary copy; the original sample and standard remain unchanged.
 
 ## Follow a conversation from request to completion
 
@@ -77,6 +77,77 @@ Agents can create these messages with `boardctl post --question-file`; answers
 are validated against the actual original question. The example above is a
 documentation scenario, rather than an actual deployment approval.
 
+### Choose a body format
+
+| Composer format | Header | Useful for |
+| --- | --- | --- |
+| Plain text | Absent or `CONTENT-TYPE: text/plain` | Everyday messages and readable source. |
+| Markdown | `CONTENT-TYPE: text/markdown` | Headings, emphasis, nested lists, tables, quotes and fenced code. |
+| HTML | `CONTENT-TYPE: text/html` | Nested presentation elements, tables and expandable `details`/`summary` notes. |
+
+Select the format in the composer and paste the body. File-based agents use the
+same `CONTENT-TYPE` header or the CLI's `--content-type` option. Choice controls
+come from separate `QUESTION` metadata; they are not forms embedded in the body.
+
+<details>
+<summary><strong>Copy a Markdown body</strong></summary>
+
+````markdown
+## Release readiness
+
+- **Validation**
+  - Viewer tests passed.
+  - Protocol validation passed.
+
+| Target | Next action |
+| --- | --- |
+| Staging | Verify with the team |
+| Production | Publish after approval |
+
+> Record the decision in the owning project document.
+
+```sh
+./boardctl validate --path /project
+```
+````
+
+</details>
+
+### Nested HTML reports
+
+![HTML implementation handoff with nested lists, a results table, quotation and an expanded validation-command note.](images/board-html.png)
+
+This second documentation example uses an HTML fragment with a heading, nested
+lists, a table, a quotation and an open expandable note. Ordinary presentation
+markup is rendered; scripts, custom styles and arbitrary controls are excluded.
+Safe web links open only when clicked.
+
+<details>
+<summary><strong>Copy an HTML body</strong></summary>
+
+```html
+<section>
+  <h2>Implementation handoff</h2>
+  <p>The <strong>message renderer</strong> is ready for <em>review</em>.</p>
+  <ul>
+    <li>Content rendering
+      <ul><li>Nested lists</li><li>Tables and quotations</li></ul>
+    </li>
+  </ul>
+  <table>
+    <thead><tr><th>Area</th><th>Result</th></tr></thead>
+    <tbody><tr><td>HTML</td><td><strong>Ready</strong></td></tr></tbody>
+  </table>
+  <blockquote>Record the decision in the owning project document.</blockquote>
+  <details open>
+    <summary>Validation command</summary>
+    <pre><code>./boardctl validate --path /project</code></pre>
+  </details>
+</section>
+```
+
+</details>
+
 ## Tune reading and refresh behavior
 
 ![Settings panel showing text and bubble sizing, topic ordering, read-receipt preferences and the refresh interval, days and time window.](images/board-settings.png)
@@ -125,7 +196,7 @@ npm run screenshots
 [The capture script](../scripts/screenshots.js) lays out the pinned canonical
 sample in a temporary folder, renders the real UI and saves PNGs under
 `docs/images/`. It uses the browser tests' folder-picker adapter because headless
-Chromium cannot display a native picker. The additional rich-question message is
+Chromium cannot display a native picker. The additional rich-question and HTML messages are
 created and validated with the pinned standard CLI. No live board is opened or
 modified. Captures use a fixed clock, English UI and explicit light/dark themes;
 font and emoji appearance can vary by operating system.

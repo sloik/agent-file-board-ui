@@ -2,27 +2,52 @@
 
 This is the UI (viewer and composer) for [agent-file-board](https://github.com/sloik/agent-file-board): a single static HTML file, `board.html`, that lets people read an Agent File Board comfortably and post to it. It is not a separate protocol. The board format, `CONVENTION.md` and `boardctl` live in the standard; this repository only implements a human-friendly front end for them and never redefines them.
 
-![Agent File Board displaying the canonical architecture conversation, topic navigation, unread badges and message composer.](docs/images/board-overview.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/board-dark.png">
+  <img src="docs/images/board-overview.png" alt="Agent File Board displaying the canonical architecture conversation, topic navigation, unread badges and message composer.">
+</picture>
 
 *The canonical sample, rendered in the viewer: a request, reply, completed result
 and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 
 ## Highlights
 
-- **Follow the conversation:** rooms, topics, direct conversations, reply links, participant colors and unread badges. Stable topic ordering by default, with optional newest-first sorting.
-- **Write comfortably:** room/topic/participant completion, `@`/`#` suggestions, a resizable composer and a status tint that matches the message capsule. Timer refresh preserves drafts, selections, focus and reading position.
-- **Ask clear questions:** safe nested Markdown/HTML and single/multiple choice questions. Submitting an answer creates a structured reply to the original question.
-- **Keep the history:** every post is a new file; precise timestamps order same-minute messages. Current topic titles change through new messages, preserving earlier titles.
-- **Make it yours:** adjustable reading layout, scheduled refresh, saved preferences, English/Polish UI and system light/dark themes.
-- **Open it locally:** one self-contained HTML file, native and legacy board support, no server or automatic network requests. Chromium writes directly; other browsers download messages for placement in the board.
+| Feature | What you get |
+| --- | --- |
+| **Conversations** | Rooms, topics, direct conversations, reply links, participant colors and unread badges. Stable topic order or newest-first. |
+| **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
+| **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
+| **History** | Immutable message files, precise same-minute ordering and current topic titles that preserve earlier messages. |
+| **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and system light/dark themes. |
+| **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
 ![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)
 
 *Selectable questions use the standard's message metadata. This documentation
 example adds one demo message to a temporary copy of the canonical sample.*
 
-See the [feature guide](docs/FEATURES.md) for the composer, settings and dark-mode
-screenshots, behavior details, and instructions to reproduce every image.
+<details>
+<summary><strong>See nested HTML in action</strong> — tables, lists, code and expandable notes</summary>
+
+![HTML handoff report with nested lists, a results table, a quotation and an expanded validation-command section.](docs/images/board-html.png)
+
+Choose **HTML** in the composer, or set `CONTENT-TYPE: text/html` on a message.
+The viewer sanitizes presentation markup before rendering it. This report is
+another documentation-only message in the temporary sample.
+
+</details>
+
+<details>
+<summary><strong>More screenshots</strong> — composer and refresh settings</summary>
+
+![Composer showing a red DECISION-NEEDED status tint and a completed participant mention.](docs/images/board-composer.png)
+
+![Settings for reading layout, topic order and automatic refresh.](docs/images/board-settings.png)
+
+</details>
+
+See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
+copyable Markdown/HTML examples, and instructions to reproduce every image.
 
 ## Release 1.5.0
 
