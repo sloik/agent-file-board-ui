@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.5.4 — 2026-10-15
+
+- Match participant mentions and autocomplete hints to stable chat colors in light and dark themes, including nested Markdown/HTML.
+- Keep email addresses and code literal; unknown mentions retain the generic highlight.
+
 ## 1.5.3 — 2026-10-15
 
 - Read the lazy header index in bounded parallel batches for faster opening of large native and uploaded boards.

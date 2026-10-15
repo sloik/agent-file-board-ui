@@ -176,6 +176,8 @@ body.resizing{cursor:col-resize;user-select:none}
 .body.clamp{max-height:9.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 65%,transparent);mask-image:linear-gradient(#000 65%,transparent)}
 .more{border:0;background:none;color:var(--accent);padding:2px 0;font-size:12.5px;font-weight:600}
 .mention{background:var(--mention);color:var(--mention-ink);border-radius:4px;padding:0 3px;font-weight:600}
+.mention[data-party]{color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel))}
+.sugg button[data-party]{color:var(--c)}
 .msg.to-me{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
 mark{background:var(--mark);color:inherit;border-radius:3px}
 .tools{display:flex;gap:12px;margin-top:4px;opacity:0;transition:opacity .15s}
@@ -395,7 +397,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.5.3";
+const VIEWER_VERSION = "1.5.4";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1148,7 +1150,18 @@ function build({background = false, preserveComposer = false} = {}){
 
 function inline(s, q, code = true){
   s = esc(s); if(code) s=s.replace(/`([^`]+)`/g,"<code>$1</code>");
-  s = s.replace(/(^|[\s(>])@([A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż_-]+)/g,'$1<span class="mention">@$2</span>');
+  let inCode=false;
+  s = s.replace(/<[^>]*>|[^<]+/g,part=>{
+    if(part.startsWith("<")){ if(part==="<code>") inCode=true; else if(part==="</code>") inCode=false; return part; }
+    if(inCode) return part;
+    return part.replace(/(^|[^\p{L}\p{N}_@-])@([\p{L}\p{N}_-]+)/gu,(match,prefix,name)=>{
+      const people=Object.values(B?.people||{}), key=name.toLowerCase();
+      const person=people.find(p=>p.id.toLowerCase()===key);
+      const aliases=person?[]:people.filter(p=>p.name.toLowerCase()===key);
+      const id=person?.id || (aliases.length===1?aliases[0].id:null);
+      return `${prefix}<span class="mention"${id?` data-party="${esc(id)}" style="--c:${colorOf(id)}"`:""}>@${name}</span>`;
+    });
+  });
   if(q){
     const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi");
     s = s.replace(/(<[^>]*>|&(?:amp|lt|gt|quot);)|([^<&]+)/g,(m,tag,txt)=> tag || txt.replace(re,x=>`<mark>${x}</mark>`));
@@ -1579,7 +1592,7 @@ function mountCompletion(input, popup, candidates, choose){
   function close(){ popup.classList.remove("show"); input.setAttribute("aria-expanded","false"); }
   function draw(){
     items=candidates(); selected=-1;
-    popup.innerHTML=items.map((o,i)=>`<button type="button" data-index="${i}">${esc(o.label)}</button>`).join("");
+    popup.innerHTML=items.map((o,i)=>`<button type="button" data-index="${i}"${o.party?` data-party="${esc(o.party)}" style="--c:${colorOf(o.party)}"`:""}>${esc(o.label)}</button>`).join("");
     popup.classList.toggle("show",!!items.length); input.setAttribute("aria-expanded",String(!!items.length));
     const rect=input.getBoundingClientRect();
     popup.style.left=Math.max(8,Math.min(rect.left,innerWidth-popup.offsetWidth-8))+"px";
@@ -1608,7 +1621,7 @@ function wireCompletions(){
     mountCompletion(input,$("#"+id+"Suggestions"),()=>{
       if(!B) return [];
       const q=input.value.trim().toLowerCase();
-      return [...select.options].filter(o=>(o.value+" "+o.textContent).toLowerCase().includes(q)).slice(0,30).map(o=>({value:o.value,label:o.textContent}));
+      return [...select.options].filter(o=>(o.value+" "+o.textContent).toLowerCase().includes(q)).slice(0,30).map(o=>({value:o.value,label:o.textContent,party:id==="cTo" && B.people[o.value]?o.value:null}));
     },o=>{ select.value=o.value; input.value=""; select.dispatchEvent(new Event("change")); });
   }
   const body=$("#cBody");
@@ -1617,7 +1630,7 @@ function wireCompletions(){
     const before=body.value.slice(0,body.selectionStart), match=before.match(/(?:^|\s)([@#])([^\s@#]*)$/);
     if(!match) return [];
     const q=match[2].toLowerCase(), start=body.selectionStart-match[2].length-1;
-    let all=match[1]==="@" ? Object.values(B.people).map(p=>({label:p.name+" · "+p.id,value:"@"+p.id})) :
+    let all=match[1]==="@" ? Object.values(B.people).map(p=>({label:p.name+" · "+p.id,value:"@"+p.id,party:p.id})) :
       [...B.rooms.map(r=>({label:"#"+r,value:"#"+r})),...Object.values(threadsOf()).map(x=>({label:x.tid+" · "+humanThread(x.label).title+" · "+x.dir,value:"#"+x.label}))];
     return all.filter(o=>(o.label+" "+o.value).toLowerCase().includes(q)).slice(0,30).map(o=>({...o,start,end:body.selectionStart}));
   },o=>{ body.setRangeText(o.value+" ",o.start,o.end,"end"); });
