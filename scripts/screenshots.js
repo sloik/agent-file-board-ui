@@ -15,6 +15,11 @@ async function main() {
     const project = h.layoutExample(tmp);
     h.fs.copyFileSync(h.path.join(h.VENDOR, ".agent-board", "GLOSSARY.md"),
       h.path.join(project, ".agent-board", "GLOSSARY.md"));
+    // A real CLI lease in the temporary fixture demonstrates active/ghost presence.
+    const session = h.boardctl(["session", "start", "implementation-agent-01", "--path", project,
+      "--session", "session-doc-demo", "--summary", "Implement message rendering; can help with schema reviews.",
+      "--runtime", "Documentation demo", "--at", AT.toISOString()]);
+    assert.equal(session.code, 0, session.err);
     const { ctx, page, log } = await h.openPage(browser, {
       tree: h.readTree(project), rootName: "canonical-example", clock: AT,
     });
@@ -32,6 +37,9 @@ async function main() {
     await capture("board-overview.png");
     await page.selectOption("#me", "implementation-agent-01");
     await capture("board-identity.png");
+    await page.click("#presenceOpen");
+    await capture("board-presence.png");
+    await page.click("#presenceClose");
     await page.selectOption("#me", "human-owner-01");
 
     await page.selectOption("#cStatus", "DECISION-NEEDED");

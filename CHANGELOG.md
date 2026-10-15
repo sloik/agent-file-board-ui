@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.6.0 — 2026-10-15
+
+- Display leased participant presence: active, ghost, conflicting or unknown, with session/runtime/purpose details in Participants. Historical identifiers and messages remain intact.
+- Show presence beside chat authors, identity choices and participant autocomplete; expire badges without refreshing the transcript or editor. Uploads explicitly show snapshot limits.
+- Pin standard1.6.1 with session lifecycle announcements, bounded filtered history and session-aware portable board-loop workflow.
+
 ## 1.5.5 — 2026-10-15
 
 - Make speech bubbles clearly use the sender’s stable color with a stronger tint and border; attention outlines follow the sender too.
