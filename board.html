@@ -100,6 +100,8 @@ body.resizing{cursor:col-resize;user-select:none}
 .feed{flex:1;min-height:80px;overflow:auto;padding:10px 22px 24px}
 .inner{max-width:var(--feedw);margin:0 auto}
 .feed .inner{display:flex;flex-direction:column}
+.history-nav{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 0 12px;color:var(--muted);font-size:12px}
+.history-nav span{flex:1;text-align:center}
 .day{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-weight:600;margin:20px 0 10px}
 .day::before,.day::after{content:"";flex:1;height:1px;background:var(--line)}
 .msg{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:10px;max-width:var(--bubble);align-self:flex-start;background:color-mix(in srgb,var(--c) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--c) 22%,var(--line))}
@@ -390,7 +392,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.5.0";
+const VIEWER_VERSION = "1.5.1";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -407,7 +409,11 @@ const DEF = {lang:"en",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showRece
   sideW:270,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
   me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null};
 const $ = s => document.querySelector(s);
-const stats = {autoRefreshes:0,builds:0};
+const stats = {autoRefreshes:0,builds:0,messageReads:0};
+const MESSAGE_PAGE_SIZE = 100;
+let messageFiles = new Map();
+let readGeneration = 0;
+let historyPage = {key:"",end:null,last:null};
 
 let S = {...DEF};
 let B = null;              // loaded board model, or null
@@ -454,6 +460,7 @@ const STRINGS = {
   feed_empty_p:"Choose a project folder containing .agent-board/ (or the .agent-board folder itself).",
   feed_empty_hint:"Chrome and Edge: read and write. Safari and Firefox: read-only; \"Post\" downloads the file to place manually in the room folder.",
   no_messages_h:"No messages", no_messages_p:"Change the filter or the search.",
+  history_label:"Message history", history_older:"Older 100", history_newer:"Newer 100", history_latest:"Latest", history_range:"Showing {start}–{end} of {total}",
   n_messages:"{n} messages", last_status:"last status: {s}", results_for:"results for \"{q}\"",
   sg_threads:"Threads", sg_rooms:"Rooms", sg_direct:"Direct conversations", sg_messages:"Messages",
   sg_text:"Search \"{q}\" in text",
@@ -519,6 +526,7 @@ const STRINGS = {
   feed_empty_p:"Wskaż folder projektu zawierający .agent-board/ (albo sam folder .agent-board).",
   feed_empty_hint:"Chrome i Edge: czytanie i pisanie. Safari i Firefox: tylko czytanie - „Wyślij” pobierze plik do ręcznego wrzucenia do folderu pokoju.",
   no_messages_h:"Brak wiadomości", no_messages_p:"Zmień filtr albo wyszukiwanie.",
+  history_label:"Historia wiadomości", history_older:"Starsze 100", history_newer:"Nowsze 100", history_latest:"Najnowsze", history_range:"Wyświetlono {start}–{end} z {total}",
   n_messages:"{n} wiadomości", last_status:"ostatni status: {s}", results_for:"wyniki dla „{q}”",
   sg_threads:"Wątki", sg_rooms:"Pokoje", sg_direct:"Rozmowy bezpośrednie", sg_messages:"Wiadomości",
   sg_text:"Szukaj „{q}” w treści",
@@ -641,7 +649,7 @@ function buildModel(files, dirs, meta){
   for(const f of src){
     const [top, dir, file] = f.path.split("/");
     const scope = (!legacy && top===directDir) ? "direct" : "room";
-    const {h, body, duplicates} = parseHeaders(f.text);
+    const {h, body, duplicates} = f.parsed || parseHeaders(f.text);
     let time = timeOf(h, file, legacy), fixed = null, fixReason = "";
     if(corr[file]){ fixed = time; time = corr[file].time; fixReason = corr[file].reason; }
     let author, authorName;
@@ -681,10 +689,11 @@ function buildModel(files, dirs, meta){
     if(p.length===2 && p[0]===layout.roomsDir && !p[1].startsWith(".")) roomSet.add(p[1]);
     if(!legacy && p.length===2 && p[0]===directDir) directSet.add(p[1]);
   }
+  const messageIndex = new Map(msgs.map(m=>[m.dkey+"|"+m.file,m]));
   for(const m of msgs){
     try{
       if(m.duplicates.length) throw Error("Duplicate headers");
-      const source=msgs.find(x=>x.dkey===m.dkey && x.file===m.replyTo);
+      const source=messageIndex.get(m.dkey+"|"+m.replyTo);
       if(source && source.duplicates.length) throw Error("Duplicate source headers");
       Object.assign(m,messageMetadata(m.h,source && source.h));
     }catch(e){ m.metadataError=true; }
@@ -692,7 +701,7 @@ function buildModel(files, dirs, meta){
   const ver = (String(byPath["CONVENTION.md"]||"").match(/^Version:\s*(\S+)/m)||[])[1] || null;
   const langs = cfg.language && Array.isArray(cfg.language.allowed) && cfg.language.allowed.length ? cfg.language.allowed : ["en"];
   return {
-    layout, cfg, people, msgs, rooms:[...roomSet].sort(), directs:[...directSet].sort(), corrections:corr,
+    layout, cfg, people, msgs, messageIndex, rooms:[...roomSet].sort(), directs:[...directSet].sort(), corrections:corr,
     glossary: byPath["GLOSSARY.md"] || "",
     boardVersion: ver, statuses: legacy ? DEFAULT_STATUSES : (Array.isArray(cfg.statuses)&&cfg.statuses.length? cfg.statuses : DEFAULT_STATUSES),   // legacy: shown natively, written as legacy codes
     languages: langs, defaultLanguage: (cfg.language && cfg.language.default) || langs[0] || "en",
@@ -840,17 +849,17 @@ async function entriesOf(dir){ const out=[]; try{ for await(const [n,h] of dir.e
 async function subDir(dir, name){ try{ return await dir.getDirectoryHandle(name); }catch(e){ return null; } }
 async function readFromHandle(preserve = true){
   if(!dirHandle) return false;
-  let base = await subDir(dirHandle, ".agent-board");
+  const root=dirHandle, generation=++readGeneration, previousFiles=messageFiles;
+  let base = await subDir(root, ".agent-board");
   if(!base){
-    const hit = (await subDir(dirHandle,"rooms")) || (await subDir(dirHandle,"direct")) || (await subDir(dirHandle,"pokoje")) || await readText(dirHandle,"participants.json");
+    const hit = (await subDir(root,"rooms")) || (await subDir(root,"direct")) || (await subDir(root,"pokoje")) || await readText(root,"participants.json");
     if(!hit){ toast(t("e_no_board")); return false; }
-    base = dirHandle;
+    base = root;
   }
-  baseHandle = base;
-  const files = [], dirs = [];
+  const files = [], dirs = [], nextFiles = new Map();
   for(const n of ["config.json","participants.json","CONVENTION.md","GLOSSARY.md","time-corrections.txt","korekty-czasu.txt"]){
     let txt = await readText(base, n);
-    if(txt===null && base!==dirHandle) txt = await readText(dirHandle, n);
+    if(txt===null && base!==root) txt = await readText(root, n);
     if(txt!==null) files.push({path:n, text:txt});
   }
   const cfg = safeJson(files.find(f=>f.path==="config.json") && files.find(f=>f.path==="config.json").text) || {};
@@ -862,14 +871,25 @@ async function readFromHandle(preserve = true){
       if(dh.kind!=="directory" || dn.startsWith(".")) continue;
       dirs.push(top+"/"+dn);
       for(const [fn,fh] of await entriesOf(dh)){
-        if(fh.kind==="file" && fn.endsWith(".txt")){ const file=await fh.getFile(); files.push({path:top+"/"+dn+"/"+fn, text:await file.text(),lastModified:file.lastModified}); }
+        if(fh.kind==="file" && fn.endsWith(".txt")){
+          const file=await fh.getFile(), path=top+"/"+dn+"/"+fn, old=previousFiles.get(path);
+          const reliable=Number.isFinite(file.size) && Number.isFinite(file.lastModified);
+          let row=old;
+          if(!reliable || !old || old.size!==file.size || old.lastModified!==file.lastModified){
+            row={path,parsed:parseHeaders(await file.text()),size:file.size,lastModified:file.lastModified}; stats.messageReads++;
+          }
+          files.push(row); nextFiles.set(path,row);
+        }
       }
     }
   }
-  loadBoard(buildModel(files, dirs, {name:dirHandle.name}), preserve && !!B);
+  if(generation!==readGeneration || dirHandle!==root) return false;
+  baseHandle=base; messageFiles=nextFiles;
+  loadBoard(buildModel(files, dirs, {name:root.name}), preserve && !!B);
   return true;
 }
 async function readFromInput(list){
+  const generation=++readGeneration;
   const segs = f => (f.webkitRelativePath||f.name).split("/");
   const hasAB = list.some(f=>segs(f)[1]===".agent-board");
   const strip = hasAB ? 2 : 1;
@@ -884,7 +904,8 @@ async function readFromInput(list){
     }
     const q = rel.split("/"); if(q.length>=3){ dirs.add(q[0]); dirs.add(q[0]+"/"+q[1]); }
   }
-  dirHandle = null; baseHandle = null; boardStorageId="";
+  if(generation!==readGeneration) return;
+  dirHandle = null; baseHandle = null; boardStorageId=""; messageFiles.clear(); historyPage={key:"",end:null,last:null};
   loadBoard(buildModel(files, [...dirs], {name}));
 }
 function loadBoard(model, background = false){
@@ -916,34 +937,56 @@ function visibleMsg(m){ return $("#showReceipts").checked || !m.receipt; }
 function msgMatches(m, ql){ return (m.body+" "+m.file+" "+Object.values(m.h).join(" ")).toLowerCase().includes(ql); }
 
 function threadsOf(){
+  if(B.threadIndex) return B.threadIndex;
   const th = {};
   for(const m of B.msgs){
     if(!m.tid) continue;
     const x = th[m.tkey] || (th[m.tkey] = {key:m.tkey, tid:m.tid, label:m.label, dkey:m.dkey, scope:m.scope, dir:m.dir, n:0, last:"", status:"", who:new Set()});
     if(!m.receipt){ x.n++; x.last = m.time; x.lastOrder=m.postedAt ?? m.modifiedAt; x.status = m.status; x.who.add(m.author); x.label = m.label; }
   }
-  return th;
+  B.threadIndex=th; return th;
 }
 function badge(n){ return n ? `<span class="unread-badge">${esc(t("unread_count",{n}))}</span>` : ""; }
 function unread(m){ return !m.receipt && m.author!==currentUser() && !seen[m.path]; }
-function markViewRead(){
-  for(const m of B.msgs) if((!sel.scope || m.dkey===sel.scope+":"+sel.dir) && (!sel.thread || m.tkey===sel.thread) && visibleMsg(m) && (!$("#q").value.trim() || msgMatches(m,$("#q").value.trim().toLowerCase()))) seen[m.path]=true;
+function matchingMessages(){
+  const q=$("#q").value.trim().toLowerCase(), showR=$("#showReceipts").checked || !!q;
+  return B.msgs.filter(m=>(!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && (!q||msgMatches(m,q)));
+}
+function messagePage(view, background=false){
+  const key=JSON.stringify([seenKey,sel,$("#q").value.trim().toLowerCase(),$("#showReceipts").checked]);
+  if(historyPage.key!==key) historyPage={key,end:null,last:null};
+  const feed=$("#feed");
+  if(background && !historyPage.end && historyPage.last && feed.scrollHeight-feed.scrollTop-feed.clientHeight>=80 && view.at(-1)?.path!==historyPage.last) historyPage.end=historyPage.last;
+  let end=historyPage.end ? view.findIndex(m=>m.path===historyPage.end)+1 : view.length;
+  if(end<=0){ historyPage.end=null; end=view.length; }
+  const start=Math.max(0,end-MESSAGE_PAGE_SIZE);
+  historyPage.last=view[end-1]?.path || null;
+  return {start,end,rows:view.slice(start,end)};
+}
+function markViewRead(rows){
+  for(const m of rows) if(visibleMsg(m)) seen[m.path]=true;
   lsSet(seenKey,JSON.stringify(seen));
 }
 function build({background = false, preserveComposer = false} = {}){
   if(!B) return;
   const feed=$("#feed"), side=$("#side"), sideTop=side.scrollTop;
   const following = feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;
-  if(sel.scope && document.visibilityState==="visible" && (!background || following)) markViewRead();
+  const page=messagePage(matchingMessages(),background);
+  if(sel.scope && document.visibilityState==="visible" && (!background || following)) markViewRead(page.rows);
   const q = $("#q").value.trim().toLowerCase();
-  const th = threadsOf();
+  const th = threadsOf(), unreadTopics=new Map(), unreadDirs=new Map(), dirCounts=new Map(), matchedTopics=new Set();
+  for(const m of B.msgs){
+    if(visibleMsg(m)) dirCounts.set(m.dkey,(dirCounts.get(m.dkey)||0)+1);
+    if(unread(m)){ unreadTopics.set(m.tkey,(unreadTopics.get(m.tkey)||0)+1); unreadDirs.set(m.dkey,(unreadDirs.get(m.dkey)||0)+1); }
+    if(q && msgMatches(m,q)) matchedTopics.add(m.tkey);
+  }
   const match = key => { if(!q) return true; const x=th[key];
-    return (x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q) || B.msgs.some(m=>m.tkey===key && msgMatches(m,q)); };
+    return (x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q) || matchedTopics.has(key); };
   const order = Object.keys(th).filter(match).sort((a,b)=> (S.threadOrder==="newest" ? (th[b].last.localeCompare(th[a].last) || (th[b].lastOrder||0)-(th[a].lastOrder||0)) : 0) || th[a].tid.localeCompare(th[b].tid) || a.localeCompare(b));
   const card = key => { const x = th[key], ht = humanThread(x.label);
     const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
-    return `<button class="tcard ${B.msgs.some(m=>m.tkey===key && unread(m))?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
-      <div class="row1"><span class="sdot s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(B.msgs.filter(m=>m.tkey===key && unread(m)).length)}</div>
+    return `<button class="tcard ${unreadTopics.get(key)?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
+      <div class="row1"><span class="sdot s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(unreadTopics.get(key)||0)}</div>
       <div class="ttl">${esc(ht.title||t("no_title"))}</div>
       <div class="row2"><span class="faces">${faces}</span><span style="margin-left:6px">${esc(x.last.slice(5,16))} \u00b7 ${esc(x.status.toLowerCase())}</span><span class="n">${x.n}</span></div></button>`; };
   const folder = (scope, dir) => {
@@ -952,11 +995,11 @@ function build({background = false, preserveComposer = false} = {}){
     const open = ts.filter(k=>th[k].status!=="CLOSED"), closed = ts.filter(k=>th[k].status==="CLOSED");
     if(q && !ts.length && !dir.toLowerCase().includes(q)) return "";
     const col = !q && !!S.collapsed[dkey], showC = !!S.closedGroups[dkey] || !!q;
-    const n = B.msgs.filter(m=>m.dkey===dkey && visibleMsg(m)).length;
+    const n = dirCounts.get(dkey)||0;
     const active = sel.scope===scope && sel.dir===dir && !sel.thread;
     return `<div class="folder"><div class="frow ${active?"active":""}"><button class="chev" data-fold="${esc(dkey)}" data-i18n-title="fold_title" title="${esc(t("fold_title"))}" aria-expanded="${!col}">${col?"\u25b8":"\u25be"}</button>
-      <button class="fname" data-nav="${scope}" data-dir="${esc(dir)}"><span>${col?"\u{1F4C1}":"\u{1F4C2}"}</span><span class="t">${esc(dirTitle(scope,dir))}</span>${badge(B.msgs.filter(m=>m.dkey===dkey && unread(m)).length)}<span class="cnt">${n}</span></button></div>
-      ${col?"":`<div class="children">${open.map(card).join("")}${!open.length&&!closed.length?`<div class="empty-folder">${esc(t("empty_room"))}</div>`:""}${closed.length?`<button class="group" data-closed="${esc(dkey)}">${showC?"\u25be":"\u25b8"} ${esc(t("closed_group",{n:closed.length}))}${badge(B.msgs.filter(m=>closed.includes(m.tkey) && unread(m)).length)}</button>${showC?closed.map(card).join(""):""}`:""}</div>`}</div>`;
+      <button class="fname" data-nav="${scope}" data-dir="${esc(dir)}"><span>${col?"\u{1F4C1}":"\u{1F4C2}"}</span><span class="t">${esc(dirTitle(scope,dir))}</span>${badge(unreadDirs.get(dkey)||0)}<span class="cnt">${n}</span></button></div>
+      ${col?"":`<div class="children">${open.map(card).join("")}${!open.length&&!closed.length?`<div class="empty-folder">${esc(t("empty_room"))}</div>`:""}${closed.length?`<button class="group" data-closed="${esc(dkey)}">${showC?"\u25be":"\u25b8"} ${esc(t("closed_group",{n:closed.length}))}${badge(closed.reduce((n,key)=>n+(unreadTopics.get(key)||0),0))}</button>${showC?closed.map(card).join(""):""}`:""}</div>`}</div>`;
   };
   const roomsHtml = B.rooms.map(r=>folder("room",r)).join("");
   const directHtml = B.directs.map(d=>folder("direct",d)).join("");
@@ -1110,7 +1153,7 @@ function render(background = false){
   if(!B) return;
   const q = $("#q").value.trim(), ql = q.toLowerCase(), showR = $("#showReceipts").checked || !!q, me = currentUser();
   const meP = me ? B.people[me] : null;
-  const view = B.msgs.filter(m=>(!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && (!q||msgMatches(m,ql)));
+  const view = matchingMessages(), page=messagePage(view,background);
   let titleText = t("all_messages");
   if(sel.thread){ const topic = threadsOf()[sel.thread]; const ht = humanThread(topic?topic.label:""); titleText = ht.id+" \u00b7 "+ht.title; }
   else if(sel.scope) titleText = (sel.scope==="direct"?"\u2709 ":"# ")+dirTitle(sel.scope, sel.dir);
@@ -1119,8 +1162,8 @@ function render(background = false){
   const lastSt = sel.thread ? ((view.filter(m=>!m.receipt).pop()||{}).status||"") : "";
   $("#subtitle").textContent = t("n_messages",{n:view.length}) + (lastSt?" \u00b7 "+t("last_status",{s:lastSt}):"") + (q?" \u00b7 "+t("results_for",{q}):"");
   if(!view.length){ $("#feed").innerHTML = `<div class="empty"><h2>${esc(t("no_messages_h"))}</h2><p>${esc(t("no_messages_p"))}</p></div>`; return; }
-  let html = "", lastDay = "";
-  for(const m of view){
+  let html = view.length>MESSAGE_PAGE_SIZE ? `<nav class="history-nav" aria-label="${esc(t("history_label"))}"><button class="btn" data-history="older" ${page.start===0?"disabled":""}>${esc(t("history_older"))}</button><span>${esc(t("history_range",{start:page.start+1,end:page.end,total:view.length}))}</span><button class="btn" data-history="newer" ${page.end===view.length?"disabled":""}>${esc(t("history_newer"))}</button><button class="btn" data-history="latest" ${page.end===view.length?"disabled":""}>${esc(t("history_latest"))}</button></nav>` : "", lastDay = "";
+  for(const m of page.rows){
     const day = m.time.slice(0,10);
     if(day!==lastDay){ html += `<div class="day">${esc(dayLabel(day))}</div>`; lastDay = day; }
     const p = personOf(m.author, m.authorName), c = colorOf(m.author);
@@ -1134,7 +1177,7 @@ function render(background = false){
     const toList = m.to.split(",").map(s=>s.trim());
     const toMe = !!me && (toList.includes(me) || (meP && toList.includes(meP.name)) || new RegExp("@"+me.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body) || (meP && new RegExp("@"+meP.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body)));
     const long = m.body.length>700 && !$("#expandAll").checked && !q;
-    const reply = m.replyTo && m.replyTo!=="-" ? B.msgs.find(x=>x.file===m.replyTo && x.dkey===m.dkey) || B.msgs.find(x=>x.file===m.replyTo) : null;
+    const reply = m.replyTo && m.replyTo!=="-" ? B.messageIndex.get(m.dkey+"|"+m.replyTo) || B.msgs.find(x=>x.file===m.replyTo) : null;
     const toTitle = m.to==="all" ? t("c_all") : m.to;
     html += `<article class="msg ${toMe?"to-me":""} ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
       <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
@@ -1492,7 +1535,7 @@ async function boardIdentity(h){
   }catch(e){ return h.name; }
 }
 async function useDir(h){
-  dirHandle = h;
+  dirHandle = h; messageFiles.clear(); historyPage={key:"",end:null,last:null};
   $("#banner").classList.remove("show");
   try{ await idbSet("lastDir", h); }catch(e){ /* storage failures degrade silently */ }
   boardStorageId=await boardIdentity(h);
@@ -1641,6 +1684,15 @@ function wire(){
   });
   $("#feed").addEventListener("submit",e=>{ const form=e.target.closest(".choice-form"); if(form){ e.preventDefault(); sendChoice(form); } });
   $("#feed").addEventListener("click", e=>{
+    const history=e.target.closest("[data-history]");
+    if(history){
+      const view=matchingMessages(), page=messagePage(view);
+      if(history.dataset.history==="latest") historyPage.end=null;
+      else{ const end=history.dataset.history==="older"?page.start:Math.min(view.length,page.end+MESSAGE_PAGE_SIZE); historyPage.end=end===view.length?null:view[Math.max(0,end-1)].path; }
+      build({preserveComposer:true});
+      $("#feed").scrollTop=history.dataset.history==="newer"?0:$("#feed").scrollHeight;
+      return;
+    }
     const more = e.target.closest("[data-more]"), rep = e.target.closest("[data-reply]"), cp = e.target.closest("[data-copy]"),
           go = e.target.closest("[data-goto]"), jump = e.target.closest("[data-jump]");
     if(more){ const body = more.closest(".msg").querySelector(".body"); const clamped = body.classList.toggle("clamp");
@@ -1649,7 +1701,11 @@ function wire(){
     else if(cp){ try{ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.copy); }catch(err){} toast(t("copied")); }
     else if(go){ const x = threadsOf()[go.dataset.goto]; if(x){ sel = {scope:x.scope,dir:x.dir,thread:x.key}; rememberView(); build(); } }
     else if(jump){
-      const el = document.getElementById("m-"+jump.dataset.jump);
+      let el = document.getElementById("m-"+jump.dataset.jump);
+      if(!el){
+        const view=matchingMessages(), at=view.findIndex(m=>m.dkey+"|"+m.file===jump.dataset.jump);
+        if(at>=0){ const end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2)); historyPage.end=end===view.length?null:view[end-1].path; build({preserveComposer:true}); el=document.getElementById("m-"+jump.dataset.jump); }
+      }
       if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
       else toast(t("outside_filter"));
     }
@@ -1658,7 +1714,7 @@ function wire(){
   $("#feed").addEventListener("scroll",()=>{
     if(readFrame || !B || !sel.scope) return;
     readFrame=requestAnimationFrame(()=>{ readFrame=0; const feed=$("#feed");
-      if(document.visibilityState==="visible" && feed.scrollHeight-feed.scrollTop-feed.clientHeight<80 && B.msgs.some(m=>unread(m) && (!sel.thread || m.tkey===sel.thread) && m.dkey===sel.scope+":"+sel.dir)) build({background:true,preserveComposer:true});
+      if(document.visibilityState==="visible" && feed.scrollHeight-feed.scrollTop-feed.clientHeight<80 && messagePage(matchingMessages()).rows.some(unread)) build({background:true,preserveComposer:true});
     });
   });
   for(const el of document.querySelectorAll("#composer select, #me")) el.addEventListener("blur",()=>{

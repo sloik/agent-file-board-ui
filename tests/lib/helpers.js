@@ -83,7 +83,7 @@ function fakeFsScript(tree, rootName) {
   const nf = n => new DOMException("not found: " + n, "NotFoundError");
   const nodeAt = p => p.reduce((n, k) => n && n.children && n.children[k], root);
   class FakeFile { constructor(path) { this.kind = "file"; this.name = path[path.length - 1]; this.__path = path; }
-    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); return { name: this.name, lastModified: n.lastModified, text: async () => n.text }; }
+    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); return { name: this.name, size: new TextEncoder().encode(n.text).length, lastModified: n.lastModified, text: async () => n.text }; }
     async createWritable() { const p = this.__path; let buf = ""; return { write: async t => { buf += t; }, close: async () => { nodeAt(p).text = buf; save(); } }; } }
   class FakeDir { constructor(path) { this.kind = "directory"; this.name = path.length ? path[path.length - 1] : ${JSON.stringify(rootName)}; this.__path = path; }
     async getDirectoryHandle(name, o) { const n = nodeAt(this.__path); let c = n.children[name];
@@ -109,9 +109,10 @@ function fakeFsScript(tree, rootName) {
     dump: () => flat(root, "", []),
     exists: p => !!nodeAt(p.split("/")),
     read: p => { const n = nodeAt(p.split("/")); return n ? n.text : null; },
-    addFile: (p, text) => { const parts = p.split("/"); let n = root;
+    addFile: (p, text, lastModified) => { const parts = p.split("/"); let n = root;
       for (const k of parts.slice(0, -1)) n = n.children[k] || (n.children[k] = { kind: "directory", children: {} });
-      n.children[parts[parts.length - 1]] = { kind: "file", text }; save(); },
+      n.children[parts[parts.length - 1]] = { kind: "file", text, lastModified }; save(); },
+    removeFile: p => { const parts = p.split("/"), parent = nodeAt(parts.slice(0, -1)); delete parent.children[parts.at(-1)]; save(); },
     setPermission: v => localStorage.setItem(PERM, v) };
 })();`;
 }

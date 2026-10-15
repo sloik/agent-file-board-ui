@@ -1,5 +1,13 @@
 # Release notes
 
+## 1.5.1 — 2026-10-15
+
+- Render the newest 100 matching messages with Older/Newer/Latest controls, including full-board search and read-only uploads.
+- Preserve older pages, drafts and scroll position on incoming messages; reply links can open a page containing an older target. Hidden history remains unread.
+- Reuse parsed message contents on native refresh when file size and modification time are unchanged; read new/changed files and remove deleted ones from the index.
+- Index reply targets and reuse topic summaries to avoid repeated whole-board scans per message/topic.
+- Opening/reopening still reads all message contents once into an in-memory index; initial scan time and memory use grow with board size.
+
 ## 1.5.0 — 2026-10-15
 
 - Room, topic and participant completion, including `@`/`#` completion while writing.

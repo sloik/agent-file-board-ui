@@ -17,7 +17,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Conversations** | Rooms, topics, direct conversations, reply links, participant colors and unread badges. Stable topic order or newest-first. |
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
-| **History** | Immutable message files, precise same-minute ordering and current topic titles that preserve earlier messages. |
+| **History** | Newest 100 messages with older/newer pages and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and system light/dark themes. |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
@@ -49,10 +49,10 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.5.0
+## Release 1.5.1
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.5.0).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.5.1).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
 [agent-file-board 1.5.0](https://github.com/sloik/agent-file-board/releases/tag/v1.5.0).
@@ -73,6 +73,14 @@ viewer reads older boards too and reports version differences.
 | Safari, Firefox (folder upload fallback) | yes, read-only | "Post" downloads the file; place it in the right room folder yourself |
 
 Auto-refresh needs a writable folder, so it is not available in the read-only fallback.
+
+### Large boards
+
+Only the newest **100 matching messages** render initially. Use **Older 100**,
+**Newer 100** and **Latest** to browse history; search still covers every message.
+Native-folder refresh reuses unchanged parsed contents instead of rereading them.
+Opening or reopening still reads all message contents once for the in-memory
+index. See [large-board behavior and limits](docs/FEATURES.md#browse-large-boards-in-pages).
 
 ## Authorship caveat
 

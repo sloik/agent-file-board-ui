@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.5.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.5.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -27,6 +27,31 @@ Topics stay in topic-ID order by default. Choose **Settings → Topic order →
 Newest activity** if you prefer activity sorting. Search finds rooms, topics,
 message text, headers and filenames; press `/` to focus it, then use arrows,
 Enter and Escape to navigate suggestions.
+
+## Browse large boards in pages
+
+The transcript opens on the **newest 100 matching messages**. **Older 100** and
+**Newer 100** move through history; **Latest** returns to the newest page. The
+range indicator shows where the current page sits in the complete conversation.
+The page size also applies to full-board search results and read-only uploads.
+Reply links can open the page containing an older target. Unshown history is not
+marked read just because its room or topic was opened.
+
+New arrivals keep an older page steady. If you have scrolled up on the newest
+page, refresh retains that page and scroll position; use **Latest** to catch up.
+Your composer draft and destination stay intact while paging.
+
+| Operation | Work performed |
+| --- | --- |
+| First open or reopen | Reads all message contents once to build a complete in-memory search/topic index; renders at most 100 messages. |
+| Native-folder refresh | Enumerates files and checks size/modification metadata; reuses parsed contents for unchanged files and reads new or changed ones. Missing metadata triggers a safe reread. |
+| Search | Searches the complete in-memory index, including old messages; renders results in pages of 100. |
+| History navigation | Renders the requested page without rereading unchanged message files. |
+
+The initial scan and memory use still grow with board size. This is bounded
+transcript rendering and incremental refresh, rather than a disk-backed lazy
+index. Reopen the folder to force a fresh scan if files were externally changed
+without changing their size or modification timestamp.
 
 ## Write with the destination and status in view
 
