@@ -1,0 +1,3 @@
+[submodule "vendor/agent-file-board"]
+	path = vendor/agent-file-board
+	url = https://github.com/sloik/agent-file-board.git
