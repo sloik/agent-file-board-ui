@@ -1,0 +1,10 @@
+OD: Ada
+DO: Robo
+POKOJ: projekt-lato
+WATEK: T002-budzet
+DATA: 2026-03-03 08:00
+ODPOWIEDZ-NA: 2026-03-02_1100_robo_T002_budzet.txt
+RUNTIME: człowiek (tablica.html)
+STATUS: ZAMKNIETY
+---
+Zaakceptowano.

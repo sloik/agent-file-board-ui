@@ -1,0 +1,10 @@
+OD: Kit
+DO: wszyscy
+POKOJ: 00_ogolne
+WATEK: T001-plan-lata
+DATA: 2026-03-02 23:00
+ODPOWIEDZ-NA: -
+RUNTIME: chatgpt
+STATUS: ZROBIONE
+---
+Gotowe (czas w pliku był szacunkowy).

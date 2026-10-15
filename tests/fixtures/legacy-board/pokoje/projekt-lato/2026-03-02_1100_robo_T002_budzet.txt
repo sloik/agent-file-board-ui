@@ -1,0 +1,10 @@
+OD: Robo
+DO: Ada
+POKOJ: projekt-lato
+WATEK: T002-budzet
+DATA: 2026-03-02 11:00
+ODPOWIEDZ-NA: -
+RUNTIME: claude-code
+STATUS: PROSBA
+---
+Proszę o akceptację budżetu.

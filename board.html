@@ -1,0 +1,1261 @@
+<!doctype html>
+<!--
+  agent-file-board-ui: single-file viewer and composer for an Agent File Board.
+  Implements SPEC-002 of https://github.com/sloik/agent-file-board
+  No network access, no dependencies: everything is inline.
+  MIT licence. The standard (CONVENTION.md, boardctl) stays the source of truth.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent File Board</title>
+<style>
+html{--lh:1.6;--fs:14.5px;--bubble:88%;--feedw:1100px}
+:root{
+  --bg:#f4f5f7;--panel:#ffffff;--panel2:#fafbfc;--ink:#1c2230;--muted:#6b7280;--line:#e5e7eb;--hover:#f0f2f5;
+  --accent:#3b6fe0;--mention:#fff1b8;--mention-ink:#5c4400;--mark:#cdeeff;--warn-bg:#fff4e5;--warn-ink:#8a4b00;
+  --p0:#3b6fe0;--p1:#8b45d6;--p2:#d6336c;--p3:#18995a;--p4:#c2680a;--p5:#0e8aa6;--p6:#a3351d;--p7:#5b6b2a;--p-unknown:#7a7f87;
+  --radius:10px;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111418;--panel:#181c22;--panel2:#1d2229;--ink:#e7eaf0;--muted:#98a1ad;--line:#2a3039;--hover:#222831;
+  --mention:#4a3d0c;--mention-ink:#ffe39a;--mark:#123b52;--shadow:none;--warn-bg:#3a2a10;--warn-ink:#ffcf86;
+  --p0:#7aa2ff;--p1:#c39bff;--p2:#ff86b0;--p3:#5fd39a;--p4:#ffb066;--p5:#5fd0e8;--p6:#ff8f78;--p7:#c3d36b}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font:14.5px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.top{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:700;font-size:15px;white-space:nowrap}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+.search{flex:1;min-width:180px;max-width:520px;position:relative}
+.search input{width:100%;padding:8px 12px 8px 32px;border:1px solid var(--line);border-radius:999px;background:var(--panel2)}
+.search::before{content:"\2315";position:absolute;left:12px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:16px}
+.spacer{flex:1}
+.pill{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:6px 12px;font-size:13px;white-space:nowrap}
+.pill select{border:none;background:transparent;font-weight:600;padding:0 2px}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;font-size:13px}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.app{flex:1;display:grid;grid-template-columns:var(--sidew,270px) 6px 1fr;min-height:0}
+.resizer{cursor:col-resize;background:transparent;position:relative}
+.resizer::after{content:"";position:absolute;top:0;bottom:0;left:2px;width:2px;background:var(--line);transition:background .15s}
+.resizer:hover::after,.resizer.drag::after{background:var(--accent)}
+body.resizing{cursor:col-resize;user-select:none}
+.pbar{height:3px;background:transparent;position:relative;overflow:hidden}
+.pbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 50%,transparent),var(--accent))}
+.pbar.off i{display:none}
+.rstat{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.verbar{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.days{display:flex;gap:4px;flex-wrap:wrap}
+.days label{display:flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--ink);font-size:12px}
+.row2c{display:flex;gap:6px;align-items:center;flex-wrap:wrap;color:var(--ink)}
+.row2c input[type=number]{width:64px;border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:3px 6px}
+.row2c input[type=time]{border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:2px 4px}
+.settings h4{margin:14px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.side{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:12px 10px}
+.side h3{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 8px 6px}
+.sugg{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px;z-index:20;display:none;max-height:60vh;overflow:auto}
+.sugg.show{display:block}
+.sugg h4{margin:6px 8px 2px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sugg button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;border:0;background:none;border-radius:8px;padding:7px 9px;color:inherit}
+.sugg button:hover,.sugg button.sel{background:var(--hover)}
+.sugg .k{font-size:11px;font-weight:700;color:var(--muted);min-width:42px}
+.sugg .c{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.sugg .all{color:var(--accent);font-weight:600}
+.tree-root{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;color:inherit;border-radius:8px;padding:7px 8px;font-weight:600;text-align:left}
+.tree-root:hover{background:var(--hover)}
+.tree-root.active{background:var(--panel2);box-shadow:inset 3px 0 0 var(--accent)}
+.tree-root .cnt{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:500}
+.folder{margin:2px 0}
+.frow{display:flex;align-items:center;gap:2px;border-radius:8px}
+.frow:hover{background:var(--hover)}
+.frow.active{background:var(--panel2);box-shadow:inset 3px 0 0 var(--accent)}
+.chev{border:0;background:none;color:var(--muted);width:24px;height:30px;font-size:15px;line-height:1;padding:0;flex:none}
+.chev:hover{color:var(--ink)}
+.fname{flex:1;display:flex;align-items:center;gap:7px;border:0;background:none;color:inherit;text-align:left;padding:6px 6px 6px 0;font-weight:600;min-width:0}
+.fname .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fname .cnt{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:500}
+.children{margin-left:14px;padding-left:8px;border-left:1px solid var(--line)}
+.empty-folder{font-size:12px;color:var(--muted);padding:4px 8px 8px}
+.tcard{display:block;width:100%;text-align:left;border:1px solid transparent;background:none;border-radius:10px;padding:8px 10px;margin:2px 0;color:inherit;position:relative}
+.tcard:hover{background:var(--hover)}
+.tcard.active{background:var(--panel2);border-color:var(--line);box-shadow:inset 3px 0 0 var(--accent)}
+.tcard .row1{display:flex;align-items:center;gap:7px}
+.tcard .sdot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted)}
+.sdot.s-REQUEST,.sdot.s-QUESTION{background:#f59e0b}.sdot.s-DECISION-NEEDED{background:#e11d48}.sdot.s-DONE,.sdot.s-CLOSED{background:#16a34a}.sdot.s-REPLY,.sdot.s-INFO{background:#60a5fa}
+.tcard .tid{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.tcard.active .tid{color:var(--accent)}
+.tcard .ttl{font-weight:600;font-size:13.5px;line-height:1.3;margin:2px 0 4px 15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tcard .row2{display:flex;align-items:center;gap:6px;margin-left:15px;font-size:11.5px;color:var(--muted)}
+.faces{display:flex}.faces i{width:16px;height:16px;border-radius:50%;background:var(--c);color:#fff;font-style:normal;font-size:9px;font-weight:700;display:grid;place-items:center;margin-right:-4px;border:2px solid var(--panel)}
+.tcard .n{margin-left:auto;background:var(--hover);border-radius:999px;padding:0 7px;font-weight:600}
+.group{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;color:var(--muted);font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;margin:14px 0 4px;padding:0 8px}
+.feed-wrap{display:flex;flex-direction:column;min-height:0}
+.feed-head{display:flex;align-items:baseline;gap:10px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.feed-head h2{margin:0;font-size:16px}
+.feed-head .sub{color:var(--muted);font-size:12.5px}
+.feed{flex:1;overflow:auto;padding:10px 22px 24px}
+.inner{max-width:var(--feedw);margin:0 auto}
+.feed .inner{display:flex;flex-direction:column}
+.day{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-weight:600;margin:20px 0 10px}
+.day::before,.day::after{content:"";flex:1;height:1px;background:var(--line)}
+.msg{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:10px;max-width:var(--bubble);align-self:flex-start;background:color-mix(in srgb,var(--c) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--c) 22%,var(--line))}
+.msg:hover{background:color-mix(in srgb,var(--c) 11%,var(--panel))}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:color-mix(in srgb,var(--c) 22%,var(--panel));border:2px solid var(--c);position:relative}
+.avatar b{position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;border-radius:50%;background:var(--c);color:#fff;font-size:10px;display:grid;place-items:center;border:2px solid var(--panel)}
+.kind{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-radius:4px;padding:0 5px}
+.msg-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+.who{font-weight:700;color:var(--c)}
+.time{font-size:12px;color:var(--muted)}
+.time.fixed{color:#c2410c}
+.to{font-size:12px;color:var(--muted)}
+.chip{font-size:11px;border-radius:999px;padding:1px 8px;background:var(--hover);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.chip.status{font-weight:600}
+.chip.s-REQUEST,.chip.s-QUESTION{background:#fff4e5;color:#9a5b00;border-color:#ffd9a8}
+.chip.s-DECISION-NEEDED{background:#fde8ef;color:#b0174f;border-color:#f7c1d2}
+.chip.s-DONE,.chip.s-CLOSED{background:#e7f6ee;color:#11733f;border-color:#bfe7cf}
+@media (prefers-color-scheme:dark){.chip.s-REQUEST,.chip.s-QUESTION{background:#3a2a10;color:#ffcf86;border-color:#5a4318}.chip.s-DECISION-NEEDED{background:#3c1626;color:#ff9dbf;border-color:#5d2238}.chip.s-DONE,.chip.s-CLOSED{background:#123224;color:#8be0b2;border-color:#1f4d37}}
+.thread-link{cursor:pointer}
+.thread-link:hover{color:var(--accent);border-color:var(--accent)}
+.reply-ref{font-size:12px;color:var(--muted);margin-top:2px;cursor:pointer}
+.reply-ref:hover{color:var(--accent)}
+.body{margin-top:4px;overflow-wrap:anywhere;font-size:var(--fs);line-height:var(--lh)}
+.msg.mine{align-self:flex-end;grid-template-columns:1fr 40px;border-top-right-radius:4px}
+.msg.mine>.avatar{order:2}
+.msg.mine>div:not(.avatar){order:1}
+.msg.mine .msg-head{justify-content:flex-end}
+.msg.mine .tools{justify-content:flex-end}
+.msg:not(.mine){border-top-left-radius:4px}
+.receipt.mine{justify-content:flex-end;padding:2px 66px 8px 12px}
+.settings{position:fixed;top:60px;right:16px;width:340px;max-height:calc(100vh - 80px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);padding:14px 16px;z-index:30;display:none}
+.settings.show{display:block}
+.settings h3{margin:0 0 10px;font-size:14px}
+.set{display:flex;flex-direction:column;gap:4px;margin:10px 0;font-size:12.5px;color:var(--muted)}
+.set .val{float:right;color:var(--ink);font-weight:600}
+.set input[type=range]{width:100%}
+.set label.ck{display:flex;gap:8px;align-items:center;color:var(--ink)}
+.set select{border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:4px 6px}
+.banner{display:none;align-items:center;gap:10px;padding:8px 18px;background:color-mix(in srgb,var(--accent) 12%,var(--panel));border-bottom:1px solid var(--line);font-size:13px}
+.banner.show{display:flex}
+.banner.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.body p{margin:0 0 8px}
+.body ul{margin:0 0 8px;padding-left:20px}
+.body li{margin:1px 0}
+.body .h{font-weight:700;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.body code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--hover);padding:1px 4px;border-radius:4px}
+.body.clamp{max-height:9.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 65%,transparent);mask-image:linear-gradient(#000 65%,transparent)}
+.more{border:0;background:none;color:var(--accent);padding:2px 0;font-size:12.5px;font-weight:600}
+.mention{background:var(--mention);color:var(--mention-ink);border-radius:4px;padding:0 3px;font-weight:600}
+.msg.to-me{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+mark{background:var(--mark);color:inherit;border-radius:3px}
+.tools{display:flex;gap:12px;margin-top:4px;opacity:0;transition:opacity .15s}
+.msg:hover .tools,.msg:focus-within .tools{opacity:1}
+.tools button{border:0;background:none;color:var(--muted);font-size:12px;padding:0}
+.tools button:hover{color:var(--accent)}
+.receipt{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:2px 12px 8px 66px}
+.receipt .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.empty{max-width:520px;margin:80px auto;text-align:center;color:var(--muted)}
+.empty h2{color:var(--ink);font-size:18px}
+.composer{border-top:1px solid var(--line);background:var(--panel);padding:10px 22px 14px}
+.composer .inner{display:flex;flex-direction:column;gap:8px}
+.ctx{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12.5px;color:var(--muted)}
+.ctx label{display:flex;align-items:center;gap:5px}
+.ctx select,.ctx input{border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:4px 6px;font-size:12.5px}
+.replying{display:none;align-items:center;gap:8px;font-size:12.5px;background:var(--hover);border-radius:8px;padding:6px 10px}
+.replying button{margin-left:auto;border:0;background:none;color:var(--muted)}
+.write{display:flex;gap:10px;align-items:flex-end}
+.write textarea{flex:1;resize:vertical;min-height:46px;max-height:40vh;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel2)}
+.write textarea:focus,.search input:focus{outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
+.hint{font-size:12px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1f2633;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:.95}
+.menu{display:none}
+@media (max-width:820px){.app{grid-template-columns:1fr}.resizer{display:none}.side{display:none}.side.open{display:block;position:fixed;inset:56px 0 0 0;z-index:5}.menu{display:inline-block}.brand small{display:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <button class="btn menu" id="menu" data-i18n-aria="menu">&#9776;</button>
+  <div class="brand">Agent File Board<small id="folderName"></small></div>
+  <div class="search"><input id="q" type="search" autocomplete="off" data-i18n-ph="search_ph"><div class="sugg" id="sugg"></div></div>
+  <div class="spacer"></div>
+  <span class="verbar" id="verbar"></span>
+  <label class="pill me"><span data-i18n="i_am"></span> <select id="me"></select></label>
+  <span class="rstat" id="rstat"></span>
+  <button class="btn" id="reload" data-i18n-title="refresh_now">&#8635;</button>
+  <button class="btn" id="gear" data-i18n-title="settings_title">&#9881;</button>
+  <button class="btn primary" id="open"></button>
+  <input type="file" id="fallback" webkitdirectory multiple hidden>
+</div>
+<div class="pbar off" id="pbar"><i></i></div>
+<div class="banner" id="banner"><span><span data-i18n="last_folder"></span> <b id="lastName"></b></span><button class="btn primary" id="reopen" data-i18n="reopen_last"></button><button class="btn" id="forget" data-i18n="forget"></button></div>
+<div class="banner warn" id="verwarn" role="status"></div>
+<div class="settings" id="settings">
+  <h3 data-i18n="settings_h"></h3>
+  <div class="set"><span data-i18n="s_language"></span><select id="sLang"><option value="en">English</option><option value="pl">Polski</option></select></div>
+  <div class="set"><span data-i18n="s_lh"></span> <span class="val" id="vLh"></span><input type="range" id="sLh" min="1.2" max="2.2" step="0.05"></div>
+  <div class="set"><span data-i18n="s_fs"></span> <span class="val" id="vFs"></span><input type="range" id="sFs" min="12" max="20" step="0.5"></div>
+  <div class="set"><span data-i18n="s_bubble"></span> <span class="val" id="vBubble"></span><input type="range" id="sBubble" min="55" max="100" step="1"></div>
+  <div class="set"><span data-i18n="s_feed"></span> <span class="val" id="vFeed"></span><input type="range" id="sFeed" min="700" max="2000" step="20"></div>
+  <div class="set"><span data-i18n="s_align"></span><select id="sAlign"><option value="split" data-i18n="s_align_split"></option><option value="left" data-i18n="s_align_left"></option></select></div>
+  <div class="set"><label class="ck"><input type="checkbox" id="showReceipts"> <span data-i18n="s_receipts"></span></label>
+    <label class="ck"><input type="checkbox" id="expandAll"> <span data-i18n="s_expand"></span></label>
+    <label class="ck"><input type="checkbox" id="sAutoOpen"> <span data-i18n="s_autoopen"></span></label></div>
+  <div class="set" data-i18n="s_me_note"></div>
+  <h4 data-i18n="s_refresh_h"></h4>
+  <div class="set"><label class="ck"><input type="checkbox" id="rOn"> <span data-i18n="s_on"></span></label>
+    <div class="row2c"><span data-i18n="s_every"></span> <input type="number" id="rEvery" min="1" max="999"> <select id="rUnit"><option value="s" data-i18n="u_s"></option><option value="m" data-i18n="u_m"></option><option value="h" data-i18n="u_h"></option></select></div></div>
+  <div class="set"><span data-i18n="s_days"></span>
+    <div class="days" id="rDays"></div>
+    <div class="row2c"><button class="btn" data-dpre="12345" type="button" data-i18n="preset_weekdays"></button><button class="btn" data-dpre="1234567" type="button" data-i18n="preset_everyday"></button><button class="btn" data-dpre="67" type="button" data-i18n="preset_weekend"></button></div></div>
+  <div class="set"><label class="ck"><input type="checkbox" id="rWin"> <span data-i18n="s_window"></span></label>
+    <div class="row2c"><span data-i18n="s_from"></span> <input type="time" id="rFrom"> <span data-i18n="s_to"></span> <input type="time" id="rTo"></div></div>
+  <div class="set" data-i18n="s_refresh_note"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:8px"><button class="btn" id="sReset" data-i18n="s_reset"></button><button class="btn primary" id="sClose" data-i18n="s_done"></button></div>
+</div>
+<div class="app">
+  <aside class="side" id="side">
+    <h3 data-i18n="tree_h"></h3><div id="tree"></div>
+  </aside>
+  <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
+  <section class="feed-wrap">
+    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span></div>
+    <div class="feed" id="feed"></div>
+    <div class="composer" id="composer">
+      <div class="inner">
+        <div class="replying" id="replying"><span><span data-i18n="replying_to"></span> <b id="replyName"></b></span><button type="button" id="replyClear" data-i18n-title="cancel_reply">&#10005;</button></div>
+        <div class="ctx">
+          <label><span data-i18n="c_where"></span> <select id="cWhere"></select></label>
+          <label><span data-i18n="c_thread"></span> <select id="cThread" style="max-width:280px"></select></label>
+          <input id="cNewThread" data-i18n-ph="c_new_thread_ph" size="20" style="display:none">
+          <label><span data-i18n="c_to"></span> <select id="cTo"></select></label>
+          <label><span data-i18n="c_status"></span> <select id="cStatus"></select></label>
+          <label><span data-i18n="c_lang"></span> <select id="cLang"></select></label>
+          <input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" size="11">
+        </div>
+        <div class="write">
+          <textarea id="cBody" data-i18n-ph="c_body_ph"></textarea>
+          <button class="btn primary" id="send" data-i18n="c_send"></button>
+        </div>
+        <div class="hint" id="cInfo"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ===== constants and state (no code runs before init() at the end of this script) ===== */
+const VIEWER_VERSION = "1.4.0";
+const SETTINGS_KEY = "agent-file-board-ui.settings";
+const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
+const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
+const LEGACY_STATUS_REV = Object.fromEntries(Object.entries(LEGACY_STATUS).map(([k,v])=>[v,k]));
+const ROOM_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const LEGACY_ROOM_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ID_RE = /^[a-z][a-z0-9-]{2,63}$/;
+const FILE_RE = /^\d{4}-\d{2}-\d{2}_\d{4}_[a-z0-9-]+_T\d+_[a-z0-9]+(?:-[a-z0-9]+)*\.txt$/;
+const SAFE_SEG_RE = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+const RUNTIME_HUMAN = "agent-file-board-ui " + VIEWER_VERSION;
+const RUNTIME_AGENT = "agent-file-board-ui " + VIEWER_VERSION + " (manual post, sender is an agent)";
+const DEF = {lang:"en",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showReceipts:false,expandAll:false,autoOpen:true,
+  sideW:270,rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
+  me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null};
+const $ = s => document.querySelector(s);
+const stats = {autoRefreshes:0,builds:0};
+
+let S = {...DEF};
+let B = null;              // loaded board model, or null
+let dirHandle = null;      // writable root handle (File System Access) or null
+let baseHandle = null;     // handle of the board base folder (.agent-board or bare root / pokoje parent)
+let sel = {scope:null, dir:null, thread:null};   // scope: null (all) | "room" | "direct"
+let replyTo = null;
+let lastCount = -1;
+let suggSel = -1;
+let nextAt = 0, periodMs = 0;
+let refreshing = false;
+let langTouched = false;
+
+/* ===== string tables ===== */
+const STRINGS = {
+ en:{
+  menu:"Menu", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
+  refresh_now:"Refresh now", settings_title:"Appearance and refresh settings",
+  open_folder:"Open board folder", change_folder:"Change folder", last_folder:"Last opened folder:",
+  reopen_last:"Open last folder", forget:"Forget", folder_none:"No folder selected", folder_is:"Folder: {name}",
+  read_only:"read-only (upload)", resizer_title:"Drag to resize the sidebar",
+  settings_h:"Settings (saved in this browser)", s_language:"Language", s_lh:"Line spacing", s_fs:"Text size",
+  s_bubble:"Bubble width", s_feed:"Chat width", s_align:"Bubble layout", s_align_split:"mine on the right, others on the left",
+  s_align_left:"all on the left", s_receipts:"show read receipts", s_expand:"always expand long messages",
+  s_autoopen:"offer the last folder on start", s_me_note:"\"My\" messages are those from the person chosen in \"I am\".",
+  s_refresh_h:"Auto-refresh", s_on:"enabled", s_every:"every", u_s:"seconds", u_m:"minutes", u_h:"hours",
+  s_days:"On days", preset_weekdays:"Mon-Fri", preset_everyday:"every day", preset_weekend:"weekend",
+  s_window:"only during hours", s_from:"from", s_to:"to",
+  s_refresh_note:"The bar under the top menu shows time to the next refresh. Outside the chosen days and hours refreshing pauses.",
+  s_reset:"Reset to defaults", s_done:"Done", full_width:"full",
+  tree_h:"Rooms and threads", direct_h:"Direct conversations", all_messages:"All messages",
+  closed_group:"closed ({n})", empty_room:"empty room - no threads", no_title:"(untitled)", fold_title:"collapse / expand",
+  feed_empty_h:"Open a board folder",
+  feed_empty_p:"Choose a project folder containing .agent-board/ (or the .agent-board folder itself).",
+  feed_empty_hint:"Chrome and Edge: read and write. Safari and Firefox: read-only; \"Post\" downloads the file to place manually in the room folder.",
+  no_messages_h:"No messages", no_messages_p:"Change the filter or the search.",
+  n_messages:"{n} messages", last_status:"last status: {s}", results_for:"results for \"{q}\"",
+  sg_threads:"Threads", sg_rooms:"Rooms", sg_direct:"Direct conversations", sg_messages:"Messages",
+  sg_text:"Search \"{q}\" in text",
+  kind_agent:"agent", kind_human:"human", kind_unknown:"unregistered",
+  time_corrected:"corrected", time_in_file:"time in file: {t} (corrected in {f})",
+  in_reply_to:"in reply to: {who} - {when}", show_all:"Show all", collapse:"Collapse",
+  reply_btn:"Reply", copy_name:"Copy file name", copied:"File name copied",
+  outside_filter:"Message is outside the current filter",
+  receipt_line:"{who} acknowledges reading", receipt_to:"up to",
+  replying_to:"Replying to:", cancel_reply:"Cancel reply",
+  c_where:"Where", c_thread:"Thread", c_new_thread_opt:"+ new thread...", c_new_thread_ph:"new thread name",
+  c_to:"To", c_all:"all", c_status:"Status", c_lang:"Language", c_new_room_ph:"+ new room",
+  c_new_room_title:"Type to create a new room", c_new_direct:"+ new direct conversation...",
+  c_body_ph:"Write a message... (@mention) - Ctrl/Cmd+Enter posts", c_send:"Post",
+  c_info_readonly:"Read-only mode: \"Post\" downloads the file for manual placement in the folder.",
+  c_info_agent:"Warning: an agent is selected as sender. People post only as themselves; choose yourself in \"I am\".",
+  e_open_first:"Open a board folder first", e_empty:"Empty message", e_thread_name:"Give the new thread a name",
+  e_unregistered:"Sender \"{id}\" is not in participants.json - refused",
+  e_agent_unconfirmed:"Posting as an agent needs confirmation - refused",
+  e_bad_recipient:"Recipient must be \"all\" or registered participant IDs",
+  e_bad_room:"Room names are lowercase ASCII words joined by hyphens",
+  e_bad_slug:"Cannot derive a valid file-name slug from the message",
+  e_bad_thread:"Thread ID is not valid for this board",
+  e_bad_status:"Status \"{s}\" is not allowed on this board",
+  e_lang_not_allowed:"Language \"{l}\" is not allowed on this board",
+  e_not_in_pair:"The sender is not part of this direct conversation",
+  e_exists:"File already exists - never overwritten",
+  e_path:"Write refused: path is outside the allowed message folders",
+  e_no_board:"No board found: expected .agent-board/, rooms/, direct/ or pokoje/",
+  e_write:"Write error: {m}",
+  toast_sent:"Posted", toast_downloaded:"File downloaded - place it in {path}", toast_refreshed:"Refreshed",
+  toast_reselect:"Choose the folder again to refresh", toast_no_perm:"Folder access was not granted",
+  confirm_agent:"You are posting as \"{name}\" (an agent). Boards run on trust: people post only as themselves. Continue?",
+  ver_viewer:"Viewer v{v}", ver_board:"Board v{v}", ver_unknown:"unknown", dialect:"Dialect",
+  dialect_native:"native (.agent-board)", dialect_legacy:"legacy (pokoje/)",
+  ver_mismatch:"Version mismatch: this viewer is v{v} but the board declares v{b}. Reading and posting continue, but formats may differ.",
+  sched_paused:"paused (outside schedule)", sched_in:"refresh in {t}", sched_needs_write:"auto-refresh needs a writable folder",
+  next_refresh:"Next refresh: {t}", t_h_min:"{h} h {m} min", t_min_s:"{m} min {s} s", t_s:"{s} s"
+ },
+ pl:{
+  menu:"Menu", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
+  refresh_now:"Odśwież teraz", settings_title:"Ustawienia wyglądu i odświeżania",
+  open_folder:"Otwórz folder tablicy", change_folder:"Zmień folder", last_folder:"Ostatnio otwierany folder:",
+  reopen_last:"Otwórz ostatni folder", forget:"Nie pamiętaj", folder_none:"Nie wybrano folderu", folder_is:"Folder: {name}",
+  read_only:"tylko do odczytu (wczytany)", resizer_title:"Przeciągnij, aby zmienić szerokość panelu",
+  settings_h:"Ustawienia (zapisywane w tej przeglądarce)", s_language:"Język", s_lh:"Odstęp między wierszami", s_fs:"Rozmiar tekstu",
+  s_bubble:"Szerokość dymka", s_feed:"Szerokość czatu", s_align:"Układ dymków", s_align_split:"moje po prawej, inne po lewej",
+  s_align_left:"wszystkie po lewej", s_receipts:"pokaż potwierdzenia odczytu", s_expand:"zawsze rozwijaj długie wiadomości",
+  s_autoopen:"przy starcie proponuj ostatni folder", s_me_note:"„Moje” wiadomości to te od osoby wybranej w polu „Jestem”.",
+  s_refresh_h:"Automatyczne odświeżanie", s_on:"włączone", s_every:"co", u_s:"sekund", u_m:"minut", u_h:"godzin",
+  s_days:"W dni", preset_weekdays:"pn-pt", preset_everyday:"codziennie", preset_weekend:"weekend",
+  s_window:"tylko w godzinach", s_from:"od", s_to:"do",
+  s_refresh_note:"Pasek pod menu pokazuje czas do następnego odświeżenia. Poza wybranymi dniami i godzinami odświeżanie się wstrzymuje.",
+  s_reset:"Przywróć domyślne", s_done:"Gotowe", full_width:"pełna",
+  tree_h:"Pokoje i wątki", direct_h:"Rozmowy bezpośrednie", all_messages:"Wszystkie wiadomości",
+  closed_group:"zamknięte ({n})", empty_room:"pusty pokój - brak wątków", no_title:"(bez nazwy)", fold_title:"zwiń / rozwiń",
+  feed_empty_h:"Otwórz folder tablicy",
+  feed_empty_p:"Wskaż folder projektu zawierający .agent-board/ (albo sam folder .agent-board).",
+  feed_empty_hint:"Chrome i Edge: czytanie i pisanie. Safari i Firefox: tylko czytanie - „Wyślij” pobierze plik do ręcznego wrzucenia do folderu pokoju.",
+  no_messages_h:"Brak wiadomości", no_messages_p:"Zmień filtr albo wyszukiwanie.",
+  n_messages:"{n} wiadomości", last_status:"ostatni status: {s}", results_for:"wyniki dla „{q}”",
+  sg_threads:"Wątki", sg_rooms:"Pokoje", sg_direct:"Rozmowy bezpośrednie", sg_messages:"Wiadomości",
+  sg_text:"Szukaj „{q}” w treści",
+  kind_agent:"agent", kind_human:"człowiek", kind_unknown:"niezarejestrowany",
+  time_corrected:"skorygowany", time_in_file:"czas w pliku: {t} (poprawiony w {f})",
+  in_reply_to:"w odpowiedzi na: {who} - {when}", show_all:"Pokaż całość", collapse:"Zwiń",
+  reply_btn:"Odpowiedz", copy_name:"Kopiuj nazwę pliku", copied:"Skopiowano nazwę pliku",
+  outside_filter:"Wiadomość poza bieżącym filtrem",
+  receipt_line:"{who} potwierdza odczyt", receipt_to:"do",
+  replying_to:"Odpowiedź na:", cancel_reply:"Anuluj odpowiedź",
+  c_where:"Gdzie", c_thread:"Wątek", c_new_thread_opt:"+ nowy wątek...", c_new_thread_ph:"nazwa nowego wątku",
+  c_to:"Do", c_all:"wszyscy", c_status:"Status", c_lang:"Język", c_new_room_ph:"+ nowy pokój",
+  c_new_room_title:"Wpisz, aby utworzyć nowy pokój", c_new_direct:"+ nowa rozmowa bezpośrednia...",
+  c_body_ph:"Napisz wiadomość... (@wzmianka) - Ctrl/Cmd+Enter wysyła", c_send:"Wyślij",
+  c_info_readonly:"Tryb tylko do odczytu: „Wyślij” pobierze plik do ręcznego wrzucenia do folderu.",
+  c_info_agent:"Uwaga: jako nadawca wybrano agenta. Piszemy tylko jako my sami - wybierz siebie w polu „Jestem”.",
+  e_open_first:"Najpierw otwórz folder tablicy", e_empty:"Pusta wiadomość", e_thread_name:"Podaj nazwę nowego wątku",
+  e_unregistered:"Nadawca „{id}” nie jest w participants.json - odmowa",
+  e_agent_unconfirmed:"Wysyłanie jako agent wymaga potwierdzenia - odmowa",
+  e_bad_recipient:"Adresat musi być „all” albo zarejestrowanymi identyfikatorami uczestników",
+  e_bad_room:"Nazwy pokoi to małe słowa ASCII połączone myślnikami",
+  e_bad_slug:"Nie można utworzyć poprawnego skrótu nazwy pliku z wiadomości",
+  e_bad_thread:"Identyfikator wątku jest niepoprawny dla tej tablicy",
+  e_bad_status:"Status „{s}” jest niedozwolony na tej tablicy",
+  e_lang_not_allowed:"Język „{l}” jest niedozwolony na tej tablicy",
+  e_not_in_pair:"Nadawca nie należy do tej rozmowy bezpośredniej",
+  e_exists:"Plik już istnieje - nigdy nie nadpisujemy",
+  e_path:"Odmowa zapisu: ścieżka poza dozwolonymi folderami wiadomości",
+  e_no_board:"Nie znaleziono tablicy: oczekiwano .agent-board/, rooms/, direct/ lub pokoje/",
+  e_write:"Błąd zapisu: {m}",
+  toast_sent:"Wysłano", toast_downloaded:"Pobrano plik - wrzuć go do {path}", toast_refreshed:"Odświeżono",
+  toast_reselect:"Wskaż folder ponownie, aby odświeżyć", toast_no_perm:"Brak zgody na dostęp do folderu",
+  confirm_agent:"Wysyłasz jako „{name}” (agent). Tablica działa na zaufaniu: piszemy tylko jako my sami. Kontynuować?",
+  ver_viewer:"Przeglądarka v{v}", ver_board:"Tablica v{v}", ver_unknown:"nieznana", dialect:"Dialekt",
+  dialect_native:"natywny (.agent-board)", dialect_legacy:"starszy (pokoje/)",
+  ver_mismatch:"Niezgodność wersji: ta przeglądarka to v{v}, a tablica deklaruje v{b}. Czytanie i pisanie działają dalej, ale formaty mogą się różnić.",
+  sched_paused:"wstrzymane (poza harmonogramem)", sched_in:"odświeżenie za {t}", sched_needs_write:"auto-odświeżanie wymaga folderu z zapisem",
+  next_refresh:"Następne odświeżenie: {t}", t_h_min:"{h} godz. {m} min", t_min_s:"{m} min {s} s", t_s:"{s} s"
+ }
+};
+/* keys whose value may legitimately be identical across languages */
+const SAME_OK = ["menu","folder_is","c_status","preset_weekend","kind_agent","t_min_s","t_s"];
+
+/* ===== small helpers (function declarations: hoisted, safe at init) ===== */
+function t(key, vars){
+  let s = (STRINGS[S.lang] && STRINGS[S.lang][key]);
+  if(s === undefined) s = STRINGS.en[key];
+  if(s === undefined) s = key;
+  if(vars) s = s.replace(/\{(\w+)\}/g, (m,k)=> (k in vars ? String(vars[k]) : m));
+  return s;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function slugify(s){ return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ł/g,"l").replace(/Ł/g,"L").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48).replace(/-+$/,""); }
+function normId(s){ return slugify(s).replace(/-+/g,"-"); }
+function toast(s){ const el=$("#toast"); el.textContent=s; el.classList.add("show"); clearTimeout(toast.h); toast.h=setTimeout(()=>el.classList.remove("show"),3500); }
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function boardErr(key, vars){ const e = new Error(t(key,vars)); e.name="BoardError"; e.key=key; return e; }
+function majorMinor(v){ const m=String(v||"").match(/^(\d+)\.(\d+)/); return m? m[1]+"."+m[2] : null; }
+function humanThread(label){
+  const m = String(label).match(/^(T\d+)-?(.*)$/);
+  if(!m) return {id:"", title:label};
+  let s = m[2].replace(/-/g," ");
+  s = s.charAt(0).toUpperCase()+s.slice(1);
+  return {id:m[1], title:s};
+}
+function locale(){ return S.lang==="pl" ? "pl-PL" : "en-GB"; }
+
+/* ===== parsing ===== */
+function parseHeaders(text){
+  const lines = text.replace(/\r/g,"").split("\n"), h = {};
+  let i = 0;
+  for(; i<lines.length; i++){
+    const l = lines[i];
+    if(l.trim()==="---"){ i++; break; }
+    const m = l.match(/^([A-Za-zĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻ0-9\-]*):\s?(.*)$/);
+    if(m) h[m[1].toUpperCase()] = m[2].trim();
+  }
+  return {h, body: lines.slice(i).join("\n").trim()};
+}
+function parseCorrections(text, into){
+  for(const l of String(text||"").split("\n")){
+    const p = l.split("|").map(s=>s.trim());
+    if(p.length>=2 && p[0].endsWith(".txt") && /^\d{4}-\d\d-\d\d \d\d:\d\d/.test(p[1])) into[p[0]] = {time:p[1], reason:p[2]||""};
+  }
+}
+function timeOf(h, file, legacy){
+  let t0 = (h[legacy?"DATA":"DATE"]||"").replace("T"," ");
+  if(!/^\d{4}-\d\d-\d\d \d\d:\d\d/.test(t0)){
+    const f = file.match(/^(\d{4}-\d\d-\d\d)_(\d\d)(\d\d)(\d\d)?/);
+    t0 = f ? f[1]+" "+f[2]+":"+f[3]+(f[4]?":"+f[4]:"") : "0000-00-00 00:00";
+  }
+  return t0;
+}
+/* Build the board model from already-read files. files: [{path,text}] paths relative to the board base. */
+function buildModel(files, dirs, meta){
+  const byPath = {}; for(const f of files) byPath[f.path] = f.text;
+  const cfg = safeJson(byPath["config.json"]) || {};
+  const directDir = (cfg.board && cfg.board.direct_directory) || "direct";
+  const roomsDir = "rooms";
+  const isTop = p => p.split("/")[0];
+  const nativeFiles = files.filter(f=>/^[^/]+\/[^/]+\/[^/]+\.txt$/.test(f.path) && (isTop(f.path)===roomsDir || isTop(f.path)===directDir));
+  const legacyFiles = files.filter(f=>/^pokoje\/[^/]+\/[^/]+\.txt$/.test(f.path));
+  const hasNativeDir = (dirs||[]).some(d=>d===roomsDir || d.startsWith(roomsDir+"/") || d===directDir || d.startsWith(directDir+"/"));
+  const legacy = !nativeFiles.length && !hasNativeDir && (legacyFiles.length>0 || (dirs||[]).some(d=>d==="pokoje"||d.startsWith("pokoje/")));
+  const layout = legacy ? {dialect:"legacy", roomsDir:"pokoje", directDir:null} : {dialect:"native", roomsDir, directDir};
+  const corr = {};
+  parseCorrections(byPath["time-corrections.txt"], corr);
+  parseCorrections(byPath["korekty-czasu.txt"], corr);
+  const reg = safeJson(byPath["participants.json"]);
+  const people = {};
+  if(!legacy && reg && Array.isArray(reg.participants)){
+    for(const p of reg.participants){
+      if(p && typeof p.id==="string") people[p.id] = {id:p.id, kind:p.kind==="human"?"human":p.kind==="agent"?"agent":"unknown",
+        name:p.name||p.display_name||p.displayName||p.id, lang:(p.language&&p.language.preferred)||null, registered:true};
+    }
+  }
+  const msgs = [];
+  const src = legacy ? legacyFiles : nativeFiles;
+  for(const f of src){
+    const [top, dir, file] = f.path.split("/");
+    const scope = (!legacy && top===directDir) ? "direct" : "room";
+    const {h, body} = parseHeaders(f.text);
+    let time = timeOf(h, file, legacy), fixed = null, fixReason = "";
+    if(corr[file]){ fixed = time; time = corr[file].time; fixReason = corr[file].reason; }
+    let author, authorName;
+    if(legacy){ authorName = h["OD"] || file.split("_")[2] || "?"; author = normId(authorName) || "unknown"; }
+    else { author = h["FROM"] || file.split("_")[2] || "unknown"; authorName = author; }
+    const label = (legacy ? h["WATEK"] : h["THREAD"]) || "-";
+    const tidM = label.match(/^T\d+/) || file.match(/_(T\d+)_/);
+    const tid = tidM ? (tidM[1] || tidM[0]) : "";
+    let to = (legacy ? h["DO"] : h["TO"]) || "-";
+    if(legacy && /^wszyscy$/i.test(to)) to = "all";
+    let status = (h["STATUS"]||"").toUpperCase();
+    const statusRaw = status;
+    if(legacy && LEGACY_STATUS[status]) status = LEGACY_STATUS[status];
+    const replyTo = (legacy ? h["ODPOWIEDZ-NA"] : h["REPLY-TO"]) || "-";
+    const receipt = (legacy && dir==="potwierdzenia") || /^(read receipt only|potwierdzenie odczytu)/i.test(body) || !!h["READ-MESSAGE-IDS"];
+    const dkey = scope+":"+dir;
+    msgs.push({file, path:f.path, scope, dir, dkey, h, body, time, fixed, fixReason, label, tid, tkey:dkey+"|"+(tid||label),
+      author, authorName, to, status, statusRaw, replyTo, language:h["LANGUAGE"]||"", runtime:h["RUNTIME"]||"", receipt});
+  }
+  msgs.sort((a,b)=> a.time<b.time?-1 : a.time>b.time?1 : a.file<b.file?-1 : a.file>b.file?1 : 0);
+  if(legacy){
+    /* derive a registry from the authors seen; kind is inferred from RUNTIME */
+    const kinds = {};
+    for(const m of msgs){
+      const rt = m.runtime.toLowerCase(), k = kinds[m.author] || (kinds[m.author]={human:0,agent:0,name:m.authorName});
+      if(/^człowiek|^czlowiek/.test(rt)) k.human++; else if(rt && !/wysłane ręcznie|wyslane recznie/.test(rt)) k.agent++;
+    }
+    for(const id of Object.keys(kinds)){
+      const k = kinds[id];
+      people[id] = {id, kind: k.human>0 ? "human" : k.agent>0 ? "agent" : "unknown", name:k.name, lang:null, registered:true};
+    }
+  }
+  const roomSet = new Set(msgs.filter(m=>m.scope==="room").map(m=>m.dir));
+  const directSet = new Set(msgs.filter(m=>m.scope==="direct").map(m=>m.dir));
+  for(const d of dirs||[]){
+    const p = d.split("/");
+    if(p.length===2 && p[0]===layout.roomsDir && !p[1].startsWith(".")) roomSet.add(p[1]);
+    if(!legacy && p.length===2 && p[0]===directDir) directSet.add(p[1]);
+  }
+  const ver = (String(byPath["CONVENTION.md"]||"").match(/^Version:\s*(\S+)/m)||[])[1] || null;
+  const langs = cfg.language && Array.isArray(cfg.language.allowed) && cfg.language.allowed.length ? cfg.language.allowed : ["en"];
+  return {
+    layout, cfg, people, msgs, rooms:[...roomSet].sort(), directs:[...directSet].sort(), corrections:corr,
+    boardVersion: ver, statuses: legacy ? DEFAULT_STATUSES : (Array.isArray(cfg.statuses)&&cfg.statuses.length? cfg.statuses : DEFAULT_STATUSES),   // legacy: shown natively, written as legacy codes
+    languages: langs, defaultLanguage: (cfg.language && cfg.language.default) || langs[0] || "en",
+    topicDefaults: (cfg.language && cfg.language.topic_defaults) || {},
+    threadDigits: (cfg.board && cfg.board.thread_digits) || 3,
+    defaultRoom: (cfg.board && cfg.board.default_room) || null,
+    timeZone: cfg.time_zone || (legacy ? "Europe/Warsaw" : null),
+    paths: new Set(src.map(f=>f.path)), name: meta && meta.name || ""
+  };
+}
+function safeJson(s){ try{ const v=JSON.parse(s); return v && typeof v==="object" ? v : null; }catch(e){ return null; } }
+
+/* ===== composing (pure; mirrors `boardctl post`) ===== */
+function zoneNow(tz, date){
+  const d = date || new Date();
+  const mk = zone => new Intl.DateTimeFormat("sv-SE",{timeZone:zone||undefined,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).format(d);
+  try{ return mk(tz); }catch(e){ return mk(null); }
+}
+function guardRegistered(sender){            //@guard:registered
+  if(!B || !B.people[sender]) throw boardErr("e_unregistered",{id:sender});
+  return B.people[sender];
+}
+function guardAgent(person, confirmed){      //@guard:agent-confirmation
+  if(person.kind==="agent" && confirmed!==true) throw boardErr("e_agent_unconfirmed");
+}
+function nextThreadId(){
+  let max = 0;
+  for(const m of B.msgs){ const n = parseInt((m.tid||"T0").slice(1),10); if(n>max) max=n; }
+  return "T"+String(max+1).padStart(B.threadDigits,"0");
+}
+function resolveLanguage(tid, sender, explicit){
+  return explicit || B.topicDefaults[tid] || (B.people[sender]&&B.people[sender].lang) || B.defaultLanguage;
+}
+/* o: {sender,to,scope,room,pair,tid,threadLabel,newThreadName,slug,status,language,body,replyTo,at,confirmedAgent} */
+function composeMessage(o){
+  if(!B) throw boardErr("e_open_first");
+  const L = B.layout, legacy = L.dialect==="legacy";
+  const person = guardRegistered(o.sender);
+  guardAgent(person, o.confirmedAgent);
+  const body = String(o.body||"").trim();
+  if(!body) throw boardErr("e_empty");
+  if(!B.statuses.includes(o.status)) throw boardErr("e_bad_status",{s:o.status});
+  const toList = String(o.to||"all").split(",").map(s=>s.trim()).filter(Boolean);
+  if(!toList.length) throw boardErr("e_bad_recipient");
+  if(!(toList.length===1 && toList[0]==="all") && toList.some(x=>!B.people[x])) throw boardErr("e_bad_recipient");
+  let scope = o.scope, dir, scopeHeaders;
+  if(legacy) scope = "room";
+  if(scope==="room"){
+    if(!(legacy?LEGACY_ROOM_RE:ROOM_RE).test(o.room||"")) throw boardErr("e_bad_room");
+    dir = o.room;
+    scopeHeaders = legacy ? [["POKOJ",o.room]] : [["SCOPE","ROOM"],["ROOM",o.room]];
+  }else{
+    if(toList.length!==1 || toList[0]==="all" || toList[0]===o.sender) throw boardErr("e_bad_recipient");
+    const pair = [o.sender, toList[0]].sort();
+    dir = pair.join("--");
+    if(o.pair && o.pair!==dir) throw boardErr("e_not_in_pair");
+    scopeHeaders = [["SCOPE","DIRECT"],["DIRECT-PARTICIPANTS",pair.join(", ")]];
+  }
+  let tid = o.tid;
+  if(!tid) tid = nextThreadId();
+  if(!new RegExp("^T\\d{"+B.threadDigits+"}$").test(tid) && !legacy) throw boardErr("e_bad_thread");
+  if(legacy && !/^T\d+$/.test(tid)) throw boardErr("e_bad_thread");
+  const slug = o.slug;
+  if(!SLUG_RE.test(slug||"")) throw boardErr("e_bad_slug");
+  const label = o.threadLabel || (tid+"-"+(o.newThreadName ? slugify(o.newThreadName) : slug));
+  if(!label.startsWith(tid+"-")) throw boardErr("e_bad_thread");
+  const language = resolveLanguage(tid, o.sender, o.language);
+  if(!legacy && !B.languages.includes(language)) throw boardErr("e_lang_not_allowed",{l:language});
+  const stamp = typeof o.at==="string" ? o.at : zoneNow(B.timeZone, o.at);
+  const day = stamp.slice(0,10), hhmm = stamp.slice(11,13)+stamp.slice(14,16), date = stamp.slice(0,16);
+  const top = legacy ? L.roomsDir : (scope==="room" ? L.roomsDir : L.directDir);
+  let useSlug = slug, n = 2, relPath;
+  for(;;){
+    relPath = top+"/"+dir+"/"+day+"_"+hhmm+"_"+o.sender+"_"+tid+"_"+useSlug+".txt";
+    if(!B.paths.has(relPath) && !(o.reserved && o.reserved.has(relPath))) break;
+    useSlug = slug+"-"+n++;
+  }
+  let headers;
+  const rt = person.kind==="agent" ? RUNTIME_AGENT : RUNTIME_HUMAN;
+  if(legacy){
+    const last = B.msgs.filter(m=>m.dir===dir).map(m=>m.file).pop() || "-";
+    const toLegacy = toList[0]==="all" ? "wszyscy" : toList.map(x=>B.people[x].name).join(", ");
+    headers = [["OD",person.name],["DO",toLegacy],["POKOJ",dir],["WATEK",label],["DATA",date],
+      ["ODPOWIEDZ-NA",o.replyTo||"-"],["RUNTIME",person.kind==="agent"?"wysłane ręcznie przez agent-file-board-ui":"człowiek (agent-file-board-ui)"],
+      ["STATUS",LEGACY_STATUS_REV[o.status]||o.status],["PRZECZYTANE-DO",last]];
+  }else{
+    headers = [["FROM",o.sender],["TO",toList.join(", ")],...scopeHeaders,
+      ["THREAD",label],["DATE",date],["LANGUAGE",language],["REPLY-TO",o.replyTo||"-"],["RUNTIME",rt],["STATUS",o.status]];
+  }
+  const text = headers.map(([k,v])=>k+": "+v).join("\n")+"\n---\n"+body.replace(/\s+$/,"")+"\n";
+  return {relPath, text, fileName:relPath.split("/").pop(), dir, scope};
+}
+
+/* ===== the one and only write path ===== */
+function guardWritePath(rel){                //@guard:write-path
+  const L = B && B.layout;
+  const parts = String(rel).split("/");
+  const okTop = L && (parts[0]===L.roomsDir || (L.directDir && parts[0]===L.directDir));
+  const okShape = parts.length===3 && parts.every(p=>SAFE_SEG_RE.test(p) && p!==".." && p!==".") && /\.txt$/.test(parts[2]) && !/\\/.test(rel);
+  if(!okTop || !okShape) throw boardErr("e_path");
+}
+async function guardNoOverwrite(dir, name){  //@guard:no-overwrite
+  let exists = true;
+  try{ await dir.getFileHandle(name); }catch(e){ if(e && e.name==="NotFoundError") exists=false; else throw e; }
+  if(exists) throw boardErr("e_exists");
+}
+async function writeNewFile(rel, text){
+  guardWritePath(rel);
+  if(!baseHandle || !baseHandle.getDirectoryHandle) throw boardErr("e_path");
+  const parts = rel.split("/");
+  let dir = baseHandle;
+  for(const p of parts.slice(0,-1)) dir = await dir.getDirectoryHandle(p, {create:true});
+  const name = parts[parts.length-1];
+  await guardNoOverwrite(dir, name);
+  const fh = await dir.getFileHandle(name, {create:true});
+  const w = await fh.createWritable();
+  await w.write(text); await w.close();
+}
+
+/* ===== reading ===== */
+async function readText(dir, name){ try{ const fh = await dir.getFileHandle(name); return await (await fh.getFile()).text(); }catch(e){ return null; } }
+async function entriesOf(dir){ const out=[]; try{ for await(const [n,h] of dir.entries()) out.push([n,h]); }catch(e){} return out; }
+async function subDir(dir, name){ try{ return await dir.getDirectoryHandle(name); }catch(e){ return null; } }
+async function readFromHandle(){
+  if(!dirHandle) return false;
+  let base = await subDir(dirHandle, ".agent-board");
+  if(!base){
+    const hit = (await subDir(dirHandle,"rooms")) || (await subDir(dirHandle,"direct")) || (await subDir(dirHandle,"pokoje")) || await readText(dirHandle,"participants.json");
+    if(!hit){ toast(t("e_no_board")); return false; }
+    base = dirHandle;
+  }
+  baseHandle = base;
+  const files = [], dirs = [];
+  for(const n of ["config.json","participants.json","CONVENTION.md","time-corrections.txt","korekty-czasu.txt"]){
+    let txt = await readText(base, n);
+    if(txt===null && base!==dirHandle) txt = await readText(dirHandle, n);
+    if(txt!==null) files.push({path:n, text:txt});
+  }
+  const cfg = safeJson(files.find(f=>f.path==="config.json") && files.find(f=>f.path==="config.json").text) || {};
+  const directDir = (cfg.board && cfg.board.direct_directory) || "direct";
+  for(const top of ["rooms", directDir, "pokoje"]){
+    const td = await subDir(base, top); if(!td) continue;
+    dirs.push(top);
+    for(const [dn,dh] of await entriesOf(td)){
+      if(dh.kind!=="directory" || dn.startsWith(".")) continue;
+      dirs.push(top+"/"+dn);
+      for(const [fn,fh] of await entriesOf(dh)){
+        if(fh.kind==="file" && fn.endsWith(".txt")) files.push({path:top+"/"+dn+"/"+fn, text: await (await fh.getFile()).text()});
+      }
+    }
+  }
+  loadBoard(buildModel(files, dirs, {name:dirHandle.name}));
+  return true;
+}
+async function readFromInput(list){
+  const segs = f => (f.webkitRelativePath||f.name).split("/");
+  const hasAB = list.some(f=>segs(f)[1]===".agent-board");
+  const strip = hasAB ? 2 : 1;
+  const files = [], dirs = new Set();
+  let name = list.length ? segs(list[0])[0] : "";
+  for(const f of list){
+    const p = segs(f); if(hasAB && p[1]!==".agent-board") continue;
+    const rel = p.slice(strip).join("/");
+    if(/^(participants\.json|config\.json|CONVENTION\.md|time-corrections\.txt|korekty-czasu\.txt)$/.test(rel) ||
+       /^[^/]+\/[^/]+\/[^/]+\.txt$/.test(rel)){
+      files.push({path:rel, text: await f.text()});
+    }
+    const q = rel.split("/"); if(q.length>=3){ dirs.add(q[0]); dirs.add(q[0]+"/"+q[1]); }
+  }
+  dirHandle = null; baseHandle = null;
+  loadBoard(buildModel(files, [...dirs], {name}));
+}
+function loadBoard(model){
+  B = model; stats.builds++;
+  /* restore last view if still valid */
+  if(S.lastScope && !sel.scope && B.msgs.length){
+    const ok = (S.lastScope==="room" ? B.rooms : B.directs).includes(S.lastDir);
+    if(ok){ sel = {scope:S.lastScope, dir:S.lastDir, thread:null};
+      if(S.lastThread && B.msgs.some(m=>m.tkey===S.lastThread)) sel.thread = S.lastThread; }
+  }
+  if(sel.scope && !(sel.scope==="room"?B.rooms:B.directs).includes(sel.dir)) sel = {scope:null,dir:null,thread:null};
+  renderChrome(); build();
+}
+
+/* ===== sidebar, feed ===== */
+function personOf(id, fallbackName){ return B.people[id] || {id, kind:"unknown", name:fallbackName||id, registered:false}; }
+function colorOf(id){
+  if(!B || !B.people[id]) return "var(--p-unknown)";
+  const ids = Object.keys(B.people).sort();
+  return "var(--p"+(ids.indexOf(id)%8)+")";
+}
+function iconOf(p){ return p.kind==="agent" ? "\u{1F916}" : p.kind==="human" ? "\u{1F464}" : "\u2754"; }
+function kindLabel(p){ return t(p.kind==="agent"?"kind_agent":p.kind==="human"?"kind_human":"kind_unknown"); }
+function dirTitle(scope, dir){ return scope==="direct" ? dir.replace("--"," \u2194 ") : dir; }
+function visibleMsg(m){ return $("#showReceipts").checked || !m.receipt; }
+function msgMatches(m, ql){ return (m.body+" "+m.file+" "+Object.values(m.h).join(" ")).toLowerCase().includes(ql); }
+
+function threadsOf(){
+  const th = {};
+  for(const m of B.msgs){
+    if(!m.tid) continue;
+    const x = th[m.tkey] || (th[m.tkey] = {key:m.tkey, tid:m.tid, label:m.label, dkey:m.dkey, scope:m.scope, dir:m.dir, n:0, last:"", status:"", who:new Set()});
+    if(!m.receipt){ x.n++; x.last = m.time; x.status = m.status; x.who.add(m.author); x.label = m.label; }
+  }
+  return th;
+}
+function build(){
+  if(!B) return;
+  const q = $("#q").value.trim().toLowerCase();
+  const th = threadsOf();
+  const match = key => { if(!q) return true; const x=th[key];
+    return (x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q) || B.msgs.some(m=>m.tkey===key && msgMatches(m,q)); };
+  const order = Object.keys(th).filter(match).sort((a,b)=> th[b].last<th[a].last?-1 : th[b].last>th[a].last?1 : 0);
+  const card = key => { const x = th[key], ht = humanThread(x.label);
+    const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
+    return `<button class="tcard ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
+      <div class="row1"><span class="sdot s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span></div>
+      <div class="ttl">${esc(ht.title||t("no_title"))}</div>
+      <div class="row2"><span class="faces">${faces}</span><span style="margin-left:6px">${esc(x.last.slice(5,16))} \u00b7 ${esc(x.status.toLowerCase())}</span><span class="n">${x.n}</span></div></button>`; };
+  const folder = (scope, dir) => {
+    const dkey = scope+":"+dir;
+    const ts = order.filter(k=>th[k].dkey===dkey);
+    const open = ts.filter(k=>th[k].status!=="CLOSED"), closed = ts.filter(k=>th[k].status==="CLOSED");
+    if(q && !ts.length && !dir.toLowerCase().includes(q)) return "";
+    const col = !q && !!S.collapsed[dkey], showC = !!S.closedGroups[dkey] || !!q;
+    const n = B.msgs.filter(m=>m.dkey===dkey && visibleMsg(m)).length;
+    const active = sel.scope===scope && sel.dir===dir && !sel.thread;
+    return `<div class="folder"><div class="frow ${active?"active":""}"><button class="chev" data-fold="${esc(dkey)}" data-i18n-title="fold_title" title="${esc(t("fold_title"))}" aria-expanded="${!col}">${col?"\u25b8":"\u25be"}</button>
+      <button class="fname" data-nav="${scope}" data-dir="${esc(dir)}"><span>${col?"\u{1F4C1}":"\u{1F4C2}"}</span><span class="t">${esc(dirTitle(scope,dir))}</span><span class="cnt">${n}</span></button></div>
+      ${col?"":`<div class="children">${open.map(card).join("")}${!open.length&&!closed.length?`<div class="empty-folder">${esc(t("empty_room"))}</div>`:""}${closed.length?`<button class="group" data-closed="${esc(dkey)}">${showC?"\u25be":"\u25b8"} ${esc(t("closed_group",{n:closed.length}))}</button>${showC?closed.map(card).join(""):""}`:""}</div>`}</div>`;
+  };
+  const roomsHtml = B.rooms.map(r=>folder("room",r)).join("");
+  const directHtml = B.directs.map(d=>folder("direct",d)).join("");
+  $("#tree").innerHTML =
+    `<button class="tree-root ${!sel.scope?"active":""}" data-nav="all"><span>\u{1F5C2}</span>${esc(t("all_messages"))}<span class="cnt">${B.msgs.filter(visibleMsg).length}</span></button>`+
+    roomsHtml + (B.directs.length? `<h3>${esc(t("direct_h"))}</h3>`+directHtml : "");
+  fillComposer();
+  render();
+}
+
+function inline(s, q){
+  s = esc(s).replace(/`([^`]+)`/g,"<code>$1</code>");
+  s = s.replace(/(^|[\s(>])@([A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż_-]+)/g,'$1<span class="mention">@$2</span>');
+  if(q){
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi");
+    s = s.replace(/(<[^>]*>|&(?:amp|lt|gt|quot);)|([^<&]+)/g,(m,tag,txt)=> tag || txt.replace(re,x=>`<mark>${x}</mark>`));
+  }
+  return s;
+}
+function formatBody(text, q){
+  const lines = text.split("\n"), out = [];
+  let para = [], list = null, item = null;
+  const flushPara = ()=>{ if(para.length){ out.push(`<p>${inline(para.join(" "),q)}</p>`); para=[]; } };
+  const flushList = ()=>{ if(list){ if(item!==null) list.push(item); out.push(`<ul>${list.map(i=>`<li>${inline(i,q)}</li>`).join("")}</ul>`); list=null; item=null; } };
+  for(const raw of lines){
+    const l = raw.trimEnd();
+    if(!l.trim()){ flushPara(); flushList(); continue; }
+    const hm = l.match(/^===\s*(.+?)\s*===$/) || l.match(/^([A-ZĄĆĘŁŃÓŚŹŻ0-9][A-ZĄĆĘŁŃÓŚŹŻ0-9 ,()\/\-]{3,})[.:]?$/);
+    if(hm && !/[a-ząćęłńóśźż]/.test(hm[1])){ flushPara(); flushList(); out.push(`<div class="h">${inline(hm[1],q)}</div>`); continue; }
+    const li = l.match(/^\s*(?:[-*\u2022]|\d+[.)])\s+(.*)$/);
+    if(li){ flushPara(); if(!list) list=[]; if(item!==null) list.push(item); item=li[1]; continue; }
+    if(list && /^\s+\S/.test(raw)){ item += " "+l.trim(); continue; }
+    flushList(); para.push(l.trim());
+  }
+  flushPara(); flushList();
+  return out.join("");
+}
+function dayLabel(d){
+  const [y,m,dd] = d.split("-").map(Number);
+  const s = new Intl.DateTimeFormat(locale(),{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(y,m-1,dd)));
+  return s;
+}
+function currentUser(){
+  if(!B) return "";
+  if(S.me && B.people[S.me]) return S.me;
+  const all = Object.values(B.people).sort((x,y)=>x.id<y.id?-1:1);   // default: first human, else first participant
+  const h = all.find(p=>p.kind==="human") || all[0];
+  return h ? h.id : "";
+}
+
+function render(){
+  if(!B) return;
+  const q = $("#q").value.trim(), ql = q.toLowerCase(), showR = $("#showReceipts").checked || !!q, me = currentUser();
+  const meP = me ? B.people[me] : null;
+  const view = B.msgs.filter(m=>(!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && (!q||msgMatches(m,ql)));
+  let titleText = t("all_messages");
+  if(sel.thread){ const first = B.msgs.find(m=>m.tkey===sel.thread); const ht = humanThread(first?first.label:""); titleText = ht.id+" \u00b7 "+ht.title; }
+  else if(sel.scope) titleText = (sel.scope==="direct"?"\u2709 ":"# ")+dirTitle(sel.scope, sel.dir);
+  $("#title").textContent = titleText;
+  const lastSt = sel.thread ? ((view.filter(m=>!m.receipt).pop()||{}).status||"") : "";
+  $("#subtitle").textContent = t("n_messages",{n:view.length}) + (lastSt?" \u00b7 "+t("last_status",{s:lastSt}):"") + (q?" \u00b7 "+t("results_for",{q}):"");
+  if(!view.length){ $("#feed").innerHTML = `<div class="empty"><h2>${esc(t("no_messages_h"))}</h2><p>${esc(t("no_messages_p"))}</p></div>`; return; }
+  let html = "", lastDay = "";
+  for(const m of view){
+    const day = m.time.slice(0,10);
+    if(day!==lastDay){ html += `<div class="day">${esc(dayLabel(day))}</div>`; lastDay = day; }
+    const p = personOf(m.author, m.authorName), c = colorOf(m.author);
+    const mine = S.align==="split" && me && m.author===me;
+    if(m.receipt){
+      const upTo = m.h["PRZECZYTANE-DO"];
+      html += `<div class="receipt ${mine?"mine":""}" data-file="${esc(m.file)}" style="--c:${c}"><span class="dot"></span>${esc(t("receipt_line",{who:p.name}))}${upTo?` ${esc(t("receipt_to"))} <code>${esc(upTo.slice(0,40))}</code>`:""} \u00b7 ${esc(m.time.slice(11,16))}</div>`;
+      continue;
+    }
+    const ht = humanThread(m.label);
+    const toList = m.to.split(",").map(s=>s.trim());
+    const toMe = !!me && (toList.includes(me) || (meP && toList.includes(meP.name)) || new RegExp("@"+me.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body) || (meP && new RegExp("@"+meP.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body)));
+    const long = m.body.length>700 && !$("#expandAll").checked && !q;
+    const reply = m.replyTo && m.replyTo!=="-" ? B.msgs.find(x=>x.file===m.replyTo && x.dkey===m.dkey) || B.msgs.find(x=>x.file===m.replyTo) : null;
+    const toTitle = m.to==="all" ? t("c_all") : m.to;
+    html += `<article class="msg ${toMe?"to-me":""} ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
+      <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
+      <div><div class="msg-head"><span class="who">${esc(p.name)}</span><span class="kind">${esc(kindLabel(p))}</span><span class="to">\u2192 ${esc(toTitle)}</span>
+        <span class="time ${m.fixed?"fixed":""}" title="${m.fixed?esc(t("time_in_file",{t:m.fixed,f:m.fixReason||"time-corrections"})):esc(m.file)}">${esc(m.time.slice(11,16))}${m.fixed?" \u00b7 "+esc(t("time_corrected")):""}</span>
+        ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
+        ${m.status?`<span class="chip status s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}</div>
+        ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
+        <div class="body ${long?"clamp":""}">${formatBody(m.body,q)}</div>
+        ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
+        <div class="tools"><button data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button><button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
+  }
+  const feed = $("#feed");
+  const atBottom = feed.scrollHeight-feed.scrollTop-feed.clientHeight < 80;
+  feed.innerHTML = `<div class="inner">${html}</div>`;
+  if(lastCount!==view.length || atBottom) feed.scrollTop = feed.scrollHeight;
+  lastCount = view.length;
+}
+
+function renderChrome(){
+  $("#folderName").textContent = B ? (dirHandle ? t("folder_is",{name:dirHandle.name}) : t("read_only")) : t("folder_none");
+  const bv = B ? (B.boardVersion || null) : null;
+  const parts = [t("ver_viewer",{v:VIEWER_VERSION})];
+  if(B){
+    parts.push(t("ver_board",{v: bv || t("ver_unknown")}));
+    parts.push(t("dialect")+": "+t(B.layout.dialect==="legacy"?"dialect_legacy":"dialect_native"));
+  }
+  $("#verbar").textContent = parts.join(" \u00b7 ");
+  const warn = $("#verwarn");
+  if(B && bv && majorMinor(bv) && majorMinor(bv)!==majorMinor(VIEWER_VERSION)){
+    warn.textContent = t("ver_mismatch",{v:VIEWER_VERSION,b:bv}); warn.classList.add("show");
+  }else{ warn.textContent=""; warn.classList.remove("show"); }
+  $("#open").textContent = t(dirHandle||B ? "change_folder":"open_folder");
+  $("#open").classList.toggle("primary", !B);
+  /* empty-state feed */
+  if(!B){
+    $("#title").textContent = t("all_messages"); $("#subtitle").textContent = "";
+    $("#feed").innerHTML = `<div class="empty"><h2>${esc(t("feed_empty_h"))}</h2><p>${esc(t("feed_empty_p"))}</p><p class="hint">${esc(t("feed_empty_hint"))}</p></div>`;
+  }
+  fillMe();
+  updateComposerInfo();
+}
+function fillMe(){
+  const people = B ? Object.values(B.people).sort((a,b)=>a.id<b.id?-1:1) : [];
+  const cur = currentUser();
+  $("#me").innerHTML = (people.length ? "" : `<option value="">${esc(t("choose_me"))}</option>`) + people.map(p=>`<option value="${esc(p.id)}">${iconOf(p)} ${esc(p.name)}</option>`).join("");
+  $("#me").value = cur;
+}
+
+/* ===== composer ===== */
+function whereOptions(){
+  const o = [];
+  for(const r of B.rooms) o.push({v:"room:"+r, l:"# "+r});
+  if(B.layout.dialect==="native"){
+    for(const d of B.directs) o.push({v:"direct:"+d, l:"\u2709 "+dirTitle("direct",d)});
+    o.push({v:"newdirect", l:t("c_new_direct")});
+  }
+  return o;
+}
+function fillComposer(){
+  if(!B) return;
+  const keepWhere = $("#cWhere").value, keepThread = $("#cThread").value, keepTo = $("#cTo").value, keepStatus = $("#cStatus").value, keepLang = $("#cLang").value;
+  const opts = whereOptions();
+  $("#cWhere").innerHTML = opts.map(o=>`<option value="${esc(o.v)}">${esc(o.l)}</option>`).join("");
+  let want = sel.scope ? sel.scope+":"+sel.dir : keepWhere;
+  if(!opts.some(o=>o.v===want)) want = B.defaultRoom && opts.some(o=>o.v==="room:"+B.defaultRoom) ? "room:"+B.defaultRoom : (opts[0]&&opts[0].v)||"";
+  $("#cWhere").value = want;
+  fillThreads(sel.thread || keepThread);
+  const people = Object.values(B.people).sort((a,b)=>a.id<b.id?-1:1);
+  $("#cTo").innerHTML = `<option value="all">${esc(t("c_all"))}</option>` + people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+  if([...$("#cTo").options].some(o=>o.value===keepTo)) $("#cTo").value = keepTo;
+  $("#cStatus").innerHTML = B.statuses.map(s=>`<option>${esc(s)}</option>`).join("");
+  $("#cStatus").value = B.statuses.includes(keepStatus) ? keepStatus : B.statuses[0];
+  $("#cLang").innerHTML = (B.layout.dialect==="legacy" ? [] : B.languages).map(l=>`<option>${esc(l)}</option>`).join("");
+  if(B.languages.includes(keepLang)) $("#cLang").value = keepLang; else if(B.languages.includes(B.defaultLanguage)) $("#cLang").value = B.defaultLanguage;
+  $("#cLang").parentElement.style.display = B.layout.dialect==="legacy" ? "none" : "";
+  syncLang();
+}
+function fillThreads(prefer){
+  const where = $("#cWhere").value;
+  const th = threadsOf();
+  const all = Object.values(th).filter(x=>(x.scope+":"+x.dir)===where).sort((a,b)=>a.tid<b.tid?1:-1);
+  const keys = new Set(all.map(x=>x.key));
+  $("#cThread").innerHTML = all.map(x=>`<option value="${esc(x.key)}">${esc(x.tid+" \u00b7 "+humanThread(x.label).title)}</option>`).join("") + `<option value="">${esc(t("c_new_thread_opt"))}</option>`;
+  if(prefer && keys.has(prefer)) $("#cThread").value = prefer; else if(all[0]) $("#cThread").value = all[0].key; else $("#cThread").value = "";
+  $("#cNewThread").style.display = $("#cThread").value ? "none" : "inline-block";
+  syncLang();
+}
+/* default the language selector to what boardctl would resolve (topic default, sender preference, board default) unless the user picked one */
+function syncLang(force){
+  if(!B || B.layout.dialect==="legacy") return;
+  if(force) langTouched = false;
+  if(langTouched) return;
+  const th = threadsOf()[$("#cThread").value];
+  const lang = resolveLanguage(th ? th.tid : null, currentUser(), null);
+  if(B.languages.includes(lang)) $("#cLang").value = lang;
+}
+function updateComposerInfo(){
+  const me = currentUser();
+  let s = "";
+  if(B && !dirHandle) s = t("c_info_readonly");
+  if(me && B.people[me].kind==="agent") s = t("c_info_agent");
+  $("#cInfo").textContent = s;
+}
+function startReply(m){
+  replyTo = m;
+  $("#replying").style.display = "flex";
+  $("#replyName").textContent = `${personOf(m.author,m.authorName).name} \u00b7 ${m.time.slice(5,16)} \u00b7 ${m.label}`;
+  $("#cWhere").value = m.scope+":"+m.dir;
+  fillThreads(m.tkey);
+  const ok = B.people[m.author] ? m.author : "all";
+  $("#cTo").value = ok;
+  const auto = "@"+personOf(m.author,m.authorName).name+" ";
+  startReply.auto = auto;
+  if(!$("#cBody").value.trim()) $("#cBody").value = auto;
+  $("#cBody").focus();
+}
+function clearReply(){
+  if(replyTo){
+    const auto = startReply.auto || "";
+    if(auto && $("#cBody").value.trim()===auto.trim()) $("#cBody").value = "";
+    $("#cTo").value = "all";
+  }
+  replyTo = null; startReply.auto = "";
+  $("#replying").style.display = "none";
+}
+async function send(){
+  if(!B){ toast(t("e_open_first")); return; }
+  const me = currentUser();
+  try{
+    const person = guardRegistered(me);                      // refuse an unregistered sender before anything else
+    const where = $("#cWhere").value;
+    let scope, room = null, pair = null;
+    const newRoom = slugify($("#cNewRoom").value);
+    if(where==="newdirect"){ scope = "direct"; }
+    else if(where.startsWith("direct:")){ scope = "direct"; pair = where.slice(7); }
+    else { scope = "room"; room = newRoom || where.slice(5); }
+    let tkey = $("#cThread").value, tid = null, label = null, newName = "";
+    if(newRoom && scope==="room") tkey = "";                // a new room has no threads yet
+    if(tkey){ const th = threadsOf()[tkey]; if(th){ tid = th.tid; label = th.label; } }
+    else{
+      newName = slugify($("#cNewThread").value);
+      if(!newName){ toast(t("e_thread_name")); $("#cNewThread").focus(); return; }
+    }
+    const body = $("#cBody").value.trim();
+    if(!body){ toast(t("e_empty")); return; }
+    let to = $("#cTo").value || "all";
+    if(scope==="direct" && pair){ const ids = pair.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to = ids.find(x=>x!==me); }
+    const bodySlug = slugify(body.replace(/@\S+/g,"").split("\n")[0]).slice(0,32).replace(/-+$/,"") || "message";
+    let confirmed = false;
+    if(person.kind==="agent"){
+      if(!window.confirm(t("confirm_agent",{name:person.name}))) return;
+      confirmed = true;
+    }
+    const msg = composeMessage({sender:me, to, scope, room, pair, tid, threadLabel:label, newThreadName:newName,
+      slug: bodySlug, status:$("#cStatus").value, language:$("#cLang").value||undefined, body,
+      replyTo: replyTo ? replyTo.file : null, confirmedAgent: confirmed});
+    if(dirHandle && dirHandle.getDirectoryHandle && baseHandle){
+      await writeNewFile(msg.relPath, msg.text);
+      toast(t("toast_sent"));
+      await readFromHandle();
+    }else{
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([msg.text],{type:"text/plain;charset=utf-8"}));
+      a.download = msg.fileName; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+      toast(t("toast_downloaded",{path:msg.relPath.split("/").slice(0,2).join("/")+"/"}));
+    }
+    $("#cBody").value = ""; $("#cNewThread").value = ""; $("#cNewRoom").value = ""; clearReply(); syncLang(true);
+  }catch(e){
+    toast(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)}));
+  }
+}
+
+/* ===== search ===== */
+function suggest(){
+  const raw = $("#q").value.trim(), q = raw.toLowerCase(), box = $("#sugg");
+  if(!q || !B){ box.classList.remove("show"); box.innerHTML=""; return; }
+  const th = threadsOf();
+  const ths = Object.values(th).filter(x=>(x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q)).sort((a,b)=>a.tid<b.tid?1:-1);
+  const rooms = B.rooms.filter(r=>r.toLowerCase().includes(q));
+  const directs = B.directs.filter(d=>d.toLowerCase().includes(q));
+  const hits = B.msgs.filter(m=>!m.receipt && msgMatches(m,q)).length;
+  let html = "";
+  if(ths.length) html += `<h4>${esc(t("sg_threads"))}</h4>` + ths.slice(0,8).map(x=>`<button data-pick="thread" data-tk="${esc(x.key)}"><span class="k">${esc(x.tid)}</span>${esc(humanThread(x.label).title)}<span class="c">${x.n}</span></button>`).join("");
+  if(rooms.length) html += `<h4>${esc(t("sg_rooms"))}</h4>` + rooms.map(r=>`<button data-pick="room" data-dir="${esc(r)}"><span class="k">#</span>${esc(r)}<span class="c">${B.msgs.filter(m=>m.dkey==="room:"+r&&!m.receipt).length}</span></button>`).join("");
+  if(directs.length) html += `<h4>${esc(t("sg_direct"))}</h4>` + directs.map(d=>`<button data-pick="direct" data-dir="${esc(d)}"><span class="k">\u2709</span>${esc(dirTitle("direct",d))}<span class="c">${B.msgs.filter(m=>m.dkey==="direct:"+d&&!m.receipt).length}</span></button>`).join("");
+  html += `<h4>${esc(t("sg_messages"))}</h4><button data-pick="text" class="all">${esc(t("sg_text",{q:raw}))}<span class="c">${hits}</span></button>`;
+  box.innerHTML = html; box.classList.add("show"); suggSel = -1;
+}
+function pickSuggestion(btn){
+  const kind = btn.dataset.pick;
+  if(kind==="thread"){ const x = threadsOf()[btn.dataset.tk]; sel = {scope:x.scope,dir:x.dir,thread:x.key}; $("#q").value=""; }
+  else if(kind==="room" || kind==="direct"){ sel = {scope:kind,dir:btn.dataset.dir,thread:null}; $("#q").value=""; }
+  $("#sugg").classList.remove("show");
+  rememberView(); build();
+}
+function rememberView(){ S.lastScope = sel.scope; S.lastDir = sel.dir; S.lastThread = sel.thread; saveSettings(); }
+
+/* ===== settings, i18n ===== */
+function loadSettings(){
+  S = {...DEF, collapsed:{}, closedGroups:{}};
+  try{ const o = JSON.parse(lsGet(SETTINGS_KEY)||"{}"); if(o && typeof o==="object") S = {...S, ...o}; }catch(e){}
+  if(!STRINGS[S.lang]) S.lang = "en";
+}
+function saveSettings(){ lsSet(SETTINGS_KEY, JSON.stringify(S)); applySettings(); }
+function applySettings(){
+  const r = document.documentElement.style;
+  r.setProperty("--lh",S.lh); r.setProperty("--fs",S.fs+"px"); r.setProperty("--bubble",S.bubble+"%");
+  r.setProperty("--feedw",S.feed>=2000?"100%":S.feed+"px"); r.setProperty("--sidew",S.sideW+"px");
+  document.documentElement.lang = S.lang;
+  $("#sLang").value = S.lang;
+  $("#sLh").value = S.lh; $("#vLh").textContent = S.lh;
+  $("#sFs").value = S.fs; $("#vFs").textContent = S.fs+" px";
+  $("#sBubble").value = S.bubble; $("#vBubble").textContent = S.bubble+"%";
+  $("#sFeed").value = S.feed; $("#vFeed").textContent = S.feed>=2000 ? t("full_width") : S.feed+" px";
+  $("#sAlign").value = S.align; $("#showReceipts").checked = S.showReceipts; $("#expandAll").checked = S.expandAll; $("#sAutoOpen").checked = S.autoOpen;
+  $("#rOn").checked = S.rOn; $("#rEvery").value = S.rEvery; $("#rUnit").value = S.rUnit;
+  $("#rWin").checked = S.rWin; $("#rFrom").value = S.rFrom; $("#rTo").value = S.rTo;
+  const fmt = new Intl.DateTimeFormat(locale(),{weekday:"short",timeZone:"UTC"});
+  $("#rDays").innerHTML = [1,2,3,4,5,6,7].map(d=>`<label><input type="checkbox" data-day="${d}" ${S.rDays.includes(String(d))?"checked":""}>${esc(fmt.format(new Date(Date.UTC(2024,0,d))))}</label>`).join("");
+}
+function applyI18n(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{ el.title = t(el.dataset.i18nTitle); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el=>{ el.setAttribute("aria-label", t(el.dataset.i18nAria)); });
+}
+function refreshAll(){ applySettings(); applyI18n(); renderChrome(); if(B){ build(); } tick(); }
+
+/* ===== remembered folder (IndexedDB) ===== */
+function idb(){ return new Promise((res,rej)=>{ const r = indexedDB.open("agent-file-board-ui",1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbSet(k,v){ const db = await idb(); return new Promise((res,rej)=>{ const tx=db.transaction("kv","readwrite"); tx.objectStore("kv").put(v,k); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error); }); }
+async function idbGet(k){ const db = await idb(); return new Promise(res=>{ const q=db.transaction("kv").objectStore("kv").get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>res(null); }); }
+async function useDir(h){
+  dirHandle = h;
+  $("#banner").classList.remove("show");
+  try{ await idbSet("lastDir", h); }catch(e){ /* storage failures degrade silently */ }
+  const ok = await readFromHandle();
+  if(ok){ schedule(); }
+  renderChrome();
+}
+async function offerLast(){
+  if(!S.autoOpen || !window.indexedDB || !window.showDirectoryPicker) return;
+  let h = null; try{ h = await idbGet("lastDir"); }catch(e){}
+  if(!h || typeof h.queryPermission!=="function") return;
+  try{ if(await h.queryPermission({mode:"readwrite"})==="granted"){ await useDir(h); return; } }catch(e){}
+  $("#lastName").textContent = h.name;
+  $("#banner").classList.add("show");
+  $("#reopen").onclick = async()=>{ try{ if(await h.requestPermission({mode:"readwrite"})==="granted") await useDir(h); else toast(t("toast_no_perm")); }catch(e){ toast(e.message); } };
+  $("#forget").onclick = async()=>{ try{ await idbSet("lastDir",null); }catch(e){} $("#banner").classList.remove("show"); };
+}
+
+/* ===== auto-refresh scheduler ===== */
+function canWrite(){ return !!(dirHandle && dirHandle.getDirectoryHandle); }
+function periodOf(){ const n = Math.max(1,parseInt(S.rEvery,10)||1); return n*({s:1000,m:60000,h:3600000}[S.rUnit]||60000); }
+function zoneParts(d, tz){
+  const mk = zone => new Intl.DateTimeFormat("en-GB",{timeZone:zone||undefined,weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(d);
+  let f; try{ f = mk(tz); }catch(e){ f = mk(null); }
+  const g = k => f.find(x=>x.type===k).value;
+  return {dow:{Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:7}[g("weekday")], hm:g("hour")+":"+g("minute")};
+}
+/* pure: is `now` inside the schedule? An overnight window belongs to the day it started on. */
+function inSchedule(set, now, tz){
+  const p = zoneParts(now, tz);
+  let dow = p.dow;
+  if(!set.rWin) return set.rDays.includes(String(dow));
+  const from = set.rFrom, to = set.rTo;
+  if(from<=to) return set.rDays.includes(String(dow)) && p.hm>=from && p.hm<to;
+  if(p.hm>=from) return set.rDays.includes(String(dow));
+  if(p.hm<to) return set.rDays.includes(String(dow===1?7:dow-1));
+  return false;
+}
+function schedule(){ periodMs = periodOf(); nextAt = Date.now()+periodMs; }
+function fmtLeft(sec){
+  return sec>=3600 ? t("t_h_min",{h:Math.floor(sec/3600),m:Math.floor(sec%3600/60)}) : sec>=60 ? t("t_min_s",{m:Math.floor(sec/60),s:sec%60}) : t("t_s",{s:sec});
+}
+function tick(){
+  const bar = $("#pbar"), st = $("#rstat");
+  if(!S.rOn){ bar.classList.add("off"); st.textContent=""; return; }
+  if(!canWrite()){ bar.classList.add("off"); st.textContent = B ? t("sched_needs_write") : ""; return; }
+  if(!inSchedule(S, new Date(), B && B.timeZone)){ bar.classList.add("off"); st.textContent = t("sched_paused"); nextAt = 0; return; }
+  if(!nextAt || periodMs!==periodOf()) schedule();
+  if(nextAt-Date.now()<=0){
+    schedule();
+    if(document.visibilityState==="visible" && !refreshing){
+      refreshing = true; stats.autoRefreshes++;
+      readFromHandle().catch(()=>{}).finally(()=>{ refreshing = false; });
+    }
+  }
+  bar.classList.remove("off");
+  const frac = Math.min(1,Math.max(0,1-(nextAt-Date.now())/periodMs));
+  bar.firstElementChild.style.width = (frac*100).toFixed(2)+"%";
+  bar.dataset.frac = frac.toFixed(3);
+  const sec = Math.max(0,Math.round((nextAt-Date.now())/1000));
+  st.textContent = t("sched_in",{t:fmtLeft(sec)});
+  bar.title = t("next_refresh",{t:new Date(nextAt).toLocaleTimeString(locale())});
+}
+function rSave(){
+  S.rOn = $("#rOn").checked; S.rEvery = Math.max(1,parseInt($("#rEvery").value,10)||1); S.rUnit = $("#rUnit").value;
+  S.rWin = $("#rWin").checked; S.rFrom = $("#rFrom").value||"08:00"; S.rTo = $("#rTo").value||"20:00";
+  S.rDays = [...document.querySelectorAll("[data-day]")].filter(c=>c.checked).map(c=>c.dataset.day).join("");
+  saveSettings(); schedule(); tick();
+}
+
+/* ===== wiring ===== */
+function wire(){
+  $("#open").onclick = async()=>{
+    if(!window.showDirectoryPicker){ $("#fallback").click(); return; }
+    try{ await useDir(await window.showDirectoryPicker({mode:"readwrite", id:"agent-board"})); }
+    catch(e){ if(e && e.name!=="AbortError") toast(e.message); }
+  };
+  $("#fallback").onchange = async e=>{ await readFromInput([...e.target.files]); schedule(); renderChrome(); };
+  $("#reload").onclick = ()=>{
+    if(canWrite()) readFromHandle().then(()=>{ schedule(); tick(); toast(t("toast_refreshed")); });
+    else toast(t("toast_reselect"));
+  };
+  $("#gear").onclick = ()=>$("#settings").classList.toggle("show");
+  $("#sClose").onclick = ()=>$("#settings").classList.remove("show");
+  $("#sReset").onclick = ()=>{ S = {...DEF, collapsed:{}, closedGroups:{}}; saveSettings(); refreshAll(); };
+  [["#sLh","lh"],["#sFs","fs"],["#sBubble","bubble"],["#sFeed","feed"]].forEach(([id,k])=>$(id).oninput=()=>{ S[k]=parseFloat($(id).value); saveSettings(); });
+  $("#sAlign").onchange = ()=>{ S.align=$("#sAlign").value; saveSettings(); render(); };
+  $("#sAutoOpen").onchange = ()=>{ S.autoOpen=$("#sAutoOpen").checked; saveSettings(); };
+  $("#sLang").onchange = ()=>{ S.lang=$("#sLang").value; saveSettings(); refreshAll(); };
+  $("#showReceipts").onchange = ()=>{ S.showReceipts=$("#showReceipts").checked; saveSettings(); build(); };
+  $("#expandAll").onchange = ()=>{ S.expandAll=$("#expandAll").checked; saveSettings(); render(); };
+  $("#me").onchange = ()=>{ S.me=$("#me").value; saveSettings(); updateComposerInfo(); syncLang(); render(); };
+  $("#menu").onclick = ()=>$("#side").classList.toggle("open");
+
+  $("#q").oninput = ()=>{ suggest(); build(); };
+  $("#q").onfocus = suggest;
+  $("#q").onblur = ()=>setTimeout(()=>$("#sugg").classList.remove("show"),150);
+  $("#q").onkeydown = e=>{
+    const items = [...$("#sugg").querySelectorAll("button")];
+    if(e.key==="Escape"){ $("#sugg").classList.remove("show"); return; }
+    if(!items.length) return;
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+      e.preventDefault();
+      suggSel = suggSel<0 ? (e.key==="ArrowDown" ? 0 : items.length-1) : (suggSel+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;
+      items.forEach((b,i)=>b.classList.toggle("sel",i===suggSel));
+    }else if(e.key==="Enter"){
+      e.preventDefault(); pickSuggestion(items[suggSel] || items[items.length-1]);
+    }
+  };
+  $("#sugg").addEventListener("mousedown", e=>{ const b = e.target.closest("button"); if(b){ e.preventDefault(); pickSuggestion(b); } });
+  document.addEventListener("keydown", e=>{
+    const tag = document.activeElement && document.activeElement.tagName;
+    if(e.key==="/" && tag!=="TEXTAREA" && tag!=="INPUT" && tag!=="SELECT"){ e.preventDefault(); $("#q").focus(); }
+  });
+
+  $("#tree").addEventListener("click", e=>{
+    const fold = e.target.closest("[data-fold]"), cl = e.target.closest("[data-closed]"), nav = e.target.closest("[data-nav]");
+    if(fold){ const k = fold.dataset.fold; S.collapsed[k] = !S.collapsed[k]; saveSettings(); build(); return; }
+    if(cl){ const k = cl.dataset.closed; S.closedGroups[k] = !S.closedGroups[k]; saveSettings(); build(); return; }
+    if(nav){
+      const kind = nav.dataset.nav;
+      if(kind==="all") sel = {scope:null,dir:null,thread:null};
+      else if(kind==="thread") sel = {scope:nav.dataset.scope, dir:nav.dataset.dir, thread:nav.dataset.tk};
+      else sel = {scope:kind, dir:nav.dataset.dir, thread:null};
+      rememberView(); $("#side").classList.remove("open"); build();
+    }
+  });
+  $("#tree").addEventListener("keydown", e=>{
+    if(e.key!=="ArrowDown" && e.key!=="ArrowUp") return;
+    const items = [...$("#tree").querySelectorAll("button")];
+    const i = items.indexOf(document.activeElement);
+    if(i<0) return;
+    e.preventDefault();
+    const n = items[Math.min(items.length-1, Math.max(0, i+(e.key==="ArrowDown"?1:-1)))];
+    if(n) n.focus();
+  });
+  $("#feed").addEventListener("click", e=>{
+    const more = e.target.closest("[data-more]"), rep = e.target.closest("[data-reply]"), cp = e.target.closest("[data-copy]"),
+          go = e.target.closest("[data-goto]"), jump = e.target.closest("[data-jump]");
+    if(more){ const body = more.previousElementSibling; const clamped = body.classList.toggle("clamp");
+      more.textContent = (clamped ? t("show_all")+" \u25be" : t("collapse")+" \u25b4"); }
+    else if(rep){ const m = B.msgs.find(x=>x.dkey+"|"+x.file===rep.dataset.reply); if(m) startReply(m); }
+    else if(cp){ try{ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.copy); }catch(err){} toast(t("copied")); }
+    else if(go){ const x = threadsOf()[go.dataset.goto]; if(x){ sel = {scope:x.scope,dir:x.dir,thread:x.key}; rememberView(); build(); } }
+    else if(jump){
+      const el = document.getElementById("m-"+jump.dataset.jump);
+      if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
+      else toast(t("outside_filter"));
+    }
+  });
+  $("#cWhere").onchange = ()=>{ fillThreads(null); };
+  $("#cThread").onchange = ()=>{ $("#cNewThread").style.display = $("#cThread").value?"none":"inline-block"; if(!$("#cThread").value) $("#cNewThread").focus(); syncLang(); };
+  $("#cLang").onchange = ()=>{ langTouched = true; };
+  $("#send").onclick = send;
+  $("#replyClear").onclick = clearReply;
+  $("#cBody").onkeydown = e=>{ if(e.key==="Enter" && (e.metaKey||e.ctrlKey)){ e.preventDefault(); send(); } };
+
+  ["#rOn","#rEvery","#rUnit","#rWin","#rFrom","#rTo"].forEach(id=>$(id).addEventListener("change",rSave));
+  $("#rDays").addEventListener("change", rSave);
+  document.querySelectorAll("[data-dpre]").forEach(b=>b.onclick=()=>{ S.rDays=b.dataset.dpre; saveSettings(); schedule(); tick(); });
+
+  const rz = $("#resizer"); let x0 = 0, w0 = 0;
+  rz.onmousedown = e=>{
+    x0 = e.clientX; w0 = S.sideW; rz.classList.add("drag"); document.body.classList.add("resizing");
+    const mv = ev=>{ S.sideW = Math.min(560,Math.max(190,w0+ev.clientX-x0)); document.documentElement.style.setProperty("--sidew",S.sideW+"px"); };
+    const up = ()=>{ rz.classList.remove("drag"); document.body.classList.remove("resizing"); document.removeEventListener("mousemove",mv); document.removeEventListener("mouseup",up); saveSettings(); };
+    document.addEventListener("mousemove",mv); document.addEventListener("mouseup",up);
+  };
+  rz.ondblclick = ()=>{ S.sideW = DEF.sideW; saveSettings(); };
+}
+
+function init(){
+  loadSettings();
+  applySettings();
+  applyI18n();
+  wire();
+  renderChrome();
+  setInterval(tick, 1000);
+  offerLast();
+}
+/* test hooks: pure functions and state accessors; they add no capability the UI does not have */
+window.__boardTest = {STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
+  parseHeaders, formatBody, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
+init();
+</script>
+</body>
+</html>

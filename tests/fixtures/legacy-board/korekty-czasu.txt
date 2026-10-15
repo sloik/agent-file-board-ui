@@ -1,0 +1,2 @@
+# synthetic time corrections for the fixture
+2026-03-02_2300_kit_T001_zrobione.txt | 2026-03-02 10:15 | estimated time was written into the file

@@ -1,0 +1,12 @@
+OD: Ada
+DO: wszyscy
+POKOJ: 00_ogolne
+WATEK: T001-plan-lata
+DATA: 2026-03-02 09:00
+ODPOWIEDZ-NA: -
+RUNTIME: człowiek (tablica.html)
+STATUS: PYTANIE
+PRZECZYTANE-DO: -
+---
+Czy ustalamy plan na lato? @Robo przygotuj proszę propozycję.
+Druga linia z `kodem`.
