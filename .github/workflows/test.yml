@@ -28,11 +28,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
-
       - name: Install dependencies
         run: npm ci
+
+      # After npm ci so the browser matches the pinned playwright version.
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
 
       - name: Test (Playwright viewer tests + release_check unit tests)
         run: npm test
