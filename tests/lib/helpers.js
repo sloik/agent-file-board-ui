@@ -169,7 +169,7 @@ async function feedOrder(page) {
 async function reloadSettled(ctx, page, cond) {
   const probe = await ctx.newPage();
   await probe.goto(page.url());
-  await probe.waitForFunction(async (c) => {
+  const committed = async (c) => {
     if (c.perm !== undefined && (localStorage.getItem("__fakefs_perm") || "granted") !== c.perm) return false;
     if (c.setting) {
       try { if (JSON.parse(localStorage.getItem("agent-file-board-ui.settings"))[c.setting[0]] !== c.setting[1]) return false; } catch (e) { return false; }
@@ -184,9 +184,15 @@ async function reloadSettled(ctx, page, cond) {
       if (has !== c.lastDir) return false;
     }
     return true;
-  }, cond, { timeout: 5000 });
-  await probe.close();
-  await page.reload();
+  };
+  await probe.waitForFunction(committed, cond, { timeout: 5000 });
+  // Keep the observing document alive across the source document's unload.
+  // Closing it first can release Chromium's file-origin storage area before
+  // the replacement document attaches. No data is copied or injected here.
+  try { await page.reload(); } finally { await probe.close(); }
+  // Check persistence again after the observer closes; retaining it must not
+  // let a passing UI assertion hide lost browser state.
+  await page.waitForFunction(committed, cond, { timeout: 5000 });
 }
 
 module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
