@@ -152,5 +152,30 @@ async function feedOrder(page) {
   return page.$$eval("#feed article.msg", els => els.map(e => e.dataset.file));
 }
 
-module.exports = { ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
+// Chromium commits localStorage/IndexedDB writes asynchronously, so a reload that races a write can see
+// stale storage (CI flakes). Wait until a second page of the same origin observes the expected state, then reload.
+async function reloadSettled(ctx, page, cond) {
+  const probe = await ctx.newPage();
+  await probe.goto(page.url());
+  await probe.waitForFunction(async (c) => {
+    if (c.perm !== undefined && (localStorage.getItem("__fakefs_perm") || "granted") !== c.perm) return false;
+    if (c.setting) {
+      try { if (JSON.parse(localStorage.getItem("agent-file-board-ui.settings"))[c.setting[0]] !== c.setting[1]) return false; } catch (e) { return false; }
+    }
+    if (c.lastDir !== undefined) {
+      const has = await new Promise((res) => {
+        const r = indexedDB.open("agent-file-board-ui", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("kv");
+        r.onerror = () => res(false);
+        r.onsuccess = () => { const q = r.result.transaction("kv").objectStore("kv").get("lastDir"); q.onsuccess = () => res(q.result !== undefined); q.onerror = () => res(false); };
+      });
+      if (has !== c.lastDir) return false;
+    }
+    return true;
+  }, cond, { timeout: 5000 });
+  await probe.close();
+  await page.reload();
+}
+
+module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
   fakeFsScript, launch, openPage, openBoardViaUi, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };

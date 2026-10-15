@@ -101,7 +101,7 @@ test("AC6 sidebar resize by dragging; double-click resets; width survives reload
   assert.equal(await width(), 190);
   const b4 = await page.locator("#resizer").boundingBox();
   await page.mouse.move(b4.x + 3, y); await page.mouse.down(); await page.mouse.move(b4.x + 203, y, { steps: 5 }); await page.mouse.up();
-  await page.reload();
+  await h.reloadSettled(ctx, page, { setting: ["sideW", 390] });
   assert.equal(await width(), 390);
   await page.dblclick("#resizer");
   assert.equal(await width(), 270);
@@ -175,13 +175,13 @@ test("R9 remembered folder: reopen silently when permission still granted, else 
   const { ctx, page } = await h.openPage(browser, { tree });
   await h.openBoardViaUi(page);                        // stores the handle in IndexedDB
   // permission still granted: silent reopen after reload, no click
-  await page.reload();
+  await h.reloadSettled(ctx, page, { lastDir: true });
   await page.waitForFunction(() => window.__boardTest.getModel() !== null);
   assert.equal(await page.isVisible("#banner"), false);
   assert.match(await page.textContent("#folderName"), /Folder: proj/);
   // permission needs a gesture: banner offers one-click reopen
   await page.evaluate(() => window.__fakefs.setPermission("prompt"));
-  await page.reload();
+  await h.reloadSettled(ctx, page, { perm: "prompt", lastDir: true });
   await page.waitForSelector("#banner.show");
   assert.match(await page.textContent("#lastName"), /proj/);
   assert.equal(await page.evaluate(() => window.__boardTest.getModel()), null);
@@ -190,11 +190,11 @@ test("R9 remembered folder: reopen silently when permission still granted, else 
   assert.equal(await page.isVisible("#banner"), false);
   // "forget" removes the offer
   await page.evaluate(() => window.__fakefs.setPermission("prompt"));
-  await page.reload();
+  await h.reloadSettled(ctx, page, { perm: "prompt", lastDir: true });
   await page.waitForSelector("#banner.show");
   await page.click("#forget");
   await page.waitForSelector("#banner:not(.show)", { state: "attached" });
-  await page.reload();
+  await h.reloadSettled(ctx, page, { lastDir: false });
   await page.waitForTimeout(300);
   assert.equal(await page.isVisible("#banner"), false);
   await ctx.close();
