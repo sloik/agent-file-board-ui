@@ -92,6 +92,8 @@ test("native refresh reuses unchanged message bytes, reads changed/new files, an
   await refresh(page);
   assert.equal(await page.locator("#feed article.msg").count(),0);
   assert.equal(await page.evaluate(()=>window.__boardTest.getModel().msgs.some(m=>m.body==="Changed old content")),false);
+  await page.press("#q","Escape");
+  assert.equal(await page.isVisible("#sugg"),false);
   const beforeReopen=await reads();await page.click("#open");await page.waitForFunction(n=>window.__boardTest.stats.messageReads>=n+260,beforeReopen);
   assert.equal(await reads()-beforeReopen,260);
   await ctx.close();

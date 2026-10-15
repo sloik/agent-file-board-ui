@@ -98,14 +98,18 @@ test("unread badges survive polling and reload, clear on visit, aggregate in col
   assert.equal(await page.locator(".fname:has-text('product') .unread-badge").count(),0);
   await page.click(".fname:has-text('architecture')");
   await page.click(".folder:has(.fname:has-text('product')) .chev");
+  assert.equal(await page.getAttribute("[data-fold='room:product']","aria-expanded"),"false","collapsed before refresh");
   await addMessage(page); await refresh(page);
   assert.equal(await page.locator(".fname:has-text('product') .unread-badge").innerText(),"1 unread");
   await h.reloadSettled(ctx,page,{lastDir:true}); await page.waitForSelector("#feed article.msg");
+  assert.equal(await page.getAttribute("[data-fold='room:product']","aria-expanded"),"false","collapsed after reload: "+JSON.stringify(await page.evaluate(()=>({settings:window.__boardTest.getSettings(),stored:localStorage.getItem('agent-file-board-ui.settings')}))));
   assert.equal(await page.locator(".fname:has-text('product') .unread-badge").innerText(),"1 unread");
   await page.click(".fname:has-text('product')");
+  assert.equal(await page.getAttribute("[data-fold='room:product']","aria-expanded"),"false","room selection retains collapse");
   assert.equal(await page.locator(".fname:has-text('product') .unread-badge").count(),0);
   // Two open topics in the same room: later activity does not reorder default.
   await addMessage(page,{tid:"T004",label:"later-topic",slug:"later"}); await refresh(page);
+  assert.equal(await page.getAttribute("[data-fold='room:product']","aria-expanded"),"false","refresh retains collapse");
   await page.click(".folder:has(.fname:has-text('product')) .chev");
   const order=()=>page.locator(".folder:has(.fname:has-text('product')) .tcard").evaluateAll(els=>els.map(e=>e.dataset.tk));
   assert.deepEqual(await order(),["room:product|T003","room:product|T004"]);
