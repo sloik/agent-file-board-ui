@@ -129,6 +129,12 @@ test("AC6/R11 preferences survive reload; reset restores defaults", async () => 
     collapsed: s.collapsed, closedGroups: Object.keys(s.closedGroups).length, lastScope: s.lastScope, lastDir: s.lastDir }; });
   const before = await snap();
   assert.equal(before.lh, 1.9); assert.equal(before.lang, "pl"); assert.equal(before.rDays, "67"); assert.equal(before.lastDir, "architecture");
+  // Chromium commits localStorage writes asynchronously; a reload racing that write can see an empty
+  // store (seen once on CI). Wait until a second page of the same origin observes the write.
+  const probe = await ctx.newPage();
+  await probe.goto(page.url());
+  await probe.waitForFunction(() => { try { return JSON.parse(localStorage.getItem("agent-file-board-ui.settings")).lastDir === "architecture"; } catch (e) { return false; } }, null, { timeout: 5000 });
+  await probe.close();
   await page.reload();
   await h.openBoardViaUi(page);          // folder picker is a user gesture; preferences come from storage
   assert.deepEqual(await snap(), before);
