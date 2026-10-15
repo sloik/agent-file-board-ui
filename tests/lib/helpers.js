@@ -97,6 +97,7 @@ function fakeFsScript(tree, rootName) {
       if (c.kind !== "file") throw new DOMException("mismatch", "TypeMismatchError");
       return new FakeFile([...this.__path, name]); }
     async *entries() { const n = nodeAt(this.__path); for (const k of Object.keys(n.children)) yield [k, n.children[k].kind === "directory" ? new FakeDir([...this.__path, k]) : new FakeFile([...this.__path, k])]; }
+    async removeEntry(name) { const n=nodeAt(this.__path); if(!n.children[name]) throw nf(name); delete n.children[name]; save(); }
     async queryPermission() { return localStorage.getItem(PERM) || "granted"; }
     async requestPermission() { localStorage.setItem(PERM, "granted"); return "granted"; } }
   // Structured clone (IndexedDB) drops prototypes: re-hydrate plain {__path} objects into FakeDir.

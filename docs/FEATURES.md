@@ -48,8 +48,19 @@ participant pickers and autocomplete. Colors stay tied to identity.
 
 Presence is self-reported and depends on heartbeat renewals and file synchronization;
 it cannot prove that a process is connected or responsive. Historical messages
-and registered identifiers remain valid after release or expiry. Choosing **I am**
-does not register a session. Uploaded folders are snapshots: lease expiration is
+and registered identifiers remain valid after release or expiry. Selecting your own **human** identity in **I am** on a writable native board
+starts a browser session. Renewals run every minute, even with transcript refresh
+off, and the lease lasts 15 minutes. A remembered explicit human selection rejoins
+on opening a board; an inferred default sender needs a selection or **Appear active**.
+Switching identity or folder releases this document's binding and posts a departure.
+Closing, crashing or suspending the browser lets the lease expire; unload writes
+are unreliable and are not used. A second tab/device observes an existing live
+session without taking it over; after expiry it can start its own new binding.
+Arrival/departure notices use the default room and reserved session-presence topic;
+renewals do not post messages. The Participants panel shows browser-session state and a retry action for errors.
+Browser tabs use a local Web Lock when available; Dropbox replicas and CLI/browser
+races remain eventual and can produce a visible conflict. Selecting an **agent**
+never attaches or renews it: its actual agent session must use the lifecycle commands. Uploaded folders are snapshots: lease expiration is
 shown locally, but renewals require a fresh upload.
 
 Agents use the standard’s `boardctl session start`, `heartbeat`, `release` and
