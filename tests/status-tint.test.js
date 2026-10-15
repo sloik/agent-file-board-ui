@@ -8,25 +8,38 @@ after(async()=>{await browser.close();});
 const statuses=["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 async function boot(scheme){
   const proj=h.layoutExample(h.tmpDir()),dir=h.path.join(proj,".agent-board/rooms/status-check");h.fs.mkdirSync(dir,{recursive:true});
-  for(const [i,status] of statuses.entries())h.fs.writeFileSync(h.path.join(dir,`2026-10-15_120${i}_research-agent-01_T009_status-${i}.txt`),`FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: status-check\nTHREAD: T009-status-check\nDATE: 2026-10-15 12:0${i}\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: ${status}\n---\nStatus example ${status}\n`);
+  for(const [i,status] of statuses.entries()){
+    const tid='T'+String(9+i).padStart(3,'0');
+    h.fs.writeFileSync(h.path.join(dir,`2026-10-15_120${i}_research-agent-01_${tid}_status-${i}.txt`),`FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: status-check\nTHREAD: ${tid}-status-check\nDATE: 2026-10-15 12:0${i}\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: ${status}\n---\nStatus example ${status}\n`);
+  }
   const s=await h.openPage(browser,{tree:h.readTree(proj),colorScheme:scheme,clock:new Date("2026-10-15T10:30:00Z")});await h.openBoardViaUi(s.page);await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));return s;
 }
+function contrast(a,b){
+  const luminance=color=>{
+    const rgb=color.match(/[\d.]+/g).slice(0,3).map(n=>Number(n)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+    return rgb.reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+  };
+  const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);
+}
 for(const scheme of ["light","dark"])test(`composer and chat share status colors in ${scheme} mode`,async()=>{
-  const {ctx,page,log}=await boot(scheme);const colors={};
+  const {ctx,page,log}=await boot(scheme);const colors={},palettes=[];
+  await page.click("[data-closed=\"room:status-check\"]");
   await page.fill("#cBody","Keep this draft");
   for(const status of statuses){
     await page.selectOption("#cStatus",status);
     const result=await page.evaluate(status=>{
       const badge=document.querySelector("#cStatusPreview"),chat=document.querySelector(`.msg .chip.status.s-${status}`),field=document.querySelector("#cBody"),composer=document.querySelector("#composer");
       const read=el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.color,s.borderColor];};
-      return {badge:read(badge),chat:read(chat),fieldBackground:getComputedStyle(field).backgroundColor,fieldBorder:getComputedStyle(field).borderColor,tone:getComputedStyle(composer).getPropertyValue("--status-bg"),text:badge.textContent};
+      return {badge:read(badge),chat:read(chat),fieldBackground:getComputedStyle(field).backgroundColor,fieldBorder:getComputedStyle(field).borderColor,tone:getComputedStyle(composer).getPropertyValue("--status-bg"),text:badge.textContent,dot:getComputedStyle(document.querySelector(`.tcard .sdot.s-${status}`)).backgroundColor};
     },status);
     assert.deepEqual(result.badge,result.chat,status);assert.equal(result.fieldBorder,result.badge[2],status);assert.equal(result.text,status);
-    colors[status]=result.fieldBackground;
+    colors[status]=result.fieldBackground;palettes.push(result.badge);
+    assert.equal(result.dot,result.badge[1],status+" sidebar dot matches pill ink");
+    assert.ok(contrast(result.badge[0],result.badge[1])>=4.5,status+" pill text contrast");
     assert.equal(await page.inputValue("#cBody"),"Keep this draft");
   }
-  assert.equal(colors.INFO,colors.REPLY);assert.equal(colors.DONE,colors.CLOSED);assert.equal(colors.QUESTION,colors.REQUEST);
-  assert.equal(new Set([colors.INFO,colors.QUESTION,colors.DONE,colors["DECISION-NEEDED"]]).size,4);
+  assert.equal(new Set(Object.values(colors)).size,7,"every status has a distinct composer tint");
+  for(const channel of [0,1,2]) assert.equal(new Set(palettes.map(p=>p[channel])).size,7,"pill backgrounds, text and borders are individually distinct");
   // The same palette also follows a live system-theme switch.
   await page.emulateMedia({colorScheme:scheme==="light"?"dark":"light"});
   assert.notEqual(await page.locator("#cBody").evaluate(el=>getComputedStyle(el).backgroundColor),colors.CLOSED);
@@ -51,7 +64,7 @@ for(const scheme of ["light","dark"])test(`speech bubbles keep sender colors acr
   assert.equal(new Set(research.map(m=>m.background)).size,1,'sender background is independent of status');
   assert.equal(new Set(research.map(m=>m.border)).size,1,'sender border is independent of status');
   assert.ok(research.every(m=>parseFloat(m.width)>=2),'sender border is visible');
-  assert.ok(new Set(research.map(m=>m.pill)).size>=4,'status pills keep their distinct colors');
+  assert.equal(new Set(research.map(m=>m.pill)).size,7,'every status pill has its own color');
   const implementation=initial.find(m=>m.author==='implementation-agent-01');
   assert.notEqual(implementation.background,research[0].background,'different senders have different bubble colors');
   assert.notEqual(implementation.border,research[0].border);

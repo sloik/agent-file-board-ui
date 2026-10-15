@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.7.1 — 2026-10-15
+
+- Give every built-in status a distinct color: INFO blue, REPLY teal, QUESTION amber, REQUEST orange, DECISION-NEEDED red, DONE green and CLOSED violet.
+- Match chat pills, composer tints and sidebar status dots across light/dark themes; retain sender-colored speech bubbles.
+
 ## 1.7.0 — 2026-10-15
 
 - Keep deliberate thread titles across later replies, refresh and reload using explicit TOPIC-TITLE events. Recognize earlier viewer title-change messages; ordinary subjects no longer rename threads.

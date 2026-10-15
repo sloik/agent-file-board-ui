@@ -144,6 +144,25 @@ async function main() {
     assert.deepEqual(html.log.consoleErrors, []);
     assert.equal(html.log.requests.filter(url => !url.startsWith("file:")).length, 0);
     await html.ctx.close();
+
+    const statuses=["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
+    for(const [i,status] of statuses.entries()){
+      const result=h.boardctl(["post","--path",project,"--from","human-owner-01","--to","all","--scope","room","--room","status-palette","--thread","T"+String(20+i).padStart(3,"0"),"--slug",status.toLowerCase(),"--status",status,"--language","en","--at","2026-10-15T10:32:00Z","--body","Each status has its own color; the bubble keeps the sender’s color."]);
+      assert.equal(result.code,0,result.err);
+    }
+    const palette=await h.openPage(browser,{tree:h.readTree(project),rootName:"canonical-example",clock:AT});
+    await palette.page.setViewportSize({width:1440,height:1500});await h.openBoardViaUi(palette.page);
+    await palette.page.click(".fname[data-dir='status-palette']");await palette.page.click("[data-closed='room:status-palette']");
+    await palette.page.selectOption("#cStatus","REQUEST");await palette.page.fill("#cBody","Drafting a request — orange matches its status pill.");
+    assert.equal(await palette.page.locator("#feed .chip.status").count(),7);
+    await palette.page.locator("#feed").evaluate(el=>{el.scrollTop=0;});
+    for(const scheme of ["light","dark"]){
+      await palette.page.emulateMedia({colorScheme:scheme});
+      const name=scheme==="light"?"board-status-colors.png":"board-status-colors-dark.png";
+      await palette.page.screenshot({path:h.path.join(OUT,name),animations:"disabled"});console.log("docs/images/"+name);
+    }
+    assert.deepEqual(palette.log.pageErrors,[]);await palette.ctx.close();
+
   } finally {
     await browser.close();
     h.fs.rmSync(tmp, { recursive: true, force: true });

@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.7.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.7.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -140,10 +140,21 @@ The draft's tint matches its status capsule and the capsules shown in chat:
 
 | Status | Color |
 | --- | --- |
-| INFO, REPLY | Blue |
-| QUESTION, REQUEST | Amber |
+| INFO | Blue |
+| REPLY | Teal |
+| QUESTION | Amber |
+| REQUEST | Orange |
 | DECISION-NEEDED | Red |
-| DONE, CLOSED | Green |
+| DONE | Green |
+| CLOSED | Violet |
+
+All seven built-in statuses have distinct backgrounds, text and borders in both
+themes. Sidebar status dots use the same status ink; bubbles keep sender colors.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/board-status-colors-dark.png">
+  <img alt="Seven messages with distinct status pills and matching sidebar dots, plus a matching request draft tint." src="images/board-status-colors.png">
+</picture>
 
 Reply from a message to retain its reply target, or start a topic with the next
 free ID. Use **Set title** above a selected topic to append its current title

@@ -87,8 +87,7 @@ body.resizing{cursor:col-resize;user-select:none}
 .tcard:hover{background:var(--hover)}
 .tcard.active{background:var(--panel2);border-color:var(--line);box-shadow:inset 3px 0 0 var(--accent)}
 .tcard .row1{display:flex;align-items:center;gap:7px}
-.tcard .sdot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted)}
-.sdot.s-REQUEST,.sdot.s-QUESTION{background:#f59e0b}.sdot.s-DECISION-NEEDED{background:#e11d48}.sdot.s-DONE,.sdot.s-CLOSED{background:#16a34a}.sdot.s-REPLY,.sdot.s-INFO{background:#60a5fa}
+.tcard .sdot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--status-ink,var(--muted))}
 .tcard .tid{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
 .tcard.active .tid{color:var(--accent)}
 .tcard .ttl{font-weight:600;font-size:13.5px;line-height:1.3;margin:2px 0 4px 15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -119,16 +118,23 @@ body.resizing{cursor:col-resize;user-select:none}
 .to{font-size:12px;color:var(--muted)}
 .chip{font-size:11px;border-radius:999px;padding:1px 8px;background:var(--hover);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
 .status-tone{--status-bg:var(--hover);--status-ink:var(--muted);--status-border:var(--line)}
-.status-tone.s-INFO,.status-tone.s-REPLY{--status-bg:#edf3ff;--status-ink:#315da8;--status-border:#c9d9f5}
-.status-tone.s-REQUEST,.status-tone.s-QUESTION{--status-bg:#fff4e5;--status-ink:#9a5b00;--status-border:#ffd9a8}
+/* Each built-in status has its own hue; pills, composer and sidebar share it. */
+.status-tone.s-INFO{--status-bg:#edf3ff;--status-ink:#315da8;--status-border:#c9d9f5}
+.status-tone.s-REPLY{--status-bg:#e7f6f8;--status-ink:#116d79;--status-border:#b4dfe5}
+.status-tone.s-QUESTION{--status-bg:#fff5d6;--status-ink:#805b00;--status-border:#edd690}
+.status-tone.s-REQUEST{--status-bg:#fff0e7;--status-ink:#9c4810;--status-border:#f3c9ac}
 .status-tone.s-DECISION-NEEDED{--status-bg:#fde8ef;--status-ink:#b0174f;--status-border:#f7c1d2}
-.status-tone.s-DONE,.status-tone.s-CLOSED{--status-bg:#e7f6ee;--status-ink:#11733f;--status-border:#bfe7cf}
+.status-tone.s-DONE{--status-bg:#e7f6ee;--status-ink:#11733f;--status-border:#bfe7cf}
+.status-tone.s-CLOSED{--status-bg:#f2edfb;--status-ink:#69449d;--status-border:#d7c7ee}
 .chip.status{font-weight:600;background:var(--status-bg);color:var(--status-ink);border-color:var(--status-border)}
 @media (prefers-color-scheme:dark){
-.status-tone.s-INFO,.status-tone.s-REPLY{--status-bg:#192b48;--status-ink:#a9c5ff;--status-border:#344e79}
-.status-tone.s-REQUEST,.status-tone.s-QUESTION{--status-bg:#3a2a10;--status-ink:#ffcf86;--status-border:#5a4318}
+.status-tone.s-INFO{--status-bg:#192b48;--status-ink:#a9c5ff;--status-border:#344e79}
+.status-tone.s-REPLY{--status-bg:#123039;--status-ink:#8fdae2;--status-border:#28515a}
+.status-tone.s-QUESTION{--status-bg:#362e13;--status-ink:#f1d77c;--status-border:#5b4e1e}
+.status-tone.s-REQUEST{--status-bg:#382617;--status-ink:#ffb783;--status-border:#634324}
 .status-tone.s-DECISION-NEEDED{--status-bg:#3c1626;--status-ink:#ff9dbf;--status-border:#5d2238}
-.status-tone.s-DONE,.status-tone.s-CLOSED{--status-bg:#123224;--status-ink:#8be0b2;--status-border:#1f4d37}}
+.status-tone.s-DONE{--status-bg:#123224;--status-ink:#8be0b2;--status-border:#1f4d37}
+.status-tone.s-CLOSED{--status-bg:#2b223d;--status-ink:#cdb4ff;--status-border:#51416b}}
 .draft-status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .composer.status-tone .write textarea{background:color-mix(in srgb,var(--status-bg) 55%,var(--panel2));border-color:var(--status-border)}
 .thread-link{cursor:pointer}
@@ -410,7 +416,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.7.0";
+const VIEWER_VERSION = "1.7.1";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1268,7 +1274,7 @@ function build({background = false, preserveComposer = false} = {}){
   const card = key => { const x = th[key], ht = {title:threadTitle(x)};
     const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i data-party="${esc(w)}" style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
     return `<button class="tcard ${unreadTopics.get(key)?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
-      <div class="row1"><span class="sdot s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(unreadTopics.get(key)||0)}</div>
+      <div class="row1"><span class="sdot status-tone s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(unreadTopics.get(key)||0)}</div>
       <div class="ttl">${esc(ht.title||t("no_title"))}</div>
       <div class="row2"><span class="faces">${faces}</span><span style="margin-left:6px">${esc(x.last.slice(5,16))} \u00b7 ${esc(x.status.toLowerCase())}</span><span class="n">${x.n}</span></div></button>`; };
   const folder = (scope, dir) => {
