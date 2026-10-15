@@ -15,6 +15,11 @@ async function main() {
     const project = h.layoutExample(tmp);
     h.fs.copyFileSync(h.path.join(h.VENDOR, ".agent-board", "GLOSSARY.md"),
       h.path.join(project, ".agent-board", "GLOSSARY.md"));
+    h.fs.writeFileSync(h.path.join(project, ".agent-board/rooms/architecture/GUIDANCE.md"),
+      "# Architecture room\n\nDiscuss schemas and interfaces here. Keep product decisions in the product room.\n\n- State the question or proposed change.\n- Link the owning artifact when work is complete.\n");
+    h.fs.mkdirSync(h.path.join(project, ".agent-board/rooms/architecture/topics"), {recursive:true});
+    h.fs.writeFileSync(h.path.join(project, ".agent-board/rooms/architecture/topics/T001.md"),
+      "# Message schema guidance\n\nPreserve participant IDs and immutable history.\n\n| Post | Include |\n|---|---|\n|Proposal|Concrete fields and rationale|\n|Completion|Artifact path and validation|\n");
     // A real CLI lease in the temporary fixture demonstrates active/ghost presence.
     const session = h.boardctl(["session", "start", "implementation-agent-01", "--path", project,
       "--session", "session-doc-demo", "--summary", "Implement message rendering; can help with schema reviews.",
@@ -41,6 +46,10 @@ async function main() {
     await capture("board-presence.png");
     await page.click("#presenceClose");
     await page.selectOption("#me", "human-owner-01");
+    await page.click("#guidanceOpen");
+    await page.waitForFunction(()=>document.querySelectorAll("#guidanceDocs h1").length===2);
+    await capture("board-guidance.png");
+    await page.click("#guidanceClose");
 
     await page.selectOption("#cStatus", "DECISION-NEEDED");
     await page.fill("#cBody", "Please confirm the schema before implementation starts.\n\nNext action: @rese");

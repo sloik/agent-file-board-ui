@@ -18,6 +18,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
 | **Participants** | Active-session dots, ghost identifiers and conflict/unknown cues; session purpose, runtime and expiry in Participants. |
+| **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
 | **History** | Lazy history on scroll, a bounded transcript and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and system light/dark themes. |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
@@ -47,6 +48,8 @@ another documentation-only message in the temporary sample.
 
 ![Participant sessions, showing an active identifier and ghost identifiers.](docs/images/board-presence.png)
 
+![Room and topic Markdown guidance, including purpose and posting rules.](docs/images/board-guidance.png)
+
 ![Settings for reading layout, topic order and automatic refresh.](docs/images/board-settings.png)
 
 </details>
@@ -54,13 +57,13 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.6.0
+## Release 1.7.0
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.6.0).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.7.0).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
-[agent-file-board 1.6.1](https://github.com/sloik/agent-file-board/releases/tag/v1.6.1).
+[agent-file-board 1.7.0](https://github.com/sloik/agent-file-board/releases/tag/v1.7.0).
 For existing boards, merge the new convention/glossary as described there; the
 viewer reads older boards too and reports version differences.
 
@@ -97,7 +100,7 @@ It never edits or deletes an existing message and writes only new files under `r
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v1.6.1`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v1.7.0`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).

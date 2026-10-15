@@ -281,7 +281,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
   </aside>
   <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
   <section class="feed-wrap">
-    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div></div>
+    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div><button class="btn" id="guidanceOpen" data-i18n="guidance_title" hidden></button></div>
     <div class="feed" id="feed" tabindex="0"></div>
     <div class="composer-resizer" id="composerResizer" role="separator" aria-orientation="horizontal" tabindex="0" data-i18n-aria="composer_resize" data-i18n-title="composer_resize"></div>
     <div class="composer status-tone s-INFO" id="composer">
@@ -295,6 +295,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
           <label><span data-i18n="content_type"></span> <select id="cContentType"><option value="text/plain" data-i18n="content_plain"></option><option value="text/markdown">Markdown</option><option value="text/html">HTML</option></select></label>
           <label><span data-i18n="c_status"></span> <select id="cStatus"></select></label>
           <label><span data-i18n="c_lang"></span> <select id="cLang"></select></label>
+          <button class="btn" type="button" id="composeGuidance" data-i18n="guidance_posting"></button>
           <input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" size="11">
         </div>
         <div class="draft-status"><span data-i18n="draft_status"></span><span id="cStatusPreview" class="chip status status-tone s-INFO">INFO</span></div>
@@ -309,6 +310,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 </div>
 <dialog id="vocabulary"><div class="vocabulary-head"><h2 data-i18n="vocabulary_title"></h2><button class="btn" id="vocabularyClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="vocabulary_source"></p><pre id="vocabularyText"></pre></dialog>
 <dialog id="presenceDialog"><div class="vocabulary-head"><h2 data-i18n="presence_title"></h2><button class="btn" id="presenceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="presence_note"></p><p class="hint" id="presenceSnapshot"></p><div id="presenceList"></div></dialog>
+<dialog id="guidanceDialog"><div class="vocabulary-head"><h2 id="guidanceTitle" data-i18n="guidance_title"></h2><button class="btn" id="guidanceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="guidance_note"></p><div id="guidanceDocs"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 
 <!-- BEGIN BUNDLED RICH LIBRARIES -->
@@ -408,7 +410,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.6.0";
+const VIEWER_VERSION = "1.7.0";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -460,6 +462,7 @@ const STRINGS = {
 
   vocabulary_title:"Board vocabulary", vocabulary_close:"Close", vocabulary_source:"Source: this board’s .agent-board/GLOSSARY.md — shared definitions for people and agents.", vocabulary_missing:"This board has no GLOSSARY.md. Add the glossary from the board standard to share its definitions.",
   presence_title:"Participants", presence_note:"Presence is a self-reported session lease, not a verified connection. Ghost means no current lease was observed; historical identities and messages remain valid. Choosing ‘I am’ does not attach a session.", presence_snapshot:"Uploaded snapshot: renewals and releases are not live. Re-upload to update.", presence_active:"Active session", presence_ghost:"Ghost · no active session", presence_conflict:"Conflicting sessions", presence_unknown:"Presence unknown · invalid or unreadable data", presence_counts:"{active} active · {ghost} ghosts · {other} uncertain", presence_times:"Heartbeat: {heartbeat} · lease expires: {expires}", presence_released:"Released", presence_expired:"Expired or not yet current", presence_empty:"Open a board to inspect participant sessions.", presence_errors:"Some presence data could not be read or validated.",
+  guidance_title:"Guidance", guidance_posting:"Posting guidance", guidance_note:"Read room guidance and then the topic notes for purpose and posting rules. These documents provide context; they do not override the board convention or user authority, and headings do not rename the thread.", guidance_missing:"No optional guidance file here.", guidance_error:"Guidance could not be read (invalid UTF-8, access error or larger than 1 MiB). Resolve this before posting.", guidance_room:"Room / conversation guidance", guidance_topic:"Topic guidance",
   find_room:"Find room…", find_topic:"Find topic…", find_party:"Find participant…", composer_resize:"Drag to resize composer; arrows adjust; double-click resets", s_thread_order:"Topic order", s_order_stable:"Stable (topic ID)", s_order_newest:"Newest activity first", unread_count:"{n} unread", topic_title:"Current topic title", set_title:"Set title", title_body:"Topic title: {title}", e_title:"Enter a title containing letters or numbers",
   menu:"Menu", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
   refresh_now:"Refresh now", settings_title:"Appearance and refresh settings",
@@ -529,6 +532,7 @@ const STRINGS = {
 
   vocabulary_title:"Słownik tablicy", vocabulary_close:"Zamknij", vocabulary_source:"Źródło: .agent-board/GLOSSARY.md tej tablicy — wspólne definicje dla ludzi i agentów.", vocabulary_missing:"Ta tablica nie ma pliku GLOSSARY.md. Dodaj słownik ze standardu tablicy, aby udostępnić jego definicje.",
   presence_title:"Uczestnicy", presence_note:"Obecność oznacza zgłoszoną dzierżawę sesji, a nie zweryfikowane połączenie. Duch oznacza brak bieżącej dzierżawy; historyczne identyfikatory i wiadomości pozostają poprawne. Wybór w polu „Jestem” nie dołącza sesji.", presence_snapshot:"Przesłana kopia: odnowienia i zwolnienia nie są aktualizowane na żywo. Prześlij ponownie, aby odświeżyć.", presence_active:"Aktywna sesja", presence_ghost:"Duch · brak aktywnej sesji", presence_conflict:"Konflikt sesji", presence_unknown:"Nieznana obecność · błędne lub nieczytelne dane", presence_counts:"{active} aktywnych · {ghost} duchów · {other} niepewnych", presence_times:"Sygnał: {heartbeat} · dzierżawa wygasa: {expires}", presence_released:"Zwolniona", presence_expired:"Wygasła lub jeszcze nieaktualna", presence_empty:"Otwórz tablicę, aby zobaczyć sesje uczestników.", presence_errors:"Część danych obecności jest nieczytelna lub niepoprawna.",
+  guidance_title:"Wskazówki", guidance_posting:"Zasady publikowania", guidance_note:"Przeczytaj wskazówki pokoju, a potem notatki tematu, aby poznać cel i zasady publikowania. To kontekst; nie zastępuje konwencji tablicy ani uprawnień użytkownika, a nagłówki nie zmieniają tytułu wątku.", guidance_missing:"Brak opcjonalnego pliku wskazówek.", guidance_error:"Nie można odczytać wskazówek (błędny UTF-8, błąd dostępu lub rozmiar ponad 1 MiB). Wyjaśnij to przed publikacją.", guidance_room:"Wskazówki pokoju / rozmowy", guidance_topic:"Wskazówki tematu",
   find_room:"Znajdź pokój…", find_topic:"Znajdź wątek…", find_party:"Znajdź uczestnika…", composer_resize:"Przeciągnij, aby zmienić wysokość edytora; strzałki zmieniają; dwuklik resetuje", s_thread_order:"Kolejność wątków", s_order_stable:"Stała (ID wątku)", s_order_newest:"Najnowsza aktywność najpierw", unread_count:"{n} nieprzeczytanych", topic_title:"Aktualny tytuł wątku", set_title:"Ustaw tytuł", title_body:"Tytuł wątku: {title}", e_title:"Podaj tytuł zawierający litery lub cyfry",
   menu:"Menu", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
   refresh_now:"Odśwież teraz", settings_title:"Ustawienia wyglądu i odświeżania",
@@ -619,6 +623,8 @@ function humanThread(label){
   s = s.charAt(0).toUpperCase()+s.slice(1);
   return {id:m[1], title:s};
 }
+function threadTitle(topic){ return topic?.title ?? humanThread(topic?.label||"").title; }
+function validTopicTitle(value){ return typeof value==="string" && value.trim() && [...value].length<=200 && /[\p{L}\p{N}]/u.test(value) && !/[\p{Cc}\p{Cs}\p{Zl}\p{Zp}]/u.test(value); }
 function locale(){ return S.lang==="pl" ? "pl-PL" : "en-GB"; }
 
 /* ===== parsing ===== */
@@ -730,6 +736,7 @@ function buildModel(files, dirs, meta){
   return {
     layout, cfg, people, msgs, messageIndex, byPath:new Map(msgs.map(m=>[m.path,m])), rooms:[...roomSet].sort(), directs:[...directSet].sort(), corrections:corr,
     glossary: byPath["GLOSSARY.md"] || "", presence:parsePresence(files,people,dirs),
+    guidance:new Map(files.filter(f=>isGuidancePath(f.path) || (f.guidanceError && /\/topics\/$/.test(f.path))).map(f=>[f.path,f])),
     boardVersion: ver, statuses: legacy ? DEFAULT_STATUSES : (Array.isArray(cfg.statuses)&&cfg.statuses.length? cfg.statuses : DEFAULT_STATUSES),   // legacy: shown natively, written as legacy codes
     languages: langs, defaultLanguage: (cfg.language && cfg.language.default) || langs[0] || "en",
     topicDefaults: (cfg.language && cfg.language.topic_defaults) || {},
@@ -804,7 +811,7 @@ function composeMessage(o){
   if(legacy && !/^T\d+$/.test(tid)) throw boardErr("e_bad_thread");
   const slug = o.slug;
   if(!SLUG_RE.test(slug||"")) throw boardErr("e_bad_slug");
-  const label = o.threadLabel || (tid+"-"+(o.newThreadName ? slugify(o.newThreadName) : slug));
+  const label = o.threadLabel || threadsOf()[scope+":"+dir+"|"+tid]?.label || (tid+"-"+(o.newThreadName ? slugify(o.newThreadName) : slug));
   if(!label.startsWith(tid+"-")) throw boardErr("e_bad_thread");
   const language = resolveLanguage(tid, o.sender, o.language);
   if(!legacy && !B.languages.includes(language)) throw boardErr("e_lang_not_allowed",{l:language});
@@ -830,6 +837,10 @@ function composeMessage(o){
       ["THREAD",label],["DATE",date],["LANGUAGE",language],["REPLY-TO",o.replyTo||"-"],["RUNTIME",rt],["STATUS",o.status]];
   }
   if(typeof o.at!=="string") headers.push(["POSTED-AT",nextPostingTime(o.sender,o.replyTo,o.at,scope+":"+dir)]);
+  if(o.topicTitle!==undefined){
+    if(!validTopicTitle(o.topicTitle)) throw boardErr("e_title");
+    headers.push(["TOPIC-TITLE",o.topicTitle.trim()]);
+  }
   if(!legacy){
     if(o.contentType && o.contentType!=="text/plain") headers.push(["CONTENT-TYPE",o.contentType]);
     if(o.question) headers.push(["QUESTION",JSON.stringify(o.question)]);
@@ -890,6 +901,15 @@ async function readMessageIndex(file){
   }
   const parsed=parseHeaders(text); parsed.body=parsed.body.slice(0,256); stats.indexReads++;
   return parsed;
+}
+function isGuidancePath(path){ return /^[^/]+\/[^/]+\/(?:GUIDANCE\.md|topics\/T\d+\.md)$/.test(path); }
+async function readGuidanceFile(path,file){
+  try{
+    if(file.size>1048576) throw Error("size");
+    const text=typeof file.arrayBuffer==="function"?new TextDecoder("utf-8",{fatal:true}).decode(await file.arrayBuffer()):await file.text();
+    if(/[\uD800-\uDFFF]/u.test(text)) throw Error("encoding");
+    return {path,text};
+  }catch(e){ return {path,text:"",guidanceError:true}; }
 }
 function forgetBodies(){ bodyCache.clear(); messageFiles.clear(); bodyRenderToken++; bodySearch={model:null,query:"",pending:false,hits:new Set()}; }
 async function messageBody(m){
@@ -974,6 +994,18 @@ async function readFromHandle(preserve = true){
       if(dh.kind!=="directory" || dn.startsWith(".")) continue;
       dirs.push(top+"/"+dn);
       await readInBatches(await entriesOf(dh),async([fn,fh])=>{
+        if(fn==="GUIDANCE.md"){
+          const path=top+"/"+dn+"/"+fn;
+          try{ if(fh.kind!=="file") throw Error(); files.push({path,guidanceFile:await fh.getFile()}); }catch(e){ files.push({path,text:"",guidanceError:true}); }
+        }else if(fn==="topics"){
+          try{
+            if(fh.kind!=="directory") throw Error();
+            for await(const [name,handle] of fh.entries()) if(/^T\d+\.md$/.test(name)){
+              const path=top+"/"+dn+"/topics/"+name;
+              try{ if(handle.kind!=="file") throw Error(); files.push({path,guidanceFile:await handle.getFile()}); }catch(e){ files.push({path,text:"",guidanceError:true}); }
+            }
+          }catch(e){ files.push({path:top+"/"+dn+"/topics/",text:"",guidanceError:true}); }
+        }
         if(fh.kind==="file" && fn.endsWith(".txt")){
           const file=await fh.getFile(), path=top+"/"+dn+"/"+fn, old=previousFiles.get(path);
           const reliable=Number.isFinite(file.size) && Number.isFinite(file.lastModified);
@@ -1007,10 +1039,11 @@ async function readFromInput(list){
     const p = segs(f); if(hasAB && p[1]!==".agent-board") return;
     const rel = p.slice(strip).join("/");
     if(/^(participants\.json|config\.json|CONVENTION\.md|GLOSSARY\.md|time-corrections\.txt|korekty-czasu\.txt)$/.test(rel) ||
-       /^[^/]+\/[^/]+\/[^/]+\.txt$/.test(rel) || rel.startsWith("presence/")){
+       /^[^/]+\/[^/]+\/[^/]+\.txt$/.test(rel) || rel.startsWith("presence/") || isGuidancePath(rel)){
       if(rel.endsWith(".txt") && rel.includes("/")){
         const row={path:rel,parsed:await readMessageIndex(f),file:f,lazy:true,size:f.size,lastModified:f.lastModified}; files.push(row); sources.set(rel,row);
-      }else files.push({path:rel,text:await f.text(),lastModified:f.lastModified});
+      }else if(isGuidancePath(rel)) files.push({path:rel,guidanceFile:f});
+      else files.push({path:rel,text:await f.text(),lastModified:f.lastModified});
     }
     const q = rel.split("/"); if(q.length>=3){ dirs.add(q[0]); dirs.add(q[0]+"/"+q[1]); }
   });
@@ -1158,7 +1191,12 @@ function threadsOf(){
   for(const m of B.msgs){
     if(!m.tid) continue;
     const x = th[m.tkey] || (th[m.tkey] = {key:m.tkey, tid:m.tid, label:m.label, dkey:m.dkey, scope:m.scope, dir:m.dir, n:0, last:"", status:"", who:new Set()});
-    if(!m.receipt){ x.n++; x.last = m.time; x.lastOrder=m.postedAt ?? m.modifiedAt; x.status = m.status; x.who.add(m.author); x.label = m.label; }
+    if(!m.receipt){
+      x.n++; x.last = m.time; x.lastOrder=m.postedAt ?? m.modifiedAt; x.status = m.status; x.who.add(m.author);
+    }
+    const explicit=m.h["TOPIC-TITLE"];
+    if(validTopicTitle(explicit) && !m.duplicates.includes("TOPIC-TITLE")){ x.title=explicit.trim(); x.label=m.label; }
+    else if(explicit===undefined && /_T\d+_topic-title-[a-z0-9-]+\.txt$/.test(m.file)){ x.title=humanThread(m.label).title; x.label=m.label; }
   }
   B.threadIndex=th; return th;
 }
@@ -1225,9 +1263,9 @@ function build({background = false, preserveComposer = false} = {}){
     if(q && msgMatches(m,q)) matchedTopics.add(m.tkey);
   }
   const match = key => { if(!q) return true; const x=th[key];
-    return (x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q) || matchedTopics.has(key); };
+    return (x.tid+" "+threadTitle(x)+" "+x.label).toLowerCase().includes(q) || matchedTopics.has(key); };
   const order = Object.keys(th).filter(match).sort((a,b)=> (S.threadOrder==="newest" ? (th[b].last.localeCompare(th[a].last) || (th[b].lastOrder||0)-(th[a].lastOrder||0)) : 0) || th[a].tid.localeCompare(th[b].tid) || a.localeCompare(b));
-  const card = key => { const x = th[key], ht = humanThread(x.label);
+  const card = key => { const x = th[key], ht = {title:threadTitle(x)};
     const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i data-party="${esc(w)}" style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
     return `<button class="tcard ${unreadTopics.get(key)?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
       <div class="row1"><span class="sdot s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(unreadTopics.get(key)||0)}</div>
@@ -1325,6 +1363,7 @@ function questionValue(raw){
   return q;
 }
 function messageMetadata(h, source){
+  if(h["TOPIC-TITLE"]!==undefined && !validTopicTitle(h["TOPIC-TITLE"])) throw Error("Invalid TOPIC-TITLE");
   if(h["POSTED-AT"]!==undefined && postingTime(h["POSTED-AT"])===null) throw Error("Invalid POSTED-AT");
   if(!["text/plain","text/markdown","text/html"].includes(h["CONTENT-TYPE"]||"text/plain")) throw Error("Invalid CONTENT-TYPE");
   if(h.QUESTION!==undefined && h.ANSWER!==undefined) throw Error("Conflicting question and answer");
@@ -1410,10 +1449,11 @@ function render(background = false){
   const meP = me ? B.people[me] : null;
   const view = matchingMessages(), page=messagePage(view,background);
   let titleText = t("all_messages");
-  if(sel.thread){ const topic = threadsOf()[sel.thread]; const ht = humanThread(topic?topic.label:""); titleText = ht.id+" \u00b7 "+ht.title; }
+  if(sel.thread){ const topic = threadsOf()[sel.thread]; titleText = (topic?.tid||"")+" \u00b7 "+threadTitle(topic); }
   else if(sel.scope) titleText = (sel.scope==="direct"?"\u2709 ":"# ")+dirTitle(sel.scope, sel.dir);
   $("#title").textContent = titleText;
   $("#titleEditor").hidden = !sel.thread;
+  $("#guidanceOpen").hidden = !sel.scope;
   const lastSt = sel.thread ? ((view.filter(m=>!m.receipt).pop()||{}).status||"") : "";
   $("#subtitle").textContent = t("n_messages",{n:view.length}) + (lastSt?" \u00b7 "+t("last_status",{s:lastSt}):"") + (q?" \u00b7 "+t("results_for",{q}):"");
   if(q && bodySearch.pending) $("#subtitle").textContent+=" · "+t("searching_history");
@@ -1472,7 +1512,33 @@ function render(background = false){
   lastCount = view.length;
 }
 
+let guidanceContext=null;
+function openGuidance(context){
+  if(!B || !context?.scope || !context.dir) return;
+  guidanceContext=context; $("#guidanceDialog").showModal(); renderGuidance();
+}
+function renderGuidance(){
+  if(!B || !guidanceContext || !$("#guidanceDialog").open) return;
+  const {scope,dir,tid}=guidanceContext;
+  const base=(scope==="direct"?B.layout.directDir:B.layout.roomsDir)+"/"+dir;
+  $("#guidanceTitle").textContent=t("guidance_title")+" · "+dirTitle(scope,dir)+(tid?" · "+tid:"");
+  const documents=[{path:base+"/GUIDANCE.md",label:t("guidance_room")}];
+  if(tid) documents.push({path:base+"/topics/"+tid+".md",label:t("guidance_topic")});
+  let html;
+  if(scope==="direct" && !dir.split("--").includes(currentUser())) html=`<p class="metadata-error">${esc(t("e_not_in_pair"))}</p>`;
+  else html=documents.map(({path,label})=>{
+    const row=B.guidance.get(path) || (path.includes("/topics/") && B.guidance.get(base+"/topics/"));
+    if(row?.guidanceFile && !row.guidanceLoaded && !row.loading){
+      const model=B;
+      row.loading=readGuidanceFile(path,row.guidanceFile).then(result=>{ Object.assign(row,result,{guidanceLoaded:true,loading:null}); if(B===model) renderGuidance(); });
+    }
+    return `<section data-guidance-path="${esc(path)}"><h3>${esc(label)}</h3><p class="hint"><code>${esc(path)}</code></p>${row?.guidanceError?`<p class="metadata-error">${esc(t("guidance_error"))}</p>`:row?.loading?`<p class="hint">${esc(t("message_loading"))}</p>`:row?`<div class="body">${richBody(row.text||"","","text/markdown")}</div>`:`<p class="hint">${esc(t("guidance_missing"))}</p>`}</section>`;
+  }).join("");
+  const next=document.createElement("div"); next.innerHTML=html;
+  if($("#guidanceDocs").innerHTML!==next.innerHTML) $("#guidanceDocs").replaceChildren(...next.childNodes);
+}
 function renderChrome(){
+  renderGuidance();
   $("#vocabularyText").textContent=B && B.glossary ? B.glossary : t("vocabulary_missing");
   $("#folderName").textContent = B ? (dirHandle ? t("folder_is",{name:dirHandle.name}) : t("read_only")) : t("folder_none");
   const bv = B ? (B.boardVersion || null) : null;
@@ -1554,7 +1620,7 @@ function fillThreads(prefer, preserve = false){
   const th = threadsOf();
   const all = Object.values(th).filter(x=>(x.scope+":"+x.dir)===where).sort((a,b)=>a.tid<b.tid?1:-1);
   const keys = new Set(all.map(x=>x.key));
-  optionsInto($("#cThread"), all.map(x=>`<option value="${esc(x.key)}">${esc(x.tid+" \u00b7 "+humanThread(x.label).title)}</option>`).join("") + `<option value="">${esc(t("c_new_thread_opt"))}</option>`);
+  optionsInto($("#cThread"), all.map(x=>`<option value="${esc(x.key)}">${esc(x.tid+" \u00b7 "+threadTitle(x))}</option>`).join("") + `<option value="">${esc(t("c_new_thread_opt"))}</option>`);
   if(preserve && prefer==="") $("#cThread").value=""; else if(prefer && keys.has(prefer)) $("#cThread").value = prefer; else if(all[0]) $("#cThread").value = all[0].key; else $("#cThread").value = "";
   $("#cNewThread").style.display = $("#cThread").value ? "none" : "inline-block";
   syncLang();
@@ -1640,12 +1706,12 @@ function suggest(){
   const raw = $("#q").value.trim(), q = raw.toLowerCase(), box = $("#sugg");
   if(!q || !B){ box.classList.remove("show"); box.innerHTML=""; return; }
   const th = threadsOf();
-  const ths = Object.values(th).filter(x=>(x.tid+" "+humanThread(x.label).title+" "+x.label).toLowerCase().includes(q)).sort((a,b)=>a.tid<b.tid?1:-1);
+  const ths = Object.values(th).filter(x=>(x.tid+" "+threadTitle(x)+" "+x.label).toLowerCase().includes(q)).sort((a,b)=>a.tid<b.tid?1:-1);
   const rooms = B.rooms.filter(r=>r.toLowerCase().includes(q));
   const directs = B.directs.filter(d=>d.toLowerCase().includes(q));
   const hits = B.msgs.filter(m=>!m.receipt && msgMatches(m,q)).length;
   let html = "";
-  if(ths.length) html += `<h4>${esc(t("sg_threads"))}</h4>` + ths.slice(0,8).map(x=>`<button data-pick="thread" data-tk="${esc(x.key)}"><span class="k">${esc(x.tid)}</span>${esc(humanThread(x.label).title)}<span class="c">${x.n}</span></button>`).join("");
+  if(ths.length) html += `<h4>${esc(t("sg_threads"))}</h4>` + ths.slice(0,8).map(x=>`<button data-pick="thread" data-tk="${esc(x.key)}"><span class="k">${esc(x.tid)}</span>${esc(threadTitle(x))}<span class="c">${x.n}</span></button>`).join("");
   if(rooms.length) html += `<h4>${esc(t("sg_rooms"))}</h4>` + rooms.map(r=>`<button data-pick="room" data-dir="${esc(r)}"><span class="k">#</span>${esc(r)}<span class="c">${B.msgs.filter(m=>m.dkey==="room:"+r&&!m.receipt).length}</span></button>`).join("");
   if(directs.length) html += `<h4>${esc(t("sg_direct"))}</h4>` + directs.map(d=>`<button data-pick="direct" data-dir="${esc(d)}"><span class="k">\u2709</span>${esc(dirTitle("direct",d))}<span class="c">${B.msgs.filter(m=>m.dkey==="direct:"+d&&!m.receipt).length}</span></button>`).join("");
   html += `<h4>${esc(t("sg_messages"))}</h4><button data-pick="text" class="all">${esc(t("sg_text",{q:raw}))}<span class="c">${hits}</span></button>`;
@@ -1739,7 +1805,7 @@ function wireCompletions(){
     if(!match) return [];
     const q=match[2].toLowerCase(), start=body.selectionStart-match[2].length-1;
     let all=match[1]==="@" ? Object.values(B.people).map(p=>({label:p.name+" · "+p.id,value:"@"+p.id,party:p.id})) :
-      [...B.rooms.map(r=>({label:"#"+r,value:"#"+r})),...Object.values(threadsOf()).map(x=>({label:x.tid+" · "+humanThread(x.label).title+" · "+x.dir,value:"#"+x.label}))];
+      [...B.rooms.map(r=>({label:"#"+r,value:"#"+r})),...Object.values(threadsOf()).map(x=>({label:x.tid+" · "+threadTitle(x)+" · "+x.dir,value:"#"+x.label}))];
     return all.filter(o=>(o.label+" "+o.value).toLowerCase().includes(q)).slice(0,30).map(o=>({...o,start,end:body.selectionStart}));
   },o=>{ body.setRangeText(o.value+" ",o.start,o.end,"end"); });
 }
@@ -1767,9 +1833,9 @@ async function deliverMessage(msg){
   }
 }
 async function setTopicTitle(){
-  const topic=B && threadsOf()[sel.thread], title=slugify($("#topicTitle").value);
+  const topic=B && threadsOf()[sel.thread], rawTitle=$("#topicTitle").value.trim(), title=slugify(rawTitle)||"topic";
   if(!topic) return;
-  if(!title){ toast(t("e_title")); return; }
+  if(!validTopicTitle(rawTitle)){ toast(t("e_title")); return; }
   const button=$("#setTitle"); button.disabled=true;
   try{
     const sender=currentUser(), person=guardRegistered(sender);
@@ -1777,7 +1843,7 @@ async function setTopicTitle(){
     if(person.kind==="agent" && !confirmed) return;
     const body=t("title_body",{title:$("#topicTitle").value.trim()});
     const options={sender,to:topic.scope==="direct"?topic.dir.split("--").find(id=>id!==sender):"all",scope:topic.scope,room:topic.dir,pair:topic.scope==="direct"?topic.dir:null,
-      tid:topic.tid,threadLabel:topic.tid+"-"+title,slug:"topic-title-"+title,status:topic.status||"INFO",language:resolveLanguage(topic.tid,sender,null),body,confirmedAgent:confirmed};
+      tid:topic.tid,topicTitle:rawTitle,threadLabel:topic.tid+"-"+title,slug:"topic-title-"+title,status:topic.status||"INFO",language:resolveLanguage(topic.tid,sender,null),body,confirmedAgent:confirmed};
     const msg=composeMessage(options);
     await deliverMessage(msg); $("#topicTitle").value="";
   }catch(e){ toast(e.name==="BoardError"?e.message:t("e_write",{m:e.message})); }
@@ -1886,6 +1952,12 @@ function wire(){
   $("#vocabularyClose").onclick=()=>$("#vocabulary").close();
   $("#presenceOpen").onclick=()=>{ $("#presenceDialog").showModal(); renderPresence(); };
   $("#presenceClose").onclick=()=>$("#presenceDialog").close();
+  $("#guidanceOpen").onclick=()=>openGuidance({scope:sel.scope,dir:sel.dir,tid:threadsOf()[sel.thread]?.tid});
+  $("#composeGuidance").onclick=()=>{
+    const [scope,...parts]=$("#cWhere").value.split(":"), topic=threadsOf()[$("#cThread").value];
+    openGuidance({scope,dir:parts.join(":"),tid:topic?.tid});
+  };
+  $("#guidanceClose").onclick=()=>$("#guidanceDialog").close();
   $("#gear").onclick = ()=>$("#settings").classList.toggle("show");
   $("#sClose").onclick = ()=>$("#settings").classList.remove("show");
   $("#sReset").onclick = ()=>{ S = {...DEF, collapsed:{}, closedGroups:{}}; saveSettings(); refreshAll(); };

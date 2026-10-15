@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.7.0 — 2026-10-15
+
+- Keep deliberate thread titles across later replies, refresh and reload using explicit TOPIC-TITLE events. Recognize earlier viewer title-change messages; ordinary subjects no longer rename threads.
+- Display optional room/conversation GUIDANCE.md and topics/Txxx.md Markdown from a Guidance panel and from the composer’s Posting guidance action. Bodies load only when opened.
+- Pin standard1.7.0 with bounded CLI/skill guidance reads and persistent topic title conventions.
+
 ## 1.6.0 — 2026-10-15
 
 - Display leased participant presence: active, ghost, conflicting or unknown, with session/runtime/purpose details in Participants. Historical identifiers and messages remain intact.
