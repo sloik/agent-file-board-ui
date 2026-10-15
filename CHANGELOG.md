@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.8.0 — 2026-10-15
+
+- Every choice question offers a custom message: send selected options with a note or a text-only reply. Clear choices also works for radio buttons.
+- Preserve text, selections and caret through refresh and identity changes; detect duplicates using the whole answer. Custom replies stay plain text and retain the usual identity/routing safeguards.
+- Pin standard1.8.0 with validated optional `ANSWER.text`.
+
 ## 1.7.3 — 2026-10-15
 
 - Explain that a ghost has no active board session, with explicit agent attachment guidance in Participants. Posting alone does not attach or renew a session.

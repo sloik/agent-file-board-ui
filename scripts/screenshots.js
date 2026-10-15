@@ -95,11 +95,12 @@ async function main() {
     const rich = await h.openPage(browser, {
       tree: h.readTree(project), rootName: "canonical-example", clock: AT,
     });
-    await rich.page.setViewportSize({ width: 1440, height: 1120 });
+    await rich.page.setViewportSize({ width: 1440, height: 1440 });
     await h.openBoardViaUi(rich.page);
     await rich.page.selectOption("#me", "human-owner-01");
     await rich.page.click(".tcard[data-tk='room:delivery|T004']");
     await rich.page.locator(".choice-form input[value=staging]").check();
+    await rich.page.locator(".choice-form textarea").fill("Please verify the build first; I can review the results.");
     await rich.page.locator("#feed").evaluate(el => { el.scrollTop = 0; });
     await rich.page.screenshot({ path: h.path.join(OUT, "board-choices.png"), animations: "disabled" });
     console.log("docs/images/board-choices.png");

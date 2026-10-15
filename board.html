@@ -171,6 +171,8 @@ body.resizing{cursor:col-resize;user-select:none}
 .choice-form fieldset{border:0;margin:0;padding:0;min-width:0}
 .choice-form legend{font-weight:700;overflow-wrap:anywhere}
 .choice-form label{display:flex;align-items:baseline;gap:8px;padding:5px 0;overflow-wrap:anywhere}
+.choice-form .choice-note{display:block;margin-top:12px}
+.choice-form textarea{display:block;box-sizing:border-box;width:100%;min-width:0;resize:vertical;margin-top:6px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--ink)}
 .choice-form button{margin-top:8px}
 .choice-form button:disabled{opacity:.5;cursor:default}
 .metadata-error{color:var(--warn-ink);background:var(--warn-bg);padding:8px;border-radius:6px}
@@ -416,7 +418,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.7.3";
+const VIEWER_VERSION = "1.8.0";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -464,7 +466,7 @@ const lastPostTimes=new Map();
 const STRINGS = {
  en:{
   draft_status:"Message status",
-  content_type:"Format", content_plain:"Plain text", choice_single:"Choose one option", choice_multiple:"Choose one or more options", choice_send:"Send answer", choice_required:"Choose an option first", choice_already:"This answer has already been posted", choice_sent:"Answer posted", choice_answer_body:"Question: {q}\nSelected: {a}", invalid_metadata:"Invalid message metadata; interactive controls are unavailable.", choice_legacy:"Interactive questions require a native board",
+  content_type:"Format", content_plain:"Plain text", choice_single:"Choose an option, write a reply, or do both", choice_multiple:"Choose options, write a reply, or do both", choice_clear:"Clear choices", choice_text:"Your message", choice_text_hint:"Add a note or write your own answer…", choice_text_limit:"Up to 10,000 characters. A message can be sent without choosing an option.", choice_none:"No options selected", choice_send:"Send answer", choice_required:"Choose an option or enter a message (up to 10,000 characters)", choice_already:"This answer has already been posted", choice_sent:"Answer posted", choice_answer_body:"Question: {q}\nSelected: {a}", invalid_metadata:"Invalid message metadata; interactive controls are unavailable.", choice_legacy:"Interactive questions require a native board",
 
   vocabulary_title:"Board vocabulary", vocabulary_close:"Close", vocabulary_source:"Source: this board’s .agent-board/GLOSSARY.md — shared definitions for people and agents.", vocabulary_missing:"This board has no GLOSSARY.md. Add the glossary from the board standard to share its definitions.",
   browser_join:"Appear active", browser_live:"● Browser session active", browser_wait:"Active in another session", browser_error:"Presence unavailable · retry", browser_select:"Choose your own human identity to appear active.", browser_leave_error:"Could not release the previous browser session; its lease will expire. {m}",
@@ -535,7 +537,7 @@ const STRINGS = {
  },
  pl:{
   draft_status:"Status wiadomości",
-  content_type:"Format", content_plain:"Zwykły tekst", choice_single:"Wybierz jedną opcję", choice_multiple:"Wybierz co najmniej jedną opcję", choice_send:"Wyślij odpowiedź", choice_required:"Najpierw wybierz opcję", choice_already:"Ta odpowiedź została już wysłana", choice_sent:"Odpowiedź wysłana", choice_answer_body:"Pytanie: {q}\nWybrano: {a}", invalid_metadata:"Nieprawidłowe metadane wiadomości; pola wyboru są niedostępne.", choice_legacy:"Pytania z wyborem wymagają natywnej tablicy",
+  content_type:"Format", content_plain:"Zwykły tekst", choice_single:"Wybierz opcję, napisz odpowiedź lub zrób obie rzeczy", choice_multiple:"Wybierz opcje, napisz odpowiedź lub zrób obie rzeczy", choice_clear:"Wyczyść wybór", choice_text:"Twoja wiadomość", choice_text_hint:"Dodaj komentarz lub własną odpowiedź…", choice_text_limit:"Do 10 000 znaków. Możesz wysłać wiadomość bez wybierania opcji.", choice_none:"Nie wybrano opcji", choice_send:"Wyślij odpowiedź", choice_required:"Wybierz opcję lub wpisz wiadomość (do 10 000 znaków)", choice_already:"Ta odpowiedź została już wysłana", choice_sent:"Odpowiedź wysłana", choice_answer_body:"Pytanie: {q}\nWybrano: {a}", invalid_metadata:"Nieprawidłowe metadane wiadomości; pola wyboru są niedostępne.", choice_legacy:"Pytania z wyborem wymagają natywnej tablicy",
 
   vocabulary_title:"Słownik tablicy", vocabulary_close:"Zamknij", vocabulary_source:"Źródło: .agent-board/GLOSSARY.md tej tablicy — wspólne definicje dla ludzi i agentów.", vocabulary_missing:"Ta tablica nie ma pliku GLOSSARY.md. Dodaj słownik ze standardu tablicy, aby udostępnić jego definicje.",
   browser_join:"Zgłoś obecność", browser_live:"● Aktywna sesja przeglądarki", browser_wait:"Aktywny w innej sesji", browser_error:"Obecność niedostępna · ponów", browser_select:"Wybierz własny identyfikator człowieka, aby zgłosić obecność.", browser_leave_error:"Nie udało się zwolnić poprzedniej sesji; jej dzierżawa wygaśnie. {m}",
@@ -1504,11 +1506,11 @@ function messageMetadata(h, source){
   let answer=null;
   if(h.ANSWER!==undefined){
     answer=jsonObject(h.ANSWER);
-    if(Object.keys(answer).sort().join(",")!=="question,selected" || !/^[a-z][a-z0-9-]{0,63}$/.test(answer.question) || !Array.isArray(answer.selected) || !answer.selected.length || answer.selected.some(v=>typeof v!=="string" || !/^[a-z][a-z0-9-]{0,63}$/.test(v)) || new Set(answer.selected).size!==answer.selected.length) throw Error("Invalid ANSWER");
+    if(!["question,selected","question,selected,text"].includes(Object.keys(answer).sort().join(",")) || !/^[a-z][a-z0-9-]{0,63}$/.test(answer.question) || !Array.isArray(answer.selected) || (!answer.selected.length && answer.text===undefined) || (answer.text!==undefined && !validChoiceText(answer.text)) || answer.selected.some(v=>typeof v!=="string" || !/^[a-z][a-z0-9-]{0,63}$/.test(v)) || new Set(answer.selected).size!==answer.selected.length) throw Error("Invalid ANSWER");
     if(!source || !source.QUESTION || source.ANSWER!==undefined || !h["REPLY-TO"] || /[/\\]/.test(h["REPLY-TO"]) || !h["REPLY-TO"].endsWith(".txt")) throw Error("Missing question target");
     messageMetadata(source);
     const q=questionValue(source.QUESTION);
-    if(q.id!==answer.question || answer.selected.some(v=>!q.options.some(o=>o.id===v)) || (q.type==="single" && answer.selected.length!==1) || h.SCOPE!==source.SCOPE || h.THREAD.split("-")[0]!==source.THREAD.split("-")[0] || h.ROOM!==source.ROOM || h["DIRECT-PARTICIPANTS"]!==source["DIRECT-PARTICIPANTS"]) throw Error("Answer does not match question");
+    if(q.id!==answer.question || answer.selected.some(v=>!q.options.some(o=>o.id===v)) || (q.type==="single" && answer.selected.length>1) || h.SCOPE!==source.SCOPE || h.THREAD.split("-")[0]!==source.THREAD.split("-")[0] || h.ROOM!==source.ROOM || h["DIRECT-PARTICIPANTS"]!==source["DIRECT-PARTICIPANTS"]) throw Error("Answer does not match question");
   }
   return {question,answer};
 }
@@ -1534,28 +1536,36 @@ function richBody(text, q, contentType){
   }
   return container.innerHTML;
 }
+function validChoiceText(text){ return typeof text==="string" && !!text.trim() && [...text].length<=10000 && !/[\uD800-\uDFFF]/u.test(text); }
 function choiceKey(m){ return JSON.stringify([boardStorageId || B.name,currentUser(),m.path,m.h.QUESTION]); }
+function choiceDraft(form){ return {selected:[...form.querySelectorAll("input:checked")].map(el=>el.value),text:form.querySelector("textarea").value}; }
+function rememberChoice(form){
+  const m=B?.msgs.find(x=>x.path===form.dataset.questionPath); if(!m) return;
+  const draft=choiceDraft(form); choiceDrafts.set(choiceKey(m),draft);
+  form.querySelector("[type=submit]").disabled=submittingChoices.has(choiceKey(m)) || (!draft.selected.length && !draft.text.trim()) || (!!draft.text.trim() && !validChoiceText(draft.text.trim()));
+}
 function choiceHtml(m){
   if(B.layout.dialect!=="native" || !m.question || m.metadataError) return "";
-  const q=m.question, key=choiceKey(m), draft=choiceDrafts.get(key)||[], busy=submittingChoices.has(key), me=currentUser();
+  const q=m.question, key=choiceKey(m), draft=choiceDrafts.get(key)||{selected:[],text:""}, busy=submittingChoices.has(key), me=currentUser();
   const eligible=!!B.people[me] && (m.scope!=="direct" || (m.dir.split("--").includes(me) && me!==m.author));
-  return `<form class="choice-form" data-question-path="${esc(m.path)}"><fieldset ${busy||!eligible?"disabled":""}><legend>${esc(q.prompt)}</legend><p class="hint">${esc(t(q.type==="single"?"choice_single":"choice_multiple"))}</p>${q.options.map(o=>`<label><input type="${q.type==="single"?"radio":"checkbox"}" name="choice-${encodeURIComponent(m.path)}" value="${esc(o.id)}" ${draft.includes(o.id)?"checked":""}> <span>${esc(o.label)}</span></label>`).join("")}<button class="btn primary" type="submit" ${!draft.length?"disabled":""}>${esc(t("choice_send"))}</button></fieldset><p class="choice-result" role="status"></p></form>`;
+  const ready=(draft.selected.length || draft.text.trim()) && (!draft.text.trim() || validChoiceText(draft.text.trim()));
+  return `<form class="choice-form" data-question-path="${esc(m.path)}"><fieldset ${busy||!eligible?"disabled":""}><legend>${esc(q.prompt)}</legend><p class="hint">${esc(t(q.type==="single"?"choice_single":"choice_multiple"))}</p>${q.options.map(o=>`<label><input type="${q.type==="single"?"radio":"checkbox"}" name="choice-${encodeURIComponent(m.path)}" value="${esc(o.id)}" ${draft.selected.includes(o.id)?"checked":""}> <span>${esc(o.label)}</span></label>`).join("")}<button class="btn" type="button" data-clear-choices>${esc(t("choice_clear"))}</button><label class="choice-note">${esc(t("choice_text"))}<textarea rows="3" placeholder="${esc(t("choice_text_hint"))}">${esc(draft.text)}</textarea></label><p class="hint">${esc(t("choice_text_limit"))}</p><button class="btn primary" type="submit" ${!ready?"disabled":""}>${esc(t("choice_send"))}</button></fieldset><p class="choice-result" role="status"></p></form>`;
 }
 async function sendChoice(form){
   const m=B && B.msgs.find(x=>x.path===form.dataset.questionPath);
   if(!m || !m.question || m.metadataError) return;
   const key=choiceKey(m); if(submittingChoices.has(key)) return;
-  const selected=[...form.querySelectorAll("input:checked")].map(el=>el.value);
-  if(!selected.length || (m.question.type==="single" && selected.length!==1)){ toast(t("choice_required")); return; }
-  const sender=currentUser(), answer={question:m.question.id,selected};
-  if(B.msgs.some(x=>x.dkey===m.dkey && x.replyTo===m.file && x.author===sender && x.answer && x.answer.question===answer.question && [...x.answer.selected].sort().join(",")===[...selected].sort().join(","))){ toast(t("choice_already")); return; }
-  submittingChoices.add(key); form.querySelector("button").disabled=true;
+  const {selected,text:rawText}=choiceDraft(form), text=rawText.trim();
+  if((!selected.length && !text) || (text && !validChoiceText(text)) || (m.question.type==="single" && selected.length>1)){ toast(t("choice_required")); return; }
+  const sender=currentUser(), answer={question:m.question.id,selected,...(text?{text}:{})};
+  if(B.msgs.some(x=>x.dkey===m.dkey && x.replyTo===m.file && x.author===sender && x.answer && x.answer.question===answer.question && (x.answer.text||"").trim()===text && [...x.answer.selected].sort().join(",")===[...selected].sort().join(","))){ toast(t("choice_already")); return; }
+  submittingChoices.add(key); form.querySelector("[type=submit]").disabled=true;
   try{
     const person=guardRegistered(sender);
     const confirmed=person.kind==="agent" && window.confirm(t("confirm_agent",{name:person.name}));
     if(person.kind==="agent" && !confirmed) return;
     const labels=m.question.options.filter(o=>selected.includes(o.id)).map(o=>o.label);
-    const body=t("choice_answer_body",{q:m.question.prompt,a:labels.join("; ")});
+    const body=t("choice_answer_body",{q:m.question.prompt,a:labels.join("; ")||t("choice_none")})+(text?"\n\n"+text:"");
     const msg=composeMessage({sender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==="direct"?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,
       slug:"answer-"+m.question.id,status:"REPLY",body,replyTo:m.file,answer,confirmedAgent:confirmed});
     await deliverMessage(msg); if(canWrite()) toast(t("choice_sent"));
@@ -1632,12 +1642,12 @@ function render(background = false){
     el.querySelector(".body").classList.remove("clamp"); el.querySelector("[data-more]").textContent=t("collapse")+" ▴";
   }
   const focused=document.activeElement, activeForm=focused && focused.closest(".choice-form");
-  const focusState=activeForm?{path:activeForm.dataset.questionPath,option:focused.tagName==="INPUT"?focused.value:null,button:focused.tagName==="BUTTON"}:null;
+  const focusState=activeForm?{path:activeForm.dataset.questionPath,option:focused.tagName==="INPUT"?focused.value:null,button:focused.tagName==="BUTTON"?(focused.type==="submit"?"[type=submit]":"[data-clear-choices]"):null,text:focused.tagName==="TEXTAREA",start:focused.selectionStart,end:focused.selectionEnd,direction:focused.selectionDirection,scroll:focused.scrollTop}:null;
   if(feed.innerHTML!==next.outerHTML){
     feed.replaceChildren(next);
     if(focusState){ const form=[...feed.querySelectorAll(".choice-form")].find(el=>el.dataset.questionPath===focusState.path);
-      const target=form && (focusState.button?form.querySelector("button"):[...form.querySelectorAll("input")].find(el=>el.value===focusState.option));
-      if(target) target.focus({preventScroll:true});
+      const target=form && (focusState.text?form.querySelector("textarea"):focusState.button?form.querySelector(focusState.button):[...form.querySelectorAll("input")].find(el=>el.value===focusState.option));
+      if(target){ target.focus({preventScroll:true}); if(focusState.text){ target.setSelectionRange(focusState.start,focusState.end,focusState.direction); target.scrollTop=focusState.scroll; } }
     }
   }
   if((!background && lastCount!==view.length) || atBottom) feed.scrollTop = feed.scrollHeight;
@@ -2150,14 +2160,11 @@ function wire(){
     const n = items[Math.min(items.length-1, Math.max(0, i+(e.key==="ArrowDown"?1:-1)))];
     if(n) n.focus();
   });
-  $("#feed").addEventListener("change",e=>{
-    const form=e.target.closest(".choice-form"); if(!form) return;
-    const m=B.msgs.find(x=>x.path===form.dataset.questionPath); if(!m) return;
-    const selected=[...form.querySelectorAll("input:checked")].map(el=>el.value); choiceDrafts.set(choiceKey(m),selected);
-    form.querySelector("button").disabled=!selected.length || submittingChoices.has(choiceKey(m));
-  });
+  for(const event of ["input","change"]) $("#feed").addEventListener(event,e=>{ const form=e.target.closest(".choice-form"); if(form) rememberChoice(form); });
   $("#feed").addEventListener("submit",e=>{ const form=e.target.closest(".choice-form"); if(form){ e.preventDefault(); sendChoice(form); } });
   $("#feed").addEventListener("click", e=>{
+    const clear=e.target.closest("[data-clear-choices]");
+    if(clear){ const form=clear.closest("form"); for(const input of form.querySelectorAll("input")) input.checked=false; rememberChoice(form); form.querySelector("textarea").focus(); return; }
     const history=e.target.closest("[data-history]");
     if(history){
       scrollIntent=0;

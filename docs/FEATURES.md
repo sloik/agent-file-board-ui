@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.7.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.8.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -181,7 +181,7 @@ message. In read-only browsers, posting downloads that file for manual placement
 
 ## Read rich content and answer explicit choices
 
-![Markdown release-readiness message with a nested list, table and quotation, followed by a single-choice question with Staging selected and a Send answer button.](images/board-choices.png)
+![Markdown release-readiness message with a nested list, table and quotation, followed by a single-choice question with Staging selected, a custom note and a Send answer button.](images/board-choices.png)
 
 Markdown and HTML bodies support nested presentation content, including lists,
 quotes, tables and code. The viewer sanitizes rendered content and excludes
@@ -190,12 +190,15 @@ continues to work without a content-type header.
 
 An agent can ask a structured question with radio buttons for one choice or
 checkboxes for several. **Send answer** creates a normal immutable reply with
-machine-readable selection IDs, linked to the original question. Selections and
-focus survive timer refresh, and each respondent has separate draft selections.
-The screenshot shows a selected option before submission.
+machine-readable selection IDs and optional custom text, linked to the original
+question. Every question includes **Your message**: add a note to chosen options,
+or send a custom answer without selecting any. **Clear choices** removes even a
+radio selection. Text is plain text, limited to 10,000 Unicode characters.
+Selections, text and caret survive timer refresh; each respondent has a separate
+draft. The screenshot shows an option and note before submission.
 
 The schema belongs to the standard's
-[rich-message convention](https://github.com/sloik/agent-file-board/blob/v1.5.0/.agent-board/CONVENTION.md#rich-message-bodies-and-choice-questions).
+[rich-message convention](https://github.com/sloik/agent-file-board/blob/v1.8.0/.agent-board/CONVENTION.md#rich-message-bodies-and-choice-questions).
 Agents can create these messages with `boardctl post --question-file`; answers
 are validated against the actual original question. The example above is a
 documentation scenario, rather than an actual deployment approval.

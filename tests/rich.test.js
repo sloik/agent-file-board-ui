@@ -62,11 +62,11 @@ test("nested HTML is sanitized before any resources or viewer actions can execut
 test("single choice is exclusive and sends an immutable structured reply without touching the draft",async()=>{
   const {ctx,page,questionPath}=await boot();
   const original=await page.evaluate(path=>window.__fakefs.read(path),questionPath);
-  assert.equal(await form(page).locator("button").isDisabled(),true);
+  assert.equal(await form(page).locator("[type=submit]").isDisabled(),true);
   await page.fill("#cBody","Keep my unfinished message");
   await form(page).locator("input[value=stage]").check(); await form(page).locator("input[value=prod]").check();
   assert.equal(await form(page).locator("input:checked").count(),1);
-  await form(page).locator("button").click();
+  await form(page).locator("[type=submit]").click();
   const answer=await postedAnswer(page),headers=Object.fromEntries(answer.text.split("\n---\n")[0].split("\n").map(line=>{const at=line.indexOf(": ");return [line.slice(0,at),line.slice(at+2)];}));
   assert.deepEqual(JSON.parse(headers.ANSWER),{question:"release",selected:["prod"]});
   assert.equal(headers["REPLY-TO"],QFILE);assert.equal(headers.FROM,"human-owner-01");assert.equal(headers.TO,"implementation-agent-01");
@@ -74,7 +74,7 @@ test("single choice is exclusive and sends an immutable structured reply without
   assert.match(answer.text,/Selected: Production/);
   assert.equal(await page.evaluate(path=>window.__fakefs.read(path),questionPath),original);
   assert.equal(await page.inputValue("#cBody"),"Keep my unfinished message");
-  await form(page).locator("button").click(); assert.match(await page.textContent("#toast"),/already been posted/);
+  await form(page).locator("[type=submit]").click(); assert.match(await page.textContent("#toast"),/already been posted/);
   assert.equal((await page.evaluate(()=>window.__fakefs.dump())).filter(f=>f.path.endsWith(".txt")&&f.text.includes("\nANSWER: ")).length,1);
   await ctx.close();
 });
@@ -89,14 +89,14 @@ test("multiple choice allows several answers, keeps checked state/focus during t
   assert.equal(await page.evaluate(()=>document.activeElement.value),"hold");
   await page.selectOption("#me","research-agent-01");assert.equal(await form(page).locator("input:checked").count(),0);
   await page.selectOption("#me","human-owner-01");assert.equal(await form(page).locator("input:checked").count(),2);
-  await form(page).locator("button").click();const answer=await postedAnswer(page);
+  await form(page).locator("[type=submit]").click();const answer=await postedAnswer(page);
   assert.deepEqual(JSON.parse(answer.text.match(/^ANSWER: (.*)$/m)[1]).selected,["stage","hold"]);await ctx.close();
 });
 
 test("direct answers preserve the pair; unrelated identities cannot answer",async()=>{
   const {ctx,page}=await boot({scope:"direct"});
   await page.selectOption("#me","research-agent-01");assert.equal(await form(page).locator("input").first().isDisabled(),true);
-  await page.selectOption("#me","human-owner-01");await form(page).locator("input[value=stage]").check();await form(page).locator("button").click();
+  await page.selectOption("#me","human-owner-01");await form(page).locator("input[value=stage]").check();await form(page).locator("[type=submit]").click();
   const answer=await postedAnswer(page);assert.match(answer.path,/direct\/human-owner-01--implementation-agent-01\//);
   assert.match(answer.text,/SCOPE: DIRECT\nDIRECT-PARTICIPANTS: human-owner-01, implementation-agent-01/);await ctx.close();
 });
@@ -113,7 +113,7 @@ test("malformed metadata never creates working choice controls and retains reada
 
 test("agent answering retains explicit confirmation and cancellation keeps choices",async()=>{
   const {ctx,page,log}=await boot({dialog:"dismiss"});await page.selectOption("#me","research-agent-01");
-  await form(page).locator("input[value=stage]").check();await form(page).locator("button").click();
+  await form(page).locator("input[value=stage]").check();await form(page).locator("[type=submit]").click();
   assert.equal(log.dialogs.length,1);assert.equal((await page.evaluate(()=>window.__fakefs.dump())).filter(f=>f.path.endsWith(".txt")&&f.text.includes("\nANSWER: ")).length,0);
   assert.equal(await form(page).locator("input[value=stage]").isChecked(),true);await ctx.close();
 });
@@ -123,11 +123,11 @@ test("read-only answering downloads the structured reply",async()=>{
   h.fs.writeFileSync(h.path.join(proj,".agent-board/rooms/questions",QFILE),rawMessage());
   const {ctx,page}=await h.openPage(browser,{clock:AT});await page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));
   await page.setInputFiles("#fallback",proj);await page.waitForSelector(".choice-form");
-  await form(page).locator("input[value=hold]").check();
-  const [dl]=await Promise.all([page.waitForEvent("download"),form(page).locator("button").click()]);
+  await form(page).locator("textarea").fill("My own answer 🦊");
+  const [dl]=await Promise.all([page.waitForEvent("download"),form(page).locator("[type=submit]").click()]);
   const dest=h.path.join(tmp,dl.suggestedFilename());await dl.saveAs(dest);
   assert.match(await page.textContent("#toast"),/File downloaded/);
-  assert.match(h.fs.readFileSync(dest,"utf8"),/^ANSWER: {"question":"release","selected":\["hold"\]}$/m);await ctx.close();
+  assert.deepEqual(JSON.parse(h.fs.readFileSync(dest,"utf8").match(/^ANSWER: (.*)$/m)[1]),{question:"release",selected:[],text:"My own answer 🦊"});await ctx.close();
 });
 
 test("composer format selector writes CONTENT-TYPE; missing header retains legacy reflow",async()=>{
@@ -155,10 +155,11 @@ test("failed answer writes retain choices and question history",async()=>{
     const root=await window.showDirectoryPicker(),base=await root.getDirectoryHandle(".agent-board"),rooms=await base.getDirectoryHandle("rooms"),dir=await rooms.getDirectoryHandle("questions"),file=await dir.getFileHandle(name);
     Object.getPrototypeOf(file).createWritable=async()=>{throw Error("Disk unavailable");};
   },QFILE);
-  await form(page).locator("input[value=prod]").check();await form(page).locator("button").click();
+  await form(page).locator("input[value=prod]").check();await form(page).locator("textarea").fill("Keep this note");await form(page).locator("[type=submit]").click();
   assert.match(await page.textContent("#toast"),/Disk unavailable/);
+  assert.equal(await form(page).locator("textarea").inputValue(),"Keep this note");
   assert.equal(await form(page).locator("input[value=prod]").isChecked(),true);
-  assert.equal(await form(page).locator("button").isEnabled(),true);
+  assert.equal(await form(page).locator("[type=submit]").isEnabled(),true);
   assert.equal(await page.evaluate(path=>window.__fakefs.read(path),questionPath),original);
   assert.equal((await page.evaluate(()=>window.__fakefs.dump())).some(f=>f.path.endsWith(".txt")&&f.text.includes("\nANSWER: ")),false);await ctx.close();
 });
@@ -188,5 +189,56 @@ test("long code lines and nested tables scroll within message bounds on desktop 
     assert.equal(layout.documentWidth,layout.width);
     assert.equal(await page.locator(`article[data-file='${QFILE}'] pre`).evaluate(el=>el.scrollWidth>el.clientWidth),true);
   }
+  await ctx.close();
+});
+
+
+test("questions accept notes with choices and text-only replies, deduplicating the full answer",async()=>{
+  const {ctx,page}=await boot();
+  await form(page).locator("textarea").fill("  ");
+  assert.equal(await form(page).locator("[type=submit]").isDisabled(),true);
+  await form(page).locator("input[value=stage]").check();
+  const text="Please verify first.\n<table>custom 🦊</table>";
+  await form(page).locator("textarea").fill(text);
+  await form(page).locator("[type=submit]").click();
+  const first=await postedAnswer(page);
+  assert.deepEqual(JSON.parse(first.text.match(/^ANSWER: (.*)$/m)[1]),{question:"release",selected:["stage"],text});
+  assert.ok(first.text.includes("\n\n"+text));
+  await page.waitForFunction(()=>window.__boardTest.stats.builds>0 && document.querySelectorAll("article").length>1);
+  await form(page).locator("[data-clear-choices]").click();
+  assert.equal(await form(page).locator("input:checked").count(),0);
+  await form(page).locator("[type=submit]").click();
+  await page.waitForFunction(()=>window.__fakefs.dump().filter(f=>f.path.endsWith(".txt")&&f.text?.includes("\nANSWER: ")).length===2);
+  const second=await postedAnswer(page);
+  assert.deepEqual(JSON.parse(second.text.match(/^ANSWER: (.*)$/m)[1]),{question:"release",selected:[],text});
+  await page.waitForFunction(()=>document.querySelectorAll("article").length>2);
+  assert.equal(await page.locator(".body table").count(),0);
+  await form(page).locator("[type=submit]").click();
+  assert.match(await page.textContent("#toast"),/already been posted/);
+  await form(page).locator("textarea").fill("A different reply");
+  await form(page).locator("[type=submit]").click();
+  await page.waitForFunction(()=>window.__fakefs.dump().filter(f=>f.path.endsWith(".txt")&&f.text?.includes("\nANSWER: ")).length===3);
+  const out=h.path.join(h.tmpDir(),"posted");h.fs.mkdirSync(out);await h.dumpFakeFs(page,out);
+  const validation=h.boardctl(["validate","--path",out]);assert.equal(validation.code,0,validation.err);
+  await ctx.close();
+});
+
+test("custom text, selection and caret survive refresh and identity changes",async()=>{
+  const {ctx,page}=await boot({question:{...QUESTION,type:"multiple"}});
+  await form(page).locator("input[value=stage]").check();
+  await form(page).locator("textarea").fill("My custom answer\nSecond line");
+  await form(page).locator("textarea").evaluate(el=>el.setSelectionRange(3,9,"backward"));
+  await page.evaluate(()=>window.__fakefs.addFile(".agent-board/rooms/questions/2026-10-15_1231_research-agent-01_T005_arrival.txt",'FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: questions\nTHREAD: T005-arrival\nDATE: 2026-10-15 12:31\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: INFO\n---\nArrival\n'));
+  const builds=await page.evaluate(()=>window.__boardTest.stats.builds);
+  await page.clock.runFor(61000);await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);
+  assert.deepEqual(await form(page).locator("textarea").evaluate(el=>[el.value,el===document.activeElement,el.selectionStart,el.selectionEnd,el.selectionDirection]),["My custom answer\nSecond line",true,3,9,"backward"]);
+  await page.selectOption("#me","research-agent-01");assert.equal(await form(page).locator("textarea").inputValue(),"");
+  await page.selectOption("#me","human-owner-01");assert.equal(await form(page).locator("textarea").inputValue(),"My custom answer\nSecond line");
+  assert.equal(await form(page).locator("input[value=stage]").isChecked(),true);
+  await form(page).locator("textarea").fill("x".repeat(10001));assert.equal(await form(page).locator("[type=submit]").isDisabled(),true);
+  await form(page).locator("textarea").fill("🦊".repeat(10000));assert.equal(await form(page).locator("[type=submit]").isDisabled(),false);
+  await page.setViewportSize({width:375,height:800});await page.emulateMedia({colorScheme:"dark"});
+  assert.equal(await form(page).evaluate(el=>el.scrollWidth<=el.clientWidth),true);
+  assert.equal(await form(page).locator("textarea").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(29, 34, 41)");
   await ctx.close();
 });
