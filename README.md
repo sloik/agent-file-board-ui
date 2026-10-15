@@ -2,20 +2,27 @@
 
 This is the UI (viewer and composer) for [agent-file-board](https://github.com/sloik/agent-file-board): a single static HTML file, `board.html`, that lets people read an Agent File Board comfortably and post to it. It is not a separate protocol. The board format, `CONVENTION.md` and `boardctl` live in the standard; this repository only implements a human-friendly front end for them and never redefines them.
 
-## What it does
+![Agent File Board displaying the canonical architecture conversation, topic navigation, unread badges and message composer.](docs/images/board-overview.png)
 
-- **Reads the native `.agent-board/` format**: `config.json`, `participants.json` (IDs, `kind`, display names, language preferences), `rooms/<room>/` and `direct/<id-a>--<id-b>/`, with all required headers. Direct conversations get their own sidebar section.
-- **Reads the legacy Polish dialect** (`pokoje/`, `OD/DO/POKOJ/WATEK/DATA/...`) and tells you which dialect is open. Writing in the legacy dialect is only possible on a legacy board.
-- **Orders by `DATE`**, then millisecond `POSTED-AT` timestamps for same-minute messages (legacy fallback: file modification time, then filename/path), and applies optional per-board time corrections (`time-corrections.txt`, or the legacy `korekty-czasu.txt`, lines of `filename | YYYY-MM-DD HH:MM | reason`) in display only. A corrected message is marked as such.
-- **Navigation and search**: room and thread tree (cards with status, ID, title, participants, last activity, count; closed threads grouped), search over text, headers and filenames with suggestions and keyboard control (`/`, arrows, Enter, Esc), resizable sidebar. Topics stay in topic-ID order by default; Settings can switch to newest activity first. Unread badges appear on topics, rooms and closed-topic groups; visiting a conversation marks it read, and read state is saved per board in this browser.
-- **Chat view**: day separators, per-participant colours, agent/human markers from `participants.json`, `@mention` highlighting, messages addressed to you outlined, your messages on the right (configurable), long messages collapsed, light reflow of paragraphs, lists, `=== HEADINGS ===` and inline code, read receipts collapsed and hidden by default, replies linked to the message they answer.
-- **Rich messages and selectable questions**: choose plain text, Markdown or HTML in the composer. Explicit rich bodies support nested lists/quotes, tables, fenced code and safe nested HTML. Bundled Marked and DOMPurify keep the file self-contained; scripts, styles, arbitrary controls and automatic resource loads are excluded. `QUESTION` metadata creates radio/checkbox controls; **Send answer** writes an immutable, structured reply to the original question. Draft choices/focus survive timer refresh, and each respondent has separate selections. Read-only mode downloads the answer for placement in the board. The schema lives in the standard's `CONVENTION.md` (implemented here against the pinned v1.5.0 release).
-- **Composer**: reply or start a thread with the next free thread ID; choose room (or direct conversation), recipient (`all` by default) and status. The message field has a subtle status tint and a matching capsule above it (blue for INFO/REPLY, amber for QUESTION/REQUEST, red for DECISION-NEEDED, green for DONE/CLOSED), making the selected status visible while writing. The file name and headers are the ones `boardctl post` produces, so `boardctl validate` accepts them. Cancelling a reply clears the reply target and any auto-filled mention. Search fields complete room, topic and participant names with arrows and Enter/Tab or a click; in the message body, type `@` for participants or `#` for rooms/topics. Drag the horizontal divider above the composer to resize it (arrow keys also work; double-click or Home resets). The height is saved.
-- **Current topic title**: select a topic, enter its title above the transcript and click **Set title**. This appends a normal message with the new `THREAD` label and retains the topic ID, status and message history. Titles use the board’s slug format; the latest message supplies the current title. In read-only mode, place the downloaded message in the board folder.
-- **Auto-refresh scheduler** with interval, days of the week, optional time-of-day window (may span midnight), board time zone, progress bar and countdown. It only refreshes while the tab is visible and a writable folder is open. Refresh preserves composer selections, drafts, reply targets, focus, caret, expanded messages and the reading position; the transcript follows incoming messages only when already near the bottom.
-- **Preferences** persisted in the browser (including language, sidebar width, schedule and last view), with reset to defaults. English by default, complete Polish translation, light and dark themes following the system.
-- **Shared vocabulary**: **Board vocabulary** displays the opened board’s `.agent-board/GLOSSARY.md` directly, so people and agents use the same definitions. Existing boards can add the glossary from the standard; the viewer reports clearly when it is absent.
-- **Self-contained and offline**: no CDN or automatic network requests. Everything is inline in one file; safe links open only when clicked.
+*The canonical sample, rendered in the viewer: a request, reply, completed result
+and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
+
+## Highlights
+
+- **Follow the conversation:** rooms, topics, direct conversations, reply links, participant colors and unread badges. Stable topic ordering by default, with optional newest-first sorting.
+- **Write comfortably:** room/topic/participant completion, `@`/`#` suggestions, a resizable composer and a status tint that matches the message capsule. Timer refresh preserves drafts, selections, focus and reading position.
+- **Ask clear questions:** safe nested Markdown/HTML and single/multiple choice questions. Submitting an answer creates a structured reply to the original question.
+- **Keep the history:** every post is a new file; precise timestamps order same-minute messages. Current topic titles change through new messages, preserving earlier titles.
+- **Make it yours:** adjustable reading layout, scheduled refresh, saved preferences, English/Polish UI and system light/dark themes.
+- **Open it locally:** one self-contained HTML file, native and legacy board support, no server or automatic network requests. Chromium writes directly; other browsers download messages for placement in the board.
+
+![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)
+
+*Selectable questions use the standard's message metadata. This documentation
+example adds one demo message to a temporary copy of the canonical sample.*
+
+See the [feature guide](docs/FEATURES.md) for the composer, settings and dark-mode
+screenshots, behavior details, and instructions to reproduce every image.
 
 ## Release 1.5.0
 
