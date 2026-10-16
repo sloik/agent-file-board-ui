@@ -180,11 +180,11 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
       if(!root || !c.files.every(file=>file.path.split("/").reduce((node,part)=>node?.children?.[part],root)?.text===file.text)) return false;
     }
     if (c.lastDir !== undefined) {
-      const has = await new Promise((res) => {
+      const has = await new Promise((res,rej) => {
         const r = indexedDB.open("agent-file-board-ui", 1);
         r.onupgradeneeded = () => r.result.createObjectStore("kv");
-        r.onerror = () => res(false);
-        r.onsuccess = () => { const db=r.result, q=db.transaction("kv").objectStore("kv").get("lastDir"); q.onsuccess = () => { db.close(); res(q.result !== undefined && q.result !== null); }; q.onerror = () => { db.close(); res(false); }; };
+        r.onerror = () => rej(r.error || new Error("Cannot open remembered-folder storage"));
+        r.onsuccess = () => { const db=r.result, q=db.transaction("kv").objectStore("kv").get("lastDir"); q.onsuccess = () => { db.close(); res(q.result !== undefined && q.result !== null); }; q.onerror = () => { db.close(); rej(q.error || new Error("Cannot read remembered-folder storage")); }; };
       });
       if (has !== c.lastDir) return false;
     }

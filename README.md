@@ -57,10 +57,10 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.9.2
+## Release 1.9.3
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.2).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.3).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
 [agent-file-board 1.9.1](https://github.com/sloik/agent-file-board/releases/tag/v1.9.1).
@@ -201,3 +201,5 @@ Update CLI modules (including `message_repairs.py`), board-loop and the conventi
 together: older validators do not understand resolved invalid originals.
 
 Finder `.DS_Store` metadata is ignored in both writable folders and uploaded snapshots; it does not affect presence or board validity.
+
+Reload regression checks verify stored settings, remembered-folder state and exact published message files before and after reload. They await resolved storage results and preserve the original layout, ordering and message-body assertions.

@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.9.3 — 2026-10-16
+
+- Fix browser-test reload synchronization: await resolved storage checks, verify replacement-page readiness before closing the observer, and check persistence again afterward. Keep the existing 5-second deadline and UI assertions.
+- Treat an explicit null remembered-folder value as absent, and report IndexedDB failures as errors. Add deterministic negative controls that reject the former helper.
+- Verify rapid posts survive reload as exact stored files and indexed messages, alongside the existing displayed-body and precise-order assertions. No message format or data migration changes.
+
 ## 1.9.2 — 2026-10-16
 
 - Clear stale repair diagnostics and disable actions while the selected original loads. Decode and hash the same byte snapshot, ignore stale selection results, and expose loading readiness for browser checks.
