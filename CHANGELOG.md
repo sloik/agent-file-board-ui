@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.9.5 — 2026-10-16
+
+- Complete the durable reload fix from1.9.4, including the original composer restoration and rapid-post/file-preservation checks.
+- Wait for presence presentation to finish after lease writes and lifecycle notices before asserting active/ghost UI. Preserve all lease, badge, notice-count and validation assertions.
+
 ## 1.9.4 — 2026-10-16
 
 - Store preferences, view state, read markers and guidance paths in IndexedDB, avoiding reproduced file-page localStorage cache divergence. Migrate existing settings and await restoration before enabling controls.

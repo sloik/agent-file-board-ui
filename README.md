@@ -57,10 +57,10 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.9.4
+## Release 1.9.5
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.4).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.5).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
 [agent-file-board 1.9.1](https://github.com/sloik/agent-file-board/releases/tag/v1.9.1).
