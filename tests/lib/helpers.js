@@ -9,6 +9,7 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { spawnSync } = require("node:child_process");
 const { chromium } = require("playwright");
+const { expect } = require("playwright/test");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const BOARD_HTML = path.join(ROOT, "board.html");
@@ -167,33 +168,40 @@ async function feedOrder(page) {
 
 // Chromium commits localStorage/IndexedDB writes asynchronously, so a reload that races a write can see
 // stale storage (CI flakes). Wait until a second page of the same origin observes the expected state, then reload.
-async function reloadSettled(ctx, page, cond) {
+async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
   const probe = await ctx.newPage();
-  await probe.goto(page.url());
   const committed = async (c) => {
     if (c.perm !== undefined && (localStorage.getItem("__fakefs_perm") || "granted") !== c.perm) return false;
     if (c.setting) {
       try { if (JSON.parse(localStorage.getItem("agent-file-board-ui.settings"))[c.setting[0]] !== c.setting[1]) return false; } catch (e) { return false; }
+    }
+    if(c.files){
+      let root; try{ root=JSON.parse(localStorage.getItem("__fakefs")); }catch(e){ return false; }
+      if(!root || !c.files.every(file=>file.path.split("/").reduce((node,part)=>node?.children?.[part],root)?.text===file.text)) return false;
     }
     if (c.lastDir !== undefined) {
       const has = await new Promise((res) => {
         const r = indexedDB.open("agent-file-board-ui", 1);
         r.onupgradeneeded = () => r.result.createObjectStore("kv");
         r.onerror = () => res(false);
-        r.onsuccess = () => { const q = r.result.transaction("kv").objectStore("kv").get("lastDir"); q.onsuccess = () => res(q.result !== undefined); q.onerror = () => res(false); };
+        r.onsuccess = () => { const db=r.result, q=db.transaction("kv").objectStore("kv").get("lastDir"); q.onsuccess = () => { db.close(); res(q.result !== undefined && q.result !== null); }; q.onerror = () => { db.close(); res(false); }; };
       });
       if (has !== c.lastDir) return false;
     }
     return true;
   };
-  await probe.waitForFunction(committed, cond, { timeout: 5000 });
-  // Keep the observing document alive across the source document's unload.
-  // Closing it first can release Chromium's file-origin storage area before
-  // the replacement document attaches. No data is copied or injected here.
-  try { await page.reload(); } finally { await probe.close(); }
-  // Check persistence again after the observer closes; retaining it must not
-  // let a passing UI assertion hide lost browser state.
-  await page.waitForFunction(committed, cond, { timeout: 5000 });
+  // waitForFunction in the pinned Playwright treats an async predicate's Promise
+  // as truthy, even when it resolves false. Poll its actual resolved value in Node,
+  // outside the page's deliberately frozen clock, without changing the deadline.
+  const wait = (target,stage) => expect.poll(()=>target.evaluate(committed,cond),
+    {timeout,message:"Stored state "+stage,intervals:[10,25,50,100]}).toBe(true);
+  try {
+    await probe.goto(page.url());
+    await wait(probe,"before reload");
+    await page.reload();
+    await wait(page,"after reload with observer");
+  } finally { await probe.close(); }
+  await wait(page,"after observer closes");
 }
 
 module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,

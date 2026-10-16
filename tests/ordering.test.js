@@ -13,7 +13,24 @@ test("same-minute posts follow precise timestamps rather than filenames, before 
 test("rapid UI posts retain their actual order even within one frozen millisecond and after a clock step backwards",async()=>{
  const {ctx,page}=await c.openExample(browser,h.BOARD_HTML,{clock:new Date("2026-10-15T10:30:00Z")});await page.clock.pauseAt(new Date("2026-10-15T10:30:05Z"));
  await page.selectOption("#cWhere","room:product");
- for(const text of ["Zzz first post","Aaa second post","Mmm third post"]){await page.fill("#cBody",text);await page.click("#send");await page.waitForFunction(text=>window.__fakefs.dump().some(f=>f.text.endsWith(text+"\n")),text);await page.waitForFunction(text=>window.__boardTest.getModel().msgs.some(m=>m.body===text),text);if(text.startsWith("Aaa")){await page.clock.setFixedTime(new Date("2026-10-15T10:30:04Z"));await h.reloadSettled(ctx,page,{lastDir:true});await page.waitForSelector("#feed article");await page.selectOption("#cWhere","room:product");}}
+ const expected=["Zzz first post","Aaa second post","Mmm third post"];
+ let written=[];
+ for(const text of expected){
+  await page.fill("#cBody",text);await page.click("#send");
+  await page.waitForFunction(text=>window.__fakefs.dump().some(f=>f.text.endsWith(text+"\n")),text);
+  await page.waitForFunction(text=>window.__boardTest.getModel().msgs.some(m=>m.body===text),text);
+  written=await page.evaluate(bodies=>window.__fakefs.dump().filter(f=>bodies.some(body=>f.text.endsWith(body+"\n"))),expected);
+  assert.equal(written.length,expected.indexOf(text)+1,"All published messages remain in the backing folder");
+  if(text.startsWith("Aaa")){
+   await page.clock.setFixedTime(new Date("2026-10-15T10:30:04Z"));
+   await h.reloadSettled(ctx,page,{lastDir:true,files:written});await page.waitForSelector("#feed article");
+   const after=await page.evaluate(()=>window.__fakefs.dump());
+   for(const file of written) assert.deepEqual(after.find(row=>row.path===file.path),file,"Published file survives reload byte-for-byte");
+   const indexed=await page.evaluate(()=>window.__boardTest.getModel().msgs.map(m=>".agent-board/"+m.path));
+   for(const file of written) assert.ok(indexed.includes(file.path),"Published file is indexed after reload: "+file.path);
+   await page.selectOption("#cWhere","room:product");
+  }
+ }
  const own=await page.evaluate(()=>window.__boardTest.getModel().msgs.filter(m=>m.body.includes(" post")&&m.author==="human-owner-01").map(m=>({body:m.body,time:m.h["POSTED-AT"]})));
  assert.deepEqual(own.map(m=>m.body),["Zzz first post","Aaa second post","Mmm third post"]);assert.equal(new Set(own.map(m=>m.time)).size,3);
  for(let i=1;i<own.length;i++)assert.ok(Date.parse(own[i].time)>Date.parse(own[i-1].time));await ctx.close();
