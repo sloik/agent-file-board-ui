@@ -2,7 +2,8 @@
 // Shared test helpers: browser launch, in-memory File System Access substitute, board layout helpers.
 // The headless Chromium used here cannot show a directory picker and OPFS is unavailable on file://,
 // so the page gets a substitute implementation of window.showDirectoryPicker backed by a JSON tree
-// persisted in localStorage (so it survives reload). The viewer's real write path runs against it.
+// persisted in IndexedDB (so it survives reload independently of renderer localStorage caches).
+// The viewer's real write path runs against it.
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -76,48 +77,71 @@ function layoutShuffled(tmp) {
 
 function fakeFsScript(tree, rootName) {
   return `(() => {
-  const KEY = "__fakefs", PERM = "__fakefs_perm";
-  let root = null;
-  try { root = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-  if (!root) { root = ${JSON.stringify(tree)}; try { localStorage.setItem(KEY, JSON.stringify(root)); } catch (e) {} }
-  const save = () => localStorage.setItem(KEY, JSON.stringify(root));
+  const dbReady=new Promise((resolve,reject)=>{
+    const r=indexedDB.open("agent-file-board-ui-test-fs",1);
+    r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+  });
+  const value=async(key,write,input)=>{
+    const db=await dbReady;
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction("kv",write?"readwrite":"readonly"),store=tx.objectStore("kv"),q=write?store.put(input,key):store.get(key);
+      tx.oncomplete=()=>resolve(q.result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error || Error("Test filesystem transaction aborted"));
+    });
+  };
+  let root=null,permission="granted",changes=Promise.resolve();
+  const ready=(async()=>{
+    root=await value("root",false);
+    if(!root){root=${JSON.stringify(tree)};await value("root",true,root);}
+    permission=await value("permission",false)||"granted";
+  })();
+  const mutate=action=>{
+    const next=changes.then(async()=>{await ready;const copy=structuredClone(root);action(copy);await value("root",true,copy);root=copy;});
+    changes=next.catch(()=>{});return next;
+  };
+  const settled=async()=>{await ready;await changes;};
   const nf = n => new DOMException("not found: " + n, "NotFoundError");
   const nodeAt = p => p.reduce((n, k) => n && n.children && n.children[k], root);
   class FakeFile { constructor(path) { this.kind = "file"; this.name = path[path.length - 1]; this.__path = path; }
-    async getFile() { const n = nodeAt(this.__path); if (!n) throw nf(this.name); const text = n.text, bytes = new TextEncoder().encode(text);
+    async getFile() { await settled(); const n = nodeAt(this.__path); if (!n) throw nf(this.name); const text = n.text, bytes = new TextEncoder().encode(text);
       return { name: this.name, size: bytes.length, lastModified: n.lastModified,
         slice: (start,end) => ({ text: async () => new TextDecoder().decode(bytes.subarray(start,end)) }), text: async () => text }; }
-    async createWritable() { const p = this.__path; let buf = ""; return { write: async t => { buf += t; }, close: async () => { nodeAt(p).text = buf; save(); } }; } }
+    async createWritable() { const p = this.__path; let buf = ""; return { write: async t => { buf += t; }, close: async () => { await mutate(copy=>{p.reduce((n,k)=>n.children[k],copy).text=buf;}); } }; } }
   class FakeDir { constructor(path) { this.kind = "directory"; this.name = path.length ? path[path.length - 1] : ${JSON.stringify(rootName)}; this.__path = path; }
-    async getDirectoryHandle(name, o) { const n = nodeAt(this.__path); let c = n.children[name];
-      if (!c) { if (o && o.create) { c = n.children[name] = { kind: "directory", children: {} }; save(); } else throw nf(name); }
+    async getDirectoryHandle(name, o) { await settled(); const n = nodeAt(this.__path); let c = n.children[name];
+      if (!c) { if (o && o.create) { c = { kind: "directory", children: {} };await mutate(copy=>{this.__path.reduce((n,k)=>n.children[k],copy).children[name] ||= c;}); } else throw nf(name); }
       if (c.kind !== "directory") throw new DOMException("mismatch", "TypeMismatchError");
       return new FakeDir([...this.__path, name]); }
-    async getFileHandle(name, o) { const n = nodeAt(this.__path); let c = n.children[name];
-      if (!c) { if (o && o.create) { c = n.children[name] = { kind: "file", text: "" }; save(); } else throw nf(name); }
+    async getFileHandle(name, o) { await settled(); const n = nodeAt(this.__path); let c = n.children[name];
+      if (!c) { if (o && o.create) { c = { kind: "file", text: "" };await mutate(copy=>{this.__path.reduce((n,k)=>n.children[k],copy).children[name] ||= c;}); } else throw nf(name); }
       if (c.kind !== "file") throw new DOMException("mismatch", "TypeMismatchError");
       return new FakeFile([...this.__path, name]); }
-    async *entries() { const n = nodeAt(this.__path); for (const k of Object.keys(n.children)) yield [k, n.children[k].kind === "directory" ? new FakeDir([...this.__path, k]) : new FakeFile([...this.__path, k])]; }
-    async removeEntry(name) { const n=nodeAt(this.__path); if(!n.children[name]) throw nf(name); delete n.children[name]; save(); }
-    async queryPermission() { return localStorage.getItem(PERM) || "granted"; }
-    async requestPermission() { localStorage.setItem(PERM, "granted"); return "granted"; } }
+    async *entries() { await settled(); const n = nodeAt(this.__path); for (const k of Object.keys(n.children)) yield [k, n.children[k].kind === "directory" ? new FakeDir([...this.__path, k]) : new FakeFile([...this.__path, k])]; }
+    async removeEntry(name) { await settled(); await mutate(copy=>{const n=this.__path.reduce((n,k)=>n.children[k],copy);if(!n.children[name]) throw nf(name);delete n.children[name];}); }
+    async queryPermission() { await settled(); return permission; }
+    async requestPermission() { await window.__fakefs.setPermission("granted"); return "granted"; } }
   // Structured clone (IndexedDB) drops prototypes: re-hydrate plain {__path} objects into FakeDir.
   const desc = Object.getOwnPropertyDescriptor(IDBRequest.prototype, "result");
   Object.defineProperty(IDBRequest.prototype, "result", { configurable: true, get() {
     const v = desc.get.call(this);
     return v && Array.isArray(v.__path) && v.kind === "directory" && !v.getDirectoryHandle ? new FakeDir(v.__path) : v; } });
-  window.showDirectoryPicker = async () => new FakeDir([]);
+  window.showDirectoryPicker = async () => {await settled();return new FakeDir([]);};
   const flat = (n, p, out) => { for (const k of Object.keys(n.children)) { const c = n.children[k], q = p ? p + "/" + k : k;
     if (c.kind === "directory") flat(c, q, out); else out.push({ path: q, text: c.text }); } return out; };
   window.__fakefs = {
     dump: () => flat(root, "", []),
     exists: p => !!nodeAt(p.split("/")),
     read: p => { const n = nodeAt(p.split("/")); return n ? n.text : null; },
-    addFile: (p, text, lastModified) => { const parts = p.split("/"); let n = root;
-      for (const k of parts.slice(0, -1)) n = n.children[k] || (n.children[k] = { kind: "directory", children: {} });
-      n.children[parts[parts.length - 1]] = { kind: "file", text, lastModified }; save(); },
-    removeFile: p => { const parts = p.split("/"), parent = nodeAt(parts.slice(0, -1)); delete parent.children[parts.at(-1)]; save(); },
-    setPermission: v => localStorage.setItem(PERM, v) };
+    ready, get settled(){return changes;},
+    addFile: (p,text,lastModified) => mutate(copy=>{
+      const parts=p.split("/");let n=copy;
+      for(const k of parts.slice(0,-1)) n=n.children[k] || (n.children[k]={kind:"directory",children:{}});
+      n.children[parts.at(-1)]={kind:"file",text,lastModified};
+    }),
+    removeFile: p => mutate(copy=>{const parts=p.split("/"),parent=parts.slice(0,-1).reduce((n,k)=>n.children[k],copy);delete parent.children[parts.at(-1)];}),
+    setPermission: v => {
+      const next=changes.then(async()=>{await ready;await value("permission",true,v);permission=v;});changes=next.catch(()=>{});return next;
+    } };
+
 })();`;
 }
 
@@ -143,6 +167,7 @@ async function openPage(browser, opts = {}) {
     await page.clock.setSystemTime(opts.clock);
   }
   await page.goto(pathToFileURL(opts.html || BOARD_HTML).href);
+  try{ await page.evaluate(async()=>{await window.__fakefs?.ready;await window.__boardTest?.ready;}); }catch(e){ log.pageErrors.push("Startup: "+e.message); }
   return { ctx, page, log };
 }
 async function openBoardViaUi(page) {
@@ -171,23 +196,15 @@ async function feedOrder(page) {
 async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
   const probe = await ctx.newPage();
   const committed = async (c) => {
-    if (c.perm !== undefined && (localStorage.getItem("__fakefs_perm") || "granted") !== c.perm) return false;
-    if (c.setting) {
-      try { if (JSON.parse(localStorage.getItem("agent-file-board-ui.settings"))[c.setting[0]] !== c.setting[1]) return false; } catch (e) { return false; }
-    }
-    if(c.files){
-      let root; try{ root=JSON.parse(localStorage.getItem("__fakefs")); }catch(e){ return false; }
-      if(!root || !c.files.every(file=>file.path.split("/").reduce((node,part)=>node?.children?.[part],root)?.text===file.text)) return false;
-    }
-    if (c.lastDir !== undefined) {
-      const has = await new Promise((res,rej) => {
-        const r = indexedDB.open("agent-file-board-ui", 1);
-        r.onupgradeneeded = () => r.result.createObjectStore("kv");
-        r.onerror = () => rej(r.error || new Error("Cannot open remembered-folder storage"));
-        r.onsuccess = () => { const db=r.result, q=db.transaction("kv").objectStore("kv").get("lastDir"); q.onsuccess = () => { db.close(); res(q.result !== undefined && q.result !== null); }; q.onerror = () => { db.close(); rej(q.error || new Error("Cannot read remembered-folder storage")); }; };
-      });
-      if (has !== c.lastDir) return false;
-    }
+    const get=(database,key)=>new Promise((resolve,reject)=>{
+      const r=indexedDB.open(database,1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onerror=()=>reject(r.error || Error("Cannot open storage"));
+      r.onsuccess=()=>{const db=r.result,tx=db.transaction("kv"),q=tx.objectStore("kv").get(key);
+        tx.oncomplete=()=>{db.close();resolve(q.result);};tx.onerror=()=>{db.close();reject(tx.error);};tx.onabort=()=>{db.close();reject(tx.error || Error("Storage read aborted"));};};
+    });
+    if(c.perm!==undefined && ((await get("agent-file-board-ui-test-fs","permission")) || "granted")!==c.perm) return false;
+    if(c.setting){const saved=await get("agent-file-board-ui","settings");if(saved?.[c.setting[0]]!==c.setting[1]) return false;}
+    if(c.files){const root=await get("agent-file-board-ui-test-fs","root");if(!root || !c.files.every(file=>file.path.split("/").reduce((node,part)=>node?.children?.[part],root)?.text===file.text)) return false;}
+    if(c.lastDir!==undefined){const folder=await get("agent-file-board-ui","lastDir");if((folder!==undefined && folder!==null)!==c.lastDir) return false;}
     return true;
   };
   // waitForFunction in the pinned Playwright treats an async predicate's Promise
@@ -199,6 +216,7 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
     await probe.goto(page.url());
     await wait(probe,"before reload");
     await page.reload();
+    await page.evaluate(async()=>{await window.__fakefs?.ready;await window.__boardTest?.ready;});
     await wait(page,"after reload with observer");
   } finally { await probe.close(); }
   await wait(page,"after observer closes");

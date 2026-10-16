@@ -426,7 +426,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.9.3";
+const VIEWER_VERSION = "1.9.4";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -454,6 +454,7 @@ let readGeneration = 0;
 let historyPage = {key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
 
 let S = {...DEF};
+let settingsDb=null, settingsWrite=Promise.resolve(), storedValues=Object.create(null), committedSettings=null;
 let B = null;              // loaded board model, or null
 let dirHandle = null;      // writable root handle (File System Access) or null
 let baseHandle = null;     // handle of the board base folder (.agent-board or bare root / pokoje parent)
@@ -632,8 +633,16 @@ function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;"
 function slugify(s){ return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ł/g,"l").replace(/Ł/g,"L").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48).replace(/-+$/,""); }
 function normId(s){ return slugify(s).replace(/-+/g,"-"); }
 function toast(s){ const el=$("#toast"); el.textContent=s; el.classList.add("show"); clearTimeout(toast.h); toast.h=setTimeout(()=>el.classList.remove("show"),3500); }
-function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function lsGet(k){
+  if(Object.hasOwn(storedValues,k)) return storedValues[k];
+  let value=null; try{ value=localStorage.getItem(k); }catch(e){}
+  if(value!==null && k!==SETTINGS_KEY){ storedValues[k]=value; persistPreference("localValues",storedValues); }
+  return value;
+}
+function lsSet(k,v){
+  try{ localStorage.setItem(k,v); }catch(e){}
+  if(k!==SETTINGS_KEY && storedValues[k]!==v){ storedValues[k]=v; persistPreference("localValues",storedValues); }
+}
 function boardErr(key, vars){ const e = new Error(t(key,vars)); e.name="BoardError"; e.key=key; return e; }
 function majorMinor(v){ const m=String(v||"").match(/^(\d+)\.(\d+)/); return m? m[1]+"."+m[2] : null; }
 function humanThread(label){
@@ -2015,12 +2024,76 @@ function pickSuggestion(btn){
 function rememberView(){ S.lastScope = sel.scope; S.lastDir = sel.dir; S.lastThread = sel.thread; saveSettings(); }
 
 /* ===== settings, i18n ===== */
-function loadSettings(){
-  S = {...DEF, collapsed:{}, closedGroups:{}};
-  try{ const o = JSON.parse(lsGet(SETTINGS_KEY)||"{}"); if(o && typeof o==="object") S = {...S, ...o}; }catch(e){}
-  if(!STRINGS[S.lang]) S.lang = "en";
+function putPreference(key,value){
+  const revision=key==="settings"?crypto.randomUUID():null, tx=settingsDb.transaction("kv","readwrite"), store=tx.objectStore("kv");
+  store.put(value,key); if(revision) store.put(revision,"settingsRevision");
+  return new Promise((resolve,reject)=>{ tx.oncomplete=()=>resolve(revision); tx.onerror=()=>reject(tx.error); tx.onabort=()=>reject(tx.error || Error("Preferences transaction aborted")); });
 }
-function saveSettings(){ lsSet(SETTINGS_KEY, JSON.stringify(S)); applySettings(); }
+function settingsFallback(){
+  try{
+    const known=committedSettings || JSON.parse(localStorage.getItem(SETTINGS_KEY+".committed") || "null");
+    localStorage.setItem(SETTINGS_KEY+".pending",JSON.stringify({base:known?.revision || null,settings:S}));
+  }catch(e){}
+}
+function settingsCommitted(revision,value){
+  committedSettings={revision,settings:JSON.parse(JSON.stringify(value))};
+  try{ localStorage.setItem(SETTINGS_KEY+".committed",JSON.stringify(committedSettings)); }catch(e){}
+  if(!settingsDb) settingsFallback();
+}
+function persistPreference(key,value){
+  if(!settingsDb){ if(key==="settings") settingsFallback(); return; }
+  const db=settingsDb;
+  const failed=()=>{ if(settingsDb===db){ db.close();settingsDb=null; }settingsFallback(); };
+  try{ settingsWrite=putPreference(key,value).then(revision=>{if(key==="settings") settingsCommitted(revision,value);},failed); }
+  catch(e){ failed();settingsWrite=Promise.resolve(); }
+}
+async function loadSettings(){
+  S = {...DEF, collapsed:{}, closedGroups:{}};
+  const object=value=>value && typeof value==="object" && !Array.isArray(value);
+  const legacy=()=>{ try{const value=JSON.parse(lsGet(SETTINGS_KEY)||"{}");return object(value)?value:{};}catch(e){return {};} };
+  let saved;
+  try{
+    settingsDb=await idb();
+    const db=settingsDb;
+    const lost=()=>{ if(settingsDb===db) settingsDb=null; };
+    db.onversionchange=()=>{ db.close();lost(); };db.onclose=lost;
+    let pending;try{pending=JSON.parse(localStorage.getItem(SETTINGS_KEY+".pending")||"null");}catch(e){}
+    // Read, migrate and conditionally recover under one write transaction so a
+    // different tab's newer revision cannot be overwritten by a stale journal.
+    const restored=await new Promise((resolve,reject)=>{
+      const tx=db.transaction("kv","readwrite"),store=tx.objectStore("kv"),q=store.get("settings"),r=store.get("settingsRevision"),values=store.get("localValues");
+      let value,revision;
+      r.onsuccess=()=>{
+        try{
+          value=q.result;revision=r.result;let changed=false;
+          if(value===undefined || value===null){value=legacy();changed=true;}
+          else if(!object(value)){value={};changed=true;}
+          if(typeof revision!=="string" || !revision){changed=true;}
+          else if(pending && pending.base===revision && object(pending.settings)){value=pending.settings;changed=true;}
+          if(changed){revision=crypto.randomUUID();store.put(value,"settings");store.put(revision,"settingsRevision");}
+        }catch(e){reject(e);tx.abort();}
+      };
+      tx.oncomplete=()=>resolve({settings:value,revision,values:values.result});tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error || Error("Preferences restore aborted"));
+    });
+    if(object(restored.values)) for(const [key,value] of Object.entries(restored.values)) if(key.startsWith("agent-file-board-ui.") && typeof value==="string") storedValues[key]=value;
+    saved=restored.settings;settingsCommitted(restored.revision,saved);
+  }catch(e){
+    settingsDb?.close();settingsDb=null;saved=legacy();
+    try{
+      const known=JSON.parse(localStorage.getItem(SETTINGS_KEY+".committed")||"null"),pending=JSON.parse(localStorage.getItem(SETTINGS_KEY+".pending")||"null");
+      if(typeof known?.revision==="string" && object(known.settings)){committedSettings=known;saved=known.settings;
+        if(pending?.base===known.revision && object(pending.settings)) saved=pending.settings;
+      }
+    }catch(e){}
+  }
+  if(object(saved)) S={...S,...saved};
+  if(!STRINGS[S.lang]) S.lang="en";
+}
+function saveSettings(){
+  const text=JSON.stringify(S); lsSet(SETTINGS_KEY,text);
+  persistPreference("settings",JSON.parse(text));
+  applySettings();
+}
 function applySettings(){
   const r = document.documentElement.style;
   if(S.composerH) r.setProperty("--composerh",S.composerH+"px"); else r.removeProperty("--composerh");
@@ -2140,8 +2213,16 @@ async function setTopicTitle(){
 
 /* ===== remembered folder (IndexedDB) ===== */
 function idb(){ return new Promise((res,rej)=>{ const r = indexedDB.open("agent-file-board-ui",1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-async function idbSet(k,v){ const db = await idb(); return new Promise((res,rej)=>{ const tx=db.transaction("kv","readwrite"); tx.objectStore("kv").put(v,k); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error); }); }
-async function idbGet(k){ const db = await idb(); return new Promise(res=>{ const q=db.transaction("kv").objectStore("kv").get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>res(null); }); }
+async function idbSet(k,v){
+  const db=await idb();
+  try{ await new Promise((resolve,reject)=>{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error || Error("Storage write aborted"));}); }
+  finally{ db.close(); }
+}
+async function idbGet(k){
+  const db=await idb();
+  try{ return await new Promise(resolve=>{const tx=db.transaction("kv"),q=tx.objectStore("kv").get(k);tx.oncomplete=()=>resolve(q.result);tx.onerror=()=>resolve(null);tx.onabort=()=>resolve(null);}); }
+  finally{ db.close(); }
+}
 async function boardIdentity(h){
   if(typeof h.isSameEntry!=="function") return h.name;
   try{
@@ -2398,19 +2479,21 @@ function wire(){
   rz.ondblclick = ()=>{ S.sideW = DEF.sideW; saveSettings(); };
 }
 
-function init(){
-  loadSettings();
+async function init(){
+  document.body.inert=true; document.body.setAttribute("aria-busy","true");
+  await loadSettings();
   applySettings();
   applyI18n();
   wire();
   renderChrome();
   setInterval(tick, 1000);
+  document.body.inert=false; document.body.setAttribute("aria-busy","false");
   offerLast();
 }
 /* test hooks: pure functions and state accessors; they add no capability the UI does not have */
 window.__boardTest = {STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
   guidanceEditorUrls, parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loading:()=>historyLoading || activeBodyReads>0 || bodySearch.pending || !!(B && messagePage(matchingMessages()).rows.some(m=>!m.bodyLoaded)), cachedBodies:()=>bodyCache.size, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
-init();
+window.__boardTest.ready=init();
 </script>
 </body>
 </html>

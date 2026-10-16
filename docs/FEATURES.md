@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.9.3/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.9.4/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -285,7 +285,8 @@ Safe web links open only when clicked.
 
 Settings include line spacing, text size, bubble/chat widths, message alignment,
 read receipts, long-message expansion and topic order. Resize the sidebar by
-dragging its divider. Preferences and the last view persist in the browser;
+dragging its divider. Preferences, the last view and read markers persist in browser-local IndexedDB;
+existing localStorage values migrate automatically. Startup restores preferences before enabling controls;
 **Reset to defaults** restores the initial settings.
 
 Auto-refresh can run at a chosen interval, on selected days and within a time

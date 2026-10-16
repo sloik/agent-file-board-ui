@@ -28,7 +28,12 @@ async function checkNoNetwork(browser, html) {
 
 async function checkSmoke(browser, html) {
   const problems = [];
-  const { ctx, page, log } = await openExample(browser, html);
+  const proj=h.layoutExample(h.tmpDir());
+  const {ctx,page,log}=await h.openPage(browser,{html,tree:h.readTree(proj)});
+  if(log.pageErrors.length || log.consoleErrors.length){
+    problems.push(...log.pageErrors.map(e=>"pageerror: "+e),...log.consoleErrors.map(e=>"console error: "+e));await ctx.close();return problems;
+  }
+  await h.openBoardViaUi(page);
   await page.click("#tree .fname >> nth=0");
   await page.fill("#q", "schema");
   await page.keyboard.press("ArrowDown");

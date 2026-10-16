@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.9.4 — 2026-10-16
+
+- Store preferences, view state, read markers and guidance paths in IndexedDB, avoiding reproduced file-page localStorage cache divergence. Migrate existing settings and await restoration before enabling controls.
+- Keep compatibility fallback usable during storage failures; recover fallback edits only against the same committed revision. Atomic checks and unique revisions prevent old journals from overwriting newer settings or being replayed after values change back.
+- Back the simulated test filesystem with committed IndexedDB transactions, independently of renderer localStorage caches. Preserve exact message-file, index, displayed-body and ordering assertions across reload.
+- Retain strict reload readiness and negative controls from1.9.3; await asynchronous error results without changing their assertions or timeouts. Canonical board format remains1.9.1.
+
 ## 1.9.3 — 2026-10-16
 
 - Fix browser-test reload synchronization: await resolved storage checks, verify replacement-page readiness before closing the observer, and check persistence again afterward. Keep the existing 5-second deadline and UI assertions.

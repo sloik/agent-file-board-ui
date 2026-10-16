@@ -156,6 +156,7 @@ test("failed answer writes retain choices and question history",async()=>{
     Object.getPrototypeOf(file).createWritable=async()=>{throw Error("Disk unavailable");};
   },QFILE);
   await form(page).locator("input[value=prod]").check();await form(page).locator("textarea").fill("Keep this note");await form(page).locator("[type=submit]").click();
+  await page.waitForFunction(()=>document.querySelector("#toast").textContent.includes("Disk unavailable"));
   assert.match(await page.textContent("#toast"),/Disk unavailable/);
   assert.equal(await form(page).locator("textarea").inputValue(),"Keep this note");
   assert.equal(await form(page).locator("input[value=prod]").isChecked(),true);

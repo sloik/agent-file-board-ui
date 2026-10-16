@@ -16,8 +16,8 @@ for(const correction of [false,true])test(correction?'correction appends a valid
 
 test('changed originals and invalid corrections are refused while editor drafts remain',async()=>{
  const {ctx,page}=await boot();await page.click('#repairsOpen');await page.selectOption('#repairSelect',badPath.replace('.agent-board/',''));await page.waitForSelector('#repairDialog[aria-busy=false]');await page.fill('#repairReason','Keep my reason');
- await page.fill('#repairText','invalid correction');await page.click('#repairSave');assert.match(await page.textContent('#repairResult'),/Invalid DATE/);assert.equal(await page.inputValue('#repairText'),'invalid correction');
- await page.evaluate(({path,text})=>window.__fakefs.addFile(path,text),{path:badPath,text:raw+'changed'});await page.click('#repairWithdraw');assert.match(await page.textContent('#repairResult'),/Original changed/);
+ await page.fill('#repairText','invalid correction');await page.click('#repairSave');await page.waitForFunction(()=>document.querySelector('#repairResult').textContent.includes('Invalid DATE'));assert.match(await page.textContent('#repairResult'),/Invalid DATE/);assert.equal(await page.inputValue('#repairText'),'invalid correction');
+ await page.evaluate(({path,text})=>window.__fakefs.addFile(path,text),{path:badPath,text:raw+'changed'});await page.click('#repairWithdraw');await page.waitForFunction(()=>document.querySelector('#repairResult').textContent.includes('Original changed'));assert.match(await page.textContent('#repairResult'),/Original changed/);
  assert.equal((await page.evaluate(()=>window.__fakefs.dump())).filter(f=>/\/repairs\/.*\.json$/.test(f.path)).length,0);await ctx.close();
 });
 
