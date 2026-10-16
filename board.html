@@ -1669,7 +1669,7 @@ function suggestedGuidanceRoot(){
   try{ const path=decodeURIComponent(new URL(".",location.href).pathname).replace(/\/$/,""); return path.split("/").pop()===dirHandle.name?path+(baseHandle!==dirHandle?"/.agent-board":""):""; }catch(e){ return ""; }
 }
 function guidanceEditorUrls(root,path){
-  root=root.trim(); if(/^[A-Za-z]:[\\/]/.test(root)) root=root.replace(/\\/g,"/"); root=root.replace(/\/+$/,"");
+  if(/^[A-Za-z]:[\\/]/.test(root)) root=root.replace(/\\/g,"/"); root=root.replace(/\/+$/,"");
   if(!root || !/^(?:\/[^/]|[A-Za-z]:\/)/.test(root) || /[\u0000-\u001f\u007f]/.test(root) || /(?:^|\/)\.\.?(?:\/|$)/.test(root) || /[\uD800-\uDFFF]/u.test(root) || !isGuidancePath(path) || path.split("/").some(part=>part==="." || part===".." || /[\u0000-\u001f\u007f]/.test(part))) return null;
   const full=root+"/"+path;
   const encoded=(full.startsWith("/")?full:"/"+full).split("/").map(encodeURIComponent).join("/");

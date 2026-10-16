@@ -140,9 +140,10 @@ test('editor links handle Windows paths, reject traversal and stay unavailable f
   const result=await page.evaluate(()=>({
     windows:window.__boardTest.guidanceEditorUrls('C:\\Boards\\My board\\.agent-board','rooms/general/GUIDANCE.md'),
     invalid:['relative/path','/tmp/../secret','/tmp/./board','//server/share','/tmp/\u0000'].map(root=>window.__boardTest.guidanceEditorUrls(root,'rooms/general/GUIDANCE.md')),
+    trailingSpace:window.__boardTest.guidanceEditorUrls("/tmp/board ","rooms/general/GUIDANCE.md"),
     posix:window.__boardTest.guidanceEditorUrls("/Users/me/Board\\Archive/.agent-board","rooms/general/GUIDANCE.md"),
     badFile:window.__boardTest.guidanceEditorUrls('/tmp/board','rooms/general/run.sh')
   }));
-  assert.equal(result.windows.vscode,'vscode://file/C%3A/Boards/My%20board/.agent-board/rooms/general/GUIDANCE.md');assert.equal(result.posix.vscode,'vscode://file/Users/me/Board%5CArchive/.agent-board/rooms/general/GUIDANCE.md');assert.deepEqual(result.invalid,[null,null,null,null,null]);assert.equal(result.badFile,null);
+  assert.equal(result.windows.vscode,'vscode://file/C%3A/Boards/My%20board/.agent-board/rooms/general/GUIDANCE.md');assert.equal(result.trailingSpace.open,'agent-file-board://open/tmp/board%20/rooms/general/GUIDANCE.md');assert.equal(result.posix.vscode,'vscode://file/Users/me/Board%5CArchive/.agent-board/rooms/general/GUIDANCE.md');assert.deepEqual(result.invalid,[null,null,null,null,null]);assert.equal(result.badFile,null);
   await ctx.close();
 });
