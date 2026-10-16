@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.9.2 — 2026-10-16
+
+- Clear stale repair diagnostics and disable actions while the selected original loads. Decode and hash the same byte snapshot, ignore stale selection results, and expose loading readiness for browser checks.
+- Include the Finder metadata fixes from1.9.1.
+
 ## 1.9.1 — 2026-10-16
 
 - Ignore Finder `.DS_Store` entries in native folder reads, uploaded snapshots and human presence checks. Metadata no longer produces unknown-presence warnings or blocks session attachment.

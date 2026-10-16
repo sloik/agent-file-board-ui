@@ -426,7 +426,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.9.1";
+const VIEWER_VERSION = "1.9.2";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1726,20 +1726,34 @@ async function applyRepairs(model,files){
 function repairVisible(m){ return m.scope!=="direct" || m.dir.split("--").includes(currentUser()); }
 async function openRepairs(){
   if(!B || B.layout.dialect!=="native") return;
-  const messages=B.msgs.filter(repairVisible).sort((a,b)=>Number(b.metadataError)-Number(a.metadataError));
+  const messages=B.msgs.filter(repairVisible).sort((a,b)=>Number(!!b.metadataError)-Number(!!a.metadataError));
   $("#repairSelect").innerHTML=messages.map(m=>`<option value="${esc(m.path)}">${esc((m.quarantined?"[withdrawn] ":"")+m.path)}</option>`).join("");
   $("#repairResult").textContent=(B.repairErrors||[]).join("\n"); $("#repairDialog").showModal(); await loadRepairDraft();
 }
 let repairDraft=null, repairLoadToken=0, repairBusy=false;
 async function loadRepairDraft(){
   const token=++repairLoadToken, root=dirHandle; repairDraft=null;
-  const m=B.msgs.find(m=>m.path===$("#repairSelect").value); $("#repairReason").value="";
-  if(m?.source?.file?.size>1048576){ $("#repairIssue").textContent="File exceeds browser repair limit (1 MiB); use boardctl repair"; $("#repairText").value=""; $("#repairSave").disabled=true; $("#repairWithdraw").disabled=true; return; }
-  if(m?.source?.file){ let bytes,hash; try{ bytes=await rawBytes(m.source.file); hash=await shaBytes(bytes); }catch(e){ $("#repairIssue").textContent="Cannot read original: "+e.message; $("#repairText").value=""; $("#repairSave").disabled=true; $("#repairWithdraw").disabled=true; return; } if(token!==repairLoadToken || dirHandle!==root || $("#repairSelect").value!==m.path) return; repairDraft={root,path:m.path,hash}; try{ new TextDecoder("utf-8",{fatal:true}).decode(bytes); }catch(e){ m.metadataError=true; m.validationError="Invalid UTF-8 or unreadable file: "+e.message; } }
-  $("#repairIssue").textContent=m?(m.validationError||"Valid messages are immutable; post a normal follow-up"):t("repair_required");
-  $("#repairText").value=m?(m.source?.file?await m.source.file.text():"" ):"";
-  if(m?.quarantined) $("#repairIssue").textContent+="\n"+(B.repairs||[]).filter(r=>r.target===m.path).map(r=>`${r.at} · ${r.by}: ${r.reason} → ${r.replacement||"withdrawn"}`).join("\n");
-  for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=!m || !m.metadataError || m.quarantined || !m?.source?.file || !canWrite();
+  const m=B.msgs.find(m=>m.path===$("#repairSelect").value);
+  $("#repairReason").value=""; $("#repairText").value="";
+  $("#repairIssue").textContent=t("message_loading"); $("#repairDialog").setAttribute("aria-busy","true");
+  for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=true;
+  try{
+    let text="";
+    if(m?.source?.file?.size>1048576){ $("#repairIssue").textContent="File exceeds browser repair limit (1 MiB); use boardctl repair"; return; }
+    if(m?.source?.file){
+      let bytes,hash;
+      try{ bytes=await rawBytes(m.source.file); hash=await shaBytes(bytes); }
+      catch(e){ if(token===repairLoadToken && dirHandle===root) $("#repairIssue").textContent="Cannot read original: "+e.message; return; }
+      if(token!==repairLoadToken || dirHandle!==root || $("#repairSelect").value!==m.path) return;
+      repairDraft={root,path:m.path,hash};
+      try{ text=new TextDecoder("utf-8",{fatal:true}).decode(bytes); }
+      catch(e){ m.metadataError=true; m.validationError="Invalid UTF-8 or unreadable file: "+e.message; text=new TextDecoder("utf-8").decode(bytes); }
+    }
+    $("#repairIssue").textContent=m?(m.validationError||"Valid messages are immutable; post a normal follow-up"):t("repair_required");
+    $("#repairText").value=text;
+    if(m?.quarantined) $("#repairIssue").textContent+="\n"+(B.repairs||[]).filter(r=>r.target===m.path).map(r=>`${r.at} · ${r.by}: ${r.reason} → ${r.replacement||"withdrawn"}`).join("\n");
+    for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=!m || !m.metadataError || m.quarantined || !m?.source?.file || !canWrite();
+  }finally{ if(token===repairLoadToken) $("#repairDialog").setAttribute("aria-busy","false"); }
 }
 async function saveRepair(correct){
   if(repairBusy) return;
