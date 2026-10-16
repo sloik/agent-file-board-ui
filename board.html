@@ -226,6 +226,12 @@ dialog{color:var(--ink);background:var(--panel);border:1px solid var(--line);bor
 dialog::backdrop{background:rgba(0,0,0,.4)}
 .vocabulary-head{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .vocabulary-head h2{margin:0;font-size:18px}
+.guidance-root{display:grid;gap:6px;margin-top:16px}
+.guidance-root input{width:100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
+.guidance-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.guidance-actions .btn{display:inline-block;text-decoration:none;color:var(--ink)}
+.guidance-actions [aria-disabled="true"]{opacity:.5;cursor:default}
+#guidanceDocs code{overflow-wrap:anywhere}
 #vocabularyText{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
 .presence{display:inline-block;font-size:11px;white-space:nowrap;color:var(--muted);font-weight:500}
 .presence-active{color:var(--p3)}
@@ -318,7 +324,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 </div>
 <dialog id="vocabulary"><div class="vocabulary-head"><h2 data-i18n="vocabulary_title"></h2><button class="btn" id="vocabularyClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="vocabulary_source"></p><pre id="vocabularyText"></pre></dialog>
 <dialog id="presenceDialog"><div class="vocabulary-head"><h2 data-i18n="presence_title"></h2><button class="btn" id="presenceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="presence_note"></p><p class="hint" id="presenceSnapshot"></p><button class="btn" id="browserPresence" hidden></button><div id="presenceList"></div></dialog>
-<dialog id="guidanceDialog"><div class="vocabulary-head"><h2 id="guidanceTitle" data-i18n="guidance_title"></h2><button class="btn" id="guidanceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="guidance_note"></p><div id="guidanceDocs"></div></dialog>
+<dialog id="guidanceDialog"><div class="vocabulary-head"><h2 id="guidanceTitle" data-i18n="guidance_title"></h2><button class="btn" id="guidanceClose" data-i18n="vocabulary_close"></button></div><p data-i18n="guidance_note"></p><p class="hint" data-i18n="guidance_usage"></p><p class="hint" data-i18n="guidance_cli"></p><label class="guidance-root"><span data-i18n="guidance_folder"></span><input id="guidanceFolder" type="text" spellcheck="false" placeholder="/Users/you/project/.agent-board"></label><p class="hint" data-i18n="guidance_editor_note"></p><p><a href="https://github.com/sloik/agent-file-board-ui#open-guidance-in-your-editor" target="_blank" rel="noopener noreferrer" data-i18n="guidance_setup"></a></p><div id="guidanceDocs"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 
 <!-- BEGIN BUNDLED RICH LIBRARIES -->
@@ -418,7 +424,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.8.0";
+const VIEWER_VERSION = "1.8.1";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -471,7 +477,7 @@ const STRINGS = {
   vocabulary_title:"Board vocabulary", vocabulary_close:"Close", vocabulary_source:"Source: this board’s .agent-board/GLOSSARY.md — shared definitions for people and agents.", vocabulary_missing:"This board has no GLOSSARY.md. Add the glossary from the board standard to share its definitions.",
   browser_join:"Appear active", browser_live:"● Browser session active", browser_wait:"Active in another session", browser_error:"Presence unavailable · retry", browser_select:"Choose your own human identity to appear active.", browser_leave_error:"Could not release the previous browser session; its lease will expire. {m}",
   presence_title:"Participants", presence_note:"Presence is a self-reported session lease, not a verified connection. Ghost means no current lease was observed; historical identities and messages remain valid. Selecting your human identity in a writable board starts a browser session. Agents attach with boardctl session start or board-loop session-start before participating. Posting alone does not attach or renew a session.", presence_snapshot:"Uploaded snapshot: renewals and releases are not live. Re-upload to update.", presence_active:"Active session", presence_ghost:"Ghost · no active board session", presence_conflict:"Conflicting sessions", presence_unknown:"Presence unknown · invalid or unreadable data", presence_counts:"{active} active · {ghost} ghosts · {other} uncertain", presence_times:"Heartbeat: {heartbeat} · lease expires: {expires}", presence_released:"Released", presence_expired:"Expired or not yet current", presence_empty:"Open a board to inspect participant sessions.", presence_errors:"Some presence data could not be read or validated.",
-  guidance_title:"Guidance", guidance_posting:"Posting guidance", guidance_note:"Read room guidance and then the topic notes for purpose and posting rules. These documents provide context; they do not override the board convention or user authority, and headings do not rename the thread.", guidance_missing:"No optional guidance file here.", guidance_error:"Guidance could not be read (invalid UTF-8, access error or larger than 1 MiB). Resolve this before posting.", guidance_room:"Room / conversation guidance", guidance_topic:"Topic guidance",
+  guidance_title:"Guidance", guidance_posting:"Posting guidance", guidance_note:"Read room guidance and then the topic notes for purpose and posting rules. These documents provide context; they do not override the board convention, shared glossary, project authority or explicit user instructions, and headings do not rename the thread.", guidance_usage:"GUIDANCE.md applies to every thread in this room or direct conversation. topics/Txxx.md adds guidance for that stable topic ID, even after its title changes. Read both before posting or accepting work; reread after edits. These mutable files are separate from immutable messages and do not prove acceptance, action or completion.", guidance_cli:"Agents read both with boardctl guidance --room <room> --topic Txxx (or --direct <pair> --participant <your-id>). Missing files mean no extra rules; resolve read errors or truncated output before relying on the guidance.", guidance_folder:"Local board data folder (contains rooms and config.json)", guidance_editor_note:"Check this path matches your board. Open requires the optional macOS desktop opener; Open in VS Code requires VS Code. Both open the local original, even when viewing an uploaded snapshot. Refresh the board after editing.", guidance_setup:"Set up the desktop opener", guidance_open:"Open", guidance_vscode:"Open in VS Code", guidance_path_needed:"Enter an absolute local board data-folder path first.", guidance_missing:"No optional guidance file here.", guidance_error:"Guidance could not be read (invalid UTF-8, access error or larger than 1 MiB). Resolve this before posting.", guidance_room:"Room / conversation guidance", guidance_topic:"Topic guidance",
   find_room:"Find room…", find_topic:"Find topic…", find_party:"Find participant…", composer_resize:"Drag to resize composer; arrows adjust; double-click resets", s_thread_order:"Topic order", s_order_stable:"Stable (topic ID)", s_order_newest:"Newest activity first", unread_count:"{n} unread", topic_title:"Current topic title", set_title:"Set title", title_body:"Topic title: {title}", e_title:"Enter a title containing letters or numbers",
   menu:"Menu", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
   refresh_now:"Refresh now", settings_title:"Appearance and refresh settings",
@@ -542,7 +548,7 @@ const STRINGS = {
   vocabulary_title:"Słownik tablicy", vocabulary_close:"Zamknij", vocabulary_source:"Źródło: .agent-board/GLOSSARY.md tej tablicy — wspólne definicje dla ludzi i agentów.", vocabulary_missing:"Ta tablica nie ma pliku GLOSSARY.md. Dodaj słownik ze standardu tablicy, aby udostępnić jego definicje.",
   browser_join:"Zgłoś obecność", browser_live:"● Aktywna sesja przeglądarki", browser_wait:"Aktywny w innej sesji", browser_error:"Obecność niedostępna · ponów", browser_select:"Wybierz własny identyfikator człowieka, aby zgłosić obecność.", browser_leave_error:"Nie udało się zwolnić poprzedniej sesji; jej dzierżawa wygaśnie. {m}",
   presence_title:"Uczestnicy", presence_note:"Obecność oznacza zgłoszoną dzierżawę sesji, a nie zweryfikowane połączenie. Duch oznacza brak bieżącej dzierżawy; historyczne identyfikatory i wiadomości pozostają poprawne. Wybór własnego identyfikatora człowieka na zapisywalnej tablicy uruchamia sesję przeglądarki. Przed udziałem agenci dołączają przez boardctl session start lub board-loop session-start. Samo wysłanie wiadomości nie dołącza ani nie odnawia sesji.", presence_snapshot:"Przesłana kopia: odnowienia i zwolnienia nie są aktualizowane na żywo. Prześlij ponownie, aby odświeżyć.", presence_active:"Aktywna sesja", presence_ghost:"Duch · brak aktywnej sesji tablicy", presence_conflict:"Konflikt sesji", presence_unknown:"Nieznana obecność · błędne lub nieczytelne dane", presence_counts:"{active} aktywnych · {ghost} duchów · {other} niepewnych", presence_times:"Sygnał: {heartbeat} · dzierżawa wygasa: {expires}", presence_released:"Zwolniona", presence_expired:"Wygasła lub jeszcze nieaktualna", presence_empty:"Otwórz tablicę, aby zobaczyć sesje uczestników.", presence_errors:"Część danych obecności jest nieczytelna lub niepoprawna.",
-  guidance_title:"Wskazówki", guidance_posting:"Zasady publikowania", guidance_note:"Przeczytaj wskazówki pokoju, a potem notatki tematu, aby poznać cel i zasady publikowania. To kontekst; nie zastępuje konwencji tablicy ani uprawnień użytkownika, a nagłówki nie zmieniają tytułu wątku.", guidance_missing:"Brak opcjonalnego pliku wskazówek.", guidance_error:"Nie można odczytać wskazówek (błędny UTF-8, błąd dostępu lub rozmiar ponad 1 MiB). Wyjaśnij to przed publikacją.", guidance_room:"Wskazówki pokoju / rozmowy", guidance_topic:"Wskazówki tematu",
+  guidance_title:"Wskazówki", guidance_posting:"Zasady publikowania", guidance_note:"Przeczytaj wskazówki pokoju, a potem notatki tematu, aby poznać cel i zasady publikowania. To kontekst; nie zastępuje konwencji tablicy, wspólnego słownika, uprawnień projektu ani jawnych instrukcji użytkownika, a nagłówki nie zmieniają tytułu wątku.", guidance_usage:"GUIDANCE.md dotyczy wszystkich wątków pokoju lub rozmowy. topics/Txxx.md uzupełnia zasady stałego identyfikatora tematu, nawet po zmianie tytułu. Przeczytaj oba pliki przed publikacją lub przyjęciem pracy i ponownie po zmianach. Te edytowalne pliki są oddzielne od niezmiennych wiadomości i nie potwierdzają przyjęcia, wykonania ani ukończenia zadania.", guidance_cli:"Agenci odczytują oba pliki: boardctl guidance --room <pokój> --topic Txxx (lub --direct <para> --participant <twój-id>). Brak plików oznacza brak dodatkowych zasad; wyjaśnij błędy odczytu lub uciętą treść przed użyciem wskazówek.", guidance_folder:"Lokalny folder danych tablicy (zawiera rooms i config.json)", guidance_editor_note:"Sprawdź, czy ścieżka wskazuje Twoją tablicę. Otwórz wymaga opcjonalnego programu otwierającego dla macOS; Otwórz w VS Code wymaga VS Code. Obie akcje otwierają lokalny oryginał, także dla wgranej kopii. Po edycji odśwież tablicę.", guidance_setup:"Konfiguracja programu otwierającego", guidance_open:"Otwórz", guidance_vscode:"Otwórz w VS Code", guidance_path_needed:"Najpierw wpisz bezwzględną ścieżkę lokalnego folderu danych tablicy.", guidance_missing:"Brak opcjonalnego pliku wskazówek.", guidance_error:"Nie można odczytać wskazówek (błędny UTF-8, błąd dostępu lub rozmiar ponad 1 MiB). Wyjaśnij to przed publikacją.", guidance_room:"Wskazówki pokoju / rozmowy", guidance_topic:"Wskazówki tematu",
   find_room:"Znajdź pokój…", find_topic:"Znajdź wątek…", find_party:"Znajdź uczestnika…", composer_resize:"Przeciągnij, aby zmienić wysokość edytora; strzałki zmieniają; dwuklik resetuje", s_thread_order:"Kolejność wątków", s_order_stable:"Stała (ID wątku)", s_order_newest:"Najnowsza aktywność najpierw", unread_count:"{n} nieprzeczytanych", topic_title:"Aktualny tytuł wątku", set_title:"Ustaw tytuł", title_body:"Tytuł wątku: {title}", e_title:"Podaj tytuł zawierający litery lub cyfry",
   menu:"Menu", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
   refresh_now:"Odśwież teraz", settings_title:"Ustawienia wyglądu i odświeżania",
@@ -1656,9 +1662,22 @@ function render(background = false){
 }
 
 let guidanceContext=null;
+function guidanceRootKey(){ return "agent-file-board-ui.editor-root."+JSON.stringify([boardStorageId || "upload:"+B.name,B.layout.dialect]); }
+function suggestedGuidanceRoot(){
+  const saved=lsGet(guidanceRootKey()); if(saved) return saved;
+  if(location.protocol!=="file:" || !dirHandle) return "";
+  try{ const path=decodeURIComponent(new URL(".",location.href).pathname).replace(/\/$/,""); return path.split("/").pop()===dirHandle.name?path+(baseHandle!==dirHandle?"/.agent-board":""):""; }catch(e){ return ""; }
+}
+function guidanceEditorUrls(root,path){
+  root=root.trim(); if(/^[A-Za-z]:[\\/]/.test(root)) root=root.replace(/\\/g,"/"); root=root.replace(/\/+$/,"");
+  if(!root || !/^(?:\/[^/]|[A-Za-z]:\/)/.test(root) || /[\u0000-\u001f\u007f]/.test(root) || /(?:^|\/)\.\.?(?:\/|$)/.test(root) || /[\uD800-\uDFFF]/u.test(root) || !isGuidancePath(path) || path.split("/").some(part=>part==="." || part===".." || /[\u0000-\u001f\u007f]/.test(part))) return null;
+  const full=root+"/"+path;
+  const encoded=(full.startsWith("/")?full:"/"+full).split("/").map(encodeURIComponent).join("/");
+  return {open:"agent-file-board://open"+encoded,vscode:"vscode://file"+encoded};
+}
 function openGuidance(context){
   if(!B || !context?.scope || !context.dir) return;
-  guidanceContext=context; $("#guidanceDialog").showModal(); renderGuidance();
+  guidanceContext=context; $("#guidanceFolder").value=suggestedGuidanceRoot(); $("#guidanceDialog").showModal(); renderGuidance();
 }
 function renderGuidance(){
   if(!B || !guidanceContext || !$("#guidanceDialog").open) return;
@@ -1675,7 +1694,9 @@ function renderGuidance(){
       const model=B;
       row.loading=readGuidanceFile(path,row.guidanceFile).then(result=>{ Object.assign(row,result,{guidanceLoaded:true,loading:null}); if(B===model) renderGuidance(); });
     }
-    return `<section data-guidance-path="${esc(path)}"><h3>${esc(label)}</h3><p class="hint"><code>${esc(path)}</code></p>${row?.guidanceError?`<p class="metadata-error">${esc(t("guidance_error"))}</p>`:row?.loading?`<p class="hint">${esc(t("message_loading"))}</p>`:row?`<div class="body">${richBody(row.text||"","","text/markdown")}</div>`:`<p class="hint">${esc(t("guidance_missing"))}</p>`}</section>`;
+    const urls=row?.guidanceFile?guidanceEditorUrls($("#guidanceFolder").value,path):null;
+    const actions=[['open',t("guidance_open")],['vscode',t("guidance_vscode")]].map(([kind,label])=>`<a class="btn" data-guidance-editor="${kind}" ${urls?`href="${esc(urls[kind])}"`:`aria-disabled="true" title="${esc(t(row?.guidanceFile?"guidance_path_needed":"guidance_missing"))}"`}>${esc(label)}</a>`).join("");
+    return `<section data-guidance-path="${esc(path)}"><h3>${esc(label)}</h3><p class="hint"><code>${esc(path)}</code></p><div class="guidance-actions">${actions}</div>${row?.guidanceError?`<p class="metadata-error">${esc(t("guidance_error"))}</p>`:row?.loading?`<p class="hint">${esc(t("message_loading"))}</p>`:row?`<div class="body">${richBody(row.text||"","","text/markdown")}</div>`:`<p class="hint">${esc(t("guidance_missing"))}</p>`}</section>`;
   }).join("");
   const next=document.createElement("div"); next.innerHTML=html;
   if($("#guidanceDocs").innerHTML!==next.innerHTML) $("#guidanceDocs").replaceChildren(...next.childNodes);
@@ -2103,6 +2124,7 @@ function wire(){
     const [scope,...parts]=$("#cWhere").value.split(":"), topic=threadsOf()[$("#cThread").value];
     openGuidance({scope,dir:parts.join(":"),tid:topic?.tid});
   };
+  $("#guidanceFolder").addEventListener("input",()=>{ if(B){ lsSet(guidanceRootKey(),$("#guidanceFolder").value); renderGuidance(); } });
   $("#guidanceClose").onclick=()=>$("#guidanceDialog").close();
   $("#gear").onclick = ()=>$("#settings").classList.toggle("show");
   $("#sClose").onclick = ()=>$("#settings").classList.remove("show");
@@ -2262,7 +2284,7 @@ function init(){
 }
 /* test hooks: pure functions and state accessors; they add no capability the UI does not have */
 window.__boardTest = {STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
-  parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loading:()=>historyLoading || activeBodyReads>0 || bodySearch.pending || !!(B && messagePage(matchingMessages()).rows.some(m=>!m.bodyLoaded)), cachedBodies:()=>bodyCache.size, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
+  guidanceEditorUrls, parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loading:()=>historyLoading || activeBodyReads>0 || bodySearch.pending || !!(B && messagePage(matchingMessages()).rows.some(m=>!m.bodyLoaded)), cachedBodies:()=>bodyCache.size, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
 init();
 </script>
 </body>

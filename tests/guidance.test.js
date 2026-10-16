@@ -110,3 +110,39 @@ test('explicit title metadata wins even when body resembles a receipt; direct gu
   await page.click('#guidanceClose');await page.selectOption('#me','implementation-agent-01');await page.click('#guidanceOpen');
   await page.waitForSelector('#guidanceDocs h1');assert.match(await page.textContent('#guidanceDocs'),/Members only guidance/);await ctx.close();
 });
+
+test('guidance explains the convention and links original room/topic files to both editors',async()=>{
+  const {ctx,page,log}=await boot({'rooms/product/GUIDANCE.md':'# Room rules','rooms/product/topics/T003.md':'# Topic rules'});
+  await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
+  assert.match(await page.textContent('#guidanceDialog'),/before posting or accepting work/);
+  assert.match(await page.textContent('#guidanceDialog'),/boardctl guidance/);
+  assert.match(await page.textContent('#guidanceDialog'),/do not override the board convention/);
+  assert.equal(await page.locator('#guidanceDocs [href]').count(),0);
+  const root="/Users/Someone/Board #1 % 🦊/.agent-board";
+  await page.fill('#guidanceFolder',root);
+  for(const path of ['rooms/product/GUIDANCE.md','rooms/product/topics/T003.md']){
+    const section=page.locator(`[data-guidance-path='${path}']`),encoded=(root+'/'+path).split('/').map(encodeURIComponent).join('/');
+    assert.equal(await section.getByRole('link',{name:'Open',exact:true}).getAttribute('href'),'agent-file-board://open'+encoded);
+    assert.equal(await section.getByRole('link',{name:'Open in VS Code',exact:true}).getAttribute('href'),'vscode://file'+encoded);
+  }
+  await page.click('#guidanceClose');await page.click('#guidanceOpen');assert.equal(await page.inputValue('#guidanceFolder'),root);
+  await page.fill('#guidanceFolder','../another-board');assert.equal(await page.locator('#guidanceDocs [href]').count(),0);
+  await page.setViewportSize({width:375,height:812});assert.ok((await page.locator('#guidanceDialog').boundingBox()).width<=375);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});
+
+test('editor links handle Windows paths, reject traversal and stay unavailable for missing files or other direct participants',async()=>{
+  const {ctx,page}=await boot({'direct/implementation-agent-01--research-agent-01/GUIDANCE.md':'# Pair rules'});
+  await page.click(".fname[data-nav='direct'][data-dir='implementation-agent-01--research-agent-01']");await page.click('#guidanceOpen');
+  await page.fill('#guidanceFolder','/Users/Someone/.agent-board');assert.equal(await page.locator('#guidanceDocs [href]').count(),0);
+  await page.click('#guidanceClose');await page.selectOption('#me','implementation-agent-01');await page.click('#guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
+  assert.equal(await page.locator('#guidanceDocs [href]').count(),2);
+  const result=await page.evaluate(()=>({
+    windows:window.__boardTest.guidanceEditorUrls('C:\\Boards\\My board\\.agent-board','rooms/general/GUIDANCE.md'),
+    invalid:['relative/path','/tmp/../secret','/tmp/./board','//server/share','/tmp/\u0000'].map(root=>window.__boardTest.guidanceEditorUrls(root,'rooms/general/GUIDANCE.md')),
+    posix:window.__boardTest.guidanceEditorUrls("/Users/me/Board\\Archive/.agent-board","rooms/general/GUIDANCE.md"),
+    badFile:window.__boardTest.guidanceEditorUrls('/tmp/board','rooms/general/run.sh')
+  }));
+  assert.equal(result.windows.vscode,'vscode://file/C%3A/Boards/My%20board/.agent-board/rooms/general/GUIDANCE.md');assert.equal(result.posix.vscode,'vscode://file/Users/me/Board%5CArchive/.agent-board/rooms/general/GUIDANCE.md');assert.deepEqual(result.invalid,[null,null,null,null,null]);assert.equal(result.badFile,null);
+  await ctx.close();
+});

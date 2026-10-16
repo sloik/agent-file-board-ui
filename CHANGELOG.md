@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.8.1 — 2026-10-16
+
+- Explain room/topic guidance scope, read-before-posting requirements, authority boundaries and agent CLI usage in the Guidance panel.
+- Add Open and Open in VS Code per existing guidance file, with a visible per-board local data-folder path and safe URL encoding.
+- Provide an optional user-local macOS default-app opener and installer. Missing files and unrelated direct conversations never expose actionable editor links.
+
 ## 1.8.0 — 2026-10-15
 
 - Every choice question offers a custom message: send selected options with a note or a text-only reply. Clear choices also works for radio buttons.

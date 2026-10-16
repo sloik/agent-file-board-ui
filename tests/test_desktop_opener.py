@@ -1,0 +1,86 @@
+"""Exercise the actual AppleScript URL validator without launching an editor."""
+import json
+import plistlib
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+from urllib.parse import quote
+
+SOURCE = Path(__file__).resolve().parents[1] / "scripts/desktop_opener.applescript"
+
+
+@unittest.skipUnless(sys.platform == "darwin", "macOS AppleScript runtime integration")
+class DesktopOpenerTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="board editor ' # % \\ 🦊 ")
+        self.base = Path(self.tmp.name) / ".agent-board"
+        self.base.mkdir()
+        for name in ("config.json", "participants.json"):
+            (self.base / name).write_text("{}")
+        self.room = self.base / "rooms/general/GUIDANCE.md"
+        self.room.parent.mkdir(parents=True)
+        self.room.write_text("# Guidance")
+        self.topic = self.base / "direct/alpha--bravo/topics/T001.md"
+        self.topic.parent.mkdir(parents=True)
+        self.topic.write_text("# Topic")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def check_url(self, url):
+        # JSON quoting for these scalar URL strings is also AppleScript quoting.
+        script = SOURCE.read_text() + "\nreturn my guidancePath(" + json.dumps(url) + ")\n"
+        return subprocess.run(["/usr/bin/osascript", "-"], input=script, text=True, capture_output=True)
+
+    def test_real_validator_decodes_room_and_topic_paths(self):
+        for path in (self.room, self.topic):
+            with self.subTest(path=path):
+                result = self.check_url("agent-file-board://open" + quote(str(path)))
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.strip(), str(path))
+
+    def test_rejects_commands_traversal_unrelated_missing_and_non_board_files(self):
+        valid = "agent-file-board://open" + quote(str(self.room))
+        unrelated = self.room.with_name("command.sh")
+        unrelated.write_text("exit 0")
+        (self.room.parent / "directory/GUIDANCE.md").mkdir(parents=True)
+        urls = [valid + "?command=open", valid + "#fragment", valid.replace("://open", "://other"),
+                valid.replace("agent-file-board:", "https:"), valid.replace("://open", "://user@open"),
+                "agent-file-board://open" + quote(str(unrelated)),
+                valid.replace("/general/", "/general/../general/"),
+                valid.replace("GUIDANCE.md", "topics/T002.md"),
+                valid.replace("/general/", "/general/directory/")]
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertNotEqual(self.check_url(url).returncode, 0)
+        (self.base / "participants.json").unlink()
+        self.assertNotEqual(self.check_url(valid).returncode, 0)
+
+    def test_refuses_symlinks_inside_board_but_accepts_a_board_root_alias(self):
+        alias = Path(self.tmp.name) / "board-alias"
+        alias.symlink_to(self.base, target_is_directory=True)
+        url = "agent-file-board://open" + quote(str(alias / "rooms/general/GUIDANCE.md"))
+        self.assertEqual(self.check_url(url).returncode, 0)
+        outside = Path(self.tmp.name) / "outside.command"
+        outside.write_text("do not execute")
+        self.room.unlink()
+        self.room.symlink_to(outside)
+        self.assertNotEqual(self.check_url(url).returncode, 0)
+
+    def test_installer_preserves_an_unrelated_application(self):
+        app = Path(self.tmp.name) / "Existing.app"
+        info = app / "Contents/Info.plist"
+        info.parent.mkdir(parents=True)
+        original = plistlib.dumps({"CFBundleIdentifier": "example.unrelated"})
+        info.write_bytes(original)
+        result = subprocess.run([sys.executable, str(SOURCE.with_name("install_desktop_opener.py")),
+                                 "--destination", str(app)], text=True, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Refusing to replace", result.stderr)
+        self.assertEqual(info.read_bytes(), original)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -57,10 +57,10 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.8.0
+## Release 1.8.1
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.8.0).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.8.1).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
 [agent-file-board 1.8.0](https://github.com/sloik/agent-file-board/releases/tag/v1.8.0).
@@ -127,3 +127,42 @@ The requirements and acceptance criteria are SPEC-002 in the standard's reposito
 ## Licence
 
 MIT, see [LICENSE](LICENSE).
+
+
+## Open guidance in your editor
+
+The Guidance panel explains how room/topic Markdown files are used by the
+[canonical convention](https://github.com/sloik/agent-file-board/blob/v1.8.0/.agent-board/CONVENTION.md#optional-room-and-topic-guidance).
+Each existing file has **Open** and **Open in VS Code** actions. Set **Local board
+data folder** to the absolute folder containing `config.json`, `participants.json`
+and `rooms`, usually `/path/to/project/.agent-board`. The viewer remembers this
+path per board on this computer. A colocated `board.html` suggests its adjacent
+`.agent-board`; check the displayed path, especially after moving a board.
+Browsers do not expose the absolute path of a selected folder.
+
+**Open in VS Code** uses VS Code's
+[documented file URL handler](https://code.visualstudio.com/docs/configure/command-line#_opening-vs-code-with-urls)
+and needs the desktop app installed. On macOS, **Open** uses an optional small
+URL-handler app to open the original Markdown file with its system default app.
+Download `install_desktop_opener.py` and `desktop_opener.applescript` from the
+[latest release](https://github.com/sloik/agent-file-board-ui/releases/latest)
+into the same folder, then run:
+
+```sh
+python3 install_desktop_opener.py
+```
+
+From a checkout, run `python3 scripts/install_desktop_opener.py` instead. It uses
+built-in macOS tools to build and register
+`~/Applications/Agent File Board Opener.app`. No server or background polling runs.
+It only accepts existing guidance Markdown paths in a board data folder, and
+passes the file as a quoted argument to macOS `open`; URLs cannot specify shell
+commands or application names. Remove that app to uninstall the opener. The
+installer refuses to overwrite an unrelated app. Windows/Linux users can use
+**Open in VS Code**; the default-app opener currently ships for macOS only.
+
+The browser may ask before launching an external app. These actions open local
+originals, including from a read-only uploaded snapshot; they do not edit the
+browser's snapshot. Missing files have disabled editor actions: create the shown
+UTF-8 Markdown file first. After saving in your editor, refresh the board to read
+changes. Opening a file does not post a message, rename a topic, or accept work.

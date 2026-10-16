@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.8.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.8.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -31,7 +31,12 @@ Headings in these documents do not rename threads. Read room guidance first,
 then the more specific topic notes; the convention and user authority still apply.
 
 Documents are read lazily when opened and rendered through the same sanitizer as
-rich messages. Missing files are optional; read/encoding errors are shown
+rich messages. The panel explains their scope, read-before-posting rule, authority
+boundaries and CLI usage. Each existing file offers **Open** in the system default
+app (optional macOS opener) and **Open in VS Code**. A visible per-board local
+data-folder path determines which original is opened; it is never inferred from
+a browser folder handle. See [editor setup](../README.md#open-guidance-in-your-editor).
+Missing files are optional; read/encoding errors are shown
 separately. The UI reports files over1MiB as unreadable. CLI/skill reads default
 to16KiB combined output and explicitly report truncation; fetch the remainder or
 resolve the error before treating guidance as fully read.

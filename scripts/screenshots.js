@@ -48,7 +48,10 @@ async function main() {
     await page.selectOption("#me", "human-owner-01");
     await page.click("#guidanceOpen");
     await page.waitForFunction(()=>document.querySelectorAll("#guidanceDocs h1").length===2);
+    await page.fill("#guidanceFolder", "/Users/you/canonical-example/.agent-board");
+    await page.setViewportSize({ width: 1440, height: 1440 });
     await capture("board-guidance.png");
+    await page.setViewportSize({ width: 1440, height: 1120 });
     await page.click("#guidanceClose");
 
     await page.selectOption("#cStatus", "DECISION-NEEDED");
