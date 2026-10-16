@@ -293,3 +293,22 @@ test('a CLI agent post without attachment warns and the viewer explains the miss
   assert.match(await page.locator(`[data-presence-id='${ID}']`).textContent(),/Ghost · no active board session/);
   assert.deepEqual(log.pageErrors,[]);await ctx.close();
 });
+
+for(const upload of [false,true])test(`Finder metadata is ignored in ${upload?'uploaded snapshots':'native reads and human presence writes'}`,async()=>{
+  const proj=fixture({[`${ID}/session-one.json`]:lease()});
+  for(const rel of ['.DS_Store','presence/.DS_Store',`presence/${ID}/.DS_Store`,'presence/human-owner-01/.DS_Store','repairs/.DS_Store','rooms/product/topics/.DS_Store']){
+    const p=h.path.join(proj,'.agent-board',rel);h.fs.mkdirSync(h.path.dirname(p),{recursive:true});h.fs.writeFileSync(p,Buffer.from([255,0,1]));
+  }
+  const s=upload?await h.openPage(browser,{clock:AT}):await open(proj);
+  const {page,ctx,log}=s;
+  if(upload){await page.setInputFiles('#fallback',proj);await page.waitForSelector('#feed article');}
+  assert.match(await marker(page).getAttribute('class'),/presence-active/);
+  assert.equal(await page.evaluate(()=>window.__boardTest.getModel().presence.errors.size),0);
+  if(!upload){
+    await page.selectOption('#me',HUMAN);
+    await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.includes('/presence/human-owner-01/')&&f.path.endsWith('.json')));
+    assert.match(await marker(page,HUMAN).getAttribute('class'),/presence-active/);
+    await refresh(page);assert.match(await marker(page).getAttribute('class'),/presence-active/);
+  }
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});

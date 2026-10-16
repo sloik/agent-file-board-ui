@@ -57,13 +57,13 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.9.0
+## Release 1.9.1
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.0).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.1).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
-[agent-file-board 1.9.0](https://github.com/sloik/agent-file-board/releases/tag/v1.9.0).
+[agent-file-board 1.9.1](https://github.com/sloik/agent-file-board/releases/tag/v1.9.1).
 For existing boards, merge the new convention/glossary as described there; the
 viewer reads older boards too and reports version differences.
 
@@ -199,3 +199,5 @@ unresolved original rather than claiming success. A repair never completes work,
 silently marks an invalid message read, or changes existing reply references.
 Update CLI modules (including `message_repairs.py`), board-loop and the convention
 together: older validators do not understand resolved invalid originals.
+
+Finder `.DS_Store` metadata is ignored in both writable folders and uploaded snapshots; it does not affect presence or board validity.
