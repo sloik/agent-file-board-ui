@@ -154,6 +154,7 @@ test('explicit human selection starts a valid browser lease, renews with refresh
   assert.deepEqual(await page.evaluate(()=>[document.activeElement.id,document.querySelector('#cBody').selectionStart,document.querySelector('#cBody').selectionEnd]),['cBody',2,5]);
   await page.selectOption('#me',ID);
   await page.waitForFunction(id=>JSON.parse(window.__fakefs.dump().find(f=>f.path.includes(`/presence/${id}/`)).text).status==='released',HUMAN);
+  await page.waitForSelector(`.msg-head > [data-presence-party='${HUMAN}'].presence-ghost`);
   assert.equal(await marker(page,HUMAN).textContent(),'👻');
   const dump=await page.evaluate(()=>window.__fakefs.dump());
   assert.equal(dump.filter(f=>f.path.includes('session-start-')).length,1);
@@ -305,7 +306,7 @@ for(const upload of [false,true])test(`Finder metadata is ignored in ${upload?'u
   assert.match(await marker(page).getAttribute('class'),/presence-active/);
   assert.equal(await page.evaluate(()=>window.__boardTest.getModel().presence.errors.size),0);
   if(!upload){
-    await page.selectOption('#me',HUMAN);
+    await selectHuman(page);
     await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.includes('/presence/human-owner-01/')&&f.path.endsWith('.json')));
     assert.match(await marker(page,HUMAN).getAttribute('class'),/presence-active/);
     await refresh(page);assert.match(await marker(page).getAttribute('class'),/presence-active/);
