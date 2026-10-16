@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.8.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.8.2/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -331,3 +331,14 @@ Chromium cannot display a native picker. The additional rich-question and HTML m
 created and validated with the pinned standard CLI. No live board is opened or
 modified. Captures use a fixed clock, English UI and explicit light/dark themes;
 font and emoji appearance can vary by operating system.
+
+
+Missing guidance offers **Create a file** and **Create in VS Code**. The updated
+macOS opener creates an empty file before launching the chosen editor; it also
+creates a missing topics folder and preserves a file that appeared after the
+viewer read the board. Refresh to see the new file and its Open actions.
+Optional canonical starters live at `.agent-board/templates/room-guidance.md`
+and `topic-guidance.md`. Use them as examples when useful; they are never
+silently inserted or treated as active guidance under templates/.
+
+![Missing room and topic guidance with Create a file and Create in VS Code actions and optional template guidance.](images/board-guidance-create.png)

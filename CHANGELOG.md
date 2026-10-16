@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.8.2 — 2026-10-16
+
+- Offer Create a file and Create in VS Code for missing guidance. The updated macOS opener creates an empty file before opening the selected editor, adds missing topics directories and never overwrites existing content.
+- Reject special files and unsafe parent paths; correctly handle a room named topics.
+- Pin canonical1.8.1 with optional room/conversation and topic starters. Empty guidance is valid; templates remain optional and inactive until copied to an actual guidance path.
+
 ## 1.8.1 — 2026-10-16
 
 - Explain room/topic guidance scope, read-before-posting requirements, authority boundaries and agent CLI usage in the Guidance panel.

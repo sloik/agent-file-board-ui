@@ -57,13 +57,13 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.8.1
+## Release 1.8.2
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.8.1).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.8.2).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
-[agent-file-board 1.8.0](https://github.com/sloik/agent-file-board/releases/tag/v1.8.0).
+[agent-file-board 1.8.1](https://github.com/sloik/agent-file-board/releases/tag/v1.8.1).
 For existing boards, merge the new convention/glossary as described there; the
 viewer reads older boards too and reports version differences.
 
@@ -132,7 +132,7 @@ MIT, see [LICENSE](LICENSE).
 ## Open guidance in your editor
 
 The Guidance panel explains how room/topic Markdown files are used by the
-[canonical convention](https://github.com/sloik/agent-file-board/blob/v1.8.0/.agent-board/CONVENTION.md#optional-room-and-topic-guidance).
+[canonical convention](https://github.com/sloik/agent-file-board/blob/v1.8.1/.agent-board/CONVENTION.md#optional-room-and-topic-guidance).
 Each existing file has **Open** and **Open in VS Code** actions. Set **Local board
 data folder** to the absolute folder containing `config.json`, `participants.json`
 and `rooms`, usually `/path/to/project/.agent-board`. The viewer remembers this
@@ -155,7 +155,7 @@ python3 install_desktop_opener.py
 From a checkout, run `python3 scripts/install_desktop_opener.py` instead. It uses
 built-in macOS tools to build and register
 `~/Applications/Agent File Board Opener.app`. No server or background polling runs.
-It only accepts existing guidance Markdown paths in a board data folder, and
+It only accepts guidance Markdown paths in a board data folder, and
 passes the file as a quoted argument to macOS `open`; URLs cannot specify shell
 commands or application names. Remove that app to uninstall the opener. The
 installer refuses to overwrite an unrelated app. Windows/Linux users can use
@@ -163,6 +163,14 @@ installer refuses to overwrite an unrelated app. Windows/Linux users can use
 
 The browser may ask before launching an external app. These actions open local
 originals, including from a read-only uploaded snapshot; they do not edit the
-browser's snapshot. Missing files have disabled editor actions: create the shown
-UTF-8 Markdown file first. After saving in your editor, refresh the board to read
+browser's snapshot. Missing files offer **Create a file** and **Create in VS Code**. Both create a
+zero-byte file before launching the chosen editor, adding a missing `topics/`
+folder and preserving existing content if the viewer is stale. Both creation
+actions require the updated macOS desktop opener, even when VS Code is selected;
+rerun the installer after upgrading from1.8.1. Creation is local, including for
+uploaded snapshots. Windows/Linux users can create the empty file manually, refresh,
+and use Open in VS Code. The canonical [optional starters](https://github.com/sloik/agent-file-board/tree/v1.8.1/.agent-board/templates)
+cover room/conversation and topic guidance. They are examples rather than required
+schemas; Create deliberately leaves the file empty. Copy and adapt a starter
+only when useful. After saving in your editor, refresh the board to read
 changes. Opening a file does not post a message, rename a topic, or accept work.

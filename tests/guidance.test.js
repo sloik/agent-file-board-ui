@@ -147,3 +147,20 @@ test('editor links handle Windows paths, reject traversal and stay unavailable f
   assert.equal(result.windows.vscode,'vscode://file/C%3A/Boards/My%20board/.agent-board/rooms/general/GUIDANCE.md');assert.equal(result.trailingSpace.open,'agent-file-board://open/tmp/board%20/rooms/general/GUIDANCE.md');assert.equal(result.posix.vscode,'vscode://file/Users/me/Board%5CArchive/.agent-board/rooms/general/GUIDANCE.md');assert.deepEqual(result.invalid,[null,null,null,null,null]);assert.equal(result.badFile,null);
   await ctx.close();
 });
+
+test('missing guidance offers create actions and switches to open after an empty file appears',async()=>{
+  const {ctx,page,log}=await boot();
+  await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');await page.fill('#guidanceFolder','/Users/Someone/Board #1/.agent-board');
+  const root='/Users/Someone/Board%20%231/.agent-board/';
+  for(const path of ['rooms/product/GUIDANCE.md','rooms/product/topics/T003.md']){
+    const section=page.locator(`[data-guidance-path='${path}']`);
+    assert.equal(await section.getByRole('link',{name:'Create a file',exact:true}).getAttribute('href'),'agent-file-board://create'+root+path);
+    assert.equal(await section.getByRole('link',{name:'Create in VS Code',exact:true}).getAttribute('href'),'agent-file-board://create-vscode'+root+path);
+  }
+  assert.match(await page.textContent('#guidanceDialog'),/templates\/room-guidance.md/);
+  await page.evaluate(()=>window.__fakefs.addFile('.agent-board/rooms/product/GUIDANCE.md',''));
+  await page.click('#guidanceClose');await refresh(page);await page.click('#guidanceOpen');
+  assert.equal(await page.locator("[data-guidance-path='rooms/product/GUIDANCE.md']").getByRole('link',{name:'Open',exact:true}).count(),1);
+  assert.equal(await page.locator("[data-guidance-path='rooms/product/topics/T003.md']").getByRole('link',{name:'Create a file',exact:true}).count(),1);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});

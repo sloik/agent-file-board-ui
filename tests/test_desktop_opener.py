@@ -1,5 +1,6 @@
 """Exercise the actual AppleScript URL validator without launching an editor."""
 import json
+import os
 import plistlib
 from pathlib import Path
 import subprocess
@@ -29,10 +30,10 @@ class DesktopOpenerTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def check_url(self, url):
+    def check_url(self, url, handler="guidancePath"):
         # JSON quoting for these scalar URL strings is also AppleScript quoting.
-        script = SOURCE.read_text() + "\nreturn my guidancePath(" + json.dumps(url) + ")\n"
-        return subprocess.run(["/usr/bin/osascript", "-"], input=script, text=True, capture_output=True)
+        script = SOURCE.read_text() + "\nreturn my " + handler + "(" + json.dumps(url) + ")\n"
+        return subprocess.run(["/usr/bin/osascript", "-"], input=script, text=True, capture_output=True, timeout=15)
 
     def test_real_validator_decodes_room_and_topic_paths(self):
         for path in (self.room, self.topic):
@@ -68,6 +69,46 @@ class DesktopOpenerTests(unittest.TestCase):
         self.room.unlink()
         self.room.symlink_to(outside)
         self.assertNotEqual(self.check_url(url).returncode, 0)
+
+    def test_create_actions_make_empty_files_and_keep_existing_contents(self):
+        for action, target in (("create", self.room), ("create-vscode", self.room.parent / "topics/T002.md")):
+            if target.exists():
+                target.unlink()
+            url = "agent-file-board://" + action + quote(str(target))
+            result = self.check_url(url, "createGuidance")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(target.read_bytes(), b"")
+            target.write_text("User rules must survive a stale Create click. 🦊")
+            result = self.check_url(url, "createGuidance")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(target.read_text(), "User rules must survive a stale Create click. 🦊")
+
+    def test_create_rejects_symlinks_and_missing_rooms_without_writing(self):
+        target = self.room.parent / "topics"
+        outside = Path(self.tmp.name) / "outside"
+        outside.mkdir()
+        target.symlink_to(outside, target_is_directory=True)
+        url = "agent-file-board://create-vscode" + quote(str(target / "T002.md"))
+        self.assertNotEqual(self.check_url(url, "createGuidance").returncode, 0)
+        self.assertEqual(list(outside.iterdir()), [])
+        target.unlink()
+        url = "agent-file-board://create" + quote(str(self.base / "rooms/missing/GUIDANCE.md"))
+        self.assertNotEqual(self.check_url(url, "createGuidance").returncode, 0)
+        self.assertFalse((self.base / "rooms/missing").exists())
+
+    def test_room_named_topics_and_fifo_rejection(self):
+        target = self.base / "rooms/topics/GUIDANCE.md"
+        target.parent.mkdir()
+        url = "agent-file-board://create" + quote(str(target))
+        result = self.check_url(url, "createGuidance")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(target.read_bytes(), b"")
+        target.unlink()
+        os.mkfifo(target)
+        for action in ("open", "create", "create-vscode"):
+            result = self.check_url("agent-file-board://" + action + quote(str(target)), "createGuidance" if action != "open" else "guidancePath")
+            self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(target.is_fifo())
 
     def test_installer_preserves_an_unrelated_application(self):
         app = Path(self.tmp.name) / "Existing.app"

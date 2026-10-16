@@ -53,6 +53,14 @@ async function main() {
     await capture("board-guidance.png");
     await page.setViewportSize({ width: 1440, height: 1120 });
     await page.click("#guidanceClose");
+    await page.click(".tcard[data-tk='room:product|T003']");
+    await page.click("#guidanceOpen");
+    await page.fill("#guidanceFolder", "/Users/you/canonical-example/.agent-board");
+    await page.setViewportSize({ width: 1440, height: 1440 });
+    await capture("board-guidance-create.png");
+    await page.click("#guidanceClose");
+    await page.setViewportSize({ width: 1440, height: 1120 });
+    await page.click(".tcard[data-tk='room:architecture|T001']");
 
     await page.selectOption("#cStatus", "DECISION-NEEDED");
     await page.fill("#cBody", "Please confirm the schema before implementation starts.\n\nNext action: @rese");
