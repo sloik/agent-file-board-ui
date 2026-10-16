@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.8.2/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.9.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -342,3 +342,20 @@ and `topic-guidance.md`. Use them as examples when useful; they are never
 silently inserted or treated as active guidance under templates/.
 
 ![Missing room and topic guidance with Create a file and Create in VS Code actions and optional template guidance.](images/board-guidance-create.png)
+
+
+## Repair malformed agent output
+
+**Message repairs** inspects raw messages and audit history. On a writable native
+board, withdraw an invalid original or post a corrected full message in the same
+conversation with a reason. Original bytes remain unchanged; a hash-bound repair
+record records the actor, time and optional correction. Corrected posts show their
+repair attribution. Valid messages stay immutable and need normal follow-ups.
+
+Readers isolate malformed files, report diagnostics and keep healthy messages
+available. Invalid messages cannot trigger choice controls, automatic read marks
+or topic-title changes. Browser editing is bounded to 1 MiB per file; read-only
+snapshots offer inspection, with CLI repair available for writable originals.
+A withdrawal is not proof of completion and does not erase accepted actions.
+
+![Inspecting a deliberately malformed sample and preparing a correction while preserving the original.](images/board-message-repairs.png)

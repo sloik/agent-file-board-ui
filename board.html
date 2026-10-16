@@ -227,10 +227,11 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .vocabulary-head{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .vocabulary-head h2{margin:0;font-size:18px}
 .guidance-root{display:grid;gap:6px;margin-top:16px}
-.guidance-root input{width:100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
+.guidance-root input,.guidance-root select,.guidance-root textarea{width:100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
 .guidance-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .guidance-actions .btn{display:inline-block;text-decoration:none;color:var(--ink)}
 .guidance-actions [aria-disabled="true"]{opacity:.5;cursor:default}
+.repair-diagnostic{color:var(--warn-ink);white-space:pre-wrap}
 #guidanceDocs code{overflow-wrap:anywhere}
 #vocabularyText{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
 .presence{display:inline-block;font-size:11px;white-space:nowrap;color:var(--muted);font-weight:500}
@@ -295,7 +296,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
   </aside>
   <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
   <section class="feed-wrap">
-    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div><button class="btn" id="guidanceOpen" data-i18n="guidance_title" hidden></button></div>
+    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div><button class="btn" id="repairsOpen" data-i18n="repairs_title"></button><button class="btn" id="guidanceOpen" data-i18n="guidance_title" hidden></button></div>
     <div class="feed" id="feed" tabindex="0"></div>
     <div class="composer-resizer" id="composerResizer" role="separator" aria-orientation="horizontal" tabindex="0" data-i18n-aria="composer_resize" data-i18n-title="composer_resize"></div>
     <div class="composer status-tone s-INFO" id="composer">
@@ -324,6 +325,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 </div>
 <dialog id="vocabulary"><div class="vocabulary-head"><h2 data-i18n="vocabulary_title"></h2><button class="btn" id="vocabularyClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="vocabulary_source"></p><pre id="vocabularyText"></pre></dialog>
 <dialog id="presenceDialog"><div class="vocabulary-head"><h2 data-i18n="presence_title"></h2><button class="btn" id="presenceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="presence_note"></p><p class="hint" id="presenceSnapshot"></p><button class="btn" id="browserPresence" hidden></button><div id="presenceList"></div></dialog>
+<dialog id="repairDialog"><div class="vocabulary-head"><h2 data-i18n="repairs_title"></h2><button class="btn" id="repairClose" data-i18n="vocabulary_close"></button></div><p data-i18n="repairs_note"></p><label class="guidance-root"><span data-i18n="repair_message"></span><select id="repairSelect"></select></label><p id="repairIssue" class="repair-diagnostic"></p><label class="guidance-root"><span data-i18n="repair_reason"></span><input id="repairReason"></label><label class="guidance-root"><span data-i18n="repair_corrected"></span><textarea id="repairText" rows="12"></textarea></label><div class="guidance-actions"><button class="btn" id="repairWithdraw" data-i18n="repair_withdraw"></button><button class="btn primary" id="repairSave" data-i18n="repair_save"></button></div><p id="repairResult" role="status"></p></dialog>
 <dialog id="guidanceDialog"><div class="vocabulary-head"><h2 id="guidanceTitle" data-i18n="guidance_title"></h2><button class="btn" id="guidanceClose" data-i18n="vocabulary_close"></button></div><p data-i18n="guidance_note"></p><p class="hint" data-i18n="guidance_usage"></p><p class="hint" data-i18n="guidance_cli"></p><label class="guidance-root"><span data-i18n="guidance_folder"></span><input id="guidanceFolder" type="text" spellcheck="false" placeholder="/Users/you/project/.agent-board"></label><p class="hint" data-i18n="guidance_editor_note"></p><p><a href="https://github.com/sloik/agent-file-board-ui#open-guidance-in-your-editor" target="_blank" rel="noopener noreferrer" data-i18n="guidance_setup"></a></p><div id="guidanceDocs"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 
@@ -424,7 +426,7 @@ if(__exports != exports)module.exports = exports;return module.exports}));
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "1.8.2";
+const VIEWER_VERSION = "1.9.0";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -471,6 +473,7 @@ const lastPostTimes=new Map();
 /* ===== string tables ===== */
 const STRINGS = {
  en:{
+  repair_reference:"Correction of {path} · repaired by {by}: {reason}", repairs_title:"Message repairs", repairs_note:"Invalid originals stay unchanged. Withdraw a malformed message from active processing, or post a corrected copy with a hash-bound repair record. Valid messages remain immutable. Direct repairs require a pair member.", repair_message:"Message / audit history", repair_reason:"Reason (required)", repair_corrected:"Corrected full message (headers and body)", repair_withdraw:"Withdraw invalid message", repair_save:"Post correction", repair_done:"Repair recorded; original preserved", repair_required:"Select an invalid message and give a reason. Existing repairs are audit history.",
   draft_status:"Message status",
   content_type:"Format", content_plain:"Plain text", choice_single:"Choose an option, write a reply, or do both", choice_multiple:"Choose options, write a reply, or do both", choice_clear:"Clear choices", choice_text:"Your message", choice_text_hint:"Add a note or write your own answer…", choice_text_limit:"Up to 10,000 characters. A message can be sent without choosing an option.", choice_none:"No options selected", choice_send:"Send answer", choice_required:"Choose an option or enter a message (up to 10,000 characters)", choice_already:"This answer has already been posted", choice_sent:"Answer posted", choice_answer_body:"Question: {q}\nSelected: {a}", invalid_metadata:"Invalid message metadata; interactive controls are unavailable.", choice_legacy:"Interactive questions require a native board",
 
@@ -542,6 +545,7 @@ const STRINGS = {
   next_refresh:"Next refresh: {t}", t_h_min:"{h} h {m} min", t_min_s:"{m} min {s} s", t_s:"{s} s"
  },
  pl:{
+  repair_reference:"Poprawka {path} · naprawił {by}: {reason}", repairs_title:"Naprawa wiadomości", repairs_note:"Nieprawidłowy oryginał pozostaje bez zmian. Wycofaj błędną wiadomość lub opublikuj poprawioną kopię z rekordem naprawy i skrótem oryginału. Poprawne wiadomości są niezmienne; naprawy rozmów wymagają członka pary.", repair_message:"Wiadomość / historia napraw", repair_reason:"Powód (wymagany)", repair_corrected:"Poprawiona pełna wiadomość (nagłówki i treść)", repair_withdraw:"Wycofaj błędną wiadomość", repair_save:"Opublikuj poprawkę", repair_done:"Zapisano naprawę; oryginał zachowany", repair_required:"Wybierz błędną wiadomość i podaj powód. Istniejące naprawy to historia.",
   draft_status:"Status wiadomości",
   content_type:"Format", content_plain:"Zwykły tekst", choice_single:"Wybierz opcję, napisz odpowiedź lub zrób obie rzeczy", choice_multiple:"Wybierz opcje, napisz odpowiedź lub zrób obie rzeczy", choice_clear:"Wyczyść wybór", choice_text:"Twoja wiadomość", choice_text_hint:"Dodaj komentarz lub własną odpowiedź…", choice_text_limit:"Do 10 000 znaków. Możesz wysłać wiadomość bez wybierania opcji.", choice_none:"Nie wybrano opcji", choice_send:"Wyślij odpowiedź", choice_required:"Wybierz opcję lub wpisz wiadomość (do 10 000 znaków)", choice_already:"Ta odpowiedź została już wysłana", choice_sent:"Odpowiedź wysłana", choice_answer_body:"Pytanie: {q}\nWybrano: {a}", invalid_metadata:"Nieprawidłowe metadane wiadomości; pola wyboru są niedostępne.", choice_legacy:"Pytania z wyborem wymagają natywnej tablicy",
 
@@ -645,7 +649,7 @@ function locale(){ return S.lang==="pl" ? "pl-PL" : "en-GB"; }
 
 /* ===== parsing ===== */
 function parseHeaders(text){
-  const lines = text.replace(/\r/g,"").split("\n"), h = {}, duplicates=[];
+  const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n"), h = {}, duplicates=[];
   let i = 0;
   for(; i<lines.length; i++){
     const l = lines[i];
@@ -653,7 +657,12 @@ function parseHeaders(text){
     const m = l.match(/^([A-Za-zĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻ0-9\-]*):\s?(.*)$/);
     if(m){ const key=m[1].toUpperCase(); if(Object.hasOwn(h,key)) duplicates.push(key); h[key]=m[2].trim(); }
   }
-  return {h, duplicates, body: lines.slice(i).join("\n").trim()};
+  const native={h:Object.create(null),duplicates:[],hasSeparator:false,body:""};
+  for(let n=0;n<lines.length;n++){
+    if(lines[n]==="---"){ native.hasSeparator=true; native.body=lines.slice(n+1).join("\n").trim(); break; }
+    const at=lines[n].indexOf(": "); if(at>=0){ const key=lines[n].slice(0,at); if(Object.hasOwn(native.h,key)) native.duplicates.push(key); native.h[key]=lines[n].slice(at+2); }
+  }
+  return {h, duplicates, native, hasSeparator:lines.slice(0,i).some(line=>line.trim()==="---"), body: lines.slice(i).join("\n").trim()};
 }
 function parseCorrections(text, into){
   for(const l of String(text||"").split("\n")){
@@ -670,6 +679,27 @@ function timeOf(h, file, legacy){
   return t0;
 }
 /* Build the board model from already-read files. files: [{path,text}] paths relative to the board base. */
+function validNativeDate(value){
+  if(typeof value!=="string" || !/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:\d{2})?$/.test(value)) return false;
+  const parts=value.match(/^(\d{4})-(\d\d)-(\d\d)[ T](\d\d):(\d\d)(?::(\d\d))?/).slice(1).map(v=>Number(v||0));
+  const [year,month,day,hour,minute,second]=parts; if(year<1 || month<1 || month>12 || hour>23 || minute>59 || second>59) return false;
+  const date=new Date(0); date.setUTCFullYear(year,month-1,day); date.setUTCHours(hour,minute,second,0);
+  return date.getUTCFullYear()===year && date.getUTCMonth()===month-1 && date.getUTCDate()===day && Number.isFinite(Date.parse(value.replace(" ","T")));
+}
+function nativeIssue(m,cfg,people,index){
+  const h=m.h, required=["FROM","TO","SCOPE","THREAD","DATE","LANGUAGE","REPLY-TO","STATUS"];
+  if(m.source?.readError) return m.source.readError;
+  if(!m.hasSeparator || m.duplicates.length || required.some(k=>!Object.hasOwn(h,k))) return "Missing separator/headers or duplicate headers";
+  const match=m.file.match(new RegExp("^\\d{4}-\\d{2}-\\d{2}_\\d{4}_([a-z][a-z0-9-]{2,63})_(T\\d{"+((cfg.board||{}).thread_digits||3)+"})_[a-z0-9]+(?:-[a-z0-9]+)*\\.txt$"));
+  if(!match || match[1]!==h.FROM || !h.THREAD.startsWith(match[2]+"-")) return "Filename does not match sender/thread";
+  if(!people[h.FROM] || !(cfg.statuses||DEFAULT_STATUSES).includes(h.STATUS) || !((cfg.language||{}).allowed||["en"]).includes(h.LANGUAGE)) return "Unknown sender/status/language";
+  if(h.TO!=="all" && h.TO.split(",").some(id=>!people[id.trim()])) return "Unknown recipient";
+  if(m.scope==="room" ? h.SCOPE!=="ROOM" || h.ROOM!==m.dir : h.SCOPE!=="DIRECT" || h["DIRECT-PARTICIPANTS"]!==m.dir.split("--").join(", ") || !m.dir.split("--").includes(h.FROM) || !m.dir.split("--").includes(h.TO)) return "Routing does not match physical conversation";
+  if(!validNativeDate(h.DATE)) return "Invalid DATE";
+  if(h["REPLY-TO"]!=="-" && (/[\\/]/.test(h["REPLY-TO"]) || !index.has(m.dkey+"|"+h["REPLY-TO"]))) return "Missing or unsafe reply target";
+  try{ messageMetadata(h,index.get(m.dkey+"|"+h["REPLY-TO"])?.h); }catch(e){ return e.message; }
+  return "";
+}
 function buildModel(files, dirs, meta){
   const byPath = {}; for(const f of files) byPath[f.path] = f.text;
   const cfg = safeJson(byPath["config.json"]) || {};
@@ -697,7 +727,7 @@ function buildModel(files, dirs, meta){
   for(const f of src){
     const [top, dir, file] = f.path.split("/");
     const scope = (!legacy && top===directDir) ? "direct" : "room";
-    const parsed = f.parsed || parseHeaders(f.text), {h, duplicates} = parsed;
+    const rawParsed=f.parsed || parseHeaders(f.text), parsed=legacy?rawParsed:(rawParsed.native||rawParsed), {h, duplicates}=parsed;
     const body = f.body ?? parsed.body;
     let time = timeOf(h, file, legacy), fixed = null, fixReason = "";
     if(corr[file]){ fixed = time; time = corr[file].time; fixReason = corr[file].reason; }
@@ -715,7 +745,7 @@ function buildModel(files, dirs, meta){
     const replyTo = (legacy ? h["ODPOWIEDZ-NA"] : h["REPLY-TO"]) || "-";
     const receipt = (legacy && dir==="potwierdzenia") || /^(read receipt only|potwierdzenie odczytu)/i.test(body) || !!h["READ-MESSAGE-IDS"];
     const dkey = scope+":"+dir;
-    msgs.push({duplicates,source:f.lazy?f:null,bodyLoaded:!f.lazy || f.body!==undefined,preview:parsed.body,file, path:f.path, scope, dir, dkey, h, body, time, fixed, fixReason, label, tid, tkey:dkey+"|"+(tid||label),
+    msgs.push({legacy,hasSeparator:parsed.hasSeparator,duplicates,source:f.lazy?f:null,bodyLoaded:!f.lazy || f.body!==undefined,preview:parsed.body,file, path:f.path, scope, dir, dkey, h, body, time, fixed, fixReason, label, tid, tkey:dkey+"|"+(tid||label),
       author, authorName, to, status, statusRaw, replyTo, postedAt:postingTime(h["POSTED-AT"]), modifiedAt:Number.isFinite(f.lastModified)?f.lastModified:0, language:h["LANGUAGE"]||"", runtime:h["RUNTIME"]||"", receipt});
   }
   msgs.sort((a,b)=> (a.time<b.time?-1:a.time>b.time?1:0) || ((a.postedAt ?? a.modifiedAt)-(b.postedAt ?? b.modifiedAt)) || (a.file<b.file?-1:a.file>b.file?1:0) || (a.path<b.path?-1:a.path>b.path?1:0));
@@ -740,12 +770,14 @@ function buildModel(files, dirs, meta){
   }
   const messageIndex = new Map(msgs.map(m=>[m.dkey+"|"+m.file,m]));
   for(const m of msgs){
+    m.validationError=legacy?"":nativeIssue(m,cfg,people,messageIndex);
     try{
+      if(m.validationError) throw Error(m.validationError);
       if(m.duplicates.length) throw Error("Duplicate headers");
       const source=messageIndex.get(m.dkey+"|"+m.replyTo);
       if(source && source.duplicates.length) throw Error("Duplicate source headers");
       Object.assign(m,messageMetadata(m.h,source && source.h));
-    }catch(e){ m.metadataError=true; }
+    }catch(e){ m.metadataError=true; m.validationError ||= e.message; }
   }
   const ver = (String(byPath["CONVENTION.md"]||"").match(/^Version:\s*(\S+)/m)||[])[1] || null;
   const langs = cfg.language && Array.isArray(cfg.language.allowed) && cfg.language.allowed.length ? cfg.language.allowed : ["en"];
@@ -884,11 +916,11 @@ async function guardNoOverwrite(dir, name){  //@guard:no-overwrite
   try{ await dir.getFileHandle(name); }catch(e){ if(e && e.name==="NotFoundError") exists=false; else throw e; }
   if(exists) throw boardErr("e_exists");
 }
-async function writeNewFile(rel, text){
+async function writeNewFile(rel, text, root=baseHandle){
   guardWritePath(rel);
-  if(!baseHandle || !baseHandle.getDirectoryHandle) throw boardErr("e_path");
+  if(!root || !root.getDirectoryHandle) throw boardErr("e_path");
   const parts = rel.split("/");
-  let dir = baseHandle;
+  let dir = root;
   for(const p of parts.slice(0,-1)) dir = await dir.getDirectoryHandle(p, {create:true});
   const name = parts[parts.length-1];
   await guardNoOverwrite(dir, name);
@@ -910,12 +942,12 @@ async function readMessageIndex(file){
   let end=Math.min(file.size,2048), text;
   if(typeof file.slice!=="function" || !Number.isFinite(file.size)) text=await file.text();
   else for(;;){
-    text=await file.slice(0,end).text();
+    const part=file.slice(0,end); text=part.arrayBuffer?new TextDecoder("utf-8",{fatal:true}).decode(await part.arrayBuffer(),{stream:end<file.size}):await part.text();
     const separator=/(?:^|\n)---\r?\n/.exec(text);
     if(end>=file.size || (separator && text.length-separator.index>=300)) break;
     end=Math.min(file.size,Math.max(end*2,end+2048));
   }
-  const parsed=parseHeaders(text); parsed.body=parsed.body.slice(0,256); stats.indexReads++;
+  const parsed=parseHeaders(text); parsed.body=parsed.body.slice(0,256); parsed.native.body=parsed.native.body.slice(0,256); stats.indexReads++;
   return parsed;
 }
 function isGuidancePath(path){ return /^[^/]+\/[^/]+\/(?:GUIDANCE\.md|topics\/T\d+\.md)$/.test(path); }
@@ -932,7 +964,13 @@ async function messageBody(m){
   if(m.bodyLoaded) return m.body;
   const row=m.source;
   if(row.body!==undefined) return row.body;
-  if(!row.loading){ activeBodyReads++; row.loading=row.file.text().then(text=>{ stats.messageReads++; return parseHeaders(text).body; }).finally(()=>{ row.loading=null; activeBodyReads--; }); }
+  if(!row.loading){ activeBodyReads++; row.loading=(async()=>{
+    let bytes;
+    try{ bytes=await rawBytes(row.file); }catch(e){ row.ioError=e.message; return "Unreadable message: "+e.message; }
+    stats.messageReads++;
+    try{ const parsed=parseHeaders(new TextDecoder("utf-8",{fatal:true}).decode(bytes)); return m.legacy?parsed.body:parsed.native.body; }
+    catch(e){ row.readError=e.message; m.metadataError=true; m.validationError="Invalid UTF-8: "+e.message; return m.validationError; }
+  })().finally(()=>{ row.loading=null; activeBodyReads--; }); }
   return row.loading;
 }
 function retainBody(m,body,model,pinned){
@@ -1002,6 +1040,8 @@ async function readFromHandle(preserve = true){
       }
     }catch(e){ files.push({path:"presence/unreadable",text:""}); }
   }
+  const repairs=await subDir(base,"repairs");
+  if(repairs) for(const [name,fh] of await entriesOf(repairs)) if(fh.kind==="file" && /^[a-f0-9]{32}\.json$/.test(name)){ let text=""; try{ const file=await fh.getFile(); if(file.size>16384) throw Error("Repair too large"); text=file.arrayBuffer?new TextDecoder("utf-8",{fatal:true}).decode(await file.arrayBuffer()):await file.text(); }catch(e){} files.push({path:"repairs/"+name,text}); }
   const directDir = (cfg.board && cfg.board.direct_directory) || "direct";
   for(const top of ["rooms", directDir, "pokoje"]){
     const td = await subDir(base, top); if(!td) continue;
@@ -1023,11 +1063,11 @@ async function readFromHandle(preserve = true){
           }catch(e){ files.push({path:top+"/"+dn+"/topics/",text:"",guidanceError:true}); }
         }
         if(fh.kind==="file" && fn.endsWith(".txt")){
-          const file=await fh.getFile(), path=top+"/"+dn+"/"+fn, old=previousFiles.get(path);
+          const path=top+"/"+dn+"/"+fn; let file; try{ file=await fh.getFile(); }catch(e){ const row={path,parsed:parseHeaders(""),lazy:true,readError:e.message,body:"Unreadable message: "+e.message}; files.push(row); nextFiles.set(path,row); return; } const old=previousFiles.get(path);
           const reliable=Number.isFinite(file.size) && Number.isFinite(file.lastModified);
           let row=old;
-          if(!reliable || !old || old.size!==file.size || old.lastModified!==file.lastModified){
-            row={path,parsed:await readMessageIndex(file),file,lazy:true,size:file.size,lastModified:file.lastModified};
+          if(!reliable || !old || old.readError || old.ioError || old.size!==file.size || old.lastModified!==file.lastModified){
+            try{ row={path,parsed:await readMessageIndex(file),file,lazy:true,size:file.size,lastModified:file.lastModified}; }catch(e){ row={path,parsed:parseHeaders(""),file,lazy:true,readError:e.message,size:file.size,lastModified:file.lastModified}; }
           }else{ row.file=file;
           }
           files.push(row); nextFiles.set(path,row);
@@ -1039,6 +1079,7 @@ async function readFromHandle(preserve = true){
   baseHandle=base; messageFiles=nextFiles;
   for(const [path,row] of bodyCache) if(nextFiles.get(path)!==row) bodyCache.delete(path);
   const model=buildModel(files,dirs,{name:root.name});
+  await applyRepairs(model,files);
   await prepareModel(model);
   if(generation!==readGeneration || dirHandle!==root) return false;
   // A session can start/release while slow message indexing is in flight.
@@ -1063,11 +1104,12 @@ async function readFromInput(list){
   await readInBatches(list,async f=>{
     const p = segs(f); if(hasAB && p[1]!==".agent-board") return;
     const rel = p.slice(strip).join("/");
-    if(/^(participants\.json|config\.json|CONVENTION\.md|GLOSSARY\.md|time-corrections\.txt|korekty-czasu\.txt)$/.test(rel) ||
+    if(/^repairs\/[a-f0-9]{32}\.json$/.test(rel) || /^(participants\.json|config\.json|CONVENTION\.md|GLOSSARY\.md|time-corrections\.txt|korekty-czasu\.txt)$/.test(rel) ||
        /^[^/]+\/[^/]+\/[^/]+\.txt$/.test(rel) || rel.startsWith("presence/") || isGuidancePath(rel)){
       if(rel.endsWith(".txt") && rel.includes("/")){
-        const row={path:rel,parsed:await readMessageIndex(f),file:f,lazy:true,size:f.size,lastModified:f.lastModified}; files.push(row); sources.set(rel,row);
+        let row; try{ row={path:rel,parsed:await readMessageIndex(f),file:f,lazy:true,size:f.size,lastModified:f.lastModified}; }catch(e){ row={path:rel,parsed:parseHeaders(""),file:f,lazy:true,readError:e.message,size:f.size,lastModified:f.lastModified}; } files.push(row); sources.set(rel,row);
       }else if(isGuidancePath(rel)) files.push({path:rel,guidanceFile:f});
+      else if(rel.startsWith("repairs/")){ let text=""; try{ if(f.size>16384) throw Error("Repair too large"); text=f.arrayBuffer?new TextDecoder("utf-8",{fatal:true}).decode(await f.arrayBuffer()):await f.text(); }catch(e){} files.push({path:rel,text}); }
       else files.push({path:rel,text:await f.text(),lastModified:f.lastModified});
     }
     const q = rel.split("/"); if(q.length>=3){ dirs.add(q[0]); dirs.add(q[0]+"/"+q[1]); }
@@ -1076,7 +1118,7 @@ async function readFromInput(list){
   await leaveHumanBoard();
   if(generation!==readGeneration) return;
   dirHandle = null; baseHandle = null; boardStorageId=""; forgetBodies(); messageFiles=sources; historyPage={key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
-  const model=buildModel(files,[...dirs],{name}); await prepareModel(model);
+  const model=buildModel(files,[...dirs],{name}); await applyRepairs(model,files); await prepareModel(model);
   if(generation!==readGeneration) return;
   loadBoard(model);
 }
@@ -1314,6 +1356,7 @@ function startBodySearch(){
       if(m.source?.search?.query===query) matched=m.source.search.matched;
       else{
         const text=m.bodyLoaded?m.body:await messageBody(m);
+        if(m.source?.ioError) throw Error(m.source.ioError);
         if(bodySearch!==state) return;
         matched=(text+" "+m.file+" "+Object.values(m.h).join(" ")).toLowerCase().includes(query);
         if(m.source) m.source.search={query,matched};
@@ -1330,7 +1373,7 @@ function threadsOf(){
   if(B.threadIndex) return B.threadIndex;
   const th = {};
   for(const m of B.msgs){
-    if(!m.tid) continue;
+    if(!m.tid || m.metadataError || m.quarantined) continue;
     const x = th[m.tkey] || (th[m.tkey] = {key:m.tkey, tid:m.tid, label:m.label, dkey:m.dkey, scope:m.scope, dir:m.dir, n:0, last:"", status:"", who:new Set()});
     if(!m.receipt){
       x.n++; x.last = m.time; x.lastOrder=m.postedAt ?? m.modifiedAt; x.status = m.status; x.who.add(m.author);
@@ -1342,7 +1385,7 @@ function threadsOf(){
   B.threadIndex=th; return th;
 }
 function badge(n){ return n ? `<span class="unread-badge">${esc(t("unread_count",{n}))}</span>` : ""; }
-function unread(m){ return !m.receipt && m.author!==currentUser() && !seen[m.path]; }
+function unread(m){ return !m.metadataError && !m.quarantined && !m.receipt && m.author!==currentUser() && !seen[m.path]; }
 function matchingMessages(){
   const q=$("#q").value.trim().toLowerCase(), showR=$("#showReceipts").checked || !!q;
   return B.msgs.filter(m=>(!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && (!q||msgMatches(m,q)));
@@ -1387,7 +1430,7 @@ async function loadHistoryOnScroll(direction){
   finally{ historyLoading=false; feed.setAttribute("aria-busy","false"); if(subtitle.textContent===loadingSubtitle) subtitle.textContent=oldSubtitle; }
 }
 function markViewRead(rows){
-  for(const m of rows) if(visibleMsg(m)) seen[m.path]=true;
+  for(const m of rows) if(!m.metadataError && !m.quarantined && !m.source?.ioError && !m.source?.readError && visibleMsg(m)) seen[m.path]=true;
   lsSet(seenKey,JSON.stringify(seen));
 }
 function build({background = false, preserveComposer = false} = {}){
@@ -1634,8 +1677,9 @@ function render(background = false){
         ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
         ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}</div>
         ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
+        ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
         <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
-        ${m.metadataError?`<p class="metadata-error">${esc(t("invalid_metadata"))}</p>`:choiceHtml(m)}
+        ${m.metadataError?`<p class="metadata-error">${m.quarantined?"[withdrawn / original preserved] ":""}${esc(t("invalid_metadata"))}</p>`:choiceHtml(m)}
         ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
         <div class="tools"><button data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button><button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
   }
@@ -1661,6 +1705,70 @@ function render(background = false){
   lastCount = view.length;
 }
 
+async function rawBytes(file){ return file.arrayBuffer?new Uint8Array(await file.arrayBuffer()):new TextEncoder().encode(await file.text()); }
+async function shaBytes(bytes){ return [...new Uint8Array(await crypto.subtle.digest("SHA-256",bytes))].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+async function applyRepairs(model,files){
+  model.repairs=[]; model.repairErrors=[];
+  for(const row of files.filter(f=>/^repairs\//.test(f.path))){
+    try{
+      const r=jsonObject(row.text), m=model.msgs.find(m=>m.path===r.target);
+      if(Object.keys(r).sort().join(",")!=="at,by,reason,replacement,sha256,target,version" || r.version!==1 || !m || typeof r.by!=="string" || !model.people[r.by] || typeof r.reason!=="string" || !r.reason.trim() || /[\uD800-\uDFFF]/u.test(r.reason) || [...r.reason].length>2000 || postingTime(r.at)===null || !/^[a-f0-9]{64}$/.test(r.sha256) || (m.scope==="direct" && !m.dir.split("--").includes(r.by))) throw Error("Invalid repair record");
+      if(r.replacement!==null && (typeof r.replacement!=="string" || r.replacement===r.target || r.replacement.split("/").slice(0,-1).join("/")!==m.path.split("/").slice(0,-1).join("/") || !model.msgs.some(x=>x.path===r.replacement))) throw Error("Invalid replacement reference");
+      const bytes=await rawBytes(m.source?.file || new Blob([files.find(f=>f.path===m.path)?.text||""]));
+      try{ new TextDecoder("utf-8",{fatal:true}).decode(bytes); }catch(e){ m.metadataError=true; m.validationError="Invalid UTF-8"; }
+      if(!m.metadataError) throw Error("Valid messages cannot be withdrawn");
+      if(await shaBytes(bytes)!==r.sha256) throw Error("Repair original hash mismatch");
+      m.quarantined=true; const replacement=model.msgs.find(x=>x.path===r.replacement); if(replacement) replacement.repairOf=r; model.repairs.push({...r,record:row.path});
+    }catch(e){ model.repairErrors.push(row.path+": "+e.message); }
+  }
+}
+function repairVisible(m){ return m.scope!=="direct" || m.dir.split("--").includes(currentUser()); }
+async function openRepairs(){
+  if(!B || B.layout.dialect!=="native") return;
+  const messages=B.msgs.filter(repairVisible).sort((a,b)=>Number(b.metadataError)-Number(a.metadataError));
+  $("#repairSelect").innerHTML=messages.map(m=>`<option value="${esc(m.path)}">${esc((m.quarantined?"[withdrawn] ":"")+m.path)}</option>`).join("");
+  $("#repairResult").textContent=(B.repairErrors||[]).join("\n"); $("#repairDialog").showModal(); await loadRepairDraft();
+}
+let repairDraft=null, repairLoadToken=0, repairBusy=false;
+async function loadRepairDraft(){
+  const token=++repairLoadToken, root=dirHandle; repairDraft=null;
+  const m=B.msgs.find(m=>m.path===$("#repairSelect").value); $("#repairReason").value="";
+  if(m?.source?.file?.size>1048576){ $("#repairIssue").textContent="File exceeds browser repair limit (1 MiB); use boardctl repair"; $("#repairText").value=""; $("#repairSave").disabled=true; $("#repairWithdraw").disabled=true; return; }
+  if(m?.source?.file){ let bytes,hash; try{ bytes=await rawBytes(m.source.file); hash=await shaBytes(bytes); }catch(e){ $("#repairIssue").textContent="Cannot read original: "+e.message; $("#repairText").value=""; $("#repairSave").disabled=true; $("#repairWithdraw").disabled=true; return; } if(token!==repairLoadToken || dirHandle!==root || $("#repairSelect").value!==m.path) return; repairDraft={root,path:m.path,hash}; try{ new TextDecoder("utf-8",{fatal:true}).decode(bytes); }catch(e){ m.metadataError=true; m.validationError="Invalid UTF-8 or unreadable file: "+e.message; } }
+  $("#repairIssue").textContent=m?(m.validationError||"Valid messages are immutable; post a normal follow-up"):t("repair_required");
+  $("#repairText").value=m?(m.source?.file?await m.source.file.text():"" ):"";
+  if(m?.quarantined) $("#repairIssue").textContent+="\n"+(B.repairs||[]).filter(r=>r.target===m.path).map(r=>`${r.at} · ${r.by}: ${r.reason} → ${r.replacement||"withdrawn"}`).join("\n");
+  for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=!m || !m.metadataError || m.quarantined || !m?.source?.file || !canWrite();
+}
+async function saveRepair(correct){
+  if(repairBusy) return;
+  const model=B, writeRoot=baseHandle, draft=repairDraft, m=model.msgs.find(m=>m.path===$("#repairSelect").value), actor=currentUser(), reason=$("#repairReason").value.trim();
+  if(!draft || draft.root!==dirHandle || draft.path!==m?.path || !m?.metadataError || m.quarantined || !m.source?.file || !reason || /[\uD800-\uDFFF]/u.test(reason) || [...reason].length>2000 || !repairVisible(m) || !canWrite()){ toast(t("repair_required")); return; }
+  let published=null; repairBusy=true; $("#repairSave").disabled=true; $("#repairWithdraw").disabled=true;
+  try{
+    const repairsDirectory=await writeRoot.getDirectoryHandle("repairs",{create:true});
+    const person=guardRegistered(actor); if(person.kind==="agent" && !confirm(t("confirm_agent",{name:person.name}))) return;
+    const original=await rawBytes(m.source.file), hash=await shaBytes(original); if(hash!==draft.hash || dirHandle!==draft.root) throw Error("Original or board changed; reopen repair before saving"); let replacement=null;
+    if(correct){
+      const raw=$("#repairText").value, parsed=parseHeaders(raw).native, h=parsed.h, match=(h.DATE||"").match(/^(\d{4}-\d\d-\d\d)[ T](\d\d):(\d\d)/);
+      if(!match) throw Error("Invalid DATE");
+      const name=match[1]+"_"+match[2]+match[3]+"_"+h.FROM+"_"+(h.THREAD||"").split("-")[0]+"_amend-"+crypto.randomUUID().replaceAll("-","")+".txt";
+      replacement=m.path.split("/").slice(0,-1).concat(name).join("/");
+      const candidate={...m,file:name,path:replacement,h,duplicates:parsed.duplicates,hasSeparator:parsed.hasSeparator,source:null};
+      const error=nativeIssue(candidate,model.cfg,model.people,model.messageIndex); if(error) throw Error(error);
+      if(h.FROM!==actor && !confirm(t("confirm_agent",{name:h.FROM}))) return;
+      if(dirHandle!==draft.root) throw Error("Board changed; reopen repair");
+      await writeNewFile(replacement,raw,writeRoot); published=replacement;
+    }
+    const record={version:1,target:m.path,sha256:hash,by:actor,at:new Date().toISOString(),reason,replacement};
+    let dir=writeRoot; for(const part of m.path.split("/").slice(0,-1)) dir=await dir.getDirectoryHandle(part);
+    if(await shaBytes(await rawBytes(await (await dir.getFileHandle(m.file)).getFile()))!==hash) throw Error("Original changed; reload before repairing");
+    const repairs=repairsDirectory, name=crypto.randomUUID().replaceAll("-","")+".json";
+    await guardNoOverwrite(repairs,name); const fh=await repairs.getFileHandle(name,{create:true}), writer=await fh.createWritable(); await writer.write(JSON.stringify(record)+"\n"); await writer.close();
+    if(dirHandle===draft.root){ await readFromHandle(); $("#repairResult").textContent=t("repair_done"); await loadRepairDraft(); }
+  }catch(e){ $("#repairResult").textContent=e.message+(published?"\nCorrection already published: "+published+". Original remains invalid until a repair record is saved.":""); }
+  finally{ repairBusy=false; const current=B?.msgs.find(x=>x.path===m.path); for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=!current?.metadataError || current.quarantined || !canWrite(); }
+}
 let guidanceContext=null;
 function guidanceRootKey(){ return "agent-file-board-ui.editor-root."+JSON.stringify([boardStorageId || "upload:"+B.name,B.layout.dialect]); }
 function suggestedGuidanceRoot(){
@@ -1702,6 +1810,7 @@ function renderGuidance(){
   if($("#guidanceDocs").innerHTML!==next.innerHTML) $("#guidanceDocs").replaceChildren(...next.childNodes);
 }
 function renderChrome(){
+  $("#repairsOpen").hidden=!B || B.layout.dialect!=="native";
   renderGuidance();
   $("#vocabularyText").textContent=B && B.glossary ? B.glossary : t("vocabulary_missing");
   $("#folderName").textContent = B ? (dirHandle ? t("folder_is",{name:dirHandle.name}) : t("read_only")) : t("folder_none");
@@ -2119,6 +2228,7 @@ function wire(){
   $("#presenceOpen").onclick=()=>{ $("#presenceDialog").showModal(); renderPresence(); };
   $("#browserPresence").onclick=()=>{ S.me=currentUser(); saveSettings(); syncHumanPresence(true); };
   $("#presenceClose").onclick=()=>$("#presenceDialog").close();
+  $("#repairsOpen").onclick=openRepairs; $("#repairClose").onclick=()=>$("#repairDialog").close(); $("#repairSelect").onchange=loadRepairDraft; $("#repairWithdraw").onclick=()=>saveRepair(false); $("#repairSave").onclick=()=>saveRepair(true);
   $("#guidanceOpen").onclick=()=>openGuidance({scope:sel.scope,dir:sel.dir,tid:threadsOf()[sel.thread]?.tid});
   $("#composeGuidance").onclick=()=>{
     const [scope,...parts]=$("#cWhere").value.split(":"), topic=threadsOf()[$("#cThread").value];

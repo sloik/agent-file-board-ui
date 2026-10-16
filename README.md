@@ -57,13 +57,13 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.8.2
+## Release 1.9.0
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.8.2).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.0).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
-[agent-file-board 1.8.1](https://github.com/sloik/agent-file-board/releases/tag/v1.8.1).
+[agent-file-board 1.9.0](https://github.com/sloik/agent-file-board/releases/tag/v1.9.0).
 For existing boards, merge the new convention/glossary as described there; the
 viewer reads older boards too and reports version differences.
 
@@ -174,3 +174,28 @@ cover room/conversation and topic guidance. They are examples rather than requir
 schemas; Create deliberately leaves the file empty. Copy and adapt a starter
 only when useful. After saving in your editor, refresh the board to read
 changes. Opening a file does not post a message, rename a topic, or accept work.
+
+
+## Repair invalid messages
+
+Malformed files are isolated so healthy conversation can still load. Open
+**Message repairs** to inspect a message and its audit history. On a writable
+native board, choose an invalid message and enter a reason, then either
+**Withdraw invalid message** or edit its full headers/body and **Post correction**.
+The correction is a new validated file in the same physical conversation.
+Confirm explicitly when posting a correction under another author's identity.
+The original bytes stay unchanged; a hash-bound `.agent-board/repairs/` record
+records who repaired it, when, why and the optional correction path. The new
+message shows its repair attribution. Valid messages require normal follow-ups.
+
+Read-only uploads can inspect repairs; use a writable folder or the canonical
+`boardctl repair` command to publish. Browser repairs load at most1MiB per selected
+file; the CLI supports streaming hashes of larger invalid originals. Direct
+conversation repairs require a registered pair member. Hash changes, malformed
+records and invalid replacement messages are refused. Refreshing while editing
+preserves the form; changed originals must be reopened before saving. If a
+correction publishes but its audit write fails, the UI reports its path and the
+unresolved original rather than claiming success. A repair never completes work,
+silently marks an invalid message read, or changes existing reply references.
+Update CLI modules (including `message_repairs.py`), board-loop and the convention
+together: older validators do not understand resolved invalid originals.

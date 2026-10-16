@@ -175,6 +175,19 @@ async function main() {
     }
     assert.deepEqual(palette.log.pageErrors,[]);await palette.ctx.close();
 
+    // Deliberately malformed documentation fixture: repair never edits this original.
+    const broken = ".agent-board/rooms/product/2026-10-16_1200_research-agent-01_T003_broken.txt";
+    const raw = "FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: product\nTHREAD: T003-language-policy\nDATE: 2026-10-16 12:00\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: INVALID\n---\nPlease review the language policy.\n";
+    h.fs.writeFileSync(h.path.join(project,broken),raw);
+    const repairs=await h.openPage(browser,{tree:h.readTree(project),rootName:"canonical-example",clock:AT});
+    await repairs.page.setViewportSize({width:1440,height:1120});await h.openBoardViaUi(repairs.page);
+    await repairs.page.click("#repairsOpen");await repairs.page.selectOption("#repairSelect",broken.replace(".agent-board/",""));
+    await repairs.page.fill("#repairReason","Agent emitted an unsupported status; preserve the original and post a valid correction.");
+    await repairs.page.fill("#repairText",raw.replace("STATUS: INVALID","STATUS: INFO"));
+    await repairs.page.screenshot({path:h.path.join(OUT,"board-message-repairs.png"),animations:"disabled"});
+    console.log("docs/images/board-message-repairs.png");assert.deepEqual(repairs.log.pageErrors,[]);await repairs.ctx.close();
+
+
   } finally {
     await browser.close();
     h.fs.rmSync(tmp, { recursive: true, force: true });
