@@ -52,8 +52,8 @@ test("nested HTML is sanitized before any resources or viewer actions can execut
   const {ctx,page,log}=await boot({body,contentType:"text/html"});
   const article=page.locator(`article[data-file='${QFILE}'] .body`);
   assert.equal(await article.locator("section div p strong em").innerText(),"markup");
-  assert.equal(await article.locator("script,img,iframe,video,source,style,link,svg,math,form,input,button,[id],[name],[style],[class],[data-reply],[onclick]").count(),0);
-  assert.deepEqual(await article.locator("a").evaluateAll(els=>els.filter(el=>el.hasAttribute("href")).map(el=>[el.getAttribute("href"),el.rel,el.target])),[["https://example.com/docs","noopener noreferrer","_blank"]]);
+  assert.equal(await article.locator("script,img,iframe,video,source,style,link,svg,math,form,input,button,[id],[name],[style],[class]:not(.file-reference):not(.file-action),[data-reply],[onclick]").count(),0);
+  assert.deepEqual(await article.locator("a:not(.file-action)").evaluateAll(els=>els.filter(el=>el.hasAttribute("href")).map(el=>[el.getAttribute("href"),el.rel,el.target])),[["https://example.com/docs","noopener noreferrer","_blank"]]);
   assert.equal(await page.evaluate(()=>window.richAttack),undefined);
   assert.equal(log.requests.filter(url=>!url.startsWith("file:")).length,0);
   assert.deepEqual(log.pageErrors,[]); await ctx.close();

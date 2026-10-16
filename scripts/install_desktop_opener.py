@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the optional, user-local macOS guidance URL handler. No server runs."""
+"""Install the optional, user-local macOS board file URL handler. No server runs."""
 import argparse
 import os
 from pathlib import Path
@@ -28,7 +28,7 @@ def install(destination):
         info = bundle / "Contents/Info.plist"
         data = plistlib.loads(info.read_bytes())
         data.update(CFBundleIdentifier=BUNDLE_ID, CFBundleName="Agent File Board Opener", LSUIElement=True,
-                    CFBundleURLTypes=[{"CFBundleURLName": "Board guidance", "CFBundleURLSchemes": ["agent-file-board"], "CFBundleTypeRole": "Viewer"}])
+                    CFBundleURLTypes=[{"CFBundleURLName": "Board local files", "CFBundleURLSchemes": ["agent-file-board"], "CFBundleTypeRole": "Viewer"}])
         info.write_bytes(plistlib.dumps(data))
         # Re-sign after changing the generated plist.
         subprocess.run(["/usr/bin/codesign", "--force", "--sign", "-", str(bundle)], check=True)

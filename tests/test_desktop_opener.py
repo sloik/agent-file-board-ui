@@ -110,6 +110,42 @@ class DesktopOpenerTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
         self.assertTrue(target.is_fifo())
 
+    def test_message_paths_open_documents_and_folders_and_locate_parent(self):
+        file = Path(self.tmp.name) / "report ' ; $(echo injected) # % 🦊.md"
+        file.write_text("Document")
+        for target in (file, file.parent):
+            for action in ("file-open", "file-folder"):
+                result = self.check_url("agent-file-board://" + action + quote(str(target)), "messagePath")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.strip(), str(target.parent if action == "file-folder" else target))
+
+    def test_message_paths_refuse_invalid_targets_and_allow_locating_executables(self):
+        target = Path(self.tmp.name) / "run.command"
+        target.write_text("Do not execute")
+        urls = ["agent-file-board://file-open" + quote(str(target)),
+                "agent-file-board://file-open" + quote(str(target.with_name("missing"))),
+                "agent-file-board://file-open" + quote(str(target)) + "?command=rm",
+                "agent-file-board://file-open" + quote(str(target)) + "#fragment",
+                "agent-file-board://user@file-open" + quote(str(self.room)),
+                "agent-file-board://file-open" + quote(str(target.parent)) + "/../file",
+                "agent-file-board://create" + quote(str(target))]
+        fifo = target.with_name("pipe")
+        os.mkfifo(fifo)
+        urls.append("agent-file-board://file-open" + quote(str(fifo)))
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertNotEqual(self.check_url(url, "messagePath").returncode, 0)
+        result = self.check_url("agent-file-board://file-folder" + quote(str(target)), "messagePath")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), str(target.parent))
+        executable = target.with_name("program")
+        executable.write_text("Do not execute")
+        executable.chmod(0o755)
+        self.assertNotEqual(self.check_url("agent-file-board://file-open" + quote(str(executable)), "messagePath").returncode, 0)
+        link = target.with_name("ordinary.md")
+        link.symlink_to(target)
+        self.assertNotEqual(self.check_url("agent-file-board://file-open" + quote(str(link)), "messagePath").returncode, 0)
+
     def test_installer_preserves_an_unrelated_application(self):
         app = Path(self.tmp.name) / "Existing.app"
         info = app / "Contents/Info.plist"

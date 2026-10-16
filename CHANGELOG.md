@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.9.6 — 2026-10-16
+
+- Add Open and Open containing folder actions to local message file/folder references, including inline absolute paths and Markdown/HTML file links. Preserve literal fenced code and sanitize authored links.
+- Extend the macOS desktop opener for existing documents/folders without permitting programs, commands or message-driven creation. Rerun the installer to update it.
+- Pin canonical1.9.2 with portable reference syntax and explicit-click rendering rules.
+
 ## 1.9.5 — 2026-10-16
 
 - Complete the durable reload fix from1.9.4, including the original composer restoration and rapid-post/file-preservation checks.

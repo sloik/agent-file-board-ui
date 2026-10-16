@@ -77,12 +77,46 @@ on createGuidance(rawURL)
     return my guidancePath(parts's |string|() as text)
 end createGuidance
 
+-- Message actions accept existing local files/directories; creation stays guidance-only.
+on messagePath(rawURL)
+    set parts to current application's NSURLComponents's componentsWithString:rawURL
+    if parts is missing value then error "Invalid file URL"
+    if (parts's |scheme|() as text) is not "agent-file-board" then error "Invalid scheme"
+    set actionName to parts's |host|() as text
+    if actionName is not in {"file-open", "file-folder"} then error "Invalid action"
+    if parts's |query|() is not missing value or parts's fragment() is not missing value or parts's |user|() is not missing value or parts's |port|() is not missing value then error "Unexpected URL fields"
+    set targetPath to parts's |path|()
+    if targetPath is missing value then error "Missing path"
+    set target to targetPath as text
+    if not (target starts with "/") then error "Absolute path required"
+    if (targetPath's stringByStandardizingPath() as text) is not target then error "Use an absolute normalized path"
+    set matchRange to targetPath's rangeOfString:"[[:cntrl:]]" options:(current application's NSRegularExpressionSearch)
+    if matchRange's |length| is not 0 then error "Invalid path characters"
+    set manager to current application's NSFileManager's defaultManager()
+    set resolvedPath to targetPath's stringByResolvingSymlinksInPath()
+    set {attrs, attributeError} to manager's attributesOfItemAtPath:resolvedPath |error|:(reference)
+    if attrs is missing value then error "The referenced file or folder does not exist"
+    set actualType to (attrs's objectForKey:(current application's NSFileType)) as text
+    set regularType to (current application's NSFileTypeRegular) as text
+    set directoryType to (current application's NSFileTypeDirectory) as text
+    if actualType is not in {regularType, directoryType} then error "Only regular files and folders can be opened"
+    if actionName is "file-folder" then return (targetPath's stringByDeletingLastPathComponent()) as text
+    -- Default-app opening is for documents and ordinary folders, never programs.
+    set permissions to (attrs's objectForKey:(current application's NSFilePosixPermissions)) as integer
+    set extensionName to (resolvedPath's pathExtension()'s lowercaseString()) as text
+    if extensionName is in {"app", "command", "scpt", "scptd", "workflow", "webloc", "url", "desktop"} then error "Use Open containing folder for this item"
+    if actualType is regularType and ((permissions div 64) mod 2 is 1 or (permissions div 8) mod 2 is 1 or permissions mod 2 is 1) then error "Use Open containing folder for executable files"
+    return target
+end messagePath
+
 on open location rawURL
     try
         set parts to current application's NSURLComponents's componentsWithString:rawURL
         set actionName to parts's |host|() as text
         if actionName is in {"create", "create-vscode"} then
             set target to my createGuidance(rawURL)
+        else if actionName is in {"file-open", "file-folder"} then
+            set target to my messagePath(rawURL)
         else
             set target to my guidancePath(rawURL)
         end if
@@ -94,6 +128,6 @@ on open location rawURL
             do shell script "/usr/bin/open " & quoted form of target
         end if
     on error messageText
-        display alert "Cannot open board guidance" message messageText
+        display alert "Cannot open board file" message messageText
     end try
 end open location

@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.9.5/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.9.6/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -360,3 +360,13 @@ snapshots offer inspection, with CLI repair available for writable originals.
 A withdrawal is not proof of completion and does not erase accepted actions.
 
 ![Inspecting a deliberately malformed sample and preparing a correction while preserving the original.](images/board-message-repairs.png)
+
+## Local file references
+
+![A message with Open and Open containing folder actions beside a document and folder reference.](images/board-file-actions.png)
+
+Inline absolute paths in backticks, Markdown/HTML file links and bare file URIs
+provide **Open** and **Open containing folder** actions. Folder references work
+too. The updated macOS desktop opener opens the original document with its
+default app or its parent in Finder, only after a click. See the
+[examples and setup](../README.md#open-files-mentioned-in-messages).

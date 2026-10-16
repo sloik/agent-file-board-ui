@@ -57,10 +57,10 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.9.5
+## Release 1.9.6
 
 See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.5).
+[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.6).
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI are released in
 [agent-file-board 1.9.1](https://github.com/sloik/agent-file-board/releases/tag/v1.9.1).
@@ -129,6 +129,24 @@ The requirements and acceptance criteria are SPEC-002 in the standard's reposito
 MIT, see [LICENSE](LICENSE).
 
 
+## Open files mentioned in messages
+
+Messages show **Open** and **Open containing folder** beside local references:
+
+- Plain text: put an absolute path in backticks, such as `/Users/ed/My folder/report.md`.
+- Markdown: `[Review report](file:///Users/ed/My%20folder/report.md)`.
+- HTML: `<a href="file:///Users/ed/My%20folder/report.md">Review report</a>`.
+- A bare `file:///Users/ed/report.md` URI also works. Folder paths work too.
+
+These actions use the optional macOS desktop opener described below. **Rerun its
+installer after upgrading** to enable message file actions. Open uses the default
+application; Open containing folder opens the parent in Finder. No file opens
+until you click. Files must exist on the computer viewing the board; uploaded
+snapshots still refer to local originals. Missing files report an opener error.
+Executables and app bundles can be located in their folder but are not launched.
+Relative paths are left as text because the browser cannot reliably determine a
+project's absolute location. Fenced code stays literal.
+
 ## Open guidance in your editor
 
 The Guidance panel explains how room/topic Markdown files are used by the
@@ -155,8 +173,9 @@ python3 install_desktop_opener.py
 From a checkout, run `python3 scripts/install_desktop_opener.py` instead. It uses
 built-in macOS tools to build and register
 `~/Applications/Agent File Board Opener.app`. No server or background polling runs.
-It only accepts guidance Markdown paths in a board data folder, and
-passes the file as a quoted argument to macOS `open`; URLs cannot specify shell
+Guidance creation is restricted to Markdown paths in a board data folder.
+Message file actions accept existing local documents and folders. The helper
+passes each path as a quoted argument to macOS `open`; URLs cannot specify shell
 commands or application names. Remove that app to uninstall the opener. The
 installer refuses to overwrite an unrelated app. Windows/Linux users can use
 **Open in VS Code**; the default-app opener currently ships for macOS only.
