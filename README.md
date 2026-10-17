@@ -82,6 +82,23 @@ viewer reads older boards too and reports version differences.
 
 Auto-refresh needs a writable folder, so it is not available in the read-only fallback.
 
+### Multiple boards and browser tabs
+
+You can open different boards in separate tabs, or open the same board more than
+once. Each tab keeps its own current view, draft and scroll position. Board-specific
+read markers, answer drafts and remembered guidance paths follow the selected board
+folder where the browser supports folder identity.
+
+Tabs do not push changes to one another: use **Refresh**, or enable auto-refresh
+for each writable tab that should stay current. Posts create new immutable files
+and refuse existing names, so concurrent tabs do not overwrite messages.
+
+For human presence, one browser session owns a selected human identity on a board.
+Another tab or device that sees that active lease displays **Active in another
+session** and does not take it over or renew it. Browser tabs coordinate locally
+when Web Locks are available; separate devices or syncing replicas can still race,
+which the Participants panel shows as a conflict.
+
 ### Large boards
 
 The newest **100 matching messages** load first. Scroll up to fetch older bodies;
