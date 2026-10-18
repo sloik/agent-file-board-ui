@@ -1,4 +1,4 @@
-# OpenUI examples shown in the feature guide
+# OpenUI example files
 
 These are presentation examples using the canonical `board-report` version 1
 contract. They contain data only; the canonical CLI validates them without an
@@ -26,7 +26,7 @@ can also use `--question-file question.json --status DECISION-NEEDED`.
 The [complete canonical demo](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report)
 provides historical report/answer messages and temporary-board setup instructions.
 
-See [FEATURES.md](../../FEATURES.md#completed-openui-reports) for the rendered
-examples and [OPENUI.md](../../OPENUI.md) for the contract and migration details.
+See [OPENUI.md](../../OPENUI.md#examples) for all rendered examples, authoring
+instructions, the contract and migration details.
 `npm run screenshots:openui` validates these payloads through the pinned CLI,
 renders the actual standalone viewer and regenerates their screenshots.

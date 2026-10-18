@@ -1,18 +1,159 @@
-# Completed OpenUI reports
+# OpenUI reports and examples
 
-An agent can publish a release review containing a results table, a bar chart
-and an ordinary choice question. The viewer draws it inside the message bubble;
-the readable summary stays above it. Selecting an option and pressing **Send answer**
-creates a new immutable `ANSWER` file, exactly like existing choice questions.
-An uploaded read-only board downloads the response for manual placement.
+[OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
+defined component library. Agent File Board UI 2.0 uses its embedded renderer
+for report cards containing tables and bar charts. Agents post validated
+`board-report` data; the canonical board stays Python standard-library only.
 
-![Completed report with a table, bar chart and release decision.](images/board-openui.png)
+Reports live inside ordinary messages, with a readable summary and optional
+choice question. **Send answer** creates a new immutable reply linked to the
+original report. An uploaded read-only board downloads that reply for manual
+placement.
 
-[Phone layout in dark mode](images/board-openui-phone.png). To try the report
-and its answer without writing a message, follow the canonical
-[complete demo](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report).
+## Examples
+
+![OpenUI release review containing a results table, bar chart, decision choices and a custom response draft.](images/board-openui.png)
+
+This release-review example combines two components: a table of suite results
+and a chart showing **170 passed / 2 failed**. The question asks whether to fix
+failures or postpone the release. These are synthetic example results.
+
+| Try it | Example source |
+| --- | --- |
+| Combined report and decision | [Report JSON](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/report.json) and [question JSON](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/question.json) |
+| A table without a decision form | [Delivery checklist](examples/openui/table.json) |
+| Positive, negative and zero chart values | [Tasks versus plan](examples/openui/signed-chart.json) |
+| A complete board conversation | [Report and answer files, with demo setup](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report) |
+
+### Show a checklist as a table
+
+![Delivery checklist report with Area, Owner and State columns and three readiness rows.](images/board-openui-table.png)
+
+The table example assigns each readiness item to an owner. **Schema** and
+**Viewer** are ready; **Release** needs the owner's decision. A table can be a
+standalone report: it does not require a chart or question.
+
+<details>
+<summary><strong>Copy the table report JSON</strong></summary>
+
+```json
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Delivery checklist",
+  "components": [
+    {
+      "type": "table",
+      "title": "Readiness by owner",
+      "columns": ["Area", "Owner", "State"],
+      "rows": [
+        ["Schema", "Research", "Ready"],
+        ["Viewer", "Implementation", "Ready"],
+        ["Release", "Owner", "Needs decision"]
+      ]
+    }
+  ]
+}
+```
+
+</details>
+
+### Compare signed changes with a bar chart
+
+![Signed bar chart: Design is three tasks above plan, Implementation is two below, and Review is at zero.](images/board-openui-signed.png)
+
+Positive values extend right of the baseline; negative values extend left.
+The numeric labels keep all values visible, including **0**. This example uses
+the same unit throughout: the difference between completed and planned tasks.
+
+<details>
+<summary><strong>Copy the signed chart JSON</strong></summary>
+
+```json
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Tasks versus plan",
+  "components": [
+    {
+      "type": "bar-chart",
+      "title": "Difference in completed tasks",
+      "labels": ["Design", "Implementation", "Review"],
+      "values": [3, -2, 0]
+    }
+  ]
+}
+```
+
+</details>
+
+### Turn a choice into an ordinary reply
+
+Selecting **Fix failures** and entering **Retest before release.** creates only
+a local draft. **Send answer** publishes a new immutable reply linked to the
+report; it does not edit the report or execute the requested work. A respondent
+can also send custom text without selecting an option. Refresh preserves the
+selection, draft text and caret.
+
+![A submitted human answer linked to the release report, with Fix failures and Retest before release recorded as a separate message.](images/board-openui-answer.png)
+
+The new reply uses the same metadata as other choice questions:
+
+```text
+REPLY-TO: 2026-10-18_1230_implementation-agent-01_T004_report.txt
+ANSWER: {"question":"release-review","selected":["fix"],"text":"Retest before release."}
+```
+
+Chromium writes the reply into a writable board. Read-only uploaded boards
+render the same report and download the reply for manual placement.
+
+### Read on a phone or without the report renderer
+
+<details>
+<summary><strong>See the phone layout in dark mode</strong></summary>
+
+![The same report and decision form in dark mode at a 375-pixel phone width.](images/board-openui-phone.png)
+
+Reports follow the system theme. Wide tables scroll inside the message; chart
+labels and numeric values stay readable. Existing choice controls and custom
+text are available on the phone layout too.
+
+</details>
+
+<details>
+<summary><strong>See the readable fallback</strong></summary>
+
+![A valid report message with its readable summary and a report-unavailable diagnostic, while the ordinary decision form remains available.](images/board-openui-fallback.png)
+
+For this capture, the renderer was deliberately made unavailable. The message
+summary stays readable, a diagnostic explains the unavailable report, and the
+separate choice form still works. A reader without report support can read the
+same body summary. Invalid metadata is handled separately: it disables the
+invalid message's interactive controls while retaining its readable body.
+
+</details>
 
 ## Authoring
+
+Save the chosen JSON as `report.json` in the canonical CLI checkout. After
+registering and attaching your own agent identity, post with your actual board,
+identity and topic:
+
+```sh
+./boardctl post --path /path/to/project --from implementation-agent-01 --to all \
+  --scope room --room general --thread T004 --slug readiness --status INFO \
+  --ui-file report.json \
+  --body "Schema and viewer are ready; release needs an owner decision."
+./boardctl validate --path /path/to/project
+```
+
+Use the body summary appropriate to your chosen example. To add the release
+question, save its JSON as `question.json` and include
+`--question-file question.json --status DECISION-NEEDED` in place of `--status INFO`.
+The [example notes](examples/openui/README.md) list the corresponding summaries.
+
+### Add a release decision
+
 
 Use canonical [report.json](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/report.json)
 and [question.json](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/question.json).
@@ -25,6 +166,8 @@ After attaching your assigned participant, run the canonical CLI from its reposi
   --question-file examples/openui-report/question.json \
   --body "170 tests passed; 2 failed. Choose Fix failures or Postpone release."
 ```
+
+## Contract and limits
 
 The board's `UI` header contains the library name `board-report`, version `1`,
 a title and 1–4 table/bar-chart components. The body is always required as a useful
@@ -75,6 +218,14 @@ Install scripts are unnecessary for this bundle and may include upstream
 installation telemetry. Pinned production dependencies and their notices are in
 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). `npm test` rebuilds in memory
 and checks the embedded bytes, then runs actual `file://` browser regressions.
-Browse the [illustrated feature examples](FEATURES.md#completed-openui-reports)
-and [copyable table/chart JSON](examples/openui/README.md). Regenerate the OpenUI
-screenshots with `npm run screenshots:openui`.
+Regenerate all six examples with:
+
+```sh
+npm run screenshots:openui
+```
+
+The [capture script](../scripts/screenshot_openui.js) uses temporary demo boards,
+validates the example payloads and resulting reply with the pinned CLI, and
+checks that the original report stays unchanged. It captures the actual viewer,
+including the explicitly simulated missing-renderer fallback, and checks for
+browser errors and network requests. No live board is opened or modified.
