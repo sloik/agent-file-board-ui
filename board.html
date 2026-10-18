@@ -288,6 +288,16 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .board-form fieldset{min-width:0;max-width:100%;box-sizing:border-box;border:0;padding:0}.board-form legend{font-weight:600;max-width:100%;overflow-wrap:anywhere}.board-form .form-field{margin:16px 0;border-top:1px solid var(--line);padding-top:12px}.board-form input:not([type=checkbox]):not([type=radio]):not([type=range]),.board-form textarea,.board-form select{display:block;box-sizing:border-box;width:100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--ink);font:inherit}.board-form input[type=range]{width:calc(100% - 65px);max-width:100%}.board-form output{padding-left:8px}.board-form small{display:block;color:var(--muted)}.board-form .form-hint,.board-form .form-field>p{font-size:.9em}.board-form .form-field-error{color:var(--warn-ink)}.board-form [aria-invalid=true]{border-color:var(--warn-ink)}.board-form .form-options{display:flex;flex-wrap:wrap;gap:10px}.board-form .form-options label{display:flex;align-items:flex-start;gap:7px}.board-form .form-options input{margin-top:4px}.board-form button{padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--ink);cursor:pointer;font:inherit;overflow-wrap:anywhere;max-width:100%}.board-form .form-options button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 -2px var(--accent)}.board-form .option-cards button{flex:1 1 160px;text-align:left}.board-form .option-cards button span{display:block;font-size:.9em;margin-top:6px}.board-form .chips button{border-radius:20px}.board-form .form-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.board-form .form-buttons button{display:flex;align-items:center;gap:6px}.board-form .report-icon-glyph{width:18px;height:18px;color:var(--accent)}.board-form .form-table-scroll{overflow-x:auto;max-width:100%;min-width:0}.board-form table{border-collapse:collapse;min-width:560px;width:100%;font-size:.9em}.board-form th,.board-form td{padding:7px;border:1px solid var(--line);text-align:left;vertical-align:top}.board-form td{min-width:120px}.board-form .form-field-error{display:block}.board-form button:disabled,.board-form fieldset:disabled{opacity:.65}.board-form .form-result{white-space:pre-wrap}.board-form .form-error[hidden]{display:none}
 
 .board-form .form-error-space{visibility:hidden}.board-form .form-field-error{margin:4px 0;font-size:.9em}.board-form .form-table-scroll tbody th{white-space:nowrap;min-width:72px}
+
+/* Offline authoring, answer review and local draft management. */
+#structuredDialog,#draftsDialog{width:min(1050px,94vw);max-height:90vh;box-sizing:border-box;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.tool-fields{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:12px 0}.tool-fields label{display:flex;flex-direction:column;gap:5px}
+#structuredJson{display:block;width:100%;box-sizing:border-box;min-height:220px;resize:vertical;font-family:ui-monospace,monospace;padding:10px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+#structuredPreview{margin-top:16px;overflow-wrap:anywhere}#structuredPreview:empty{display:none}.authoring-form .form-storage-status:empty{display:none}.tool-result{white-space:pre-wrap;overflow-wrap:anywhere}.tool-actions,.draft-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#structuredAttachment{margin:6px 0;padding:8px;border:1px solid var(--accent);border-radius:8px;overflow-wrap:anywhere}#structuredAttachment[hidden]{display:none}
+.answer-review{margin:12px 0;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}.answer-review summary{cursor:pointer;font-weight:650}.answer-review h4{margin:12px 0 8px}.answer-review-values{display:grid;grid-template-columns:minmax(80px,auto) minmax(0,1fr);gap:5px 12px}.answer-review-values dt{color:var(--muted)}.answer-review-values dd{margin:0;white-space:pre-wrap}.review-table-scroll{overflow:auto;max-width:100%}.answer-review table{border-collapse:collapse;min-width:100%;font-size:.9em}.answer-review th,.answer-review td{border:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}.answer-review td{min-width:90px;white-space:pre-wrap}.answer-review ins{text-decoration:none;font-weight:650}.answer-review del{opacity:.75}.review-before,.review-after{display:block}.review-order{font-size:.9em}.managed-draft{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.managed-draft h3{margin:0 0 8px;font-size:1em}.managed-draft code{font-size:.85em}
+
+@media(max-width:600px){.answer-review-values{grid-template-columns:minmax(0,1fr);gap:2px}.answer-review-values dd{margin:0 0 8px}}
 </style>
 </head>
 <body>
@@ -302,6 +312,8 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
   <button class="btn" id="reload" data-i18n-title="refresh_now">&#8635;</button>
   <button class="btn" id="vocabularyOpen" data-i18n="vocabulary_title"></button>
   <button class="btn" id="presenceOpen" data-i18n="presence_title"></button>
+  <button class="btn" id="structuredOpen" data-i18n="authoring_open"></button>
+  <button class="btn" id="draftsOpen" data-i18n="draft_open" disabled></button>
   <button class="btn" id="gear" data-i18n-title="settings_title">&#9881;</button>
   <button class="btn primary" id="open"></button>
   <input type="file" id="fallback" webkitdirectory multiple hidden>
@@ -357,6 +369,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
           <input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" size="11">
         </div>
         <div class="draft-status"><span data-i18n="draft_status"></span><span id="cStatusPreview" class="chip status status-tone s-INFO">INFO</span></div>
+        <div id="structuredAttachment" hidden><span id="structuredAttachedText"></span> <button class="btn" id="structuredRemove" type="button" data-i18n="authoring_remove"></button></div>
         <div class="write">
           <div class="sugg" id="bodySuggestions"></div><textarea id="cBody" data-i18n-ph="c_body_ph"></textarea>
           <button class="btn primary" id="send" data-i18n="c_send"></button>
@@ -366,6 +379,20 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
     </div>
   </section>
 </div>
+<dialog id="structuredDialog" aria-labelledby="structuredHeading">
+ <div class="vocabulary-head"><h2 id="structuredHeading" data-i18n="authoring_open"></h2><button class="btn" id="structuredClose" data-i18n="vocabulary_close"></button></div>
+ <p class="hint" data-i18n="authoring_note"></p>
+ <div class="tool-fields"><label><span data-i18n="authoring_kind"></span><select id="structuredKind"><option value="report" data-i18n="authoring_report"></option><option value="form" data-i18n="authoring_form"></option></select></label>
+ <label><span data-i18n="authoring_example"></span><select id="structuredExample"><option value="report-v1" data-i18n="authoring_report_v1"></option><option value="report-v2" data-i18n="authoring_report_v2"></option><option value="report-v3" data-i18n="authoring_report_v3"></option><option value="form-v2" data-i18n="authoring_form_v2"></option><option value="form-v3" data-i18n="authoring_form_v3"></option></select></label><button class="btn" id="structuredLoad" data-i18n="authoring_load"></button></div>
+ <label for="structuredJson" data-i18n="authoring_json"></label><textarea id="structuredJson" spellcheck="false" maxlength="262144"></textarea>
+ <div class="tool-actions"><button class="btn" id="structuredValidate" data-i18n="authoring_validate"></button><button class="btn primary" id="structuredAttach" data-i18n="authoring_attach" disabled></button></div>
+ <p id="structuredError" class="tool-result" role="status"></p><div id="structuredPreview"></div>
+</dialog>
+<dialog id="draftsDialog" aria-labelledby="draftsHeading"><div class="vocabulary-head"><h2 id="draftsHeading" data-i18n="draft_open"></h2><button class="btn" id="draftsClose" data-i18n="vocabulary_close"></button></div>
+ <p class="hint" data-i18n="draft_note"></p><div class="tool-actions"><button class="btn" id="draftImportPick" data-i18n="draft_import"></button><input id="draftImport" type="file" accept="application/json,.json" hidden></div>
+ <p id="draftManagerResult" role="status" class="tool-result"></p><div id="draftManagerList"></div>
+</dialog>
+
 <dialog id="upgradeDialog" aria-labelledby="upgradeHeading"><div class="vocabulary-head"><h2 id="upgradeHeading" data-i18n="upgrade_title"></h2><button class="btn" id="upgradeClose" data-i18n="vocabulary_close"></button></div><p id="upgradeVersions"></p><p id="upgradeFolder"></p><p data-i18n="upgrade_explain"></p><p data-i18n="upgrade_preserve"></p><pre id="upgradeFiles" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p id="upgradeResult" role="status" style="white-space:pre-wrap"></p><div class="row2c"><button class="btn" id="upgradePreview" data-i18n="upgrade_preview"></button><button class="btn primary" id="upgradeApply" data-i18n="upgrade_apply" disabled></button></div><details id="upgradeDetails"><summary data-i18n="upgrade_cli"></summary><pre id="upgradeCommands" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p data-i18n="upgrade_online"></p><p data-i18n="upgrade_viewer"></p><p><a href="https://github.com/sloik/agent-file-board-ui/blob/main/docs/UPGRADING.md" target="_blank" rel="noopener noreferrer" data-i18n="upgrade_guide"></a> · <a href="https://github.com/sloik/agent-file-board-ui/tags" target="_blank" rel="noopener noreferrer" data-i18n="upgrade_download"></a></p></details></dialog>
 <dialog id="vocabulary"><div class="vocabulary-head"><h2 data-i18n="vocabulary_title"></h2><button class="btn" id="vocabularyClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="vocabulary_source"></p><pre id="vocabularyText"></pre></dialog>
 <dialog id="presenceDialog"><div class="vocabulary-head"><h2 data-i18n="presence_title"></h2><button class="btn" id="presenceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="presence_note"></p><p class="hint" id="presenceSnapshot"></p><button class="btn" id="browserPresence" hidden></button><div id="presenceList"></div></dialog>
@@ -1034,7 +1061,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.0";
+const VIEWER_VERSION = "2.4.1";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1115,6 +1142,63 @@ const STRINGS = {
 
   report_previous:"Previous", report_next:"Next", report_close:"Close", report_open:"Open", report_no_data:"No positive values", report_image_failed:"Image could not be decoded", report_from:"Previous", report_to:"Current", report_value:"Value", report_series:"Series",
   report_filter:"Filter rows", report_chart_data:"Chart data", report_label:"Label", report_pending:"Pending", report_current:"Current", report_complete:"Complete",
+  review_title:"Submitted answer",
+  review_note:"Read-only comparison against the original question; it does not approve or execute work.",
+  review_empty:"Not set",
+  review_yes:"Yes",
+  review_no:"No",
+  review_hidden:"Not included: field hidden by its condition.",
+  review_initial:"Initial value",
+  review_submitted:"Submitted value",
+  review_change:"Change",
+  review_added:"Added row",
+  review_removed:"Removed row",
+  review_changed:"Changed cells",
+  review_unchanged:"Unchanged",
+  review_order:"Submitted row order",
+  authoring_open:"Structured message",
+  authoring_note:"Edit report or form JSON, validate and try it locally. Attach a validated snapshot to the composer, write a useful body, then use Post. Preview never posts a message.",
+  authoring_kind:"Payload kind",
+  authoring_report:"Report",
+  authoring_form:"Form question",
+  authoring_example:"Example",
+  authoring_report_v1:"Report v1 — table and bar chart",
+  authoring_report_v2:"Report v2 — dashboard",
+  authoring_report_v3:"Report v3 — charts and cards",
+  authoring_form_v2:"Form v2 — all field types",
+  authoring_form_v3:"Form v3 — conditional workflow",
+  authoring_load:"Load example",
+  authoring_json:"JSON payload",
+  authoring_validate:"Validate and preview",
+  authoring_attach:"Attach to composer",
+  authoring_remove:"Remove attachment",
+  authoring_valid:"Valid payload. Preview changes are local; attach the JSON definition to post it.",
+  authoring_preview_only:"Preview only: no answer is posted or saved.",
+  authoring_validate_first:"Validate the current JSON before attaching it.",
+  authoring_native:"Open a native board to attach this payload.",
+  authoring_typed_only:"Choose a report or typed form question version 2 or 3.",
+  authoring_board_changed:"The selected board changed. Reattach the payload.",
+  authoring_attached:"Attached {kind}: {title}",
+  tools_input_limit:"JSON input exceeds 256 KiB.",
+  draft_open:"Saved drafts",
+  draft_note:"Only drafts for this board and selected respondent are listed. Exported JSON contains entered values. Import restores a local draft; it never submits a reply.",
+  draft_loading:"Loading local drafts…",
+  draft_stored:"Saved in this browser",
+  draft_memory:"Memory only",
+  draft_export:"Export draft",
+  draft_delete:"Delete draft",
+  draft_import:"Import draft",
+  draft_count:"Local drafts: {n}",
+  draft_none:"No local drafts for this board and respondent.",
+  draft_changed:"The board or respondent changed. Reopen Saved drafts.",
+  draft_source:"The original question is missing, invalid or changed.",
+  draft_invalid:"Invalid draft, respondent, source definition or row structure.",
+  draft_file_limit:"Draft file exceeds the 384 KiB export/import limit.",
+  draft_delete_failed:"Browser storage could not delete the saved record. Your working draft was kept.",
+  draft_exported:"Draft exported. The file contains entered values.",
+  draft_delete_confirm:"Delete the local draft for {path}? This resets its form controls; messages stay unchanged.",
+  draft_import_confirm:"Restore the draft for {path} as {who}? This replaces its current local edits.",
+  draft_imported:"Local draft restored. No reply was submitted.",
   form_hint:"Required fields are marked *. Submit creates a new reply; the original message stays unchanged.",
   form_choose:"Choose…",
   form_max_length:"Maximum characters",
@@ -1237,6 +1321,63 @@ const STRINGS = {
 
   report_previous:"Poprzedni", report_next:"Następny", report_close:"Zamknij", report_open:"Otwórz", report_no_data:"Brak dodatnich wartości", report_image_failed:"Nie można odczytać obrazu", report_from:"Poprzednio", report_to:"Obecnie", report_value:"Wartość", report_series:"Seria",
   report_filter:"Filtruj wiersze", report_chart_data:"Dane wykresu", report_label:"Etykieta", report_pending:"Oczekuje", report_current:"W toku", report_complete:"Ukończono",
+  review_title:"Wysłana odpowiedź",
+  review_note:"Porównanie z pierwotnym pytaniem, tylko do odczytu. Nie zatwierdza ani nie wykonuje pracy.",
+  review_empty:"Nie ustawiono",
+  review_yes:"Tak",
+  review_no:"Nie",
+  review_hidden:"Pominięto: pole ukryte przez warunek.",
+  review_initial:"Wartość początkowa",
+  review_submitted:"Wysłana wartość",
+  review_change:"Zmiana",
+  review_added:"Dodany wiersz",
+  review_removed:"Usunięty wiersz",
+  review_changed:"Zmienione komórki",
+  review_unchanged:"Bez zmian",
+  review_order:"Wysłana kolejność wierszy",
+  authoring_open:"Wiadomość strukturalna",
+  authoring_note:"Edytuj JSON raportu lub formularza, sprawdź i wypróbuj lokalnie. Dołącz sprawdzoną definicję do edytora, napisz opis i użyj Wyślij. Podgląd nie wysyła wiadomości.",
+  authoring_kind:"Rodzaj danych",
+  authoring_report:"Raport",
+  authoring_form:"Pytanie formularza",
+  authoring_example:"Przykład",
+  authoring_report_v1:"Raport v1 — tabela i wykres słupkowy",
+  authoring_report_v2:"Raport v2 — pulpit",
+  authoring_report_v3:"Raport v3 — wykresy i karty",
+  authoring_form_v2:"Formularz v2 — wszystkie typy pól",
+  authoring_form_v3:"Formularz v3 — warunkowy przepływ",
+  authoring_load:"Wczytaj przykład",
+  authoring_json:"Dane JSON",
+  authoring_validate:"Sprawdź i pokaż podgląd",
+  authoring_attach:"Dołącz do edytora",
+  authoring_remove:"Usuń załącznik",
+  authoring_valid:"Poprawne dane. Zmiany podglądu są lokalne; dołącz definicję JSON, aby ją wysłać.",
+  authoring_preview_only:"Tylko podgląd: odpowiedź nie jest wysyłana ani zapisywana.",
+  authoring_validate_first:"Sprawdź bieżący JSON przed dołączeniem.",
+  authoring_native:"Otwórz natywną tablicę, aby dołączyć dane.",
+  authoring_typed_only:"Wybierz raport lub pytanie formularza w wersji 2 albo 3.",
+  authoring_board_changed:"Wybrana tablica się zmieniła. Dołącz dane ponownie.",
+  authoring_attached:"Dołączono {kind}: {title}",
+  tools_input_limit:"Dane JSON przekraczają 256 KiB.",
+  draft_open:"Zapisane szkice",
+  draft_note:"Lista zawiera szkice dla tej tablicy i wybranego autora. Eksportowany JSON zawiera wpisane wartości. Import odtwarza lokalny szkic, nie wysyła odpowiedzi.",
+  draft_loading:"Wczytywanie lokalnych szkiców…",
+  draft_stored:"Zapisano w tej przeglądarce",
+  draft_memory:"Tylko w pamięci",
+  draft_export:"Eksportuj szkic",
+  draft_delete:"Usuń szkic",
+  draft_import:"Importuj szkic",
+  draft_count:"Lokalne szkice: {n}",
+  draft_none:"Brak lokalnych szkiców dla tej tablicy i autora.",
+  draft_changed:"Tablica lub autor się zmienił. Otwórz ponownie Zapisane szkice.",
+  draft_source:"Pierwotne pytanie nie istnieje, jest niepoprawne lub zostało zmienione.",
+  draft_invalid:"Niepoprawny szkic, autor, definicja pytania lub struktura wierszy.",
+  draft_file_limit:"Plik szkicu przekracza limit eksportu/importu 384 KiB.",
+  draft_delete_failed:"Pamięć przeglądarki nie usunęła zapisu. Bieżący szkic został zachowany.",
+  draft_exported:"Szkic wyeksportowano. Plik zawiera wpisane wartości.",
+  draft_delete_confirm:"Usunąć lokalny szkic dla {path}? Pola formularza zostaną zresetowane; wiadomości pozostaną bez zmian.",
+  draft_import_confirm:"Odtworzyć szkic dla {path} jako {who}? Bieżące lokalne zmiany zostaną zastąpione.",
+  draft_imported:"Odtworzono lokalny szkic. Nie wysłano odpowiedzi.",
   form_hint:"Pola wymagane mają *. Wysłanie tworzy nową odpowiedź; oryginalna wiadomość pozostaje bez zmian.",
   form_choose:"Wybierz…",
   form_max_length:"Maksymalna liczba znaków",
@@ -1610,7 +1751,7 @@ function composeMessage(o){
   if(!legacy){
     if(o.contentType && o.contentType!=="text/plain") headers.push(["CONTENT-TYPE",o.contentType]);
     if(o.ui) headers.push(["UI",JSON.stringify(o.ui)]);
-    if((o.ui || o.question?.version===2) && !body.trim()) throw boardErr("invalid_metadata");
+    if((o.ui || [2,3].includes(o.question?.version)) && !body.trim()) throw boardErr("invalid_metadata");
     if(o.question) headers.push(["QUESTION",JSON.stringify(o.question)]);
     if(o.answer) headers.push(["ANSWER",JSON.stringify(o.answer)]);
     try{
@@ -2476,6 +2617,7 @@ function mountReports(){
   mountForms();
 }
 function render(background = false){
+  updateToolsChrome();
   if(!B) return;
   const q = $("#q").value.trim(), ql = q.toLowerCase(), showR = $("#showReceipts").checked || !!q, me = currentUser();
   const meP = me ? B.people[me] : null;
@@ -2520,13 +2662,14 @@ function render(background = false){
         ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
         <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
         ${reportPlaceholder(m)}
+        ${answerReview(m)}
         ${m.metadataError?`<p class="metadata-error">${m.quarantined?"[withdrawn / original preserved] ":""}${esc(t("invalid_metadata"))}</p>`:(m.h.UI!==undefined && !m.bodyLoaded?"":choiceHtml(m))}
         ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
         <div class="tools"><button data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button><button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
   }
   const feed = $("#feed");
   const atBottom = feed.scrollHeight-feed.scrollTop-feed.clientHeight < 80;
-  const next=document.createElement("div"); next.className="inner"; next.innerHTML=html;
+  const next=document.createElement("div"); next.className="inner"; next.innerHTML=html; preserveReviewState(next);
   const oldTop=feed.scrollTop;
   const expanded=new Set([...feed.querySelectorAll(".msg:has([data-more])")].filter(el=>!el.querySelector(".body").classList.contains("clamp")).map(el=>el.id));
   for(const el of next.querySelectorAll(".msg:has([data-more])")) if(expanded.has(el.id)){
@@ -2670,6 +2813,7 @@ function renderGuidance(){
   if($("#guidanceDocs").innerHTML!==next.innerHTML) $("#guidanceDocs").replaceChildren(...next.childNodes);
 }
 function renderChrome(){
+  updateToolsChrome();
   $("#repairsOpen").hidden=!B || B.layout.dialect!=="native";
   renderGuidance();
   $("#vocabularyText").textContent=B && B.glossary ? B.glossary : t("vocabulary_missing");
@@ -2826,8 +2970,8 @@ async function send(){
     }
     const msg = composeMessage({sender:me, to, scope, room, pair, tid, threadLabel:label, newThreadName:newName,
       slug: bodySlug, status:$("#cStatus").value, language:$("#cLang").value||undefined, body,
-      contentType:$("#cContentType").value, replyTo: replyTo ? replyTo.file : null, confirmedAgent: confirmed});
-    await deliverMessage(msg);
+      ...structuredComposerPayload(), contentType:$("#cContentType").value, replyTo: replyTo ? replyTo.file : null, confirmedAgent: confirmed});
+    await deliverMessage(msg); clearStructuredAttachment();
     $("#cBody").value = ""; $("#cNewThread").value = ""; $("#cNewRoom").value = ""; clearReply(); syncLang(true);
   }catch(e){
     toast(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)}));
@@ -3264,7 +3408,7 @@ async function applyUpgrade(){
 
 /* BEGIN BUNDLED FORM TRANSPORT */
 /* Trusted form transport and root lifetime, inside the viewer scope. */
-const formRoots=new Map(),formDrafts=new Map(),submittingForms=new Set(),formDraftLoads=new Map(),formStorageNotes=new Map();
+const formRoots=new Map(),formDrafts=new Map(),submittingForms=new Set(),formDraftLoads=new Map(),formStorageNotes=new Map(),formDraftDirty=new Set();
 let formStorageIdentity=null,formStorageWrites=Promise.resolve();
 const formKey=m=>JSON.stringify([formStorageIdentity||boardStorageId,currentUser(),m.path,m.h.QUESTION]);
 async function formDraftBucket(identity,mutate){
@@ -3275,11 +3419,11 @@ async function formDraftBucket(identity,mutate){
 function loadFormDraft(key,q){
  if(formDraftLoads.has(key))return;
  const identity=formStorageIdentity;
- const pending=(async()=>{try{if(!identity)throw Error('No durable folder identity');const digest=await shaBytes(new TextEncoder().encode(key)),bucket=await formDraftBucket(identity);const draft=BoardFormContract.restore(q,bucket[digest]?.draft);if(draft)formDrafts.set(key,draft);formStorageNotes.set(key,"form_draft_saved");}catch{formStorageNotes.set(key,"form_draft_memory");}finally{formDraftLoads.set(key,true);if(B)mountForms();}})();formDraftLoads.set(key,pending);
+ const pending=(async()=>{try{if(!identity)throw Error('No durable folder identity');const digest=await shaBytes(new TextEncoder().encode(key)),bucket=await formDraftBucket(identity);const draft=BoardFormContract.restore(q,bucket[digest]?.draft);if(draft){formDrafts.set(key,draft);formDraftDirty.add(key);}formStorageNotes.set(key,"form_draft_saved");}catch{formStorageNotes.set(key,"form_draft_memory");}finally{formDraftLoads.set(key,true);if(B)mountForms();}})();formDraftLoads.set(key,pending);
 }
 function saveFormDraft(key,q,draft,clear=false){
- formDrafts.set(key,structuredClone(draft));const identity=formStorageIdentity;
- formStorageWrites=formStorageWrites.catch(()=>{}).then(async()=>{try{if(!identity||!BoardFormContract.restore(q,draft))throw Error('Draft exceeds storage limits');const digest=await shaBytes(new TextEncoder().encode(key));await formDraftBucket(identity,bucket=>{if(clear)delete bucket[digest];else bucket[digest]={updated:Math.max(Date.now(),...Object.values(bucket).map(row=>row.updated+1)),draft};});formStorageNotes.set(key,"form_draft_saved");}catch{formStorageNotes.set(key,"form_draft_memory");}if(B)mountForms();});
+ formDrafts.set(key,structuredClone(draft));if(clear)formDraftDirty.delete(key);else formDraftDirty.add(key);const identity=formStorageIdentity;
+ formStorageWrites=formStorageWrites.catch(()=>{}).then(async()=>{let persisted=false;try{if(!identity||!BoardFormContract.restore(q,draft))throw Error('Draft exceeds storage limits');const digest=await shaBytes(new TextEncoder().encode(key));await formDraftBucket(identity,bucket=>{if(clear)delete bucket[digest];else bucket[digest]={updated:Math.max(Date.now(),...Object.values(bucket).map(row=>row.updated+1)),draft};});formStorageNotes.set(key,"form_draft_saved");persisted=true;}catch{formStorageNotes.set(key,"form_draft_memory");}if(B)mountForms();return persisted;});return formStorageWrites;
 }
 
 function formWords(){return {hint:t("form_hint"),choose:t("form_choose"),maxLength:t("form_max_length"),range:t("form_range"),step:t("form_step"),row:t("form_row"),changedCells:t("form_changed_cells"),invalid:t("form_invalid"),invalidForm:t("form_invalid_form"),tooLarge:t("form_too_large"),rowActions:t("form_row_actions"),moveUp:t("form_move_up"),moveDown:t("form_move_down"),removeRow:t("form_remove_row"),addRow:t("form_add_row"),rows:t("form_rows")};}
@@ -3319,8 +3463,158 @@ async function sendFormAnswer(path,definition,sender,answer){
 }
 /* END BUNDLED FORM TRANSPORT */
 
+/* BEGIN BUNDLED OFFLINE TOOLS */
+const AUTHORING_EXAMPLES=[{"id":"report-v1","kind":"report","value":{"library":"board-report","version":1,"title":"Release review","components":[{"type":"table","title":"Test results","columns":["Suite","Passed","Failed"],"rows":[["Unit","128","0"],["Browser","42","2"]]},{"type":"bar-chart","title":"Results","labels":["Passed","Failed"],"values":[170,2]}]}},{"id":"report-v2","kind":"report","value":{"library":"board-report","version":2,"title":"Static release dashboard","components":[{"type":"stack","title":"At a glance","direction":"row","children":[{"type":"metric","title":"Tests passed","value":"170","detail":"2 failures need review"},{"type":"metric","title":"Bundle size","value":"1.0 MB"},{"type":"tag","title":"Review needed","tone":"warning"}]},{"type":"callout","title":"Release held","text":"Fix the two failing checks before publishing. These are synthetic results.","tone":"warning"},{"type":"tabs","title":"Evidence","items":[{"id":"trend","title":"Trends","children":[{"type":"line-chart","title":"Test trend","labels":["Mon","Tue","Wed"],"series":[{"name":"Passed","values":[128,152,170]},{"name":"Failed","values":[5,0,2]}]},{"type":"area-chart","title":"Coverage over time","labels":["Mon","Tue","Wed"],"series":[{"name":"Covered","values":[60,72,85]}]}]},{"id":"results","title":"Results","children":[{"type":"table","title":"Suite results","columns":["Suite","Passed","Failed"],"rows":[["Unit","118","0"],["Browser","42","2"],["Integration","10","0"]]},{"type":"grouped-bar-chart","title":"Planned versus actual","labels":["Design","Build","Review"],"series":[{"name":"Planned","values":[3,8,2]},{"name":"Actual","values":[4,6,0]}]}]}]},{"type":"accordion","title":"Details","items":[{"id":"notes","title":"Review notes","children":[{"type":"card","title":"What changed","children":[{"type":"text","title":"Summary","text":"All content is embedded in this immutable message."},{"type":"list","title":"Next actions","items":["Fix failures","Retest","Review the release"]}]}]},{"id":"commands","title":"Commands and signed data","children":[{"type":"code-block","title":"Reproduce","code":"npm test\npython3 -m unittest discover -s tests"},{"type":"stacked-bar-chart","title":"Signed changes","labels":["Mon","Tue","Wed"],"series":[{"name":"Added","values":[3,-2,0]},{"name":"Changed","values":[2,-4,1]}]},{"type":"bar-chart","title":"Versus plan","labels":["Design","Build","Review"],"values":[3,-2,0]}]}]},{"type":"separator","title":"Delivery plan"},{"type":"steps","title":"Next steps","items":[{"title":"Validate","text":"Run the regression suite.","state":"complete"},{"title":"Review","text":"Resolve the two failures.","state":"current"},{"title":"Publish","text":"Make an explicit release decision.","state":"pending"}]}]}},{"id":"report-v3","kind":"report","value":{"library":"board-report","version":3,"title":"Complete static component gallery","components":[{"type":"pie-chart","title":"Outcome distribution","labels":["Passed","Failed","Deferred"],"values":[170,2,8],"variant":"donut"},{"type":"radial-chart","title":"Readiness by area","labels":["Tests","Docs","Review"],"values":[100,80,65]},{"type":"radar-chart","title":"Option comparison","labels":["Speed","Quality","Cost","Reach"],"series":[{"name":"Option A","values":[8,9,4,7]},{"name":"Option B","values":[6,8,8,9]}]},{"type":"scatter-chart","title":"Cost versus benefit","xLabel":"Cost","yLabel":"Benefit","datasets":[{"name":"Candidates","points":[{"x":-2,"y":3},{"x":0,"y":0,"z":0},{"x":4,"y":8,"z":20}]}]},{"type":"single-stacked-bar-chart","title":"Capacity allocation","labels":["Build","Review","Buffer"],"values":[60,25,15]},{"type":"icon","title":"Information","name":"info"},{"type":"icon-text","title":"Ready for review","name":"check","text":"This is a local static component."},{"type":"metric-comparison","title":"Bundle size","value":"1.1 MB","previous":"1.3 MB","detail":"Synthetic comparison; no remote data."},{"type":"tag-block","title":"Release labels","items":[{"text":"Offline","tone":"success"},{"text":"Review needed","tone":"warning"}]},{"type":"markdown","title":"Review notes","text":"**Static Markdown** supports lists and code.\n\n- No backend\n- No remote assets\n\n```sh\nnpm test\n```"},{"type":"image","title":"Embedded landscape","src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACx0lEQVR4nO3SQU0lABBEwa8HJyjAAj7WCuGGESygAA97QAEHkkl6plNJOXjv8fX9n52e/33yV494Nn4Tn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU+Xx9PoONQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUeL28flIlfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVwX9AH8pA5TK/Zd1AAAAAElFTkSuQmCC","alt":"Synthetic geometric landscape in blue","caption":"Embedded PNG; no external image service."},{"type":"image-gallery","title":"Two embedded variations","images":[{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACx0lEQVR4nO3SQU0lABBEwa8HJyjAAj7WCuGGESygAA97QAEHkkl6plNJOXjv8fX9n52e/33yV494Nn4Tn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU+Xx9PoONQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUeL28flIlfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVwX9AH8pA5TK/Zd1AAAAAElFTkSuQmCC","alt":"Blue landscape","caption":"Blue variation"},{"src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACxklEQVR4nO3SMU0lABBF0a8HI1ihRNJWeEALBqDAwRYooCCZ5M28nOQ4uPfx8fWfnT7/PfNXj3g2fhOf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNT5fH08gY1DE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VR7f76+UiV9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXBf0A633YarJnz/oAAAAASUVORK5CYII=","alt":"Amber landscape","caption":"Amber variation"}]},{"type":"image-text","title":"Image with a summary","src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACxklEQVR4nO3SMU0lABBF0a8HI1ihRNJWeEALBqDAwRYooCCZ5M28nOQ4uPfx8fWfnT7/PfNXj3g2fhOf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNT5fH08gY1DE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VR7f76+UiV9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXBf0A633YarJnz/oAAAAASUVORK5CYII=","alt":"Amber geometric landscape","text":"The picture and text travel with this immutable message.","size":"large"},{"type":"card-grid","title":"Visual cards","variant":"visual","children":[{"type":"card","title":"Blue option","children":[{"type":"image","title":"Embedded landscape","src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACx0lEQVR4nO3SQU0lABBEwa8HJyjAAj7WCuGGESygAA97QAEHkkl6plNJOXjv8fX9n52e/33yV494Nn4Tn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU+Xx9PoONQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUeL28flIlfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVwX9AH8pA5TK/Zd1AAAAAElFTkSuQmCC","alt":"Synthetic geometric landscape in blue","caption":"Embedded PNG; no external image service."},{"type":"text","title":"Summary","text":"A compact visual card."}]},{"type":"card","title":"Amber option","children":[{"type":"image","title":"Amber landscape","src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACxklEQVR4nO3SMU0lABBF0a8HI1ihRNJWeEALBqDAwRYooCCZ5M28nOQ4uPfx8fWfnT7/PfNXj3g2fhOf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNT5fH08gY1DE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VR7f76+UiV9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXBf0A633YarJnz/oAAAAASUVORK5CYII=","alt":"Amber geometric landscape"},{"type":"metric","title":"Readiness","value":"85%"}]}]},{"type":"carousel","title":"Card layouts","items":[{"id":"snippet","title":"Snippet cards","children":[{"type":"card-grid","title":"Key facts","variant":"snippet","children":[{"type":"card","title":"Runtime","children":[{"type":"icon-text","title":"Offline","name":"file","text":"Single HTML file"}]},{"type":"card","title":"Storage","children":[{"type":"text","title":"Immutable","text":"Original messages remain unchanged."}]}]}]},{"id":"context","title":"Context cards","children":[{"type":"card-grid","title":"Background","variant":"context","children":[{"type":"card","title":"Decision context","children":[{"type":"text","title":"Trade-off","text":"More visual information without an execution service."}]}]}]},{"id":"composite","title":"Composite cards","children":[{"type":"card-grid","title":"Combined evidence","variant":"composite","children":[{"type":"card","title":"Readiness","children":[{"type":"metric-comparison","title":"Before and after","value":"95%","previous":"80%"},{"type":"tag-block","title":"State","items":[{"text":"Review","tone":"info"}]}]}]}]}]},{"type":"modal","title":"Open supporting details","children":[{"type":"markdown","title":"Local evidence","text":"This dialog contains **embedded** evidence.\n\nClosing it writes no files."},{"type":"table","title":"Evidence","columns":["Check","Result"],"rows":[["Offline","Pass"],["History preserved","Pass"]]}]}]}},{"id":"form-v2","kind":"form","value":{"version":2,"id":"release-configuration","type":"form","prompt":"Configure a fictional release, then submit an immutable reply.","fields":[{"id":"owner","type":"input","label":"Release owner","required":true,"dataType":"text","maxLength":100,"help":"Enter a fictional name."},{"id":"budget","type":"input","label":"Budget","required":true,"dataType":"number","min":0,"max":100000,"default":0},{"id":"notes","type":"textarea","label":"Review notes","required":false,"maxLength":4000},{"id":"environment","type":"select","label":"Environment","required":true,"options":[{"id":"staging","label":"Staging"},{"id":"production","label":"Production"}],"default":"staging"},{"id":"rollout","type":"radio-group","label":"Rollout","required":true,"options":[{"id":"canary","label":"Canary"},{"id":"full","label":"Full release"}],"default":"canary"},{"id":"checks","type":"checkbox-group","label":"Required checks","required":true,"options":[{"id":"unit","label":"Unit tests"},{"id":"browser","label":"Browser tests"}],"default":["unit"]},{"id":"labels","type":"chips","label":"Labels","required":false,"multiple":true,"options":[{"id":"offline","label":"Offline"},{"id":"review","label":"Needs review"}],"default":["offline"]},{"id":"plan","type":"option-cards","label":"Release plan","required":true,"multiple":false,"options":[{"id":"careful","label":"Careful","description":"Stage and review first."},{"id":"quick","label":"Quick","description":"Fictional expedited path."}],"default":"careful"},{"id":"due","type":"date-picker","label":"Target date","required":true,"min":"2026-01-01","max":"2027-12-31","default":"2026-10-20"},{"id":"percent","type":"slider","label":"Initial rollout percent","required":true,"min":0,"max":100,"step":5,"default":25},{"id":"switches","type":"switch-group","label":"Preferences","required":false,"options":[{"id":"notify","label":"Notify reviewers"},{"id":"archive","label":"Archive after completion"}],"default":["notify"]},{"id":"tasks","type":"editable-table","label":"Editable task estimates","required":false,"help":"Edit cells; replies contain changes without rewriting the source table.","columns":[{"id":"task","type":"text","label":"Task","required":true,"maxLength":100},{"id":"hours","type":"number","label":"Hours","required":true,"min":0,"max":100},{"id":"state","type":"select","label":"State","required":true,"options":[{"id":"pending","label":"Pending"},{"id":"done","label":"Done"}]},{"id":"approved","type":"boolean","label":"Approved","required":true}],"rows":[{"id":"schema","values":{"task":"Review schema","hours":0,"state":"pending","approved":false}},{"id":"viewer","values":{"task":"Test viewer","hours":2,"state":"pending","approved":false}}]}],"buttons":[{"id":"send","label":"Send form answer","action":"submit","icon":"check"},{"id":"reset","label":"Reset form","action":"reset","icon":"clock"}]}},{"id":"form-v3","kind":"form","value":{"version":3,"id":"offline-release-plan","type":"form","prompt":"Plan a fictional release entirely offline. Production requires an approver; dates and budgets must agree. Add, remove or move task rows, then send a separate reply.","fields":[{"id":"environment","type":"select","label":"Environment","required":true,"options":[{"id":"staging","label":"Staging"},{"id":"production","label":"Production"}],"default":"staging"},{"id":"region","type":"select","label":"Deployment region","required":true,"options":[{"id":"local","label":"Local sandbox","when":{"field":"environment","equals":"staging"}},{"id":"eu","label":"Europe","when":{"field":"environment","equals":"production"}},{"id":"us","label":"United States","when":{"field":"environment","equals":"production"}}],"default":"local"},{"id":"approver","type":"input","dataType":"text","maxLength":100,"label":"Production approver","required":true,"visibleWhen":{"field":"environment","equals":"production"}},{"id":"start","type":"date-picker","label":"Window start","required":true,"default":"2026-10-20"},{"id":"end","type":"date-picker","label":"Window end","required":true,"default":"2026-10-21"},{"id":"requested","type":"input","dataType":"number","min":0,"max":10000,"label":"Requested budget","required":true,"default":100},{"id":"approved","type":"input","dataType":"number","min":0,"max":10000,"label":"Approved budget","required":true,"default":200},{"id":"tasks","type":"editable-table","label":"Editable task estimates","required":false,"help":"Edit cells; replies contain changes without rewriting the source table.","columns":[{"id":"task","type":"text","label":"Task","required":true,"maxLength":100},{"id":"hours","type":"number","label":"Hours","required":true,"min":0,"max":100},{"id":"state","type":"select","label":"State","required":true,"options":[{"id":"pending","label":"Pending"},{"id":"done","label":"Done"}]},{"id":"approved","type":"boolean","label":"Approved","required":true}],"rows":[{"id":"schema","values":{"task":"Review schema","hours":0,"state":"pending","approved":false}},{"id":"viewer","values":{"task":"Test viewer","hours":2,"state":"pending","approved":false}}],"rowOperations":{"add":true,"remove":true,"reorder":true,"minRows":1,"maxRows":8}}],"buttons":[{"id":"send","label":"Send form answer","action":"submit","icon":"check"},{"id":"reset","label":"Reset form","action":"reset","icon":"clock"}],"validations":[{"left":"start","op":"lte","right":"end","message":"Window end must be on or after the start."},{"left":"requested","op":"lte","right":"approved","message":"Requested budget must fit within the approved budget."}]}}];
+/* Read-only typed answer comparisons; no writer or action bindings. */
+function reviewValue(field,value){
+ if(value===null||value===undefined)return t("review_empty");
+ if(typeof value==='boolean')return t(value?"review_yes":"review_no");
+ if(Array.isArray(value))return value.length?value.map(id=>field.options?.find(o=>o.id===id)?.label||id).join(', '):t("review_empty");
+ if(field.options)return field.options.find(o=>o.id===value)?.label||String(value);
+ return String(value);
+}
+function answerReview(m){
+ if(!m.bodyLoaded||m.metadataError||!m.answer||![2,3].includes(m.answer.version))return '';
+ const source=B.messageIndex.get(m.dkey+'|'+m.replyTo);
+ if(!source||source.metadataError||source.quarantined||!source.question)return '';
+ const q=source.question,a=m.answer;
+ try{messageMetadata(m.h,source.h);BoardFormContract.answer(a,q);}catch{return '';}
+ const initial=BoardFormContract.values(q,BoardFormContract.initial(q));
+ let html=`<details open class="answer-review" data-review-path="${esc(m.path)}"><summary>${esc(t("review_title"))}</summary><p class="hint">${esc(t("review_note"))} <code>${esc(source.file)}</code></p>`;
+ for(const f of q.fields){const v=a.values[f.id];html+=`<section class="answer-review-field"><h4>${esc(f.label)}</h4>`;
+  if(q.version===3&&!BoardFormContract.active(f,a.values)){html+=`<p>${esc(t("review_hidden"))}</p></section>`;continue;}
+  if(f.type!=='editable-table'){html+=`<dl class="answer-review-values"><dt>${esc(t("review_initial"))}</dt><dd>${esc(reviewValue(f,initial[f.id]))}</dd><dt>${esc(t("review_submitted"))}</dt><dd>${esc(reviewValue(f,v))}</dd></dl></section>`;continue;}
+  const original=new Map(f.rows.map(r=>[r.id,r.values])),removed=new Set(v.removed||[]),added=new Map((v.added||[]).map(r=>[r.id,r.values])),patch=new Map(v.changes.map(c=>[c.row+'|'+c.column,c.value]));
+  const order=v.order||f.rows.map(r=>r.id),rows=[...order,...f.rows.filter(r=>removed.has(r.id)).map(r=>r.id)];
+  html+=`<div class="review-table-scroll" role="region" tabindex="0" aria-label="${esc(f.label)}"><table><thead><tr><th scope="col">${esc(t("form_row"))}</th><th scope="col">${esc(t("review_change"))}</th>${f.columns.map(c=>`<th scope="col">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>`;
+  for(const id of rows){const isAdded=added.has(id),isRemoved=removed.has(id),changed=f.columns.some(c=>patch.has(id+'|'+c.id));
+   const kind=isAdded?'added':isRemoved?'removed':changed?'changed':'unchanged';
+   html+=`<tr class="review-${kind}" data-review-row="${esc(id)}"><th scope="row">${esc(id)}</th><td>${esc(t({added:"review_added",removed:"review_removed",changed:"review_changed",unchanged:"review_unchanged"}[kind]))}</td>`;
+   for(const c of f.columns){const before=original.get(id)?.[c.id],after=isAdded?added.get(id)[c.id]:patch.has(id+'|'+c.id)?patch.get(id+'|'+c.id):before;
+    html+='<td>'+(isAdded?`<ins>${esc(reviewValue(c,after))}</ins>`:isRemoved?`<del>${esc(reviewValue(c,before))}</del>`:patch.has(id+'|'+c.id)?`<span class="review-before">${esc(t("review_initial"))}: <del>${esc(reviewValue(c,before))}</del></span><span class="review-after">${esc(t("review_submitted"))}: <ins>${esc(reviewValue(c,after))}</ins></span>`:esc(reviewValue(c,before)))+'</td>';
+   }html+='</tr>';
+  }
+  html+=`</tbody></table></div><p class="review-order">${esc(t("review_order"))}: ${esc(order.join(' → ')||t("review_empty"))}</p></section>`;
+ }
+ return html+'</details>';
+}
+function preserveReviewState(next){const old=new Map([...$('#feed').querySelectorAll('[data-review-path]')].map(el=>[el.dataset.reviewPath,el.open]));for(const el of next.querySelectorAll('[data-review-path]'))if(old.has(el.dataset.reviewPath))el.open=old.get(el.dataset.reviewPath);}
+
+/* Offline authoring: preview is isolated; attachment uses the normal composer. */
+let authoringValid=null,authoringDispose=null,composerStructured=null;
+function toolsBoardKey(){return B?JSON.stringify([formStorageIdentity||boardStorageId,B.layout.dialect]):null;}
+function disposeAuthoring(){try{authoringDispose?.();}finally{authoringDispose=null;}}
+function invalidateAuthoring(){authoringValid=null;disposeAuthoring();$('#structuredPreview').replaceChildren();$('#structuredError').textContent='';$('#structuredAttach').disabled=true;}
+function parseStructured(kind,raw){
+ if(new TextEncoder().encode(raw).length>262144)throw Error(t("tools_input_limit"));
+ const value=kind==='report'?reportValue(raw):kind==='form'?questionValue(raw):null;
+ if(!value||(kind==='form'&&![2,3].includes(value.version)))throw Error(t("authoring_typed_only"));
+ return value;
+}
+function loadAuthoringExample(){const item=AUTHORING_EXAMPLES.find(x=>x.id===$('#structuredExample').value);if(!item)return;$('#structuredKind').value=item.kind;$('#structuredJson').value=JSON.stringify(item.value,null,2);invalidateAuthoring();}
+function closeAuthoring(){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();$('#structuredError').textContent='';$('#structuredDialog').close();}
+function openAuthoring(){if(!$('#structuredJson').value)loadAuthoringExample();if(!$('#structuredDialog').open)$('#structuredDialog').showModal();}
+function validateAuthoring(){
+ invalidateAuthoring();const kind=$('#structuredKind').value,raw=$('#structuredJson').value;
+ try{const value=parseStructured(kind,raw),node=document.createElement('div');node.className=kind==='report'?'board-report':'board-form authoring-form';$('#structuredPreview').append(node);
+  const fail=()=>{$('#structuredError').textContent=t("report_failed");authoringValid=null;$('#structuredAttach').disabled=true;};
+  authoringDispose=kind==='report'?window.BoardReportRenderer.mount(node,value,fail,reportLabels()):window.BoardFormRenderer.mount(node,value,{draft:BoardFormContract.initial(value),eligible:true,busy:false,storageStatus:'',words:{...formWords(),hint:t("authoring_preview_only")},onDraft:()=>{},onSubmit:async()=>t("authoring_preview_only")},fail);
+  if($('#structuredError').textContent)return;
+  authoringValid={kind,raw};$('#structuredError').textContent=t("authoring_valid");$('#structuredAttach').disabled=!B||B.layout.dialect!=='native';
+ }catch(error){disposeAuthoring();$('#structuredPreview').replaceChildren();$('#structuredError').textContent=error.message;}
+}
+function attachStructured(){
+ try{if(!authoringValid||authoringValid.kind!==$('#structuredKind').value||authoringValid.raw!==$('#structuredJson').value)throw Error(t("authoring_validate_first"));if(!B||B.layout.dialect!=='native')throw Error(t("authoring_native"));
+  parseStructured(authoringValid.kind,authoringValid.raw);composerStructured={...authoringValid,board:toolsBoardKey()};updateToolsChrome();closeAuthoring();$('#cBody').focus();
+ }catch(error){$('#structuredError').textContent=error.message;}
+}
+function clearStructuredAttachment(){composerStructured=null;updateToolsChrome();}
+function structuredComposerPayload(){
+ if(!composerStructured)return {};
+ if(composerStructured.board!==toolsBoardKey()||B?.layout.dialect!=='native')throw Error(t("authoring_board_changed"));
+ const value=parseStructured(composerStructured.kind,composerStructured.raw);return composerStructured.kind==='report'?{ui:value}:{question:value};
+}
+function updateToolsChrome(){
+ if($('#draftsDialog').open&&draftManagerBinding&&!sameDraftBinding(draftManagerBinding))closeDraftManager();
+ if(composerStructured&&composerStructured.board!==toolsBoardKey())composerStructured=null;
+ $('#draftsOpen').disabled=!B;$('#structuredAttachment').hidden=!composerStructured;
+ if(composerStructured){const value=parseStructured(composerStructured.kind,composerStructured.raw);$('#structuredAttachedText').textContent=t("authoring_attached",{kind:composerStructured.kind==='report'?t("authoring_report"):t("authoring_form"),title:(value.title||value.prompt).slice(0,120)});}
+ $('#structuredAttach').disabled=!authoringValid||!B||B.layout.dialect!=='native';
+}
+function downloadLocalJson(name,value){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+function wireOfflineTools(){
+ $('#structuredOpen').onclick=openAuthoring;$('#structuredClose').onclick=closeAuthoring;$('#structuredDialog').addEventListener('cancel',event=>{event.preventDefault();closeAuthoring();});$('#structuredDialog').addEventListener('close',()=>{if(!$('#structuredDialog').open){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();}});
+ $('#structuredLoad').onclick=loadAuthoringExample;$('#structuredKind').onchange=invalidateAuthoring;$('#structuredJson').oninput=invalidateAuthoring;$('#structuredValidate').onclick=validateAuthoring;$('#structuredAttach').onclick=attachStructured;$('#structuredRemove').onclick=clearStructuredAttachment;
+ $('#draftsOpen').onclick=openDraftManager;$('#draftsClose').onclick=closeDraftManager;$('#draftImport').onchange=importManagedDraft;$('#draftImportPick').onclick=()=>$('#draftImport').click();$('#draftsDialog').addEventListener('cancel',event=>{event.preventDefault();closeDraftManager();});$('#draftsDialog').addEventListener('close',()=>{if(!$('#draftsDialog').open){draftManagerBinding=null;draftManagerGeneration++;}});
+}
+
+/* Explicit local draft operations. Imports never write a board message. */
+let draftManagerBinding=null,draftManagerGeneration=0,draftManagerBusy=false;
+function closeDraftManager(){draftManagerBinding=null;draftManagerGeneration++;$('#draftsDialog').close();}
+function draftBinding(){return {board:toolsBoardKey(),user:currentUser(),identity:formStorageIdentity};}
+function sameDraftBinding(binding){return !!binding&&binding.board===toolsBoardKey()&&binding.user===currentUser()&&binding.identity===formStorageIdentity;}
+function managedDraft(q,raw){
+ const value=BoardFormContract.restore(q,raw);if(!value)return null;
+ for(const f of q.fields){const v=value[f.id];if(f.options){const ids=new Set(f.options.map(o=>o.id));if(Array.isArray(v)?v.some(id=>!ids.has(id)):v!==null&&!ids.has(v))return null;}
+  if(f.type==='editable-table'&&f.rowOperations){const policy=f.rowOperations,base=new Set(f.rows.map(r=>r.id)),order=v.order,added=order.filter(id=>!base.has(id)),removed=f.rows.filter(r=>!order.includes(r.id));
+   if((added.length&&!policy.add)||(removed.length&&!policy.remove)||order.length<policy.minRows)return null;
+   const expected=f.rows.filter(r=>order.includes(r.id)).map(r=>r.id).concat(added);if(!policy.reorder&&JSON.stringify(order)!==JSON.stringify(expected))return null;
+  }
+ }return value;
+}
+function draftManagerMessage(error){$('#draftManagerResult').textContent=error?.message||String(error);}
+async function openDraftManager(){
+ if(!B){toast(t("e_open_first"));return;}
+ draftManagerBinding=draftBinding();if(!$('#draftsDialog').open)$('#draftsDialog').showModal();await renderDraftManager();
+}
+async function renderDraftManager(){
+ const binding=draftManagerBinding,generation=++draftManagerGeneration;if(!sameDraftBinding(binding))return;
+ $('#draftManagerList').replaceChildren();$('#draftManagerResult').textContent=t("draft_loading");
+ try{await formStorageWrites;if(!sameDraftBinding(binding)||generation!==draftManagerGeneration)return;
+  let bucket={};try{if(binding.identity)bucket=await formDraftBucket(binding.identity);}catch{/* memory-only records are still available */}
+  const rows=[];await readInBatches(B.msgs.filter(m=>!m.metadataError&&!m.quarantined&&[2,3].includes(m.question?.version)),async m=>{
+   const key=JSON.stringify([binding.identity||boardStorageId,binding.user,m.path,m.h.QUESTION]),hash=await shaBytes(new TextEncoder().encode(key)),stored=bucket[hash],memory=formDraftDirty.has(key)?formDrafts.get(key):null,raw=memory||stored?.draft;
+   if(raw&&managedDraft(m.question,raw)){const current=!!stored&&(!memory||formStorageNotes.get(key)==="form_draft_saved");rows.push({m,key,raw,updated:current?stored.updated:undefined,stored:current,hasStored:!!stored});}
+  });
+  if(!sameDraftBinding(binding)||generation!==draftManagerGeneration||!$('#draftsDialog').open)return;
+  rows.sort((a,b)=>(b.updated||0)-(a.updated||0)||a.m.path.localeCompare(b.m.path));
+  for(const row of rows){const element=document.createElement('section');element.className='managed-draft';element.dataset.draftPath=row.m.path;
+   const heading=document.createElement('h3');heading.textContent=row.m.question.prompt;const path=document.createElement('code');path.textContent=row.m.path;const status=document.createElement('p'),stamp=new Date(row.updated);status.className='hint';status.textContent=(row.stored?t("draft_stored"):t("draft_memory"))+(Number.isFinite(stamp.getTime())?' · '+stamp.toISOString():'');
+   const actions=document.createElement('div');actions.className='draft-actions';for(const action of ['export','delete']){const button=document.createElement('button');button.className='btn';button.textContent=action==='export'?t("draft_export"):t("draft_delete");button.onclick=()=>action==='export'?exportManagedDraft(row,binding):deleteManagedDraft(row,binding);actions.append(button);}
+   element.append(heading,path,status,actions);$('#draftManagerList').append(element);
+  }$('#draftManagerResult').textContent=rows.length?t("draft_count",{n:rows.length}):t("draft_none");
+ }catch(error){if(generation===draftManagerGeneration)draftManagerMessage(error);}
+}
+function assertDraftSource(binding,path,definition){
+ if(!sameDraftBinding(binding))throw Error(t("draft_changed"));const m=B?.byPath.get(path);if(!m||m.metadataError||m.quarantined||![2,3].includes(m.question?.version)||m.h.QUESTION!==definition)throw Error(t("draft_source"));return m;
+}
+function exportManagedDraft(row,binding){
+ try{const m=assertDraftSource(binding,row.m.path,row.m.h.QUESTION),raw=formDraftDirty.has(row.key)?formDrafts.get(row.key):row.raw,draft=managedDraft(m.question,raw);if(!draft)throw Error(t("draft_invalid"));
+  const envelope={format:'agent-file-board-draft',version:1,respondent:binding.user,path:m.path,question:m.h.QUESTION,draft};if(new TextEncoder().encode(JSON.stringify(envelope,null,2)+'\n').length>393216)throw Error(t("draft_file_limit"));downloadLocalJson('board-draft-'+m.question.id+'.json',envelope);$('#draftManagerResult').textContent=t("draft_exported");
+ }catch(error){draftManagerMessage(error);}
+}
+async function deleteManagedDraft(row,binding){
+ if(draftManagerBusy)return;draftManagerBusy=true;
+ try{const m=assertDraftSource(binding,row.m.path,row.m.h.QUESTION);if(!window.confirm(t("draft_delete_confirm",{path:m.path})))return;assertDraftSource(binding,m.path,m.h.QUESTION);
+  const previous=structuredClone(formDrafts.get(row.key)||row.raw),persisted=await saveFormDraft(row.key,m.question,BoardFormContract.initial(m.question),true);if(!persisted&&row.hasStored){formDrafts.set(row.key,previous);formDraftDirty.add(row.key);if(sameDraftBinding(binding))resetManagedForm(row.key);throw Error(t("draft_delete_failed"));}if(!sameDraftBinding(binding))return;resetManagedForm(row.key);await renderDraftManager();
+ }catch(error){draftManagerMessage(error);}finally{draftManagerBusy=false;}
+}
+function resetManagedForm(key){for(const[path,saved]of formRoots)if(saved.signature===key){saved.dispose();formRoots.delete(path);}if(B)build({background:true,preserveComposer:true});}
+async function importManagedDraft(event){
+ const file=event.target.files?.[0],binding=draftManagerBinding;event.target.value='';if(!file||draftManagerBusy)return;draftManagerBusy=true;
+ try{if(file.size>393216)throw Error(t("draft_file_limit"));const value=jsonObject(await file.text());
+  if(Object.keys(value).sort().join(',')!=='draft,format,path,question,respondent,version'||value.format!=='agent-file-board-draft'||value.version!==1||typeof value.path!=='string'||value.path.length>1024||typeof value.question!=='string'||value.respondent!==binding?.user)throw Error(t("draft_invalid"));
+  const m=assertDraftSource(binding,value.path,value.question),draft=managedDraft(m.question,value.draft);if(!draft)throw Error(t("draft_invalid"));
+  if(!window.confirm(t("draft_import_confirm",{path:m.path,who:binding.user})))return;
+  assertDraftSource(binding,m.path,value.question);const key=formKey(m);saveFormDraft(key,m.question,draft);await formStorageWrites;if(!sameDraftBinding(binding))return;formDraftLoads.set(key,true);resetManagedForm(key);await renderDraftManager();$('#draftManagerResult').textContent=t("draft_imported");
+ }catch(error){draftManagerMessage(error);}finally{draftManagerBusy=false;}
+}
+
+/* END BUNDLED OFFLINE TOOLS */
+
 /* ===== wiring ===== */
 function wire(){
+  wireOfflineTools();
   $("#verbar").onclick=openUpgrade; $("#upgradeOpen").onclick=openUpgrade;
   $("#upgradeClose").onclick=()=>$("#upgradeDialog").close();
   $("#upgradePreview").onclick=openUpgrade; $("#upgradeApply").onclick=applyUpgrade;

@@ -59,3 +59,10 @@ creates and validates both immutable messages in a temporary board.
   options, cross-field date/budget rules and immutable row operations.
   Requires2.4 CLI/viewer/metadata; see the
   [workflow guide](../../OPENUI.md#conditional-workflows-and-saved-drafts-24).
+
+
+UI2.4.1 can load all five canonical report/form examples directly through
+**Structured message → Load example → Validate and preview**. Attaching a
+validated snapshot uses normal posting, never preview submission. See
+[authoring/review tools](../../WORKBENCH.md), and keep
+[draft export/import JSON](../drafts/README.md) separate from board payloads.

@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -21,7 +21,7 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.4** embeds
+structured interfaces from a defined component library. Board UI **2.4.1** embeds
 it to show **reports, charts, offline forms and editable tables** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.
@@ -32,6 +32,17 @@ V3 forms add conditional fields/options, date/budget comparisons and editable
 row additions/removals/order. Incomplete v2/v3 drafts survive browser reload; Reset
 and successful submission clear them. No backend or extra runtime files are needed.
 The [example files](examples/openui/README.md) are ready to adapt to your board.
+
+## Authoring, answer review and saved drafts
+
+**Structured message** previews validated report/form JSON locally and attaches
+it to the normal composer. Typed answer comparisons show initial/submitted
+values, changed cells, added/removed rows and final order. **Saved drafts** offers
+explicit export/import/delete for the opened board and selected respondent.
+
+See [the full guide and screenshots](WORKBENCH.md). All controls run offline in
+this same HTML file; preview/import never submits an answer. The complete demo
+includes a fictional agent/human/agent cycle in reports/T015.
 
 ## Stable thread titles and posting guidance
 

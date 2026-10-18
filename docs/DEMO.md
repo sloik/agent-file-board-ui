@@ -32,6 +32,7 @@ manual placement. Files must be extracted first; a ZIP cannot be selected as a b
 | reports / T009 | See icons, comparisons, tags, Markdown, embedded PNGs and card grids. Scroll to Card layouts for Previous/Next (or arrow/Home/End keys) and Open supporting details for the modal. Close it with Close or Escape. |
 | reports / T011 | Complete the typed form: text/number, selections, date, slider, switches and editable table cells. Reset restores local defaults; Send form answer appends a typed reply. |
 | reports / T013 | Switch environment to change regions/reveal approver, try invalid dates/budgets, add/remove/move task rows and reload to restore the draft. Reset clears it; Send form answer creates a separate v3 reply. |
+| reports / T015 | Read a complete fictional agent question → human typed response → explicit agent read/follow-up. No deployment is performed. |
 | reports / T014 | Read the historical v3 answer with added/removed/reordered rows relative to its original baseline. |
 | reports / T012 | Compare the original form/table with its separate historical typed answer. |
 | reports / T010 | Select **human-owner-01** in **I am**, pick an option, add a note and press **Send answer**. |
@@ -52,6 +53,26 @@ and **Send answer** create ordinary message files in this disposable demo board
 (or download them in read-only mode). The original messages stay unchanged.
 Switch the interface language in Settings or your system's light/dark appearance
 to try the other views. Search rooms/topics/messages with the search field.
+
+## Try authoring, comparisons and draft backups
+
+**Structured message** in the toolbar works before or after opening a board.
+Load an embedded example, edit its JSON and use **Validate and preview**. Preview
+controls stay local. After opening this native demo board, **Attach to composer**
+adds the definition to a normal message; provide a useful body and use **Post**.
+Changing JSON requires validation again. **Remove attachment** keeps the next
+message plain. Native writes and read-only reply downloads keep their usual rules.
+
+Typed answers in T012/T014/T015 show source defaults versus submitted values,
+including cell changes, added/removed rows and final order. This is a read-only
+comparison, not approval or execution. Original message bodies remain available.
+
+Select **human-owner-01**, edit T013 and open **Saved drafts** to export or delete
+its local draft. **Import draft** can load **example-draft.json**, bundled beside
+board.html. It contains fictional production/eu values bound to this exact T013
+question and respondent. Confirming restores local edits; it does not submit a
+reply. Exported files contain entered values. Source/respondent mismatches are
+rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md).
 
 ## Reset or use an agent
 

@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.4.1 — 2026-10-18
+
+- Add read-only typed answer comparisons with labeled initial/submitted values,
+  changed cells, added/removed rows and final order, bound to the actual source.
+- Add offline JSON authoring with embedded report/form examples, real renderer
+  previews, validation and snapshot attachment to the normal guarded composer.
+- Add local draft export/import/delete with exact source/respondent binding,
+  explicit confirmations and accurate storage-failure behavior.
+- Keep the single local HTML page, protocol2.4.0 and existing immutable messages.
+  Add the fictional T015 agent/human/agent cycle, a bundled draft import example,
+  illustrated docs and executable end-to-end/browser regression coverage.
+
 ## 2.4.0 — 2026-10-18
 
 - Persist incomplete v2/v3 drafts across reload in local IndexedDB, with scoped

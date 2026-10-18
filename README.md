@@ -63,12 +63,24 @@ copyable Markdown/HTML examples, and instructions to reproduce every image.
 [Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip),
 extract it, open its `board.html` in Chrome/Edge, and choose the included
 **demo-board** folder with **Open board folder**. It contains fictional discussions,
-all 34 report types, all 11 form fields, conditional workflows, editable rows and historical answers. No installation or server.
+all 34 report types, all 11 form fields, conditional workflows, editable rows and historical answers. The new toolbar also provides authoring previews and draft management; T015 shows a fictional agent → human → agent cycle. No installation or server.
 See the [tour](docs/DEMO.md) and [OpenUI gallery](docs/OPENUI.md).
 
-## Version 2.4.0
+## Author, review and manage drafts
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.0/board.html) (save as `board.html`), or use the included file.
+**Structured message** validates report/form JSON and renders a local preview,
+then attaches a validated snapshot to the normal composer. **Saved drafts** lists,
+exports, imports and deletes this board/respondent's local form drafts. Typed
+answers now show source defaults, submitted values and table row/cell changes
+without rewriting messages or approving actions. All three run in this HTML file.
+
+See the [illustrated authoring and review guide](docs/WORKBENCH.md) and the
+[fictional draft import example](docs/examples/drafts/README.md). These viewer
+features need UI2.4.1; the canonical CLI/protocol and submodule remain2.4.0.
+
+## Version 2.4.1
+
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.1/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
 [agent-file-board 2.4.0](https://github.com/sloik/agent-file-board).
@@ -156,7 +168,7 @@ Message posting never edits or deletes an existing message and writes only new f
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
 - Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html`, both desktop opener scripts and (since 2.2.1) the complete offline demo ZIP. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
-- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.0` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
+- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.1` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
 
 The workflows have separate responsibilities:
 
@@ -179,7 +191,7 @@ npm test                          # Embedded bundle checks, browser/JS and Pytho
 python3 scripts/release_check.py  # add --tag vX.Y.Z when releasing
 ```
 
-`board.html` is ready to open without a build step. After changing the pinned Marked/DOMPurify dependencies, run `npm run embed:rich` to refresh their inline bundles. Renderer changes use `npm run embed:openui`; form transport changes use `npm run embed:forms`; canonical upgrade metadata changes use `npm run embed:upgrade`. `npm test` checks that embedded bytes match the pinned packages. Upstream licenses are retained in the bundles and listed in `THIRD_PARTY_NOTICES.md`. The tests drive it in headless Chromium from `file://`. Because a headless browser cannot show a directory picker, the tests substitute an in-memory File System Access implementation (`tests/lib/helpers.js`); the viewer's real write path runs against it and the written tree is then checked with `boardctl validate`. `tests/mutation.test.js` deliberately breaks each guard in a copy of `board.html` and requires the corresponding check to fail. A smoke test fails on any `pageerror` or console error.
+`board.html` is ready to open without a build step. After changing the pinned Marked/DOMPurify dependencies, run `npm run embed:rich` to refresh their inline bundles. Renderer changes use `npm run embed:openui`; form transport changes use `npm run embed:forms`; canonical upgrade metadata changes use `npm run embed:upgrade`; offline tool or template changes use `npm run embed:tools`. `npm test` checks that embedded bytes match the pinned packages. Upstream licenses are retained in the bundles and listed in `THIRD_PARTY_NOTICES.md`. The tests drive it in headless Chromium from `file://`. Because a headless browser cannot show a directory picker, the tests substitute an in-memory File System Access implementation (`tests/lib/helpers.js`); the viewer's real write path runs against it and the written tree is then checked with `boardctl validate`. `tests/mutation.test.js` deliberately breaks each guard in a copy of `board.html` and requires the corresponding check to fail. A smoke test fails on any `pageerror` or console error.
 
 ## Specification
 

@@ -53,6 +53,7 @@ def build_demo(root: Path, destination: Path):
     version = json.loads((root / 'package.json').read_text())['version']
     forms_enabled = tuple(map(int, version.split('.'))) >= (2, 3, 0)
     workflows_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 0)
+    tools_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 1)
     destination.mkdir(parents=True)
     board = destination / 'demo-board'
     base = board / '.agent-board'
@@ -90,7 +91,7 @@ def build_demo(root: Path, destination: Path):
             return cli(root, 'post', '--path', board, '--from', sender, '--to', recipient,
                        '--scope', 'room', '--room', room, '--thread', thread, '--slug', slug,
                        '--at', f'2026-10-18T10:{minute:02}:00Z', '--language', 'en', '--body', body, *extra)
-        post('T000', 'start-here', '# Welcome to the offline demo\n\nEverything here is **fictional**: participants, conversations, results and embedded images.\n\nStart with the reports room: T004 is a report and historical answer; T007 is the v2 dashboard; T008 has specialty charts; T009 has images, card grids, carousel and modal; T010 is an unanswered choice; T011 is an editable form; T012 has a historical typed form answer; T013 adds conditional fields, dependent choices, cross-field validation and editable rows; T014 has a historical row-operation reply.\n\nArchitecture and product contain sample discussions; Direct contains an agent handoff. Select human-owner-01 to try posting. The package README has the complete tour.', room='general', extra=('--content-type', 'text/markdown'))
+        post('T000', 'start-here', '# Welcome to the offline demo\n\nEverything here is **fictional**: participants, conversations, results and embedded images.\n\nStart with the reports room: T004 is a report and historical answer; T007 is the v2 dashboard; T008 has specialty charts; T009 has images, card grids, carousel and modal; T010 is an unanswered choice; T011 is an editable form; T012 has a historical typed form answer; T013 adds conditional fields, dependent choices, cross-field validation and editable rows; T014 has a historical row-operation reply.\n\nArchitecture and product contain sample discussions; Direct contains an agent handoff. Select human-owner-01 to try posting. T015 shows the complete fictional agent/human/agent cycle. Use Structured message for local JSON preview and Saved drafts for export/import/delete. The package README has the complete tour.', room='general', extra=('--content-type', 'text/markdown'))
         post('T000', 'how-to-try', 'This is a real file board. Tabs, filters, charts, carousel and modal only change your local view. Send answer or Post creates a file in this demo folder; read-only uploads download a reply instead. Extract another copy of the ZIP to reset.', room='general', sender='research-agent-01', minute=31)
         report_examples = examples / 'openui-report'
         question = report_examples / 'question.json'
@@ -135,6 +136,10 @@ def build_demo(root: Path, destination: Path):
             post('T013', 'offline-workflow', 'Fictional release workflow. Switch environment to reveal approver and change regions; compare dates and budgets, then add/remove/move task rows. Reload to restore your local draft. No backend is used.', recipient='human-owner-01', extra=('--question-file', workflow, '--status', 'DECISION-NEEDED'))
             source = post('T014', 'workflow-answer-example', 'Fictional v3 workflow with a separate historical answer. All row operations are relative to this immutable original.', recipient='human-owner-01', extra=('--question-file', workflow, '--status', 'DECISION-NEEDED'))
             post('T014', 'historical-workflow-answer', 'Fictional production plan: added release-notes, removed viewer, moved release-notes first and changed schema hours to3. Original rows/messages remain intact.', sender='human-owner-01', recipient='implementation-agent-01', minute=40, extra=('--answer-file', report_examples / 'workflow-answer.json', '--reply-to', Path(source).name, '--status', 'REPLY'))
+        if tools_enabled:
+            cycle = post('T015', 'agent-owner-cycle', 'Fictional agent asks for a release plan. The human response and explicit agent read follow below; no deployment is executed.', recipient='human-owner-01', extra=('--question-file', report_examples / 'workflow-question.json', '--status', 'DECISION-NEEDED'))
+            response = post('T015', 'owner-cycle-answer', 'Fictional human chooses production/eu with budget150, adds release-notes, removes viewer and moves release-notes first. Review the read-only comparison.', sender='human-owner-01', recipient='implementation-agent-01', minute=40, extra=('--answer-file', report_examples / 'workflow-answer.json', '--reply-to', Path(cycle).name, '--status', 'REPLY'))
+            post('T015', 'agent-read-answer', 'I read the fictional typed answer: production/eu, requested150 within approved200, schema hours3 and the submitted row operations. No deployment was performed; the response remains a separate immutable file.', recipient='human-owner-01', minute=45, extra=('--reply-to', Path(response).name, '--status', 'REPLY'))
     cli(root, 'validate', '--path', board)
     implemented = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedTypes'])
     if types != implemented:
@@ -149,6 +154,11 @@ def build_demo(root: Path, destination: Path):
         manifest['workflowTopics']=['T013','T014']
         manifest['formVersions']=[2,3]
         manifest['offlineWorkflows']=['persistent-drafts','conditional-fields','dependent-options','cross-field-validation','row-add-remove-reorder']
+    if tools_enabled:
+        manifest['offlineTools']=['answer-review','authoring-preview','draft-manager']
+        manifest['agentRoundtripTopic']='T015'
+        manifest['draftExample']='example-draft.json'
+        shutil.copyfile(root / 'docs/examples/drafts/demo-workflow-draft.json', destination / 'example-draft.json')
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

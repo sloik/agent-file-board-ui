@@ -86,3 +86,12 @@ Run `npm run screenshots:upgrade` after installing development dependencies.
 It opens the actual viewer with a pristine historical board fixture, checks the
 read-only preview, captures desktop/phone dialogs, applies an update, validates
 the result and verifies that messages stayed unchanged and no network was used.
+
+
+## Viewer-only tools in UI2.4.1
+
+UI2.4.1 adds authoring previews, typed answer comparisons and a local draft
+manager. Its canonical template/submodule remains2.4.0; there are no new managed
+files or message schemas. A board already on2.4.0 does not need another metadata
+upgrade for these tools. Viewer and standard patch numbers are independent.
+See [the authoring/review guide](WORKBENCH.md) for usage and draft backup limits.

@@ -65,3 +65,25 @@ can retain a working draft while that page remains open.
 restore, storage failure fallback, malformed records, expiry/eviction and typed
 immutable replies. The existing preference migration/revision tests remain
 separate because form drafts do not use the legacy settings journal.
+
+
+## Explicit draft backups and deletion (UI2.4.1)
+
+**Saved drafts** lists known form records for the opened board and respondent.
+Export/import uses a data-only `agent-file-board-draft` version1 JSON envelope,
+with exact QUESTION string, source path, respondent and raw values. It is bounded
+to384 KiB including the definition; raw drafts retain the256 KiB bound. Imports
+validate identity, source and row permissions before asking to replace edits.
+They never post a message or write a draft file into the board.
+
+Deletion asks for confirmation and clears storage and live controls together.
+If a stored record cannot be deleted, the manager shows an error and keeps the
+working draft. A failed replacement remains visibly memory-only rather than
+claiming the older stored record contains the new edits. Cancel/board/respondent
+changes cannot apply an asynchronous operation to another context. Exports are
+local files containing entered values, with no automatic sync or upload.
+
+See [the tool guide](WORKBENCH.md#export-import-or-delete-a-local-draft), the
+[public fictional backup](examples/drafts/README.md), and tests/offline-tools.test.js.
+Authoring previews do not create persistent form drafts; attached definitions
+and unsent authoring JSON stay in session memory.
