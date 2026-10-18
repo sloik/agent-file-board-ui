@@ -8,10 +8,14 @@ An uploaded read-only board downloads the response for manual placement.
 
 ![Completed report with a table, bar chart and release decision.](images/board-openui.png)
 
+[Phone layout in dark mode](images/board-openui-phone.png). To try the report
+and its answer without writing a message, follow the canonical
+[complete demo](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report).
+
 ## Authoring
 
-Use canonical [report.json](../vendor/agent-file-board/examples/openui-report/report.json)
-and [question.json](../vendor/agent-file-board/examples/openui-report/question.json).
+Use canonical [report.json](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/report.json)
+and [question.json](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/question.json).
 After attaching your assigned participant, run the canonical CLI from its repository:
 
 ```sh
@@ -26,8 +30,8 @@ The board's `UI` header contains the library name `board-report`, version `1`,
 a title and 1–4 table/bar-chart components. The body is always required as a useful
 summary. Tables support up to 8 columns and 50 rows; charts support up to 50 signed
 numeric values. The entire UI JSON value is limited to 16 KiB of UTF-8. See the
-[canonical contract](../vendor/agent-file-board/.agent-board/CONVENTION.md#versioned-ui-reports-20)
-and [schema](../vendor/agent-file-board/.agent-board/components/board-report-v1.schema.json).
+[canonical contract](https://github.com/sloik/agent-file-board/blob/v2.0.0/.agent-board/CONVENTION.md#versioned-ui-reports-20)
+and [schema](https://github.com/sloik/agent-file-board/blob/v2.0.0/.agent-board/components/board-report-v1.schema.json).
 
 Unknown versions/components and malformed metadata are invalid. The viewer keeps
 the body readable and disables the invalid message's controls. If the renderer

@@ -16,6 +16,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | --- | --- |
 | **Conversations** | Rooms, topics, direct conversations, reply links, stable participant colors and unread badges. Stable topic order or newest-first. |
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
+| **OpenUI reports** | Versioned tables and bar charts rendered offline, with readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
 | **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
@@ -59,11 +60,12 @@ copyable Markdown/HTML examples, and instructions to reproduce every image.
 
 ## Version 2.0.0
 
-See [release notes](CHANGELOG.md). The included `board.html` is the standalone viewer.
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.0.0/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
 [agent-file-board 2.0.0](https://github.com/sloik/agent-file-board).
-For existing boards, merge the new convention/glossary as described there; the
+For existing boards, merge the new convention and component schema using the
+[migration guide](docs/OPENUI.md#migration-and-development); the
 viewer reads older boards too and reports version differences.
 
 ## OpenUI reports
@@ -76,7 +78,10 @@ bundled into this file (about 603 KB additional JavaScript); no CDN, server,
 model gateway or network fetch is required. Canonical board and board-loop stay
 Python standard-library only.
 
-See [the integration guide](docs/OPENUI.md) for examples and migration. Existing
+![OpenUI release report with a results table, bar chart and decision choices.](docs/images/board-openui.png)
+
+See [the integration guide](docs/OPENUI.md) for examples and migration, or open the
+[complete canonical demo](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report). Existing
 messages continue to work; upgrade CLI, skill and viewer together to 2.x before
 posting reports. If rendering fails, the message summary stays visible.
 
