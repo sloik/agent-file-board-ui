@@ -8,6 +8,16 @@ These are real Chromium screenshots of `board.html` rendering the pinned
 The session, rich-question and HTML examples add documentation-only records to a
 temporary copy; the original sample and standard remain unchanged.
 
+## Understand versions and update a board
+
+![Version dialog showing the selected board and managed-file preview.](images/board-upgrade.png)
+
+Click the version display or **Versions and updates** in the mismatch warning.
+The dialog explains the viewer/selected-board distinction and offers a preview,
+explicit direct updates in writable Chromium, backups and CLI instructions.
+Customized protocol files and newer boards require manual action. Messages,
+settings and identities remain intact. See [all upgrade examples and recovery](UPGRADING.md).
+
 ## Completed OpenUI reports
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering

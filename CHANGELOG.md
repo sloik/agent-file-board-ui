@@ -1,5 +1,11 @@
 # Release notes
 
+## 2.0.1 — 2026-10-18
+
+- Add **Versions and updates**, linked from the version display and mismatch warning. Explain viewer vs selected-board versions and why Chrome refresh does not upgrade board metadata.
+- Preview and explicitly update supported pristine native boards in writable Chromium using embedded canonical files, exact hash checks, backups and failure/recovery reporting. Preserve messages, identities, settings and custom guidance; block customized/newer/unknown protocol files.
+- Include CLI preview/apply/online-check instructions, English/Polish copy, examples and screenshots. Browser remains offline; no SDK added to canonical.
+
 ## 2.0.0 — 2026-10-18
 
 - Render completed versioned board reports with embedded OpenUI, a custom table and signed bar-chart library, and theme-aware layouts. Single-file/offline operation is preserved.

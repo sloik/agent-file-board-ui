@@ -202,6 +202,10 @@ ordinary choice drafts and caret restoration use the existing board logic.
 
 ## Migration and development
 
+For existing boards, use the viewer’s **Versions and updates** preview or
+`boardctl upgrade` from a current canonical checkout. See [upgrade and recovery](UPGRADING.md)
+for direct browser updates, CLI commands, custom metadata and backups.
+
 Upgrade canonical CLI, board-loop and viewer to **2.x together** before posting
 UI reports. Merge the convention and component schema into an existing board,
 preserving project guidance, identities, settings and immutable messages. Existing
