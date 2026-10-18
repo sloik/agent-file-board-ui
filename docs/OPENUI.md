@@ -1,7 +1,7 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.4.2 uses its embedded renderer
+defined component library. Agent File Board UI 2.4.3 uses its embedded renderer
 for report cards, charts, offline forms and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
@@ -13,7 +13,7 @@ placement.
 ## Try the examples live, offline
 
 **[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)**
-([v2.4.2](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.2/agent-file-board-demo.zip)).
+([v2.4.2](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.3/agent-file-board-demo.zip)).
 It includes `board.html`, a visible `demo-board` folder and a short README tour.
 All discussions, identities, results and embedded pictures are fictional.
 
@@ -579,3 +579,15 @@ The screenshot batches are independent and use synthetic temporary boards:
 
 These payload and feature version labels describe minimum support, not separate
 current releases. The current 2.3 viewer renders all of them.
+
+## Recent locations (UI2.4.3)
+
+**Recent locations** keeps up to 20 successful board opens. Last open wins:
+existing native folders move to the top using actual handle identity, including
+project/.agent-board aliases. Same-name folders remain separate. Upload entries
+retain metadata only and require choosing files again. Startup follows only the
+latest entry; an upload never silently reopens an older writable folder.
+Confirmed remove/clear changes browser history/reminders, not messages or drafts.
+Storage failures show session-only history. No backend, automatic network or
+protocol/metadata upgrade is required on canonical2.4.0. See the
+[illustrated location guide](LOCATIONS.md).

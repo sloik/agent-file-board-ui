@@ -1,6 +1,6 @@
 # Author, review and manage drafts offline
 
-UI **2.4.2** provides these tools to the same local `board.html`. No server, account,
+UI **2.4.3** provides these tools to the same local `board.html`. No server, account,
 model, CDN or extra runtime file is required. The canonical contract and CLI
 remain **2.4.0**: these are viewer features, with no new message format.
 
@@ -141,7 +141,7 @@ are synchronized automatically between browsers or devices.
 
 ## Try the complete demo
 
-[Download the offline demo](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.2/agent-file-board-demo.zip),
+[Download the offline demo](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.3/agent-file-board-demo.zip),
 extract it, open `board.html`, and select `demo-board`.
 
 1. Open **reports → T014** to inspect a historical v3 answer comparison.
@@ -178,3 +178,15 @@ the CLI validates/discovers the response, and an agent reads its named values
 and posts an explicit follow-up. It checks immutable source/reply bytes and
 zero external requests. This verifies wiring on fictional data; it is not a
 claim of owner adoption or permission to act on a live project.
+
+## Recent locations (UI2.4.3)
+
+**Recent locations** keeps up to 20 successful board opens. Last open wins:
+existing native folders move to the top using actual handle identity, including
+project/.agent-board aliases. Same-name folders remain separate. Upload entries
+retain metadata only and require choosing files again. Startup follows only the
+latest entry; an upload never silently reopens an older writable folder.
+Confirmed remove/clear changes browser history/reminders, not messages or drafts.
+Storage failures show session-only history. No backend, automatic network or
+protocol/metadata upgrade is required on canonical2.4.0. See the
+[illustrated location guide](LOCATIONS.md).

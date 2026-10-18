@@ -113,3 +113,22 @@ separate recovery. Backups contain entered values; nothing is synchronized or
 uploaded. Answer-draft retention/scoping above is unchanged. See
 [authoring tools](WORKBENCH.md#keep-unfinished-authoring-work) and
 `tests/authoring-builder.test.js` for reload/failure/import/attachment controls.
+
+## Recent locations (UI2.4.3)
+
+`location-history-v1` stores up to 20 opens in most-recent-first commit order.
+Native records retain the latest picker handle, actual board-base handle, UUID,
+name and opened time; isSameEntry establishes identity. Upload records retain
+only UUID/name/time and the existing snapshot fingerprint, never File objects
+or message bodies. Identical uploads deduplicate; files must be reselected.
+
+History and the legacy lastDir pointer commit atomically. A latest upload sets
+lastDir to null and offers reselection. Existing lastDir migrates once. Writes
+serialize and UUID revision checks retry cross-tab conflicts. Opening the dialog
+reads committed history. Recency never sorts by wall-clock time.
+
+Failed saves retain session history with a visible notice; failed removal keeps
+records and reports failure. Confirmed removal/clear preserves current view,
+board files, drafts and permissions. The separate native identity registry for
+read markers/drafts remains intact. See [the guide](LOCATIONS.md) and
+`tests/locations.test.js`. Nothing is synchronized or uploaded.

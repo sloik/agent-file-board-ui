@@ -72,3 +72,15 @@ Form definitions can also be edited with **Visual form builder**, including all
 recovers unfinished JSON locally and offers named snapshots/export/import.
 See the [authoring backup example](../drafts/authoring-workflow.json) and
 [workflow trial](../../LOCAL-WORKFLOW.md). Actual human adoption is unverified.
+
+## Recent locations (UI2.4.3)
+
+**Recent locations** keeps up to 20 successful board opens. Last open wins:
+existing native folders move to the top using actual handle identity, including
+project/.agent-board aliases. Same-name folders remain separate. Upload entries
+retain metadata only and require choosing files again. Startup follows only the
+latest entry; an upload never silently reopens an older writable folder.
+Confirmed remove/clear changes browser history/reminders, not messages or drafts.
+Storage failures show session-only history. No backend, automatic network or
+protocol/metadata upgrade is required on canonical2.4.0. See the
+[illustrated location guide](../../LOCATIONS.md).

@@ -95,3 +95,15 @@ manager. Its canonical template/submodule remains2.4.0; there are no new managed
 files or message schemas. A board already on2.4.0 does not need another metadata
 upgrade for these tools. Viewer and standard patch numbers are independent.
 See [the authoring/review guide](WORKBENCH.md) for usage and draft backup limits.
+
+## Recent locations (UI2.4.3)
+
+**Recent locations** keeps up to 20 successful board opens. Last open wins:
+existing native folders move to the top using actual handle identity, including
+project/.agent-board aliases. Same-name folders remain separate. Upload entries
+retain metadata only and require choosing files again. Startup follows only the
+latest entry; an upload never silently reopens an older writable folder.
+Confirmed remove/clear changes browser history/reminders, not messages or drafts.
+Storage failures show session-only history. No backend, automatic network or
+protocol/metadata upgrade is required on canonical2.4.0. See the
+[illustrated location guide](LOCATIONS.md).

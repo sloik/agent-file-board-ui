@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.4.3 — 2026-10-19
+
+- Add Recent locations: up to 20 browser-local entries with last-successful-open
+  wins ordering, actual native identity and project/.agent-board deduplication.
+- Reopen native folders with normal permission/presence checks; uploads retain
+  metadata only and require explicit file reselection.
+- Migrate the old saved folder, follow the latest entry at startup, and provide
+  confirmed remove/clear with atomic persistence, cross-tab retries and visible
+  session-only fallback. Failed/cancelled opens never promote history.
+- Update docs, demo, desktop/phone captures and regression coverage. Keep
+  one offline HTML file and canonical2.4.0; no backend or network calls.
+
 ## 2.4.2 — 2026-10-18
 
 - Add visual form authoring for all11 field kinds, options/defaults, v3 conditions,

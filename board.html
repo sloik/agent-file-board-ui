@@ -290,7 +290,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .board-form .form-error-space{visibility:hidden}.board-form .form-field-error{margin:4px 0;font-size:.9em}.board-form .form-table-scroll tbody th{white-space:nowrap;min-width:72px}
 
 /* Offline authoring, answer review and local draft management. */
-#structuredDialog,#draftsDialog{width:min(1050px,94vw);max-height:90vh;box-sizing:border-box;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+#locationsDialog,#structuredDialog,#draftsDialog{width:min(1050px,94vw);max-height:90vh;box-sizing:border-box;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
 .tool-fields{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:12px 0}.tool-fields label{display:flex;flex-direction:column;gap:5px}
 #structuredJson{display:block;width:100%;box-sizing:border-box;min-height:220px;resize:vertical;font-family:ui-monospace,monospace;padding:10px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px}
 #structuredPreview{margin-top:16px;overflow-wrap:anywhere}#structuredPreview:empty{display:none}.authoring-form .form-storage-status:empty{display:none}.tool-result{white-space:pre-wrap;overflow-wrap:anywhere}.tool-actions,.draft-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
@@ -310,6 +310,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .builder-option,.builder-row,.builder-rule{padding:8px;border-bottom:1px solid var(--line)}
 #formBuilder summary{overflow-wrap:anywhere;cursor:pointer}
 
+#locationsDialog{width:min(650px,94vw)}.location-entry{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.location-entry p{margin:5px 0}
 </style>
 </head>
 <body>
@@ -328,6 +329,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
   <button class="btn" id="draftsOpen" data-i18n="draft_open" disabled></button>
   <button class="btn" id="gear" data-i18n-title="settings_title">&#9881;</button>
   <button class="btn primary" id="open"></button>
+  <button class="btn" id="locationsOpen" data-i18n="locations_open"></button>
   <input type="file" id="fallback" webkitdirectory multiple hidden>
 </div>
 <div class="pbar off" id="pbar"><i></i></div>
@@ -391,6 +393,9 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
     </div>
   </section>
 </div>
+<dialog id="locationsDialog" aria-labelledby="locationsHeading"><div class="vocabulary-head"><h2 id="locationsHeading" data-i18n="locations_open"></h2><button class="btn" id="locationsClose" data-i18n="vocabulary_close"></button></div>
+ <p class="hint" data-i18n="locations_note"></p><p id="locationsStorage" class="hint" role="status"></p><p id="locationsResult" class="tool-result" role="status"></p><div id="locationsList"></div><button class="btn" id="locationsClear" data-i18n="locations_clear"></button>
+</dialog>
 <dialog id="structuredDialog" aria-labelledby="structuredHeading">
  <div class="vocabulary-head"><h2 id="structuredHeading" data-i18n="authoring_open"></h2><button class="btn" id="structuredClose" data-i18n="vocabulary_close"></button></div>
  <p class="hint" data-i18n="authoring_note"></p>
@@ -1081,7 +1086,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.2";
+const VIEWER_VERSION = "2.4.3";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1259,6 +1264,24 @@ const STRINGS = {
   builder_form_only:"Choose a valid form v2/v3 or create a new form to use the builder.",
   builder_new_prompt:"Describe the decision to make.",
   builder_submit:"Send answer",
+  locations_loading:"Loading recent locations…",
+  locations_open:"Recent locations",
+  locations_note:"Most recently opened first, up to 20. Reopening a native board moves it to the top. Folder names are shown; browsers do not expose absolute paths. Uploads require choosing files again; identical snapshots share an entry.",
+  locations_local:"History saved locally in this browser. No board files are stored here.",
+  locations_memory:"History is available for this session only; browser storage could not save it.",
+  locations_empty:"No recent locations. Open a board folder to start.",
+  locations_native:"Folder access",
+  locations_upload:"Uploaded snapshot — choose again",
+  locations_previous:"Previously opened",
+  locations_reopen:"Open location",
+  locations_choose:"Choose folder again",
+  locations_remove:"Remove from history",
+  locations_remove_confirm:"Remove {name} from local history? Its files and current view are kept.",
+  locations_clear:"Clear location history",
+  locations_clear_confirm:"Clear saved locations and the last-folder reminder? Board files and current view are kept.",
+  locations_delete_failed:"Could not remove saved history. Existing records were kept.",
+  locations_changed:"History changed in another tab. Try again.",
+  locations_opening:"Opening location…",
   authoring_open:"Structured message",
   authoring_note:"Build a form visually or edit report/form JSON, validate and try it locally. Attach a validated snapshot to the composer, write a useful body, then use Post. Preview never posts a message.",
   authoring_kind:"Payload kind",
@@ -1521,6 +1544,24 @@ const STRINGS = {
   builder_form_only:"Wybierz poprawny formularz v2/v3 lub utwórz nowy, aby użyć edytora.",
   builder_new_prompt:"Opisz decyzję do podjęcia.",
   builder_submit:"Wyślij odpowiedź",
+  locations_loading:"Wczytywanie ostatnich lokalizacji…",
+  locations_open:"Ostatnie lokalizacje",
+  locations_note:"Najnowsze otwarcia na górze, maksymalnie 20. Ponowne otwarcie tablicy przenosi ją na górę. Widoczne są nazwy folderów; przeglądarka nie ujawnia pełnych ścieżek. Przesłane foldery trzeba wybrać ponownie; identyczne kopie współdzielą wpis.",
+  locations_local:"Historia zapisana lokalnie w tej przeglądarce. Nie przechowuje plików tablicy.",
+  locations_memory:"Historia jest dostępna tylko w tej sesji; przeglądarka nie mogła jej zapisać.",
+  locations_empty:"Brak ostatnich lokalizacji. Otwórz folder tablicy, aby rozpocząć.",
+  locations_native:"Dostęp do folderu",
+  locations_upload:"Przesłana kopia — wybierz ponownie",
+  locations_previous:"Otwarty wcześniej",
+  locations_reopen:"Otwórz lokalizację",
+  locations_choose:"Wybierz folder ponownie",
+  locations_remove:"Usuń z historii",
+  locations_remove_confirm:"Usunąć {name} z lokalnej historii? Pliki i bieżący widok pozostaną.",
+  locations_clear:"Wyczyść historię lokalizacji",
+  locations_clear_confirm:"Usunąć zapisane lokalizacje i przypomnienie o ostatnim folderze? Pliki tablic i bieżący widok pozostaną.",
+  locations_delete_failed:"Nie udało się usunąć zapisanej historii. Zachowano istniejące wpisy.",
+  locations_changed:"Historia zmieniła się w innej karcie. Spróbuj ponownie.",
+  locations_opening:"Otwieranie lokalizacji…",
   authoring_open:"Wiadomość strukturalna",
   authoring_note:"Utwórz formularz wizualnie lub edytuj JSON raportu albo formularza, sprawdź i wypróbuj lokalnie. Dołącz sprawdzoną definicję do edytora, napisz opis i użyj Wyślij. Podgląd nie wysyła wiadomości.",
   authoring_kind:"Rodzaj danych",
@@ -2066,12 +2107,8 @@ async function subDir(dir, name){ try{ return await dir.getDirectoryHandle(name)
 async function readFromHandle(preserve = true){
   if(!dirHandle) return false;
   const root=dirHandle, generation=++readGeneration, previousFiles=messageFiles, presenceRevision=humanPresenceRevision;
-  let base = await subDir(root, ".agent-board");
-  if(!base){
-    const hit = (await subDir(root,"rooms")) || (await subDir(root,"direct")) || (await subDir(root,"pokoje")) || await readText(root,"participants.json");
-    if(!hit){ toast(t("e_no_board")); return false; }
-    base = root;
-  }
+  const base=await boardBase(root);
+  if(!base){toast(t("e_no_board"));return false;}
   const files = [], dirs = [], nextFiles = new Map();
   for(const n of ["config.json","participants.json","CONVENTION.md","GLOSSARY.md","time-corrections.txt","korekty-czasu.txt"]){
     let txt = await readText(base, n);
@@ -2152,6 +2189,7 @@ async function readFromHandle(preserve = true){
   return true;
 }
 async function readFromInput(list){
+  if(!list.length)return false;
   const generation=++readGeneration;
   const segs = f => (f.webkitRelativePath||f.name).split("/");
   const hasAB = list.some(f=>segs(f)[1]===".agent-board");
@@ -2180,6 +2218,8 @@ async function readFromInput(list){
   formStorageIdentity="upload-"+await shaBytes(new TextEncoder().encode(JSON.stringify([name,files.map(f=>[f.path,f.size??null,f.lastModified??null,f.text??f.parsed?.h??null]).sort((a,b)=>a[0].localeCompare(b[0]))])));
   if(generation!==readGeneration)return;
   loadBoard(model);
+  if(model.msgs.length || files.some(f=>["config.json","participants.json","CONVENTION.md"].includes(f.path)))await rememberUploadLocation(name,formStorageIdentity);
+  return true;
 }
 function loadBoard(model, background = false){
   B = model; bodySearch={model:null,query:"",pending:false,hits:new Set()};
@@ -3397,28 +3437,30 @@ async function boardIdentity(h){
     const id=crypto.randomUUID(); boards.push({handle:h,id}); await idbSet("readBoards",boards); return id;
   }catch(e){ return "session-"+crypto.randomUUID(); }
 }
+async function boardBase(root){
+  const nested=await subDir(root,".agent-board");if(nested)return nested;
+  const hit=(await subDir(root,"rooms"))||(await subDir(root,"direct"))||(await subDir(root,"pokoje"))||await readText(root,"participants.json");
+  return hit?root:null;
+}
 async function useDir(h){
+  if(!await boardBase(h)){toast(t("e_no_board"));return false;}
+  const previous={dirHandle,baseHandle,boardStorageId,formStorageIdentity,seenKey};
   await leaveHumanBoard();
-  dirHandle = h; forgetBodies(); historyPage={key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
+  dirHandle=h;forgetBodies();historyPage={key:"",end:null,last:null,count:MESSAGE_PAGE_SIZE};
   $("#banner").classList.remove("show");
-  try{ await idbSet("lastDir", h); }catch(e){ /* storage failures degrade silently */ }
-  boardStorageId=await boardIdentity(h);
-  formStorageIdentity=boardStorageId.startsWith("session-")?null:"native-"+boardStorageId;
-  seenKey=""; clearReply();
-  const ok = await readFromHandle(false);
-  if(ok){ schedule(); await syncHumanPresence(true); }
-  renderChrome();
+  let ok=false;
+  try{
+    boardStorageId=await boardIdentity(h);
+    formStorageIdentity=boardStorageId.startsWith("session-")?null:"native-"+boardStorageId;
+    seenKey="";clearReply();ok=await readFromHandle(false);
+    if(ok && dirHandle===h){await rememberNativeLocation(h,baseHandle);if(dirHandle===h){schedule();await syncHumanPresence(true);}}
+    return ok;
+  }finally{
+    if(!ok && dirHandle===h){dirHandle=previous.dirHandle;baseHandle=previous.baseHandle;boardStorageId=previous.boardStorageId;formStorageIdentity=previous.formStorageIdentity;seenKey=previous.seenKey;if(B){build({preserveComposer:true});if(dirHandle)await syncHumanPresence(true);}}
+    renderChrome();
+  }
 }
-async function offerLast(){
-  if(!S.autoOpen || !window.indexedDB || !window.showDirectoryPicker) return;
-  let h = null; try{ h = await idbGet("lastDir"); }catch(e){}
-  if(!h || typeof h.queryPermission!=="function") return;
-  try{ if(await h.queryPermission({mode:"readwrite"})==="granted"){ await useDir(h); return; } }catch(e){}
-  $("#lastName").textContent = h.name;
-  $("#banner").classList.add("show");
-  $("#reopen").onclick = async()=>{ try{ if(await h.requestPermission({mode:"readwrite"})==="granted") await useDir(h); else toast(t("toast_no_perm")); }catch(e){ toast(e.message); } };
-  $("#forget").onclick = async()=>{ try{ await idbSet("lastDir",null); }catch(e){} $("#banner").classList.remove("show"); };
-}
+async function offerLast(){return offerLastLocation();}
 
 /* ===== auto-refresh scheduler ===== */
 function canWrite(){ return !!(dirHandle && dirHandle.getDirectoryHandle); }
@@ -3730,7 +3772,7 @@ function updateToolsChrome(){
 }
 function downloadLocalJson(name,value){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function wireOfflineTools(){
- wireAuthoringDrafts();wireFormBuilder();
+ wireAuthoringDrafts();wireFormBuilder();wireLocations();
  $('#structuredOpen').onclick=openAuthoring;$('#structuredClose').onclick=closeAuthoring;$('#structuredDialog').addEventListener('cancel',event=>{event.preventDefault();closeAuthoring();});$('#structuredDialog').addEventListener('close',()=>{if(!$('#structuredDialog').open){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();}});
  $('#structuredLoad').onclick=()=>loadAuthoringExample();$('#structuredKind').onchange=()=>{showAuthoringJson();invalidateAuthoring();persistAuthoring();};$('#structuredJson').oninput=()=>{invalidateAuthoring();persistAuthoring();};$('#structuredValidate').onclick=validateAuthoring;$('#structuredAttach').onclick=attachStructured;$('#structuredRemove').onclick=clearStructuredAttachment;
  $('#draftsOpen').onclick=openDraftManager;$('#draftsClose').onclick=closeDraftManager;$('#draftImport').onchange=importManagedDraft;$('#draftImportPick').onclick=()=>$('#draftImport').click();$('#draftsDialog').addEventListener('cancel',event=>{event.preventDefault();closeDraftManager();});$('#draftsDialog').addEventListener('close',()=>{if(!$('#draftsDialog').open){draftManagerBinding=null;draftManagerGeneration++;}});
@@ -3931,6 +3973,68 @@ function showAuthoringJson(){builderQuestion=null;$('#formBuilder').hidden=true;
 function newBuilderForm(){if(!authoringReplaceAllowed())return;$('#structuredKind').value='form';$('#structuredJson').value=JSON.stringify({version:3,id:'local-question',type:'form',prompt:t("builder_new_prompt"),fields:[builderDefaultField('input')],buttons:[{id:'submit',label:t("builder_submit"),action:'submit'}]},null,2);invalidateAuthoring();persistAuthoring();openFormBuilder();}
 function wireFormBuilder(){$('#authoringBuilder').onclick=openFormBuilder;$('#authoringJson').onclick=showAuthoringJson;$('#authoringNewForm').onclick=newBuilderForm;}
 
+/* Most recently opened locations. Handles stay local; uploaded files are never saved. */
+const LOCATION_STORE='location-history-v1',LOCATION_LIMIT=20;
+let locationRecords=[],locationWrites=Promise.resolve(),locationStored=true,locationBusy=false,locationIntent=0,locationLoading=false,locationDialogGeneration=0,locationPendingUpdates=[];
+function cleanLocations(value){
+ const records=[];for(const row of Array.isArray(value?.records)?value.records.slice(0,LOCATION_LIMIT):[]){
+  if(!row||typeof row.id!=='string'||row.id.length>80||typeof row.name!=='string'||row.name.length>500||!['native','upload'].includes(row.kind)||!(row.openedAt===null||typeof row.openedAt==='string'&&Number.isFinite(Date.parse(row.openedAt))))continue;
+  if(row.kind==='native'&&(!row.handle||typeof row.handle.getDirectoryHandle!=='function'))continue;
+  if(row.kind==='upload'&&(typeof row.fingerprint!=='string'||!/^upload-[a-f0-9]{64}$/.test(row.fingerprint)))continue;
+  if(!records.some(x=>x.id===row.id))records.push(row);
+ }return {revision:typeof value?.revision==='string'?value.revision:null,records};
+}
+async function readLocations(){const db=await idb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('kv'),q=tx.objectStore('kv').get(LOCATION_STORE);tx.oncomplete=()=>resolve(q.result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Location read aborted'));});}finally{db.close();}}
+async function sameLocationHandle(a,b){try{return !!a&&!!b&&typeof a.isSameEntry==='function'&&await a.isSameEntry(b);}catch{return false;}}
+async function nativeLocationMatches(row,handle,boardHandle){return row.kind==='native'&&(await sameLocationHandle(row.handle,handle)||await sameLocationHandle(row.boardHandle||row.handle,boardHandle));}
+async function commitLocations(expected,records){
+ const db=await idb();try{await new Promise((resolve,reject)=>{const tx=db.transaction('kv','readwrite'),kv=tx.objectStore('kv'),q=kv.get(LOCATION_STORE);let conflict=false;
+ q.onsuccess=()=>{try{if(cleanLocations(q.result).revision!==expected){conflict=true;tx.abort();return;}const revision=crypto.randomUUID();kv.put({revision,records},LOCATION_STORE);kv.put(records[0]?.kind==='native'?records[0].handle:null,'lastDir');}catch(error){tx.abort();reject(error);}};
+ tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(conflict?Object.assign(Error('Location history changed'),{conflict:true}):tx.error||Error('Location transaction aborted'));});}finally{db.close();}
+}
+function changeLocations(update,{retainOnFailure=false}={}){
+ const next=locationWrites.then(async()=>{
+  let candidate;try{for(let attempt=0;attempt<4;attempt++){const stored=cleanLocations(await readLocations());let base=stored.records;for(const pending of locationPendingUpdates)base=await pending(base);candidate=(await update(base)).slice(0,LOCATION_LIMIT);try{await commitLocations(stored.revision,candidate);locationRecords=candidate;locationPendingUpdates=[];locationStored=true;renderLocations();return true;}catch(e){if(!e.conflict)throw e;}}throw Error(t("locations_changed"));
+  }catch(e){locationStored=false;if(!retainOnFailure){locationPendingUpdates.push(update);locationRecords=(await update(locationRecords)).slice(0,LOCATION_LIMIT);}renderLocations();$('#locationsResult').textContent=t(retainOnFailure?"locations_delete_failed":"locations_memory");return false;}
+ });locationWrites=next.catch(()=>{});return next;
+}
+async function initLocations(){
+ try{const value=await readLocations(),store=cleanLocations(value);locationRecords=store.records;
+  if(value===undefined||value===null){const handle=await idbGet('lastDir');if(handle&&typeof handle.getDirectoryHandle==='function')await changeLocations(async records=>{for(const row of records)if(await nativeLocationMatches(row,handle,handle))return records;return [{id:crypto.randomUUID(),kind:'native',name:handle.name||'',handle,boardHandle:handle,openedAt:null},...records];});}
+ }catch{locationStored=false;}
+}
+async function rememberNativeLocation(handle,boardHandle){const fresh={id:crypto.randomUUID(),kind:'native',name:handle.name||'',handle,boardHandle,openedAt:new Date().toISOString()};return changeLocations(async records=>{const rest=[];let prior=null;for(const row of records){if(await nativeLocationMatches(row,handle,boardHandle))prior??=row;else rest.push(row);}return [{...fresh,id:prior?.id||fresh.id},...rest];});}
+async function rememberUploadLocation(name,fingerprint){const fresh={id:crypto.randomUUID(),kind:'upload',name,fingerprint,openedAt:new Date().toISOString()};return changeLocations(records=>{const prior=records.find(r=>r.kind==='upload'&&r.fingerprint===fingerprint);return [{...fresh,id:prior?.id||fresh.id},...records.filter(r=>r.kind!=='upload'||r.fingerprint!==fingerprint)];});}
+function locationButton(parent,label,action){const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=label;b.disabled=locationBusy||locationLoading;b.onclick=action;parent.append(b);return b;}
+function renderLocations(){
+ if(!$('#locationsDialog').open)return;const list=$('#locationsList');list.setAttribute('aria-busy',String(locationLoading));list.replaceChildren();$('#locationsStorage').textContent=t(locationStored?"locations_local":"locations_memory");$('#locationsClear').disabled=locationBusy||locationLoading||!locationRecords.length;
+ if(locationLoading){const p=document.createElement('p');p.textContent=t("locations_loading");list.append(p);return;}
+ if(!locationRecords.length){const p=document.createElement('p');p.textContent=t("locations_empty");list.append(p);return;}
+ for(const row of locationRecords){const item=document.createElement('section');item.className='location-entry';item.dataset.location=row.id;item.dataset.kind=row.kind;const name=document.createElement('strong');name.textContent=row.name;item.append(name);const meta=document.createElement('p');meta.className='hint';meta.textContent=t(row.kind==='native'?"locations_native":"locations_upload")+' · '+(row.openedAt?new Date(row.openedAt).toLocaleString(S.lang==='pl'?'pl-PL':'en-GB'):t("locations_previous"));item.append(meta);const actions=document.createElement('div');actions.className='tool-actions';locationButton(actions,t(row.kind==='native'?"locations_reopen":"locations_choose"),()=>openRecentLocation(row));locationButton(actions,t("locations_remove"),()=>removeLocation(row));item.append(actions);list.append(item);}
+}
+async function openLocations(){const generation=++locationDialogGeneration;$('#locationsResult').textContent='';$('#locationsDialog').showModal();locationLoading=true;renderLocations();await locationWrites;try{const stored=cleanLocations(await readLocations());if(generation!==locationDialogGeneration)return;let rows=stored.records;for(const pending of locationPendingUpdates)rows=await pending(rows);if(generation!==locationDialogGeneration)return;locationRecords=rows.slice(0,LOCATION_LIMIT);}catch{locationStored=false;}finally{if(generation===locationDialogGeneration){locationLoading=false;renderLocations();}}}
+function closeLocations(){locationDialogGeneration++;locationLoading=false;$('#locationsDialog').close();}
+async function openRecentLocation(row){
+ if(locationBusy)return;const intent=++locationIntent,generation=locationDialogGeneration;
+ if(row.kind==='upload'){closeLocations();$('#fallback').value='';$('#fallback').click();return;}
+ locationBusy=true;renderLocations();$('#locationsResult').textContent=t("locations_opening");
+ try{if(typeof row.handle.requestPermission!=='function'||await row.handle.requestPermission({mode:'readwrite'})!=='granted')throw Error(t("toast_no_perm"));if(intent!==locationIntent)return;const ok=await useDir(row.handle);if(intent!==locationIntent||generation!==locationDialogGeneration)return;if(!ok)throw Error(t("e_no_board"));closeLocations();}catch(e){if(intent===locationIntent&&generation===locationDialogGeneration){$('#locationsResult').textContent=e.message;if(!$('#locationsDialog').open)toast(e.message);}}finally{locationBusy=false;renderLocations();}
+}
+async function withoutLocation(records,row){const keep=[];for(const item of records){if(item.id===row.id||row.kind==='upload'&&item.kind==='upload'&&item.fingerprint===row.fingerprint||row.kind==='native'&&await nativeLocationMatches(item,row.handle,row.boardHandle||row.handle))continue;keep.push(item);}return keep;}
+async function removeLocation(row){
+ if(locationBusy||!confirm(t("locations_remove_confirm",{name:row.name})))return;locationBusy=true;renderLocations();const ok=await changeLocations(records=>withoutLocation(records,row),{retainOnFailure:true});locationBusy=false;renderLocations();if(ok)$('#banner').classList.remove('show');
+}
+async function clearLocations(){
+ if(locationBusy||!confirm(t("locations_clear_confirm")))return;locationBusy=true;renderLocations();const ok=await changeLocations(()=>[],{retainOnFailure:true});locationBusy=false;renderLocations();if(ok)$('#banner').classList.remove('show');
+}
+async function forgetLastLocation(){const row=locationRecords[0];if(row)await changeLocations(records=>withoutLocation(records,row),{retainOnFailure:true});else try{await idbSet('lastDir',null);}catch{toast(t("locations_delete_failed"));return;}if(!locationRecords.some(r=>r.id===row?.id))$('#banner').classList.remove('show');else toast(t("locations_delete_failed"));}
+async function offerLastLocation(){
+ if(!S.autoOpen)return;const row=locationRecords[0],intent=locationIntent;if(!row)return;
+ if(row.kind==='native'&&window.showDirectoryPicker)try{if(await row.handle.queryPermission({mode:'readwrite'})==='granted'){if(intent===locationIntent)await useDir(row.handle);return;}}catch{}
+ if(intent!==locationIntent)return;$('#lastName').textContent=row.name;$('#banner').classList.add('show');$('#reopen').onclick=()=>openRecentLocation(row);$('#forget').onclick=forgetLastLocation;
+}
+function wireLocations(){$('#locationsOpen').onclick=openLocations;$('#locationsClose').onclick=closeLocations;$('#locationsClear').onclick=clearLocations;$('#locationsDialog').addEventListener('cancel',e=>{e.preventDefault();closeLocations();});}
+
 /* END BUNDLED OFFLINE TOOLS */
 
 /* ===== wiring ===== */
@@ -3940,11 +4044,12 @@ function wire(){
   $("#upgradeClose").onclick=()=>$("#upgradeDialog").close();
   $("#upgradePreview").onclick=openUpgrade; $("#upgradeApply").onclick=applyUpgrade;
   $("#open").onclick = async()=>{
+    locationIntent++;
     if(!window.showDirectoryPicker){ $("#fallback").click(); return; }
     try{ await useDir(await window.showDirectoryPicker({mode:"readwrite", id:"agent-board"})); }
     catch(e){ if(e && e.name!=="AbortError") toast(e.message); }
   };
-  $("#fallback").onchange = async e=>{ await readFromInput([...e.target.files]); schedule(); renderChrome(); };
+  $("#fallback").onchange = async e=>{ const files=[...e.target.files];e.target.value="";if(!files.length)return;locationIntent++;try{await readFromInput(files);schedule();renderChrome();}catch(error){toast(error.message);} };
   $("#reload").onclick = ()=>{
     if(canWrite()) readFromHandle().then(()=>{ schedule(); tick(); toast(t("toast_refreshed")); });
     else toast(t("toast_reselect"));
@@ -4112,6 +4217,7 @@ function wire(){
 async function init(){
   document.body.inert=true; document.body.setAttribute("aria-busy","true");
   await loadSettings();
+  await initLocations();
   applySettings();
   applyI18n();
   wire();
@@ -4122,7 +4228,7 @@ async function init(){
   offerLast();
 }
 /* test hooks: pure functions and state accessors; they add no capability the UI does not have */
-window.__boardTest = {formDraftsSettled:()=>formStorageWrites,authoringSettled:()=>authoringWrites, STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
+window.__boardTest = {formDraftsSettled:()=>formStorageWrites,authoringSettled:()=>authoringWrites,locationsSettled:()=>locationWrites, STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
   guidanceEditorUrls, parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loading:()=>historyLoading || activeBodyReads>0 || bodySearch.pending || !!(B && messagePage(matchingMessages()).rows.some(m=>!m.bodyLoaded)), cachedBodies:()=>bodyCache.size, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
 window.__boardTest.ready=init();
 </script>

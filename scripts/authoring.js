@@ -42,7 +42,7 @@ function updateToolsChrome(){
 }
 function downloadLocalJson(name,value){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function wireOfflineTools(){
- wireAuthoringDrafts();wireFormBuilder();
+ wireAuthoringDrafts();wireFormBuilder();wireLocations();
  $('#structuredOpen').onclick=openAuthoring;$('#structuredClose').onclick=closeAuthoring;$('#structuredDialog').addEventListener('cancel',event=>{event.preventDefault();closeAuthoring();});$('#structuredDialog').addEventListener('close',()=>{if(!$('#structuredDialog').open){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();}});
  $('#structuredLoad').onclick=()=>loadAuthoringExample();$('#structuredKind').onchange=()=>{showAuthoringJson();invalidateAuthoring();persistAuthoring();};$('#structuredJson').oninput=()=>{invalidateAuthoring();persistAuthoring();};$('#structuredValidate').onclick=validateAuthoring;$('#structuredAttach').onclick=attachStructured;$('#structuredRemove').onclick=clearStructuredAttachment;
  $('#draftsOpen').onclick=openDraftManager;$('#draftsClose').onclick=closeDraftManager;$('#draftImport').onchange=importManagedDraft;$('#draftImportPick').onclick=()=>$('#draftImport').click();$('#draftsDialog').addEventListener('cancel',event=>{event.preventDefault();closeDraftManager();});$('#draftsDialog').addEventListener('close',()=>{if(!$('#draftsDialog').open){draftManagerBinding=null;draftManagerGeneration++;}});

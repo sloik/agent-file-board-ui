@@ -126,7 +126,11 @@ function fakeFsScript(tree, rootName) {
   const desc = Object.getOwnPropertyDescriptor(IDBRequest.prototype, "result");
   Object.defineProperty(IDBRequest.prototype, "result", { configurable: true, get() {
     const v = desc.get.call(this);
-    return v && Array.isArray(v.__path) && v.kind === "directory" && !v.getDirectoryHandle ? new FakeDir(v.__path) : v; } });
+    const hydrate=x=>{if(!x||typeof x!=="object")return x;
+      if(Array.isArray(x.__path)&&x.kind==="directory"&&!x.getDirectoryHandle)return new FakeDir(x.__path);
+      if(Array.isArray(x))return x.map(hydrate);
+      for(const key of ["handle","boardHandle","records"])if(x[key])x[key]=hydrate(x[key]);return x;};
+    return hydrate(v); } });
   window.showDirectoryPicker = async () => {await settled();return new FakeDir([]);};
   const flat = (n, p, out) => { for (const k of Object.keys(n.children)) { const c = n.children[k], q = p ? p + "/" + k : k;
     if (c.kind === "directory") flat(c, q, out); else out.push({ path: q, text: c.text }); } return out; };
