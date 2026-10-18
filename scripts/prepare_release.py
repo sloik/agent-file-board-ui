@@ -4,8 +4,10 @@ import argparse
 import re
 import shutil
 from pathlib import Path
+from build_demo import ARCHIVE, archive_demo
 
 ASSETS = ("board.html", "scripts/desktop_opener.applescript", "scripts/install_desktop_opener.py")
+DEMO_SINCE = (2, 2, 1)
 
 
 def release_notes(changelog: str, tag: str) -> str:
@@ -27,6 +29,11 @@ def prepare(root: Path, tag: str, output: Path) -> None:
     output.mkdir(parents=True, exist_ok=False)
     for name in ASSETS:
         shutil.copyfile(root / name, output / Path(name).name)
+    if tuple(map(int, tag[1:].split('.'))) >= DEMO_SINCE:
+        for name in ('scripts/build_demo.py', 'docs/DEMO.md'):
+            if not (root / name).is_file():
+                raise ValueError(f"missing demo source: {name}")
+        archive_demo(root, output / ARCHIVE)
     (output / "notes.md").write_text(notes, encoding="utf-8")
 
 

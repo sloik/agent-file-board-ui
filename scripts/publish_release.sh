@@ -16,9 +16,13 @@ fi
 newest=$( { cat published-tags.txt; echo "$RELEASE_TAG"; } | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
 latest=false
 if [[ "$newest" == "$RELEASE_TAG" ]]; then latest=true; fi
+assets=(release-assets/board.html release-assets/desktop_opener.applescript release-assets/install_desktop_opener.py)
+demo_since=$(printf '%s\n' 'v2.2.1' "$RELEASE_TAG" | sort -V | head -n 1)
+if [[ "$demo_since" == 'v2.2.1' ]]; then assets+=(release-assets/agent-file-board-demo.zip); fi
+for asset in "${assets[@]}"; do
+  [[ -f "$asset" ]] || { echo "Missing release asset: $asset"; exit 1; }
+done
 gh release create "$RELEASE_TAG" \
-  release-assets/board.html \
-  release-assets/desktop_opener.applescript \
-  release-assets/install_desktop_opener.py \
+  "${assets[@]}" \
   --verify-tag --title "$RELEASE_TAG" \
   --notes-file release-assets/notes.md --latest="$latest"

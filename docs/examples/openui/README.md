@@ -1,7 +1,7 @@
 # OpenUI example files
 
-These are presentation examples using the canonical `board-report` version 1
-contract. They contain data only; the canonical CLI validates them without an
+These are presentation examples using the canonical `board-report` v1/v2/v3
+contracts. They contain data only; the canonical CLI validates them without an
 OpenUI SDK. Each report must also have a useful readable message body.
 
 | Example | JSON | Suggested body summary |
@@ -35,3 +35,10 @@ renders the actual standalone viewer and regenerates their screenshots.
 - [static-dashboard.json](static-dashboard.json) — board-report v2 example with
   all18 static types, local navigation/filtering and signed multi-series charts.
   Requires2.1 CLI/viewer/metadata; see [the static dashboard guide](../../OPENUI.md#static-dashboard-21).
+
+- [static-candidates.json](static-candidates.json) — v3 specialty charts, offline
+  media, icons, cards, carousel and modal; requires2.2 CLI/viewer/metadata.
+
+To try these examples without developer tools, [download the complete offline
+demo](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)
+and follow the [tour](../../DEMO.md).

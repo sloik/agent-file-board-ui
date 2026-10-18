@@ -50,6 +50,7 @@ jobs:
           # Bind assets to the tested commit, even if a ref changes between jobs.
           ref: ${{ needs.test.outputs.commit }}
           path: source
+          submodules: recursive
           persist-credentials: false
 
       - uses: actions/setup-python@v5

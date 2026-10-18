@@ -58,9 +58,17 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Version 2.2.0
+## Try the offline demo
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.2.0/board.html) (save as `board.html`), or use the included file.
+[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip),
+extract it, open its `board.html` in Chrome/Edge, and choose the included
+**demo-board** folder with **Open board folder**. It contains fictional discussions,
+all 34 report types, choices and historical answers. No installation or server.
+See the [tour](docs/DEMO.md) and [OpenUI gallery](docs/OPENUI.md).
+
+## Version 2.2.1
+
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.2.1/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
 [agent-file-board 2.2.0](https://github.com/sloik/agent-file-board).

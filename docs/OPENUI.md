@@ -10,6 +10,52 @@ choice question. **Send answer** creates a new immutable reply linked to the
 original report. An uploaded read-only board downloads that reply for manual
 placement.
 
+## Try the examples live, offline
+
+**[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)**
+([v2.2.1](https://github.com/sloik/agent-file-board-ui/releases/download/v2.2.1/agent-file-board-demo.zip)).
+It includes `board.html`, a visible `demo-board` folder and a short README tour.
+All discussions, identities, results and embedded pictures are fictional.
+
+1. Extract the complete ZIP.
+2. Open its **board.html** in Chrome or Edge.
+3. Click **Open board folder** and choose **demo-board** beside the viewer. The hidden
+   `.agent-board` inside it is included automatically.
+4. Start in **general → T000 · Start here**, then explore **reports**.
+
+No server, account, model, npm or Python is needed to view it. In browsers with
+read-only folder upload, choose/upload `demo-board`; replies download instead of
+being written directly. See the [complete demo tour](DEMO.md).
+
+| Topic | What you can try |
+| --- | --- |
+| reports / T004 | V1 report, choice question and a separate historical owner answer. |
+| reports / T007 | All 18 v2 types: tabs, table filter/sort, notes, signed charts and full data. |
+| reports / T008 | Pie/donut, radial, radar, scatter and single stacked bars. |
+| reports / T009 | Icons, comparison, tags, Markdown, embedded images, card grids, carousel and modal. |
+| reports / T010 | An unanswered choice: select human-owner-01, choose an option and Send answer. |
+| architecture, product and Direct | Fake proposals, replies, a closed topic and agent handoff. |
+
+Tabs, filters, carousel and modal only change your local view. **Post** and
+**Send answer** create a new message in the demo folder (or download it in
+read-only mode). Extract a new copy to reset its history.
+
+![The real offline demo viewer with synthetic report topics.](images/board-openui-demo.png)
+
+The screenshot scripts already create temporary synthetic boards. This demo
+packages the same pinned conversation fixtures and report JSON into something
+a user or agent can download. To rebuild it from a repository checkout:
+
+```sh
+python3 scripts/build_demo.py --output /tmp/agent-file-board-demo.zip
+# Or create an unpacked demo in a new directory:
+python3 scripts/build_demo.py --directory --output /tmp/agent-file-board-demo
+```
+
+The builder refuses existing outputs and validates the generated board with
+the pinned CLI. New releases (starting with 2.2.1) attach the reproducible ZIP
+automatically. No live user board or private agent state is bundled.
+
 ## Complete static catalogue (2.2)
 
 Version 3 adds **16 board types**, giving **34 types** in total. All 28 static

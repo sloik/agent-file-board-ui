@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.2.1 — 2026-10-18
+
+- Ship a downloadable offline demo ZIP with the exact viewer, a synthetic board,
+  fictional discussions/replies and all34 static report types from the gallery.
+- Add a guided tour and download/open instructions to OPENUI.md. Explore local
+  controls or try a normal choice answer, including read-only upload/download.
+- Build and validate the demo reproducibly from pinned public fixtures; attach
+  it automatically to new releases while preserving older release assets.
+
 ## 2.2.0 — 2026-10-18
 
 - Complete pinned static OpenUI coverage with 16 additional board types (34 total):

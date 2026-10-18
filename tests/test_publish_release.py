@@ -10,9 +10,15 @@ SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "publish_release.s
 
 
 class PublishReleaseTests(unittest.TestCase):
-    def run_publisher(self, tag, published="", api_failure=False):
+    def run_publisher(self, tag, published="", api_failure=False, demo_present=True):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            assets = root / 'release-assets'
+            assets.mkdir()
+            for name in ['board.html', 'desktop_opener.applescript', 'install_desktop_opener.py', 'notes.md']:
+                (assets / name).write_text('fixture')
+            if demo_present:
+                (assets / 'agent-file-board-demo.zip').write_bytes(b'fixture zip')
             gh = root / "gh"
             gh.write_text('''#!/usr/bin/env python3
 import json, os, sys
@@ -42,6 +48,16 @@ else:
                                "release-assets/board.html", "release-assets/desktop_opener.applescript",
                                "release-assets/install_desktop_opener.py", "--verify-tag", "--title",
                                "v2.0.1", "--notes-file", "release-assets/notes.md", "--latest=true"])
+
+    def test_demo_releases_require_and_publish_four_assets(self):
+        result, args = self.run_publisher('v2.2.1', 'v2.2.0')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(args[3:7], ['release-assets/board.html', 'release-assets/desktop_opener.applescript', 'release-assets/install_desktop_opener.py', 'release-assets/agent-file-board-demo.zip'])
+        self.assertIn('--latest=true', args)
+        result, args = self.run_publisher('v2.2.1', demo_present=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Missing release asset', result.stdout)
+        self.assertIsNone(args)
 
     def test_older_backfill_does_not_replace_latest(self):
         result, args = self.run_publisher("v2.0.1", "v2.0.10\nv1.9.6")

@@ -2,6 +2,7 @@
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
@@ -43,3 +44,28 @@ class PrepareReleaseTests(unittest.TestCase):
             self.assertEqual((output / "notes.md").read_text(), "notes\n")
             with self.assertRaises(FileExistsError):
                 prepare(root, "v2.0.1", output)
+
+
+    def test_new_releases_require_demo_sources_and_propagate_builder_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'CHANGELOG.md').write_text('## 2.2.1\nnotes\n')
+            for name in ASSETS:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('fixture')
+            with self.assertRaisesRegex(ValueError, 'missing demo source'):
+                prepare(root, 'v2.2.1', root / 'missing')
+            (root / 'scripts/build_demo.py').write_text('fixture')
+            (root / 'docs').mkdir()
+            (root / 'docs/DEMO.md').write_text('fixture')
+            with patch('prepare_release.archive_demo', side_effect=ValueError('bad demo')):
+                with self.assertRaisesRegex(ValueError, 'bad demo'):
+                    prepare(root, 'v2.2.1', root / 'failed')
+            def archive(source, destination):
+                self.assertEqual(source, root)
+                destination.write_bytes(b'exact demo bytes')
+            with patch('prepare_release.archive_demo', side_effect=archive):
+                prepare(root, 'v2.2.1', root / 'ok')
+            self.assertEqual({p.name for p in (root / 'ok').iterdir()}, {Path(p).name for p in ASSETS} | {'notes.md', 'agent-file-board-demo.zip'})
+            self.assertEqual((root / 'ok/agent-file-board-demo.zip').read_bytes(), b'exact demo bytes')
