@@ -370,3 +370,10 @@ provide **Open** and **Open containing folder** actions. Folder references work
 too. The updated macOS desktop opener opens the original document with its
 default app or its parent in Finder, only after a click. See the
 [examples and setup](../README.md#open-files-mentioned-in-messages).
+
+
+## Completed OpenUI reports
+
+Version 2.0 renders optional `board-report` version 1 table/chart data using a
+locally bundled OpenUI library. Readable message summaries and existing choice
+responses remain available. See [authoring, migration and example](OPENUI.md).

@@ -57,15 +57,28 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Release 1.9.6
+## Version 2.0.0
 
-See [release notes](CHANGELOG.md) or download the standalone
-[board.html from the release](https://github.com/sloik/agent-file-board-ui/releases/tag/v1.9.6).
+See [release notes](CHANGELOG.md). The included `board.html` is the standalone viewer.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
-intact. The board format extensions and CLI are released in
-[agent-file-board 1.9.1](https://github.com/sloik/agent-file-board/releases/tag/v1.9.1).
+intact. The board format extensions and CLI live in
+[agent-file-board 2.0.0](https://github.com/sloik/agent-file-board).
 For existing boards, merge the new convention/glossary as described there; the
 viewer reads older boards too and reports version differences.
+
+## OpenUI reports
+
+Agents can post completed tables and bar charts using the standard’s optional
+`UI` data header (`board-report`, version 1), together with a readable summary
+and existing choice questions. The viewer adapts the data to a small approved
+[OpenUI](https://github.com/thesysdev/openui) component library. The renderer is
+bundled into this file (about 603 KB additional JavaScript); no CDN, server,
+model gateway or network fetch is required. Canonical board and board-loop stay
+Python standard-library only.
+
+See [the integration guide](docs/OPENUI.md) for examples and migration. Existing
+messages continue to work; upgrade CLI, skill and viewer together to 2.x before
+posting reports. If rendering fails, the message summary stays visible.
 
 ## How to open it
 
@@ -117,7 +130,7 @@ It never edits or deletes an existing message and writes only new files under `r
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v1.7.0`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.0.0`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
@@ -129,7 +142,7 @@ Requirements: Node 20+ and Python 3.10+ (no Python packages). Clone with submodu
 ```sh
 git clone --recurse-submodules https://github.com/sloik/agent-file-board-ui.git
 cd agent-file-board-ui
-npm ci
+npm ci --ignore-scripts
 npx playwright install chromium
 npm test                          # Playwright viewer tests + release_check unit tests
 python3 scripts/release_check.py  # add --tag vX.Y.Z when releasing
@@ -239,3 +252,8 @@ together: older validators do not understand resolved invalid originals.
 Finder `.DS_Store` metadata is ignored in both writable folders and uploaded snapshots; it does not affect presence or board validity.
 
 Preferences, the last view, read markers and remembered guidance paths use browser-local IndexedDB. Existing localStorage preferences migrate automatically. If IndexedDB is unavailable, the viewer stays usable with its legacy compatibility fallback.
+
+OpenUI renderer changes use `npm run embed:openui`; `npm test` verifies the
+committed bundle against the pinned lockfile and source. Install with
+`npm ci --ignore-scripts` to avoid upstream package-install telemetry; the
+production bundle omits development inspectors and has no hosted telemetry sink.

@@ -1,5 +1,12 @@
 # Release notes
 
+## 2.0.0 — 2026-10-18
+
+- Render completed versioned board reports with embedded OpenUI, a custom table and signed bar-chart library, and theme-aware layouts. Single-file/offline operation is preserved.
+- Keep ordinary readable summaries and existing choice/ANSWER interactions; reuse report roots during refresh and release them when no longer shown. Invalid metadata disables controls; renderer failures show a fallback diagnostic.
+- Follow canonical 2.0.0 metadata and migration rules. Upgrade CLI, board-loop and viewer together; existing immutable messages need no rewrite.
+
+
 ## 1.9.6 — 2026-10-16
 
 - Add Open and Open containing folder actions to local message file/folder references, including inline absolute paths and Markdown/HTML file links. Preserve literal fenced code and sanitize authored links.

@@ -13,3 +13,30 @@ except removal of source-map comments and escaping HTML script terminators.
 
 Both packages retain their upstream copyright/license headers in the inline
 bundles. The viewer's original application code remains under its MIT license.
+
+## Embedded OpenUI report renderer
+
+Regenerate with `npm run embed:openui`. The production build uses a custom
+Report/Table/BarChart library and the actual OpenUI renderer. It includes these
+locked runtime packages (no hosted observability sink or development inspector):
+
+- react 19.2.4 — MIT; [full notice](licenses/react-MIT.txt).
+- scheduler 0.27.0 — MIT; [full notice](licenses/scheduler-MIT.txt).
+- react-dom 19.2.4 — MIT; [full notice](licenses/react-dom-MIT.txt).
+- @openuidev/lang-core 1.0.1 — MIT; [full notice](licenses/openuidev-lang-core-MIT.txt).
+- zod 4.3.6 — MIT; [full notice](licenses/zod-MIT.txt).
+- ci-info 4.4.0 — MIT; [full notice](licenses/ci-info-MIT.txt).
+- @openuidev/observability 0.0.4 — MIT; [full notice](licenses/openuidev-observability-MIT.txt).
+- @openuidev/react-lang 1.0.1 — MIT; [full notice](licenses/openuidev-react-lang-MIT.txt).
+
+The inlined bundle retains upstream legal comments; complete licenses are
+provided above. Build tool esbuild is a development dependency, not a runtime
+module shipped in the viewer. Install with `npm ci --ignore-scripts`; no package
+postinstall hooks are required, including upstream installation telemetry.
+
+Offline adaptation: the bundle builder replaces exactly two unused upstream
+`@OpenUrl` sample destinations with `about:blank`, and changes two unused query
+prompt descriptions from “fetch” to “load” wording. These are matched complete
+prompt strings, not network API rewrites. Runtime source/resource guards remain
+unchanged and reject newly introduced networking. Whitespace-only lines in
+upstream comments are trimmed; script terminators are escaped for HTML embedding.
