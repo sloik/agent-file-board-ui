@@ -1,6 +1,6 @@
 /* Trusted metadata upgrades. Embedded in the viewer's existing script scope. */
 let upgradeDraft=null, upgradeBusy=false, upgradeGeneration=0;
-const UPGRADE_PATHS=["GLOSSARY.md","components/board-report-v1.schema.json","components/board-report-v2.schema.json","components/board-report-v3.schema.json","components/form-question-v2.schema.json","components/form-answer-v2.schema.json","CONVENTION.md"];
+const UPGRADE_PATHS=["GLOSSARY.md","components/board-report-v1.schema.json","components/board-report-v2.schema.json","components/board-report-v3.schema.json","components/form-question-v2.schema.json","components/form-answer-v2.schema.json","components/form-question-v3.schema.json","components/form-answer-v3.schema.json","CONVENTION.md"];
 const upgradeBytes=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
 const upgradeHash=async bytes=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",bytes))].map(b=>b.toString(16).padStart(2,"0")).join("");
 function upgradeText(bytes){ return new TextDecoder("utf-8",{fatal:true}).decode(bytes); }

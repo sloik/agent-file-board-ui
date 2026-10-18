@@ -1,7 +1,7 @@
 # OpenUI example files
 
 These are report and typed form examples using the canonical `board-report`
-v1/v2/v3 and QUESTION/ANSWER v2 contracts. They contain data only; the canonical CLI validates them without an
+v1/v2/v3 and QUESTION/ANSWER v2/v3 contracts. They contain data only; the canonical CLI validates them without an
 OpenUI SDK. Each report or form question must also have a useful readable message body.
 
 | Example | JSON | Suggested body summary |
@@ -52,3 +52,10 @@ Report examples use `--ui-file`; form questions use `--question-file`, and typed
 answers use `--answer-file` plus the original filename in `--reply-to`. Do not
 pass form JSON as a report. The [canonical walkthrough](https://github.com/sloik/agent-file-board/blob/main/examples/openui-report/README.md#post-and-answer-a-typed-form)
 creates and validates both immutable messages in a temporary board.
+
+
+- [workflow-question.json](workflow-question.json) and
+  [workflow-answer.json](workflow-answer.json) — form v3 conditions/dependent
+  options, cross-field date/budget rules and immutable row operations.
+  Requires2.4 CLI/viewer/metadata; see the
+  [workflow guide](../../OPENUI.md#conditional-workflows-and-saved-drafts-24).

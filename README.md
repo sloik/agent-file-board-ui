@@ -63,15 +63,15 @@ copyable Markdown/HTML examples, and instructions to reproduce every image.
 [Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip),
 extract it, open its `board.html` in Chrome/Edge, and choose the included
 **demo-board** folder with **Open board folder**. It contains fictional discussions,
-all 34 report types, all 11 form fields, editable tables and historical answers. No installation or server.
+all 34 report types, all 11 form fields, conditional workflows, editable rows and historical answers. No installation or server.
 See the [tour](docs/DEMO.md) and [OpenUI gallery](docs/OPENUI.md).
 
-## Version 2.3.0
+## Version 2.4.0
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.3.0/board.html) (save as `board.html`), or use the included file.
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.0/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
-[agent-file-board 2.3.0](https://github.com/sloik/agent-file-board).
+[agent-file-board 2.4.0](https://github.com/sloik/agent-file-board).
 For existing boards, use **Versions and updates** in the version display or
 mismatch warning. It previews managed metadata and can update the selected
 writable Chromium board directly, with backups. See [upgrade and recovery](docs/UPGRADING.md)
@@ -151,12 +151,12 @@ Message posting never edits or deletes an existing message and writes only new f
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.3.0`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.4.0`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
 - Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html`, both desktop opener scripts and (since 2.2.1) the complete offline demo ZIP. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
-- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.3.0` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
+- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.0` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
 
 The workflows have separate responsibilities:
 
@@ -297,7 +297,8 @@ tabs and accordions. See the [illustrated static dashboard guide](docs/OPENUI.md
 
 
 For current OpenUI support see the [complete illustrated guide](docs/OPENUI.md):
-34 report types and 11 typed form fields in 2.3, with bounded adaptations for
+34 report types and 11 typed form fields, plus conditional workflows and editable
+row operations in 2.4, with bounded adaptations for
 all 82 pinned catalogue entries. Older versioned report examples remain valid.
 
 To build a fresh offline demo, run `npm run demo`. The builder refuses an existing
@@ -307,3 +308,14 @@ unpacked copy use `--directory --output /tmp/my-new-demo-folder`. The public tou
 in [docs/DEMO.md](docs/DEMO.md) becomes the package README; the manifest records
 coverage and versions. See [screenshot commands](docs/OPENUI.md#migration-and-development)
 for each gallery batch.
+
+
+Form drafts now survive page reload in browser-local IndexedDB, scoped to the
+board folder, respondent, source message and exact definition. Reset and successful
+submission clear saved edits. Retention is30 days, at most20 drafts per board and
+256 KiB per draft; storage failures show a memory-only notice. No draft data is
+written to the board. Upload snapshots use a metadata fingerprint; identical
+snapshot copies can share drafts, changed snapshots may not restore them. Use
+[form v3](docs/OPENUI.md#conditional-workflows-and-saved-drafts-24) for conditional
+fields/options, cross-field rules and row additions/removals/reordering. All run
+inside the same local board.html, without a server or automatic network requests.

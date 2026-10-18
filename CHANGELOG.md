@@ -1,6 +1,14 @@
 # Release notes
 
-## Unreleased
+## 2.4.0 — 2026-10-18
+
+- Persist incomplete v2/v3 drafts across reload in local IndexedDB, with scoped
+  identities, reset/success cleanup, bounded retention and visible memory fallback.
+- Add form v3 conditional fields/dependent options and typed cross-field rules.
+- Add bounded table row additions/removals/reordering as immutable typed replies.
+- Add backed-up2.3.0 upgrades, shared parity/refusal cases, runnable examples and
+  live offline demo workflow topics T013/T014, retaining all existing coverage.
+
 
 - Audit current documentation and example indexes for 2.3 reports/forms; correct
   installation, upgrade, renderer, demo and minimum-version guidance.

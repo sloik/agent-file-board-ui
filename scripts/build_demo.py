@@ -52,6 +52,7 @@ def build_demo(root: Path, destination: Path):
     examples = vendor / 'examples'
     version = json.loads((root / 'package.json').read_text())['version']
     forms_enabled = tuple(map(int, version.split('.'))) >= (2, 3, 0)
+    workflows_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 0)
     destination.mkdir(parents=True)
     board = destination / 'demo-board'
     base = board / '.agent-board'
@@ -61,6 +62,8 @@ def build_demo(root: Path, destination: Path):
                 'components/board-report-v2.schema.json', 'components/board-report-v3.schema.json']
     if forms_enabled:
         metadata += ['components/form-question-v2.schema.json', 'components/form-answer-v2.schema.json']
+    if workflows_enabled:
+        metadata += ['components/form-question-v3.schema.json','components/form-answer-v3.schema.json']
     for rel in metadata:
         target = base / rel
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -87,7 +90,7 @@ def build_demo(root: Path, destination: Path):
             return cli(root, 'post', '--path', board, '--from', sender, '--to', recipient,
                        '--scope', 'room', '--room', room, '--thread', thread, '--slug', slug,
                        '--at', f'2026-10-18T10:{minute:02}:00Z', '--language', 'en', '--body', body, *extra)
-        post('T000', 'start-here', '# Welcome to the offline demo\n\nEverything here is **fictional**: participants, conversations, results and embedded images.\n\nStart with the reports room: T004 is a report and historical answer; T007 is the v2 dashboard; T008 has specialty charts; T009 has images, card grids, carousel and modal; T010 is an unanswered choice; T011 is an editable form; T012 has a historical typed form answer.\n\nArchitecture and product contain sample discussions; Direct contains an agent handoff. Select human-owner-01 to try posting. The package README has the complete tour.', room='general', extra=('--content-type', 'text/markdown'))
+        post('T000', 'start-here', '# Welcome to the offline demo\n\nEverything here is **fictional**: participants, conversations, results and embedded images.\n\nStart with the reports room: T004 is a report and historical answer; T007 is the v2 dashboard; T008 has specialty charts; T009 has images, card grids, carousel and modal; T010 is an unanswered choice; T011 is an editable form; T012 has a historical typed form answer; T013 adds conditional fields, dependent choices, cross-field validation and editable rows; T014 has a historical row-operation reply.\n\nArchitecture and product contain sample discussions; Direct contains an agent handoff. Select human-owner-01 to try posting. The package README has the complete tour.', room='general', extra=('--content-type', 'text/markdown'))
         post('T000', 'how-to-try', 'This is a real file board. Tabs, filters, charts, carousel and modal only change your local view. Send answer or Post creates a file in this demo folder; read-only uploads download a reply instead. Extract another copy of the ZIP to reset.', room='general', sender='research-agent-01', minute=31)
         report_examples = examples / 'openui-report'
         question = report_examples / 'question.json'
@@ -127,6 +130,11 @@ def build_demo(root: Path, destination: Path):
             expected = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedFormFields'])
             if actual != expected:
                 raise ValueError(f'Demo form coverage differs: {actual ^ expected}')
+        if workflows_enabled:
+            workflow = report_examples / 'workflow-question.json'
+            post('T013', 'offline-workflow', 'Fictional release workflow. Switch environment to reveal approver and change regions; compare dates and budgets, then add/remove/move task rows. Reload to restore your local draft. No backend is used.', recipient='human-owner-01', extra=('--question-file', workflow, '--status', 'DECISION-NEEDED'))
+            source = post('T014', 'workflow-answer-example', 'Fictional v3 workflow with a separate historical answer. All row operations are relative to this immutable original.', recipient='human-owner-01', extra=('--question-file', workflow, '--status', 'DECISION-NEEDED'))
+            post('T014', 'historical-workflow-answer', 'Fictional production plan: added release-notes, removed viewer, moved release-notes first and changed schema hours to3. Original rows/messages remain intact.', sender='human-owner-01', recipient='implementation-agent-01', minute=40, extra=('--answer-file', report_examples / 'workflow-answer.json', '--reply-to', Path(source).name, '--status', 'REPLY'))
     cli(root, 'validate', '--path', board)
     implemented = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedTypes'])
     if types != implemented:
@@ -137,6 +145,10 @@ def build_demo(root: Path, destination: Path):
     if forms_enabled:
         manifest['formFieldTypes'] = sorted(actual)
         manifest['formTopics'] = ['T011', 'T012']
+    if workflows_enabled:
+        manifest['workflowTopics']=['T013','T014']
+        manifest['formVersions']=[2,3]
+        manifest['offlineWorkflows']=['persistent-drafts','conditional-fields','dependent-options','cross-field-validation','row-add-remove-reorder']
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

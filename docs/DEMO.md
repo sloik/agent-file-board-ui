@@ -31,16 +31,23 @@ manual placement. Files must be extracted first; a ZIP cannot be selected as a b
 | reports / T008 | Inspect pie/donut, radial, radar, scatter and stacked bar plots; expand Chart data for full values. |
 | reports / T009 | See icons, comparisons, tags, Markdown, embedded PNGs and card grids. Scroll to Card layouts for Previous/Next (or arrow/Home/End keys) and Open supporting details for the modal. Close it with Close or Escape. |
 | reports / T011 | Complete the typed form: text/number, selections, date, slider, switches and editable table cells. Reset restores local defaults; Send form answer appends a typed reply. |
+| reports / T013 | Switch environment to change regions/reveal approver, try invalid dates/budgets, add/remove/move task rows and reload to restore the draft. Reset clears it; Send form answer creates a separate v3 reply. |
+| reports / T014 | Read the historical v3 answer with added/removed/reordered rows relative to its original baseline. |
 | reports / T012 | Compare the original form/table with its separate historical typed answer. |
 | reports / T010 | Select **human-owner-01** in **I am**, pick an option, add a note and press **Send answer**. |
 
 The reports cover all **34 board component types** across versions 1, 2 and 3.
 The demo also covers all **11 form field types**, their label/button helpers,
+form v3 conditions/dependent choices/cross-field rules and row operations,
 and typed immutable responses. It uses the same pinned JSON examples as the
 screenshot gallery. All 82 upstream entries have bounded board adaptations;
 this does not imply full upstream props, arbitrary actions or streaming support.
 
-Tabs, sorting, filters, carousel and modal only change your local view. **Post**
+Tabs, sorting, filters, carousel and modal only change your local view. Form
+drafts also stay local to this browser (IndexedDB,30 days,20 drafts per board,
+256 KiB per draft); Reset/successful delivery clears saved edits, and storage
+failures show a memory-only notice. Extracted identical upload snapshots can
+share drafts; native folder handles identify separate copies. **Post**
 and **Send answer** create ordinary message files in this disposable demo board
 (or download them in read-only mode). The original messages stay unchanged.
 Switch the interface language in Settings or your system's light/dark appearance

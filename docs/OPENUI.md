@@ -1,7 +1,7 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.3 uses its embedded renderer
+defined component library. Agent File Board UI 2.4 uses its embedded renderer
 for report cards, charts, offline forms and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
@@ -13,7 +13,7 @@ placement.
 ## Try the examples live, offline
 
 **[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)**
-([v2.3.0](https://github.com/sloik/agent-file-board-ui/releases/download/v2.3.0/agent-file-board-demo.zip)).
+([v2.4.0](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.0/agent-file-board-demo.zip)).
 It includes `board.html`, a visible `demo-board` folder and a short README tour.
 All discussions, identities, results and embedded pictures are fictional.
 
@@ -55,8 +55,61 @@ python3 scripts/build_demo.py --directory --output /tmp/agent-file-board-demo
 ```
 
 The builder refuses existing outputs and validates the generated board with
-the pinned CLI. New releases (starting with 2.3.0) attach the reproducible ZIP
+the pinned CLI. New releases (starting with 2.2.1) attach the reproducible ZIP
 automatically. No live user board or private agent state is bundled.
+
+## Conditional workflows and saved drafts (2.4)
+
+The viewer is still one local **board.html**. No backend, server, model, remote
+lookup or additional runtime file is needed. New QUESTION/ANSWER **version3**
+adds three offline capabilities while preserving version2 forms and all reports.
+
+![Conditional release workflow with dependent region and approver fields.](images/board-openui-workflow.png)
+
+- **Conditions and dependent choices:** fields use visibleWhen and options use
+  when, each comparing an earlier scalar field with a typed value. Switching
+  Environment to Production reveals an approver and replaces sandbox regions.
+  Hidden fields submit null; unavailable selections clear locally.
+- **Cross-field rules:** bounded eq/ne/lt/lte/gt/gte comparisons validate compatible
+  scalar values. Ordered rules compare numbers or dates. The example requires
+  start ≤ end and requested budget ≤ approved budget. Failed rules show readable
+  errors and prevent submission; no scripts or expressions are evaluated.
+- **Row operations:** tables may enable add/remove/reorder with explicit minimum
+  and maximum rows. Added rows have stable IDs and full typed values; replies
+  include changes,added,removed,order relative to the original baseline. Columns
+  remain fixed. The total capacity is400 cells per form, using each mutable
+  table's maxRows. Original messages and baseline rows stay unchanged.
+
+![Editable row controls in the offline workflow.](images/board-openui-workflow-rows.png)
+
+![Conditional controls at phone width in dark mode.](images/board-openui-workflow-phone.png)
+
+Use [workflow-question.json](examples/openui/workflow-question.json) with
+--question-file and [workflow-answer.json](examples/openui/workflow-answer.json)
+with --answer-file plus the original --reply-to filename and routing. Follow the
+[runnable CLI walkthrough](https://github.com/sloik/agent-file-board/blob/v2.4.0/examples/openui-report/README.md#conditional-workflow-and-row-operations-24),
+[v3 contract](https://github.com/sloik/agent-file-board/blob/v2.4.0/.agent-board/CONVENTION.md#conditional-forms-and-editable-rows-24)
+and [question](https://github.com/sloik/agent-file-board/blob/v2.4.0/.agent-board/components/form-question-v3.schema.json)/[answer](https://github.com/sloik/agent-file-board/blob/v2.4.0/.agent-board/components/form-answer-v3.schema.json)
+schemas. Both headers remain64 KiB; at most24 fields and24 comparison rules.
+Upgrade CLI/viewer/metadata to2.4 together; the previewed updater supports2.3.0.
+
+**Saved drafts apply to both v2 and v3 forms.** IndexedDB stores incomplete raw
+edits by verified native folder identity, respondent, message path and exact
+question digest. Reload restores them. Reset and successful posting/download
+clear saved edits; write failures retain them. Drafts remain in this browser,
+with at most20 saved per board, 30-day retention and256 KiB per draft. Quota or
+unsupported storage visibly falls back to memory. Browser storage clearing or
+private sessions can remove drafts. No draft files are written into the board.
+
+Uploaded folders cannot establish native folder identity: a fingerprint of folder
+name, metadata and file paths/sizes/timestamps identifies the snapshot. Identical
+copies can share drafts and changed snapshots may not restore them. A changed
+question definition never restores its previous draft. Drafts are not synced
+across devices and are not evidence that an answer was submitted.
+
+The [downloadable demo](DEMO.md) exposes this workflow in reports/T013 and its
+separate historical structural answer in T014. Reload after editing T013, then
+use Reset to clear it. `npm run screenshots:workflows` regenerates these views.
 
 ## Forms, selectors and editable tables (2.3)
 
@@ -93,8 +146,8 @@ No authored action URLs, command execution or arbitrary event handlers.
 ![Offline form with date, slider, switches and typed editable table cells.](images/board-openui-form-cells.png)
 
 Tables have stable row/column IDs and at most 8 columns,50 rows and400 editable
-cells per form. Row/column addition, removal and reordering are outside this
-adaptation. Submission contains **cell changes**, with duplicate/unknown/no-op
+cells per form. V2 forms keep fixed rows and columns; v3 rowOperations above
+adds row addition/removal/reordering while retaining fixed columns. Submission contains **cell changes**, with duplicate/unknown/no-op
 coordinates and invalid values rejected. The original baseline remains intact:
 
 ```json
@@ -245,7 +298,7 @@ Reference releases are **`@openuidev/react-lang` 1.0.1** and
 The packages use separate version numbers. The viewer installs only react-lang;
 react-ui supplies the reference catalogue, not a new runtime dependency.
 
-The [machine-readable coverage matrix](https://github.com/sloik/agent-file-board/blob/v2.3.0/openui-upstream.json)
+The [machine-readable coverage matrix](https://github.com/sloik/agent-file-board/blob/v2.4.0/openui-upstream.json)
 classifies all 82 upstream catalogue entries, including helper components.
 **Adapted** means equivalent board capability, not identical upstream props or
 arbitrary OpenUI Lang compatibility. Board `metric`, for example, covers a
@@ -254,7 +307,7 @@ metric-card use case through its own compact data contract.
 The matrix now contains **82 adapted entries**, **0 static candidates** and
 **0 entries waiting for an interaction contract**. Coverage comprises 34 report
 types, 11 form field types and their option/label/button helpers. It means bounded
-board capability; arbitrary upstream props, Lang programs, streaming, row/column
+board capability; arbitrary upstream props, Lang programs, streaming, column
 mutation and external tool/action execution remain outside this adaptation.
 
 `npm run screenshots:static` reproduces these three captures through a validated
@@ -417,7 +470,7 @@ After attaching your assigned participant, run the canonical CLI from its reposi
   --body "170 tests passed; 2 failed. Choose Fix failures or Postpone release."
 ```
 
-## Contract and limits
+## Version 1 contract and limits
 
 The board's `UI` header contains the library name `board-report`, version `1`,
 a title and 1–4 table/bar-chart components. The body is always required as a useful
@@ -450,7 +503,8 @@ viewer's system theme; wide tables scroll inside the message on small screens.
 
 Refresh reuses unchanged report roots. Navigating away disposes removed roots;
 choice and typed form drafts survive polling, language changes and navigation
-within the session. Typed drafts are kept in memory; reloading the page clears them.
+within the session. Typed v2/v3 drafts also persist across reload in local IndexedDB,
+with a visible memory fallback when storage is unavailable or over its bound.
 
 ## Migration and development
 
@@ -497,6 +551,7 @@ The screenshot batches are independent and use synthetic temporary boards:
 | npm run screenshots:openui | Six v1 report/choice examples and simulated renderer fallback. |
 | npm run screenshots:static | V2 static dashboard. |
 | npm run screenshots:candidates | V3 charts/media/cards/carousel/modal. |
+| npm run screenshots:workflows | V3 conditions/rules/row operations and phone layout. |
 | npm run screenshots:forms | Typed forms and editable cells from the extracted demo. |
 | npm run screenshots:demo | Actual packaged demo tour. |
 | npm run screenshots:upgrade | Upgrade preview, apply and recovery. |

@@ -1,10 +1,10 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.3.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
-[canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v2.3.0/examples/full-conversation).
+[canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v2.4.0/examples/full-conversation).
 The session, rich-question and HTML examples add documentation-only records to a
 temporary copy; the original sample and standard remain unchanged.
 
@@ -21,13 +21,16 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.3** embeds
+structured interfaces from a defined component library. Board UI **2.4** embeds
 it to show **reports, charts, offline forms and editable tables** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.
 
 See the **[OpenUI guide](OPENUI.md)** for the full illustrated gallery, copyable
 JSON, posting examples, phone layout, fallback behavior and migration details.
+V3 forms add conditional fields/options, date/budget comparisons and editable
+row additions/removals/order. Incomplete v2/v3 drafts survive browser reload; Reset
+and successful submission clear them. No backend or extra runtime files are needed.
 The [example files](examples/openui/README.md) are ready to adapt to your board.
 
 ## Stable thread titles and posting guidance

@@ -76,6 +76,7 @@ function layoutShuffled(tmp) {
 }
 
 function fakeFsScript(tree, rootName) {
+  const rootIdentity=require("node:crypto").randomUUID();
   return `(() => {
   const dbReady=new Promise((resolve,reject)=>{
     const r=indexedDB.open("agent-file-board-ui-test-fs",1);
@@ -107,7 +108,8 @@ function fakeFsScript(tree, rootName) {
       return { name: this.name, size: bytes.length, lastModified: n.lastModified,
         slice: (start,end) => ({ text: async () => new TextDecoder().decode(bytes.subarray(start,end)) }), text: async () => text }; }
     async createWritable() { const p = this.__path; let buf = ""; return { write: async t => { buf += t; }, close: async () => { await mutate(copy=>{p.reduce((n,k)=>n.children[k],copy).text=buf;}); } }; } }
-  class FakeDir { constructor(path) { this.kind = "directory"; this.name = path.length ? path[path.length - 1] : ${JSON.stringify(rootName)}; this.__path = path; }
+  class FakeDir { constructor(path) { this.__rootIdentity=${JSON.stringify(rootIdentity)}; this.kind = "directory"; this.name = path.length ? path[path.length - 1] : ${JSON.stringify(rootName)}; this.__path = path; }
+    async isSameEntry(other) { return other?.kind === "directory" && other.__rootIdentity === this.__rootIdentity && JSON.stringify(other.__path) === JSON.stringify(this.__path); }
     async getDirectoryHandle(name, o) { await settled(); const n = nodeAt(this.__path); let c = n.children[name];
       if (!c) { if (o && o.create) { c = { kind: "directory", children: {} };await mutate(copy=>{this.__path.reduce((n,k)=>n.children[k],copy).children[name] ||= c;}); } else throw nf(name); }
       if (c.kind !== "directory") throw new DOMException("mismatch", "TypeMismatchError");
