@@ -1,6 +1,6 @@
 /* Trusted metadata upgrades. Embedded in the viewer's existing script scope. */
 let upgradeDraft=null, upgradeBusy=false, upgradeGeneration=0;
-const UPGRADE_PATHS=["GLOSSARY.md","components/board-report-v1.schema.json","CONVENTION.md"];
+const UPGRADE_PATHS=["GLOSSARY.md","components/board-report-v1.schema.json","components/board-report-v2.schema.json","CONVENTION.md"];
 const upgradeBytes=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
 const upgradeHash=async bytes=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",bytes))].map(b=>b.toString(16).padStart(2,"0")).join("");
 function upgradeText(bytes){ return new TextDecoder("utf-8",{fatal:true}).decode(bytes); }
@@ -35,7 +35,7 @@ async function upgradePlan(root){
 function upgradeSameBoard(plan){ return plan.dir===dirHandle && B?.layout.dialect==="native"; }
 async function upgradeWrite(root,rel,text,expected){
   // Message writer remains append-only. Only these metadata/backup paths may replace files.
-  const backup=/^upgrade-backups\/[a-f0-9]{32}\/(?:(?:snapshot|complete)\.json|GLOSSARY\.md|CONVENTION\.md|components\/board-report-v1\.schema\.json)$/.test(rel);
+  const backup=/^upgrade-backups\/[a-f0-9]{32}\/(?:(?:snapshot|complete)\.json|GLOSSARY\.md|CONVENTION\.md|components\/board-report-v[12]\.schema\.json)$/.test(rel);
   if(!backup && !UPGRADE_PATHS.includes(rel)) throw Error(t("e_path"));
   let dir=root; const parts=rel.split("/");
   for(const name of parts.slice(0,-1)) dir=await dir.getDirectoryHandle(name,{create:true});

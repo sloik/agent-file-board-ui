@@ -30,3 +30,8 @@ See [OPENUI.md](../../OPENUI.md#examples) for all rendered examples, authoring
 instructions, the contract and migration details.
 `npm run screenshots:openui` validates these payloads through the pinned CLI,
 renders the actual standalone viewer and regenerates their screenshots.
+
+
+- [static-dashboard.json](static-dashboard.json) — board-report v2 example with
+  all18 static types, local navigation/filtering and signed multi-series charts.
+  Requires2.1 CLI/viewer/metadata; see [the static dashboard guide](../../OPENUI.md#static-dashboard-21).

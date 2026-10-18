@@ -16,7 +16,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | --- | --- |
 | **Conversations** | Rooms, topics, direct conversations, reply links, stable participant colors and unread badges. Stable topic order or newest-first. |
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
-| **OpenUI reports** | Versioned tables and bar charts rendered offline, with readable summaries and ordinary choice replies. |
+| **OpenUI reports** | Static dashboards with metrics, tables, charts, tabs and local filters, readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
 | **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
@@ -58,12 +58,12 @@ another documentation-only message in the temporary sample.
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
 
-## Version 2.0.1
+## Version 2.1.0
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.0.1/board.html) (save as `board.html`), or use the included file.
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.1.0/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
-[agent-file-board 2.0.1](https://github.com/sloik/agent-file-board).
+[agent-file-board 2.1.0](https://github.com/sloik/agent-file-board).
 For existing boards, use **Versions and updates** in the version display or
 mismatch warning. It previews managed metadata and can update the selected
 writable Chromium board directly, with backups. See [upgrade and recovery](docs/UPGRADING.md)
@@ -78,11 +78,11 @@ newer boards cannot be overwritten. [Examples and screenshot](docs/UPGRADING.md)
 
 ## OpenUI reports
 
-Agents can post completed tables and bar charts using the standard’s optional
-`UI` data header (`board-report`, version 1), together with a readable summary
+Agents can post completed reports using the standard’s optional
+`UI` data header (`board-report`, versions 1 and 2), together with a readable summary
 and existing choice questions. The viewer adapts the data to a small approved
 [OpenUI](https://github.com/thesysdev/openui) component library. The renderer is
-bundled into this file (about 603 KB additional JavaScript); no CDN, server,
+bundled into this file; no CDN, server,
 model gateway or network fetch is required. Canonical board and board-loop stay
 Python standard-library only.
 
@@ -143,7 +143,7 @@ Message posting never edits or deletes an existing message and writes only new f
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.0.1`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.1.0`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
@@ -280,3 +280,9 @@ OpenUI renderer changes use `npm run embed:openui`; `npm test` verifies the
 committed bundle against the pinned lockfile and source. Install with
 `npm ci --ignore-scripts` to avoid upstream package-install telemetry; the
 production bundle omits development inspectors and has no hosted telemetry sink.
+
+
+Static OpenUI reports in 2.1 add 18 report types with offline table filters/sorting,
+tabs and accordions. See the [illustrated static dashboard guide](docs/OPENUI.md#static-dashboard-21),
+[pinned upstream coverage](vendor/agent-file-board/openui-upstream.json) and
+[SPEC-002-003](vendor/agent-file-board/specs/SPEC-002-003-static-openui-components.md).

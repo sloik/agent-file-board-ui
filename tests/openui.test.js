@@ -136,3 +136,91 @@ test("large report headers hydrate completely while missing fallback bodies disa
     assert.equal(await article(page).locator(".board-report,.choice-form").count(),0);await ctx.close();
   }
 });
+
+const STATIC=JSON.parse(h.fs.readFileSync(h.path.join(h.VENDOR,"examples/openui-report/static-dashboard.json"),"utf8"));
+
+test("static v2 renders every adapter offline and local controls preserve immutable files and refresh state",async()=>{
+  const {ctx,page,log}=await boot({ui:STATIC,body:"Synthetic release dashboard: 170 passed, 2 failed. Review before publishing."});
+  await page.waitForSelector(".report-tabs [role=tab]");
+  assert.equal(await article(page).locator(".report-error").isVisible(),false);
+  assert.equal(await article(page).locator(".report-metric").count(),2);
+  assert.match(await article(page).locator(".report-callout").innerText(),/Release held/);
+  assert.equal(await article(page).locator(".report-tag").innerText(),"Review needed");
+  assert.equal(await article(page).locator(".report-series-chart").count(),4);
+  const original=await page.evaluate(()=>window.__fakefs.dump());
+  const tabs=article(page).locator(".report-tabs"),results=tabs.getByRole("tab",{name:"Results"});
+  await results.click();
+  const table=tabs.locator(".report-table");
+  await table.getByRole("button",{name:/Passed/}).click();
+  assert.deepEqual(await table.locator("tbody tr td:first-child").allTextContents(),["Integration","Browser","Unit"]);
+  await table.locator("input").fill("browser");
+  assert.equal(await table.locator("tbody tr").count(),1);
+  assert.equal(await table.locator("tbody td").first().innerText(),"Browser");
+  await article(page).locator(".report-accordion summary").filter({hasText:"Commands"}).click();
+  assert.equal(await article(page).locator(".report-code").innerText(),"npm test\npython3 -m unittest discover -s tests");
+  await table.locator("input").focus();
+  await table.locator("input").evaluate(el=>el.setSelectionRange(1,4));
+  const builds=await page.evaluate(()=>window.__boardTest.stats.builds);
+  await page.clock.runFor(61000);await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);
+  assert.equal(await results.getAttribute("aria-selected"),"true");
+  assert.equal(await article(page).locator(".report-accordion details").nth(1).getAttribute("open"),"");
+  assert.equal(await table.locator("input").inputValue(),"browser");
+  assert.deepEqual(await table.locator("input").evaluate(el=>[el===document.activeElement,el.selectionStart,el.selectionEnd]),[true,1,4]);
+  assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),original);
+  assert.equal(log.requests.filter(url=>!url.startsWith("file:")).length,0);assert.deepEqual(log.pageErrors,[]);
+  await ctx.close();
+});
+
+test("static v2 charts expose signed data, keyboard tabs work and localization keeps local state",async()=>{
+  const {ctx,page,log}=await boot({ui:STATIC});await page.waitForSelector(".report-series-chart svg");
+  const tabs=article(page).locator(".report-tabs");
+  await tabs.getByRole("tab",{name:"Trends"}).focus();await page.keyboard.press("ArrowRight");
+  assert.equal(await tabs.getByRole("tab",{name:"Results"}).getAttribute("aria-selected"),"true");
+  await tabs.locator(".report-filter input").fill("Unit");
+  await page.click("#gear");await page.selectOption("#sLang","pl");
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(()=>document.querySelector('.report-filter')?.textContent.includes('Filtruj'));
+  assert.equal(await tabs.getByRole("tab",{name:"Results"}).getAttribute("aria-selected"),"true");
+  assert.equal(await tabs.locator(".report-filter input").inputValue(),"Unit");
+  assert.match(await article(page).locator(".report-steps").innerText(),/Ukończono|W toku/);
+  await article(page).locator(".report-accordion summary").filter({hasText:"Commands"}).click();
+  const chart=article(page).locator('[data-chart-kind="stacked-bar-chart"]');
+  await chart.locator("summary").click();
+  assert.deepEqual(await chart.locator("tbody td").allTextContents(),["3","2","-2","-4","0","1"]);
+  const geometry=await chart.locator("rect").evaluateAll(nodes=>nodes.map(n=>({x:+n.getAttribute('x'),y:+n.getAttribute('y'),h:+n.getAttribute('height')})));
+  assert.ok(geometry.every(r=>Number.isFinite(r.x+r.y+r.h) && r.h>=0));
+  // First positive series3 + second positive2 share a cumulative stack at Mon.
+  assert.ok(Math.abs(geometry[3].y+geometry[3].h-geometry[0].y)<.001);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});
+
+test("static v2 remains readable at phone width in both themes, including zero/single-point charts",async()=>{
+  const ui=structuredClone(STATIC);
+  ui.components.push({type:"line-chart",title:"One point",labels:["Zero"],series:[{name:"Only",values:[0]}]});
+  const {ctx,page,log}=await boot({ui});await page.waitForSelector(".report-metric");
+  await article(page).locator(".report-accordion summary").filter({hasText:"Review notes"}).click();
+  for(const theme of ["light","dark"]){
+    await page.emulateMedia({colorScheme:theme});
+    for(const width of [1280,375]){
+      await page.setViewportSize({width,height:1500});
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+      assert.equal(await article(page).locator(".report-error").isVisible(),false);
+      assert.ok(await article(page).locator(".report-card li").count()>=3);
+    }
+  }
+  const last=article(page).locator('.report-series-chart').last();
+  assert.equal(await last.locator('circle').count(),1);
+  assert.equal(await last.locator('circle title').textContent(),"Zero: Only = 0");
+  assert.equal(log.requests.filter(url=>!url.startsWith("file:")).length,0);assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});
+
+test("static v2 invalid nested data is isolated and a missing renderer retains the readable summary",async()=>{
+  const invalid=structuredClone(STATIC);invalid.components[0].children[0].action="run";
+  const bad=await boot({ui:invalid});
+  assert.equal(await article(bad.page).locator(".board-report,.choice-form").count(),0);
+  assert.equal(await article(bad.page).locator(".metadata-error").count(),1);await bad.ctx.close();
+  const missing=await boot({ui:STATIC,beforeOpen:page=>page.evaluate(()=>{delete window.BoardReportRenderer;})});
+  await missing.page.waitForSelector(".report-error:not([hidden])");
+  assert.match(await article(missing.page).locator(".body").innerText(),/170 passed/);
+  assert.equal(await article(missing.page).locator(".choice-form").count(),1);await missing.ctx.close();
+});

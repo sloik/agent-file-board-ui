@@ -1,5 +1,12 @@
 # Release notes
 
+## 2.1.0 — 2026-10-18
+
+- Add board-report v2: metric cards, callouts/tags, text/code/lists, cards/stacks, tabs/accordions/steps and multi-series line/area/grouped/stacked charts. Existing v1 reports remain supported.
+- Add local table filtering/sorting, state-preserving refresh/localization and scrollable phone plots with complete numeric data tables. No backend, network resources or new write actions.
+- Pin upstream reference to react-lang1.0.1/react-ui0.18.1 at eb20708; publish an enumerated coverage matrix, bounded schemas, CLI example and illustrated guide.
+- Extend safe metadata upgrades to2.1.0, including pristine2.0.1 boards and the v2 schema.
+
 ## 2.0.1 — 2026-10-18
 
 - Add **Versions and updates**, linked from the version display and mismatch warning. Explain viewer vs selected-board versions and why Chrome refresh does not upgrade board metadata.

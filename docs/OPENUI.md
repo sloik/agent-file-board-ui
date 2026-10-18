@@ -1,8 +1,8 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.0 uses its embedded renderer
-for report cards containing tables and bar charts. Agents post validated
+defined component library. Agent File Board UI 2.1 uses its embedded renderer
+for static report cards, charts and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
 Reports live inside ordinary messages, with a readable summary and optional
@@ -10,7 +10,76 @@ choice question. **Send answer** creates a new immutable reply linked to the
 original report. An uploaded read-only board downloads that reply for manual
 placement.
 
-## Examples
+## Static dashboard (2.1)
+
+![Static dashboard with metric cards, status, callout, tabs and trend charts.](images/board-openui-static.png)
+
+The first static batch adds **18 board component types**. Everything is embedded
+in the immutable message and works from `file://` without a backend.
+
+| Family | Supported components |
+| --- | --- |
+| Data | `table`, `bar-chart`, `line-chart`, `area-chart`, `grouped-bar-chart`, `stacked-bar-chart` |
+| Summaries | `metric`, `callout`, `tag` |
+| Content | `text`, `code-block`, `list`, `separator` |
+| Composition | `card`, `stack`, `tabs`, `accordion`, `steps` |
+
+V2 tables filter their embedded rows and sort columns locally. Tabs and
+accordions change the visible section. These controls retain their local state
+and input selection across polling refresh; changing the interface language
+updates control labels without clearing the filter or selected tab.
+
+<details>
+<summary><strong>See table filtering and comparison charts</strong></summary>
+
+![Results tab filtered to Browser, with grouped bars and expandable details.](images/board-openui-static-details.png)
+
+</details>
+
+<details>
+<summary><strong>See the static dashboard on a phone in dark mode</strong></summary>
+
+![Phone dashboard with stacked metric cards and local tabs in dark mode.](images/board-openui-static-phone.png)
+
+Wide tables, code and plots scroll inside their report. Charts retain a minimum
+readable width; **Chart data** exposes every full label and numeric value,
+including negative and zero values.
+
+</details>
+
+Use the complete [dashboard JSON](examples/openui/static-dashboard.json).
+Change `version` to `2` and use the exact shapes in the
+[v2 schema](../vendor/agent-file-board/.agent-board/components/board-report-v2.schema.json)
+and [canonical contract](../vendor/agent-file-board/.agent-board/CONVENTION.md#static-reports-library-version-2-21).
+Keep a readable message body. The limits are 16 KiB of UI JSON, 64 component nodes,
+nesting depth 4, and 16 children per container; sections allow 8 tabs/items and
+charts allow 6 series with 50 points each. Version 1 reports keep their original
+limits and behavior. Upgrade CLI, viewer and board metadata to 2.1 together.
+
+### Fixed upstream reference and remaining coverage
+
+Reference releases are **`@openuidev/react-lang` 1.0.1** and
+**`@openuidev/react-ui` 0.18.1**, at upstream commit
+[`eb20708b9cc41afced5625e99e6ce8ec2f8a5435`](https://github.com/thesysdev/openui/tree/eb20708b9cc41afced5625e99e6ce8ec2f8a5435).
+The packages use separate version numbers. The viewer installs only react-lang;
+react-ui supplies the reference catalogue, not a new runtime dependency.
+
+The [machine-readable coverage matrix](../vendor/agent-file-board/openui-upstream.json)
+classifies all 82 upstream catalogue entries, including helper components.
+**Adapted** means equivalent board capability, not identical upstream props or
+arbitrary OpenUI Lang compatibility. Board `metric`, for example, covers a
+metric-card use case through its own compact data contract.
+
+Later static candidates include pie/radial/scatter/radar charts, richer card
+composites, carousel/modal and media. Images would need an explicitly offline
+asset contract. Forms, editable tables and action buttons require a separate
+interaction contract; they could eventually submit immutable files, but this
+batch adds no submission or execution behavior.
+
+`npm run screenshots:static` reproduces these three captures through a validated
+CLI post on a temporary board, checks immutable files and zero network requests.
+
+## Version 1 examples
 
 ![OpenUI release review containing a results table, bar chart, decision choices and a custom response draft.](images/board-openui.png)
 
