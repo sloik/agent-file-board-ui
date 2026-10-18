@@ -13,3 +13,16 @@ payload or a canonical CLI question/answer file. Entered values are included in
 exports; keep their local files wherever appropriate for that information.
 
 See [the full guide](../../WORKBENCH.md#export-import-or-delete-a-local-draft).
+
+## Authoring workspace backup (UI2.4.2)
+
+[authoring-workflow.json](authoring-workflow.json) is a fictional, board-independent
+authoring backup. Open **Structured message → Authoring drafts → Import authoring
+backup**, select it and confirm replacement. Then open **Visual form builder**,
+edit or preview locally, save a named snapshot and reload. The complete demo
+bundles the same bytes as **authoring-example.json**. It contains no attachment
+or routing; attach explicitly only after validation on your chosen native board.
+This `agent-file-board-authoring` version1 envelope differs from answer-draft
+backups and from canonical QUESTION/ANSWER payloads. Neither backup format is
+accepted by boardctl as a question or answer file. See the
+[local workflow trial](../../LOCAL-WORKFLOW.md).

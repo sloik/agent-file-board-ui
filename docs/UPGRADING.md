@@ -88,9 +88,9 @@ read-only preview, captures desktop/phone dialogs, applies an update, validates
 the result and verifies that messages stayed unchanged and no network was used.
 
 
-## Viewer-only tools in UI2.4.1
+## Viewer-only tools in UI2.4.2
 
-UI2.4.1 adds authoring previews, typed answer comparisons and a local draft
+UI2.4.2 adds persistent authoring and a visual builder alongside authoring previews, typed answer comparisons and a local draft
 manager. Its canonical template/submodule remains2.4.0; there are no new managed
 files or message schemas. A board already on2.4.0 does not need another metadata
 upgrade for these tools. Viewer and standard patch numbers are independent.

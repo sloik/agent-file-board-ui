@@ -30,7 +30,7 @@ const MUTATIONS = [
   ["PL string key dropped", 's_done:"Gotowe", ', "", c.checkKeyDiff],
   ["schedule always on", "function inSchedule(set, now, tz){", "function inSchedule(set, now, tz){ return true;", c.checkSchedulePause],
   ["network resource added", '<div class="toast" id="toast"', '<img src="https://example.invalid/x.png"><div class="toast" id="toast"', c.checkNoNetwork],
-  ["startup error injected (smoke)", "  wire();\n  renderChrome();\n  setInterval(tick, 1000);", "  wire();\n  notDefinedAtInit();\n  renderChrome();\n  setInterval(tick, 1000);", c.checkSmoke],
+  ["startup error injected (smoke)", "  wire();\n  await initAuthoringStorage();\n  renderChrome();\n  setInterval(tick, 1000);", "  wire();\n  await initAuthoringStorage();\n  notDefinedAtInit();\n  renderChrome();\n  setInterval(tick, 1000);", c.checkSmoke],
   ["reply handler detached (smoke)", '$("#replyClear").onclick = clearReply;', "", c.checkSmoke],
 ];
 for (const [name, from, to, check] of MUTATIONS) {

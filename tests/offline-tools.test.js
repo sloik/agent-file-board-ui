@@ -23,7 +23,7 @@ test('invalid source-bound answers never acquire a valid comparison',async()=>{
  }finally{await ctx.close();}
 });
 test('authoring previews real renderers without a board, invalidates edits and never posts preview answers',async()=>{
- const {ctx,page,log}=await h.openPage(browser);try{
+ const {ctx,page,log}=await h.openPage(browser,{dialog:'accept'});try{
   await sample(page,'report-v1');await page.waitForSelector('#structuredPreview .report-content');assert.equal(await page.locator('#structuredAttach').isDisabled(),true);await page.fill('#structuredJson','{"version":999}');assert.equal(await page.locator('#structuredPreview').innerText(),'');assert.equal(await page.locator('#structuredAttach').isDisabled(),true);await page.click('#structuredValidate');assert.doesNotMatch(await page.locator('#structuredError').innerText(),/^Valid payload/);
   await page.selectOption('#structuredExample','form-v3');await page.click('#structuredLoad');await page.click('#structuredValidate');await page.waitForSelector('#structuredPreview .typed-form');await page.locator('#structuredPreview [data-form-field=environment] select').selectOption('production');await page.locator('#structuredPreview [data-form-field=approver] input').fill('Preview only');await page.locator('#structuredPreview [data-form-field=region] select').selectOption('eu');await page.locator('#structuredPreview .form-buttons [type=submit]').click();assert.match(await page.locator('#structuredPreview .form-result').innerText(),/Preview only/);assert.equal(await page.evaluate(()=>window.__boardTest.getModel()),null);await page.click('#structuredClose');assert.equal(await page.locator('#structuredPreview').innerText(),'');clean(log);
  }finally{await ctx.close();}

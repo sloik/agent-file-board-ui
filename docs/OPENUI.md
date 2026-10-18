@@ -1,7 +1,7 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.4.1 uses its embedded renderer
+defined component library. Agent File Board UI 2.4.2 uses its embedded renderer
 for report cards, charts, offline forms and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
@@ -13,7 +13,7 @@ placement.
 ## Try the examples live, offline
 
 **[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)**
-([v2.4.1](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.1/agent-file-board-demo.zip)).
+([v2.4.2](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.2/agent-file-board-demo.zip)).
 It includes `board.html`, a visible `demo-board` folder and a short README tour.
 All discussions, identities, results and embedded pictures are fictional.
 
@@ -58,20 +58,24 @@ The builder refuses existing outputs and validates the generated board with
 the pinned CLI. New releases (starting with 2.2.1) attach the reproducible ZIP
 automatically. No live user board or private agent state is bundled.
 
-## Authoring and answer review (UI2.4.1)
+## Authoring and answer review (UI2.4.2)
 
-Use **Structured message** to load/edit an embedded report/form example,
+Use **Structured message** to build a form visually or load/edit an embedded report/form example,
 validate it and try the actual renderer offline. **Attach to composer** snapshots
 that JSON for normal posting with a useful body and existing sender/routing
 checks; preview itself never posts anything. Typed answer messages now show
 read-only before/after comparisons with row additions/removals and final order.
 **Saved drafts** provides local export/import/delete with exact source/respondent
-binding and explicit confirmation before replacement or deletion.
+binding and explicit confirmation before replacement or deletion. Authoring work
+now recovers locally after reload, with named snapshots, export/import and
+explicit same-board attachment restoration. The visual builder covers all 11
+field types, v3 conditions/rules and table baseline/row settings.
 
 See [the illustrated guide](WORKBENCH.md) and
 [draft backup example](examples/drafts/README.md). The demo adds reports/T015's
-fictional agent → human → agent cycle and a bundled example-draft.json for T013.
-No protocol change is needed: canonical2.4.0 remains pinned; UI2.4.1 provides
+fictional agent → human → agent cycle, a bundled example-draft.json for T013,
+an authoring-example.json backup and [local workflow trial](LOCAL-WORKFLOW.md).
+No protocol change is needed: canonical2.4.0 remains pinned; UI2.4.2 provides
 these tools inside the same local HTML page, without a backend.
 
 ## Conditional workflows and saved drafts (2.4)
@@ -567,7 +571,7 @@ The screenshot batches are independent and use synthetic temporary boards:
 | npm run screenshots:openui | Six v1 report/choice examples and simulated renderer fallback. |
 | npm run screenshots:static | V2 static dashboard. |
 | npm run screenshots:candidates | V3 charts/media/cards/carousel/modal. |
-| npm run screenshots:tools | Answer comparisons, authoring preview and saved draft manager. |
+| npm run screenshots:tools | Answer comparisons, authoring preview, visual builder and both draft managers. |
 | npm run screenshots:workflows | V3 conditions/rules/row operations and phone layout. |
 | npm run screenshots:forms | Typed forms and editable cells from the extracted demo. |
 | npm run screenshots:demo | Actual packaged demo tour. |

@@ -1,7 +1,7 @@
 # Browser storage and reload verification
 
 The viewer uses browser-local IndexedDB for preferences, last view, read markers
-and guidance paths, plus form v2/v3 drafts since2.4. Settings migrate from the prior localStorage representation.
+and guidance paths, plus form v2/v3 drafts since2.4 and authoring work since UI2.4.2. Settings migrate from the prior localStorage representation.
 Startup restores preferences before enabling controls. Writes use ordered,
 committed transactions. No shared board messages are migrated or rewritten.
 
@@ -85,5 +85,31 @@ local files containing entered values, with no automatic sync or upload.
 
 See [the tool guide](WORKBENCH.md#export-import-or-delete-a-local-draft), the
 [public fictional backup](examples/drafts/README.md), and tests/offline-tools.test.js.
-Authoring previews do not create persistent form drafts; attached definitions
-and unsent authoring JSON stay in session memory.
+Authoring previews do not create answer drafts.
+
+## Authoring workspace (UI2.4.2)
+
+The separate `authoring-workspace-v1` IndexedDB record holds active editor recovery,
+a saved attachment snapshot and up to20 named snapshots. This is the current
+viewer/browser profile's workspace, independent of the chosen board/respondent.
+It intentionally accepts unfinished JSON. Each editor/attachment is bounded to
+256 KiB UTF-8; the versioned export/import envelope is bounded to1 MiB. Named
+snapshots have no automatic expiry. Clear/delete requires explicit confirmation;
+failed transactions retain working data and never claim committed success.
+
+Writes serialize through a committed read/modify/write transaction. Concurrent
+tabs merge named snapshots; active recovery uses the last committed writer.
+Storage status shows pending writes, saved or memory-only; unavailable storage
+leaves editing, preview and export usable. A close/reload warning is requested
+when work is pending or memory-only (browser handling can vary). No localStorage
+fallback is claimed for authoring. Native attachment restoration requires an
+explicit click and matching board identity plus validation; no routing or message
+body is restored and nothing is automatically posted. Native identity fallback
+may be session-only, preventing restoration; export the definition and explicitly
+validate/attach on the intended board instead.
+
+Browser clearing, quotas, private profiles and moving the HTML file may remove or
+separate recovery. Backups contain entered values; nothing is synchronized or
+uploaded. Answer-draft retention/scoping above is unchanged. See
+[authoring tools](WORKBENCH.md#keep-unfinished-authoring-work) and
+`tests/authoring-builder.test.js` for reload/failure/import/attachment controls.

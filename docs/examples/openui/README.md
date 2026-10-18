@@ -61,8 +61,14 @@ creates and validates both immutable messages in a temporary board.
   [workflow guide](../../OPENUI.md#conditional-workflows-and-saved-drafts-24).
 
 
-UI2.4.1 can load all five canonical report/form examples directly through
+UI2.4.2 can load all five canonical report/form examples directly through
 **Structured message → Load example → Validate and preview**. Attaching a
 validated snapshot uses normal posting, never preview submission. See
 [authoring/review tools](../../WORKBENCH.md), and keep
 [draft export/import JSON](../drafts/README.md) separate from board payloads.
+
+Form definitions can also be edited with **Visual form builder**, including all
+11 field types, v3 conditions/rules and table baselines. **Authoring drafts**
+recovers unfinished JSON locally and offers named snapshots/export/import.
+See the [authoring backup example](../drafts/authoring-workflow.json) and
+[workflow trial](../../LOCAL-WORKFLOW.md). Actual human adoption is unverified.

@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.2/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -21,7 +21,7 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.4.1** embeds
+structured interfaces from a defined component library. Board UI **2.4.2** embeds
 it to show **reports, charts, offline forms and editable tables** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.
@@ -406,3 +406,13 @@ provide **Open** and **Open containing folder** actions. Folder references work
 too. The updated macOS desktop opener opens the original document with its
 default app or its parent in Finder, only after a click. See the
 [examples and setup](../README.md#open-files-mentioned-in-messages).
+
+## Visual authoring and recovery (UI2.4.2)
+
+Create all 11 form types without editing JSON, including v3 conditions,
+validation rules and editable-table baseline/row settings. The existing
+validator and preview govern posting. Editor work recovers on reload; named
+snapshots and local exports/imports preserve unfinished work. Saved attachments
+restore only explicitly on the matching board. See the
+[illustrated guide](WORKBENCH.md#build-a-form-visually) and
+[workflow trial](LOCAL-WORKFLOW.md). No backend or extra runtime file.

@@ -298,6 +298,18 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .answer-review{margin:12px 0;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}.answer-review summary{cursor:pointer;font-weight:650}.answer-review h4{margin:12px 0 8px}.answer-review-values{display:grid;grid-template-columns:minmax(80px,auto) minmax(0,1fr);gap:5px 12px}.answer-review-values dt{color:var(--muted)}.answer-review-values dd{margin:0;white-space:pre-wrap}.review-table-scroll{overflow:auto;max-width:100%}.answer-review table{border-collapse:collapse;min-width:100%;font-size:.9em}.answer-review th,.answer-review td{border:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}.answer-review td{min-width:90px;white-space:pre-wrap}.answer-review ins{text-decoration:none;font-weight:650}.answer-review del{opacity:.75}.review-before,.review-after{display:block}.review-order{font-size:.9em}.managed-draft{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.managed-draft h3{margin:0 0 8px;font-size:1em}.managed-draft code{font-size:.85em}
 
 @media(max-width:600px){.answer-review-values{grid-template-columns:minmax(0,1fr);gap:2px}.answer-review-values dd{margin:0 0 8px}}
+
+#formBuilder[hidden],#structuredJson[hidden]{display:none}
+#authoringDraftPanel{margin:12px 0;border:1px solid var(--line);border-radius:8px;padding:10px}
+.builder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:10px;margin:10px 0}
+.builder-control{display:flex;flex-direction:column;gap:4px;min-width:0;margin:6px 0}
+.builder-control input,.builder-control textarea,.builder-control select,#authoringName,#authoringSaved{width:100%;min-width:0;box-sizing:border-box;padding:7px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px}
+.builder-control input[type=checkbox]{width:auto;align-self:flex-start}
+.builder-field,.builder-column{border:1px solid var(--line);border-radius:8px;padding:12px;margin:10px 0;min-width:0}
+#formBuilder fieldset{min-width:0;border:1px solid var(--line);margin:10px 0;padding:10px;border-radius:6px}
+.builder-option,.builder-row,.builder-rule{padding:8px;border-bottom:1px solid var(--line)}
+#formBuilder summary{overflow-wrap:anywhere;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -384,7 +396,15 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
  <p class="hint" data-i18n="authoring_note"></p>
  <div class="tool-fields"><label><span data-i18n="authoring_kind"></span><select id="structuredKind"><option value="report" data-i18n="authoring_report"></option><option value="form" data-i18n="authoring_form"></option></select></label>
  <label><span data-i18n="authoring_example"></span><select id="structuredExample"><option value="report-v1" data-i18n="authoring_report_v1"></option><option value="report-v2" data-i18n="authoring_report_v2"></option><option value="report-v3" data-i18n="authoring_report_v3"></option><option value="form-v2" data-i18n="authoring_form_v2"></option><option value="form-v3" data-i18n="authoring_form_v3"></option></select></label><button class="btn" id="structuredLoad" data-i18n="authoring_load"></button></div>
- <label for="structuredJson" data-i18n="authoring_json"></label><textarea id="structuredJson" spellcheck="false" maxlength="262144"></textarea>
+ <p id="authoringStorage" role="status"></p>
+ <details id="authoringDraftPanel"><summary data-i18n="authoring_drafts"></summary>
+ <p data-i18n="authoring_drafts_note" class="hint"></p>
+ <div class="tool-fields"><label><span data-i18n="authoring_name"></span><input id="authoringName" maxlength="120"></label><button class="btn" id="authoringSave" data-i18n="authoring_save"></button></div>
+ <div class="tool-fields"><label><span data-i18n="authoring_snapshots"></span><select id="authoringSaved"></select></label><button class="btn" id="authoringRestore" data-i18n="authoring_restore"></button><button class="btn" id="authoringDelete" data-i18n="authoring_delete"></button></div>
+ <div class="tool-actions"><button class="btn" id="authoringExport" data-i18n="authoring_export"></button><button class="btn" id="authoringImportPick" data-i18n="authoring_import"></button><input id="authoringImport" type="file" accept="application/json,.json" hidden><button class="btn" id="authoringRestoreAttachment" data-i18n="authoring_restore_attachment" disabled></button><button class="btn" id="authoringClear" data-i18n="authoring_clear"></button></div>
+ <p id="authoringDraftResult" class="tool-result" role="status"></p></details>
+ <div class="tool-actions"><button class="btn" id="authoringNewForm" data-i18n="builder_new"></button><button class="btn" id="authoringBuilder" data-i18n="builder_open"></button><button class="btn" id="authoringJson" data-i18n="builder_json"></button></div><div id="formBuilder" hidden></div>
+ <label id="structuredJsonLabel" for="structuredJson" data-i18n="authoring_json"></label><textarea id="structuredJson" spellcheck="false" maxlength="262144"></textarea>
  <div class="tool-actions"><button class="btn" id="structuredValidate" data-i18n="authoring_validate"></button><button class="btn primary" id="structuredAttach" data-i18n="authoring_attach" disabled></button></div>
  <p id="structuredError" class="tool-result" role="status"></p><div id="structuredPreview"></div>
 </dialog>
@@ -1061,7 +1081,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.1";
+const VIEWER_VERSION = "2.4.2";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1156,8 +1176,91 @@ const STRINGS = {
   review_changed:"Changed cells",
   review_unchanged:"Unchanged",
   review_order:"Submitted row order",
+  authoring_drafts:"Authoring drafts",
+  authoring_drafts_note:"Editor work is saved locally as you edit. Named snapshots and exports are separate backups. They may contain private values. Attachments restore only explicitly on the matching board; no message is sent.",
+  authoring_saving:"Saving workspace…",
+  authoring_saved_local:"Workspace saved in this browser.",
+  authoring_memory:"Not saved: memory only. Export a backup before closing this page.",
+  authoring_backup_invalid:"Invalid or oversized authoring backup (maximum 1 MiB; editor and attachment each 256 KiB).",
+  authoring_replace:"Replace the current editor work? Export or save a named snapshot first if you need it.",
+  authoring_name:"Snapshot name",
+  authoring_save:"Save snapshot",
+  authoring_snapshots:"Named snapshots",
+  authoring_restore:"Restore snapshot",
+  authoring_delete:"Delete snapshot",
+  authoring_export:"Export current work",
+  authoring_import:"Import authoring backup",
+  authoring_restore_attachment:"Restore saved attachment",
+  authoring_clear:"Clear workspace",
+  authoring_name_needed:"Enter a snapshot name.",
+  authoring_snapshot_limit:"Maximum 20 snapshots. Delete one before saving another.",
+  authoring_snapshot_saved:"Named snapshot saved.",
+  authoring_delete_confirm:"Delete the selected named snapshot? Current editor work is kept.",
+  authoring_imported:"Authoring work restored locally. Validate before attaching.",
+  builder_open:"Visual form builder",
+  builder_json:"Edit JSON",
+  builder_new:"New form",
+  builder_id:"ID",
+  builder_type:"Type",
+  builder_label:"Label",
+  builder_help:"Help text",
+  builder_required:"Required",
+  builder_min:"Minimum",
+  builder_max:"Maximum",
+  builder_step:"Step",
+  builder_max_length:"Maximum length",
+  builder_data_type:"Input data type",
+  builder_multiple:"Multiple selection",
+  builder_description:"Description",
+  builder_prompt:"Question prompt",
+  builder_version:"Form version",
+  builder_default:"Default value",
+  builder_equals:"Equals",
+  builder_field:"Source field",
+  builder_left:"Left field",
+  builder_right:"Right field",
+  builder_operator:"Comparison",
+  builder_message:"Error message",
+  builder_allow_add:"Allow adding rows",
+  builder_allow_remove:"Allow removing rows",
+  builder_allow_reorder:"Allow reordering rows",
+  builder_min_rows:"Minimum rows",
+  builder_max_rows:"Maximum rows",
+  builder_up:"Move up",
+  builder_down:"Move down",
+  builder_remove:"Remove item",
+  builder_remove_confirm:"Remove this item? References and defaults must still pass validation.",
+  builder_option:"Option",
+  builder_empty:"No value",
+  builder_option_condition:"Option available when",
+  builder_visibility:"Field visible when",
+  builder_always:"Always",
+  builder_missing_reference:"Missing source field. Fix the reference before validation.",
+  builder_text:"Text",
+  builder_number:"Number",
+  builder_options:"Options",
+  builder_add_option:"Add option",
+  builder_use_default:"Set a default",
+  builder_columns:"Table columns",
+  builder_type_confirm:"Changing type replaces type-specific settings and table cell defaults. Continue?",
+  builder_add_column:"Add column",
+  builder_rows:"Baseline rows",
+  builder_add_row:"Add baseline row",
+  builder_row_permissions:"Answer row permissions",
+  builder_enable_rows:"Enable row operations",
+  builder_add_field:"Add field",
+  builder_rules:"Cross-field validation",
+  builder_add_rule:"Add validation rule",
+  builder_rule_message:"These values must agree.",
+  builder_buttons:"Form buttons",
+  builder_reset_button:"Include Reset button",
+  builder_reset:"Reset form",
+  builder_validate_note:"Changes update the JSON. Validate and preview before attaching. Removing or moving referenced fields can require fixing conditions; validation reports errors.",
+  builder_form_only:"Choose a valid form v2/v3 or create a new form to use the builder.",
+  builder_new_prompt:"Describe the decision to make.",
+  builder_submit:"Send answer",
   authoring_open:"Structured message",
-  authoring_note:"Edit report or form JSON, validate and try it locally. Attach a validated snapshot to the composer, write a useful body, then use Post. Preview never posts a message.",
+  authoring_note:"Build a form visually or edit report/form JSON, validate and try it locally. Attach a validated snapshot to the composer, write a useful body, then use Post. Preview never posts a message.",
   authoring_kind:"Payload kind",
   authoring_report:"Report",
   authoring_form:"Form question",
@@ -1335,8 +1438,91 @@ const STRINGS = {
   review_changed:"Zmienione komórki",
   review_unchanged:"Bez zmian",
   review_order:"Wysłana kolejność wierszy",
+  authoring_drafts:"Szkice wiadomości strukturalnych",
+  authoring_drafts_note:"Edytor zapisuje pracę lokalnie podczas zmian. Nazwane kopie i eksporty to osobne kopie zapasowe. Mogą zawierać prywatne dane. Załącznik przywrócisz jawnie na tej samej tablicy; żadna wiadomość nie zostanie wysłana.",
+  authoring_saving:"Zapisywanie obszaru roboczego…",
+  authoring_saved_local:"Obszar roboczy zapisany w tej przeglądarce.",
+  authoring_memory:"Nie zapisano: dane tylko w pamięci. Wyeksportuj kopię przed zamknięciem strony.",
+  authoring_backup_invalid:"Niepoprawna lub zbyt duża kopia autorska (maks. 1 MiB; edytor i załącznik po 256 KiB).",
+  authoring_replace:"Zastąpić bieżącą pracę w edytorze? W razie potrzeby najpierw wyeksportuj lub zapisz nazwaną kopię.",
+  authoring_name:"Nazwa kopii",
+  authoring_save:"Zapisz kopię",
+  authoring_snapshots:"Nazwane kopie",
+  authoring_restore:"Przywróć kopię",
+  authoring_delete:"Usuń kopię",
+  authoring_export:"Eksportuj bieżącą pracę",
+  authoring_import:"Importuj kopię autorską",
+  authoring_restore_attachment:"Przywróć zapisany załącznik",
+  authoring_clear:"Wyczyść obszar roboczy",
+  authoring_name_needed:"Podaj nazwę kopii.",
+  authoring_snapshot_limit:"Maksymalnie 20 kopii. Usuń jedną, zanim zapiszesz następną.",
+  authoring_snapshot_saved:"Nazwana kopia zapisana.",
+  authoring_delete_confirm:"Usunąć wybraną nazwaną kopię? Bieżąca praca w edytorze pozostanie.",
+  authoring_imported:"Praca autorska przywrócona lokalnie. Sprawdź ją przed dołączeniem.",
+  builder_open:"Wizualny edytor formularzy",
+  builder_json:"Edytuj JSON",
+  builder_new:"Nowy formularz",
+  builder_id:"Identyfikator",
+  builder_type:"Typ",
+  builder_label:"Etykieta",
+  builder_help:"Tekst pomocy",
+  builder_required:"Wymagane",
+  builder_min:"Wartość minimalna",
+  builder_max:"Wartość maksymalna",
+  builder_step:"Krok",
+  builder_max_length:"Maksymalna długość",
+  builder_data_type:"Typ danych wejściowych",
+  builder_multiple:"Wybór wielokrotny",
+  builder_description:"Opis",
+  builder_prompt:"Treść pytania",
+  builder_version:"Wersja formularza",
+  builder_default:"Wartość domyślna",
+  builder_equals:"Równa się",
+  builder_field:"Pole źródłowe",
+  builder_left:"Lewe pole",
+  builder_right:"Prawe pole",
+  builder_operator:"Porównanie",
+  builder_message:"Komunikat błędu",
+  builder_allow_add:"Zezwalaj na dodawanie wierszy",
+  builder_allow_remove:"Zezwalaj na usuwanie wierszy",
+  builder_allow_reorder:"Zezwalaj na zmianę kolejności wierszy",
+  builder_min_rows:"Minimalna liczba wierszy",
+  builder_max_rows:"Maksymalna liczba wierszy",
+  builder_up:"Przenieś w górę",
+  builder_down:"Przenieś w dół",
+  builder_remove:"Usuń element",
+  builder_remove_confirm:"Usunąć ten element? Odwołania i wartości domyślne nadal muszą przejść walidację.",
+  builder_option:"Opcja",
+  builder_empty:"Brak wartości",
+  builder_option_condition:"Opcja dostępna, gdy",
+  builder_visibility:"Pole widoczne, gdy",
+  builder_always:"Zawsze",
+  builder_missing_reference:"Brak pola źródłowego. Popraw odwołanie przed walidacją.",
+  builder_text:"Tekst",
+  builder_number:"Liczba",
+  builder_options:"Opcje",
+  builder_add_option:"Dodaj opcję",
+  builder_use_default:"Ustaw wartość domyślną",
+  builder_columns:"Kolumny tabeli",
+  builder_type_confirm:"Zmiana typu zastąpi ustawienia danego typu i domyślne komórki tabeli. Kontynuować?",
+  builder_add_column:"Dodaj kolumnę",
+  builder_rows:"Wiersze początkowe",
+  builder_add_row:"Dodaj wiersz początkowy",
+  builder_row_permissions:"Uprawnienia wierszy w odpowiedzi",
+  builder_enable_rows:"Włącz operacje na wierszach",
+  builder_add_field:"Dodaj pole",
+  builder_rules:"Walidacja między polami",
+  builder_add_rule:"Dodaj regułę walidacji",
+  builder_rule_message:"Te wartości muszą być zgodne.",
+  builder_buttons:"Przyciski formularza",
+  builder_reset_button:"Dodaj przycisk resetowania",
+  builder_reset:"Resetuj formularz",
+  builder_validate_note:"Zmiany aktualizują JSON. Sprawdź i wypróbuj przed dołączeniem. Usunięcie lub przeniesienie pól źródłowych może wymagać poprawy warunków; walidacja zgłosi błędy.",
+  builder_form_only:"Wybierz poprawny formularz v2/v3 lub utwórz nowy, aby użyć edytora.",
+  builder_new_prompt:"Opisz decyzję do podjęcia.",
+  builder_submit:"Wyślij odpowiedź",
   authoring_open:"Wiadomość strukturalna",
-  authoring_note:"Edytuj JSON raportu lub formularza, sprawdź i wypróbuj lokalnie. Dołącz sprawdzoną definicję do edytora, napisz opis i użyj Wyślij. Podgląd nie wysyła wiadomości.",
+  authoring_note:"Utwórz formularz wizualnie lub edytuj JSON raportu albo formularza, sprawdź i wypróbuj lokalnie. Dołącz sprawdzoną definicję do edytora, napisz opis i użyj Wyślij. Podgląd nie wysyła wiadomości.",
   authoring_kind:"Rodzaj danych",
   authoring_report:"Raport",
   authoring_form:"Pytanie formularza",
@@ -3511,9 +3697,9 @@ function parseStructured(kind,raw){
  if(!value||(kind==='form'&&![2,3].includes(value.version)))throw Error(t("authoring_typed_only"));
  return value;
 }
-function loadAuthoringExample(){const item=AUTHORING_EXAMPLES.find(x=>x.id===$('#structuredExample').value);if(!item)return;$('#structuredKind').value=item.kind;$('#structuredJson').value=JSON.stringify(item.value,null,2);invalidateAuthoring();}
+function loadAuthoringExample(initial=false){if(!initial&&!authoringReplaceAllowed())return;showAuthoringJson();const item=AUTHORING_EXAMPLES.find(x=>x.id===$('#structuredExample').value);if(!item)return;$('#structuredKind').value=item.kind;$('#structuredJson').value=JSON.stringify(item.value,null,2);invalidateAuthoring();persistAuthoring();}
 function closeAuthoring(){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();$('#structuredError').textContent='';$('#structuredDialog').close();}
-function openAuthoring(){if(!$('#structuredJson').value)loadAuthoringExample();if(!$('#structuredDialog').open)$('#structuredDialog').showModal();}
+function openAuthoring(){if(!$('#structuredJson').value)loadAuthoringExample(true);if(!$('#formBuilder').hidden&&builderQuestion)renderFormBuilder();authoringStorageStatus();renderAuthoringSaved();updateAuthoringRestore();if(!$('#structuredDialog').open)$('#structuredDialog').showModal();}
 function validateAuthoring(){
  invalidateAuthoring();const kind=$('#structuredKind').value,raw=$('#structuredJson').value;
  try{const value=parseStructured(kind,raw),node=document.createElement('div');node.className=kind==='report'?'board-report':'board-form authoring-form';$('#structuredPreview').append(node);
@@ -3525,10 +3711,10 @@ function validateAuthoring(){
 }
 function attachStructured(){
  try{if(!authoringValid||authoringValid.kind!==$('#structuredKind').value||authoringValid.raw!==$('#structuredJson').value)throw Error(t("authoring_validate_first"));if(!B||B.layout.dialect!=='native')throw Error(t("authoring_native"));
-  parseStructured(authoringValid.kind,authoringValid.raw);composerStructured={...authoringValid,board:toolsBoardKey()};updateToolsChrome();closeAuthoring();$('#cBody').focus();
+  parseStructured(authoringValid.kind,authoringValid.raw);composerStructured={...authoringValid,board:toolsBoardKey()};authoringSavedAttachment={...composerStructured};persistAuthoring();updateToolsChrome();closeAuthoring();$('#cBody').focus();
  }catch(error){$('#structuredError').textContent=error.message;}
 }
-function clearStructuredAttachment(){composerStructured=null;updateToolsChrome();}
+function clearStructuredAttachment(){composerStructured=null;authoringSavedAttachment=null;persistAuthoring();updateToolsChrome();}
 function structuredComposerPayload(){
  if(!composerStructured)return {};
  if(composerStructured.board!==toolsBoardKey()||B?.layout.dialect!=='native')throw Error(t("authoring_board_changed"));
@@ -3537,14 +3723,16 @@ function structuredComposerPayload(){
 function updateToolsChrome(){
  if($('#draftsDialog').open&&draftManagerBinding&&!sameDraftBinding(draftManagerBinding))closeDraftManager();
  if(composerStructured&&composerStructured.board!==toolsBoardKey())composerStructured=null;
+ updateAuthoringRestore();
  $('#draftsOpen').disabled=!B;$('#structuredAttachment').hidden=!composerStructured;
  if(composerStructured){const value=parseStructured(composerStructured.kind,composerStructured.raw);$('#structuredAttachedText').textContent=t("authoring_attached",{kind:composerStructured.kind==='report'?t("authoring_report"):t("authoring_form"),title:(value.title||value.prompt).slice(0,120)});}
  $('#structuredAttach').disabled=!authoringValid||!B||B.layout.dialect!=='native';
 }
 function downloadLocalJson(name,value){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function wireOfflineTools(){
+ wireAuthoringDrafts();wireFormBuilder();
  $('#structuredOpen').onclick=openAuthoring;$('#structuredClose').onclick=closeAuthoring;$('#structuredDialog').addEventListener('cancel',event=>{event.preventDefault();closeAuthoring();});$('#structuredDialog').addEventListener('close',()=>{if(!$('#structuredDialog').open){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();}});
- $('#structuredLoad').onclick=loadAuthoringExample;$('#structuredKind').onchange=invalidateAuthoring;$('#structuredJson').oninput=invalidateAuthoring;$('#structuredValidate').onclick=validateAuthoring;$('#structuredAttach').onclick=attachStructured;$('#structuredRemove').onclick=clearStructuredAttachment;
+ $('#structuredLoad').onclick=()=>loadAuthoringExample();$('#structuredKind').onchange=()=>{showAuthoringJson();invalidateAuthoring();persistAuthoring();};$('#structuredJson').oninput=()=>{invalidateAuthoring();persistAuthoring();};$('#structuredValidate').onclick=validateAuthoring;$('#structuredAttach').onclick=attachStructured;$('#structuredRemove').onclick=clearStructuredAttachment;
  $('#draftsOpen').onclick=openDraftManager;$('#draftsClose').onclick=closeDraftManager;$('#draftImport').onchange=importManagedDraft;$('#draftImportPick').onclick=()=>$('#draftImport').click();$('#draftsDialog').addEventListener('cancel',event=>{event.preventDefault();closeDraftManager();});$('#draftsDialog').addEventListener('close',()=>{if(!$('#draftsDialog').open){draftManagerBinding=null;draftManagerGeneration++;}});
 }
 
@@ -3601,7 +3789,7 @@ async function deleteManagedDraft(row,binding){
 }
 function resetManagedForm(key){for(const[path,saved]of formRoots)if(saved.signature===key){saved.dispose();formRoots.delete(path);}if(B)build({background:true,preserveComposer:true});}
 async function importManagedDraft(event){
- const file=event.target.files?.[0],binding=draftManagerBinding;event.target.value='';if(!file||draftManagerBusy)return;draftManagerBusy=true;
+ const file=event.target.files?.[0],binding=draftManagerBinding;event.target.value='';if(!file||draftManagerBusy)return;draftManagerBusy=true;$('#draftManagerResult').textContent=t("draft_loading");
  try{if(file.size>393216)throw Error(t("draft_file_limit"));const value=jsonObject(await file.text());
   if(Object.keys(value).sort().join(',')!=='draft,format,path,question,respondent,version'||value.format!=='agent-file-board-draft'||value.version!==1||typeof value.path!=='string'||value.path.length>1024||typeof value.question!=='string'||value.respondent!==binding?.user)throw Error(t("draft_invalid"));
   const m=assertDraftSource(binding,value.path,value.question),draft=managedDraft(m.question,value.draft);if(!draft)throw Error(t("draft_invalid"));
@@ -3609,6 +3797,139 @@ async function importManagedDraft(event){
   assertDraftSource(binding,m.path,value.question);const key=formKey(m);saveFormDraft(key,m.question,draft);await formStorageWrites;if(!sameDraftBinding(binding))return;formDraftLoads.set(key,true);resetManagedForm(key);await renderDraftManager();$('#draftManagerResult').textContent=t("draft_imported");
  }catch(error){draftManagerMessage(error);}finally{draftManagerBusy=false;}
 }
+
+/* Local authoring workspace: committed recovery plus explicit named snapshots. */
+const AUTHORING_STORE='authoring-workspace-v1',AUTHORING_LIMIT=1048576;
+let authoringWorkspace={active:null,saved:[]},authoringWrites=Promise.resolve(),authoringStorageOk=true,authoringReady=false,authoringSavedAttachment=null,authoringPending=0;
+function authoringRecord(){return {kind:$('#structuredKind').value,raw:$('#structuredJson').value,attachment:authoringSavedAttachment};}
+function checkedAuthoringRecord(v){
+ if(!v||Object.keys(v).sort().join()!=='attachment,kind,raw'||!['report','form'].includes(v.kind)||typeof v.raw!=='string'||new TextEncoder().encode(v.raw).length>262144)throw Error(t("authoring_backup_invalid"));
+ if(v.attachment!==null){const a=v.attachment;if(!a||Object.keys(a).sort().join()!=='board,kind,raw'||typeof a.board!=='string'||a.board.length>2000||typeof a.raw!=='string')throw Error(t("authoring_backup_invalid"));parseStructured(a.kind,a.raw);}
+ if(new TextEncoder().encode(JSON.stringify(v)).length>AUTHORING_LIMIT-128)throw Error(t("authoring_backup_invalid"));return structuredClone(v);
+}
+function authoringStorageStatus(){if($('#authoringStorage'))$('#authoringStorage').textContent=t(authoringPending?"authoring_saving":authoringStorageOk?"authoring_saved_local":"authoring_memory");}
+function persistAuthoring(){
+ if(!authoringReady)return Promise.resolve(false);
+ let snapshot;try{snapshot=checkedAuthoringRecord(authoringRecord());}catch{authoringStorageOk=false;authoringStorageStatus();return Promise.resolve(false);}
+ authoringPending++;authoringStorageStatus();
+ const next=authoringWrites.then(async()=>{try{await authoringTransaction(store=>{store.active=snapshot;return store;});authoringWorkspace.active=snapshot;if(JSON.stringify(authoringRecord())===JSON.stringify(snapshot))authoringStorageOk=true;authoringStorageStatus();return true;}catch{authoringStorageOk=false;authoringStorageStatus();return false;}finally{authoringPending--;authoringStorageStatus();}});authoringWrites=next.catch(()=>{});return next;
+}
+async function authoringTransaction(change){
+ const db=await idb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('kv','readwrite'),kv=tx.objectStore('kv'),q=kv.get(AUTHORING_STORE);let value;
+ q.onsuccess=()=>{try{value=change(cleanAuthoringStore(q.result));kv.put(value,AUTHORING_STORE);}catch(e){tx.abort();reject(e);}};
+ tx.oncomplete=()=>{authoringWorkspace=value;resolve(value);};tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Authoring transaction aborted'));});}finally{db.close();}
+}
+function cleanAuthoringStore(value){
+ const result={active:null,saved:[]};if(!value||typeof value!=='object')return result;
+ try{if(value.active)result.active=checkedAuthoringRecord(value.active);}catch{}
+ for(const item of Array.isArray(value.saved)?value.saved.slice(0,20):[])try{if(typeof item.id==='string'&&item.id.length<=80&&typeof item.name==='string'&&item.name.length<=120&&typeof item.at==='string')result.saved.push({...item,record:checkedAuthoringRecord(item.record)});}catch{}
+ return result;
+}
+async function initAuthoringStorage(){
+ try{const db=await idb();let stored;try{stored=await new Promise((resolve,reject)=>{const tx=db.transaction('kv'),q=tx.objectStore('kv').get(AUTHORING_STORE);tx.oncomplete=()=>resolve(q.result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Read aborted'));});}finally{db.close();}authoringWorkspace=cleanAuthoringStore(stored);
+  if(authoringWorkspace.active)applyAuthoringRecord(authoringWorkspace.active);else loadAuthoringExample(true);
+ }catch{authoringStorageOk=false;loadAuthoringExample(true);}finally{authoringReady=true;if(authoringStorageOk&&!authoringWorkspace.active)await persistAuthoring();authoringStorageStatus();renderAuthoringSaved();}
+}
+function applyAuthoringRecord(v){$('#structuredKind').value=v.kind;$('#structuredJson').value=v.raw;authoringSavedAttachment=v.attachment;invalidateAuthoring();$('#formBuilder').hidden=true;$('#structuredJson').hidden=false;$('#structuredJsonLabel').hidden=false;builderQuestion=null;updateAuthoringRestore();}
+function authoringReplaceAllowed(){return !$('#structuredJson').value||confirm(t("authoring_replace"));}
+function renderAuthoringSaved(){const select=$('#authoringSaved'),selected=select.value;select.replaceChildren();for(const item of authoringWorkspace.saved){const option=document.createElement('option');option.value=item.id;option.textContent=item.name;select.append(option);}if([...select.options].some(o=>o.value===selected))select.value=selected;}
+async function mutateAuthoringSaved(change){
+ authoringPending++;authoringStorageStatus();
+ const next=authoringWrites.then(async()=>{try{await authoringTransaction(change);authoringStorageOk=JSON.stringify(authoringWorkspace.active)===JSON.stringify(authoringRecord());authoringStorageStatus();renderAuthoringSaved();return true;}catch(e){authoringStorageOk=false;authoringStorageStatus();$('#authoringDraftResult').textContent=e.message||t("authoring_memory");return false;}finally{authoringPending--;authoringStorageStatus();}});authoringWrites=next.catch(()=>{});return next;
+}
+async function saveAuthoringNamed(){
+ try{const record=checkedAuthoringRecord(authoringRecord()),name=$('#authoringName').value.trim().slice(0,120);if(!name)throw Error(t("authoring_name_needed"));const item={id:crypto.randomUUID(),name,at:new Date().toISOString(),record};const ok=await mutateAuthoringSaved(store=>{if(store.saved.length>=20)throw Error(t("authoring_snapshot_limit"));store.saved.unshift(item);store.active=record;return store;});if(ok)$('#authoringDraftResult').textContent=t("authoring_snapshot_saved");}catch(e){$('#authoringDraftResult').textContent=e.message;}
+}
+async function restoreAuthoringNamed(){await authoringWrites;const item=authoringWorkspace.saved.find(x=>x.id===$('#authoringSaved').value);if(!item||!authoringReplaceAllowed())return;applyAuthoringRecord(item.record);await persistAuthoring();}
+async function deleteAuthoringNamed(){const id=$('#authoringSaved').value;if(!id||!confirm(t("authoring_delete_confirm")))return;await mutateAuthoringSaved(store=>{store.saved=store.saved.filter(x=>x.id!==id);return store;});}
+async function clearAuthoringWorkspace(){if(!confirm(t("authoring_replace")))return;const original=JSON.stringify(authoringRecord());const ok=await mutateAuthoringSaved(store=>{store.active=null;return store;});if(ok){if(JSON.stringify(authoringRecord())!==original){persistAuthoring();return;}composerStructured=null;authoringSavedAttachment=null;authoringStorageOk=true;authoringStorageStatus();$('#structuredJson').value='';invalidateAuthoring();$('#formBuilder').hidden=true;$('#structuredJson').hidden=false;updateToolsChrome();updateAuthoringRestore();}}
+function exportAuthoring(){try{const envelope={format:'agent-file-board-authoring',version:1,record:checkedAuthoringRecord(authoringRecord())};if(new TextEncoder().encode(JSON.stringify(envelope,null,2)+'\n').length>AUTHORING_LIMIT)throw Error(t("authoring_backup_invalid"));downloadLocalJson('board-authoring-draft.json',envelope);}catch(e){$('#authoringDraftResult').textContent=e.message;}}
+async function importAuthoring(event){
+ const file=event.target.files?.[0];event.target.value='';if(!file)return;try{if(file.size>AUTHORING_LIMIT)throw Error(t("authoring_backup_invalid"));const value=JSON.parse(await file.text());if(!value||Object.keys(value).sort().join()!=='format,record,version'||value.format!=='agent-file-board-authoring'||value.version!==1)throw Error(t("authoring_backup_invalid"));const record=checkedAuthoringRecord(value.record);if(!authoringReplaceAllowed())return;applyAuthoringRecord(record);await persistAuthoring();$('#authoringDraftResult').textContent=t("authoring_imported");}catch(e){$('#authoringDraftResult').textContent=e.message;}
+}
+function updateAuthoringRestore(){const a=authoringSavedAttachment;$('#authoringRestoreAttachment').disabled=!a||a.board!==toolsBoardKey()||B?.layout.dialect!=='native';}
+function restoreAuthoringAttachment(){try{const a=authoringSavedAttachment;if(!a||a.board!==toolsBoardKey()||B?.layout.dialect!=='native')throw Error(t("authoring_board_changed"));parseStructured(a.kind,a.raw);composerStructured={...a};updateToolsChrome();persistAuthoring();}catch(e){$('#authoringDraftResult').textContent=e.message;}}
+function wireAuthoringDrafts(){
+ $('#authoringSave').onclick=saveAuthoringNamed;$('#authoringRestore').onclick=restoreAuthoringNamed;$('#authoringDelete').onclick=deleteAuthoringNamed;$('#authoringClear').onclick=clearAuthoringWorkspace;$('#authoringExport').onclick=exportAuthoring;$('#authoringImportPick').onclick=()=>$('#authoringImport').click();$('#authoringImport').onchange=importAuthoring;$('#authoringRestoreAttachment').onclick=restoreAuthoringAttachment;
+ window.addEventListener('beforeunload',event=>{if((authoringPending||!authoringStorageOk)&&$('#structuredJson').value){event.preventDefault();event.returnValue='';}});
+}
+
+/* Visual editing of the existing data contract; JSON stays the source of truth. */
+let builderQuestion=null;
+const builderKinds=['input','textarea','select','radio-group','checkbox-group','chips','option-cards','date-picker','slider','switch-group','editable-table'];
+const builderOptions=['select','radio-group','checkbox-group','chips','option-cards','switch-group'];
+function builderWords(){return {id:t("builder_id"),type:t("builder_type"),label:t("builder_label"),help:t("builder_help"),required:t("builder_required"),min:t("builder_min"),max:t("builder_max"),step:t("builder_step"),maxLength:t("builder_max_length"),dataType:t("builder_data_type"),multiple:t("builder_multiple"),description:t("builder_description"),prompt:t("builder_prompt"),version:t("builder_version"),default:t("builder_default"),equals:t("builder_equals"),field:t("builder_field"),left:t("builder_left"),right:t("builder_right"),op:t("builder_operator"),message:t("builder_message"),add:t("builder_allow_add"),remove:t("builder_allow_remove"),reorder:t("builder_allow_reorder"),minRows:t("builder_min_rows"),maxRows:t("builder_max_rows")};}
+function builderElement(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
+function builderButton(parent,label,action){const button=builderElement('button',label,'btn');button.type='button';button.onclick=action;parent.append(button);return button;}
+function builderSync(){if(!builderQuestion)return;$('#structuredKind').value='form';$('#structuredJson').value=JSON.stringify(builderQuestion,null,2);invalidateAuthoring();persistAuthoring();}
+function builderRefresh(){builderSync();renderFormBuilder();}
+function builderInput(parent,obj,key,{type=key==='prompt'?'textarea':'text',choices=null,optional=false,label=null,onChange=null}={}){
+ const wrap=builderElement('label',undefined,'builder-control');wrap.append(builderElement('span',label||builderWords()[key]||key));const input=builderElement(choices?'select':type==='textarea'?'textarea':'input');input.dataset.property=key;
+ if(choices){for(const item of choices){const [value,text]=Array.isArray(item)?item:[item,item],o=builderElement('option',text);o.value=value;input.append(o);}input.value=obj[key]??'';}
+ else{if(type!=='textarea')input.type=type;if(type==='checkbox')input.checked=!!obj[key];else{input.value=obj[key]??'';if(type==='number')input.step='any';input.maxLength=key==='prompt'?5000:4000;}}
+ input.oninput=()=>{let value=type==='checkbox'?input.checked:type==='number'?(input.value===''?null:Number(input.value)):input.value;if(optional&&(input.value===''&&type!=='checkbox'))delete obj[key];else obj[key]=value;if(onChange)onChange(value);builderSync();};
+ wrap.append(input);parent.append(wrap);return input;
+}
+function builderArrayTools(parent,list,index){const actions=builderElement('div',undefined,'tool-actions');
+ const up=builderButton(actions,t("builder_up"),()=>{[list[index-1],list[index]]=[list[index],list[index-1]];builderRefresh();});up.disabled=index===0;
+ const down=builderButton(actions,t("builder_down"),()=>{[list[index+1],list[index]]=[list[index],list[index+1]];builderRefresh();});down.disabled=index===list.length-1;
+ builderButton(actions,t("builder_remove"),()=>{if(confirm(t("builder_remove_confirm"))){list.splice(index,1);builderRefresh();}});parent.append(actions);
+}
+function builderNewId(list,prefix){let n=1;while(list.some(v=>v.id===prefix+'-'+n))n++;return prefix+'-'+n;}
+function builderDefaultField(type,id='field-1',column=false){
+ const f={id,type,label:id,required:false};if(type==='input')Object.assign(f,{dataType:'text',maxLength:200});if(['text','textarea'].includes(type))f.maxLength=200;if(['number','slider'].includes(type))Object.assign(f,{min:0,max:100});if(type==='slider')f.step=1;if(builderOptions.includes(type))f.options=[{id:'option-1',label:t("builder_option")}];if(['chips','option-cards'].includes(type))f.multiple=false;
+ if(type==='editable-table'){f.columns=[builderDefaultField('text','name',true)];f.rows=[{id:'row-1',values:{name:null}}];}return f;
+}
+function builderValueInput(parent,obj,key,definition,label){
+ if(BoardFormContract.multiple(definition)){
+  const box=builderElement('fieldset');box.append(builderElement('legend',label));for(const option of definition.options){const item={value:Array.isArray(obj[key])&&obj[key].includes(option.id)};builderInput(box,item,'value',{label:option.label,type:'checkbox',onChange:v=>{const values=new Set(Array.isArray(obj[key])?obj[key]:[]);v?values.add(option.id):values.delete(option.id);obj[key]=[...values];}});}parent.append(box);return;
+ }
+ const numeric=definition.type==='number'||definition.type==='slider'||definition.dataType==='number';
+ const choices=builderOptions.includes(definition.type)?[['',t("builder_empty")],...definition.options.map(o=>[o.id,o.label])]:definition.type==='boolean'?[['',t("builder_empty")],['true',t("review_yes")],['false',t("review_no")]]:null;
+ const proxy={value:obj[key]===null?'':definition.type==='boolean'?String(obj[key]??''):obj[key]??''};
+ builderInput(parent,proxy,'value',{label,type:numeric?'number':definition.type==='date-picker'?'date':definition.type==='textarea'?'textarea':'text',choices,onChange:v=>{obj[key]=v===''||v===null?null:definition.type==='boolean'?v==='true':v;}});
+}
+function builderCondition(parent,owner,key,prior){
+ const section=builderElement('fieldset',undefined,'builder-condition');section.append(builderElement('legend',key==='when'?t("builder_option_condition"):t("builder_visibility")));
+ const state={field:owner[key]?.field||''};builderInput(section,state,'field',{choices:[['',t("builder_always")],...prior.map(f=>[f.id,f.label])],onChange:id=>{if(!id)delete owner[key];else{const f=prior.find(f=>f.id===id);owner[key]={field:id,equals:builderOptions.includes(f.type)?f.options[0]?.id:f.type==='date-picker'?'2026-10-20':f.type==='slider'||f.dataType==='number'?f.min??0:''};}builderRefresh();}});
+ if(owner[key]){const f=prior.find(f=>f.id===owner[key].field);if(f)builderValueInput(section,owner[key],'equals',f,t("builder_equals"));else section.append(builderElement('p',t("builder_missing_reference")));}parent.append(section);
+}
+function builderScalar(parent,f,{column=false,prior=[]}={}){
+ const grid=builderElement('div',undefined,'builder-grid');parent.append(grid);
+ if(f.type==='input')builderInput(grid,f,'dataType',{choices:[['text',t("builder_text")],['number',t("builder_number")]],onChange:value=>{delete f.default;if(value==='number'){delete f.maxLength;f.min=0;f.max=100;}else{delete f.min;delete f.max;f.maxLength=200;}builderRefresh();}});
+ for(const key of ['maxLength','min','max','step'])if(Object.hasOwn(f,key)||f.type==='date-picker'&&['min','max'].includes(key))builderInput(grid,f,key,{type:f.type==='date-picker'?'date':'number',optional:f.type==='date-picker'});
+ if(['chips','option-cards'].includes(f.type))builderInput(grid,f,'multiple',{type:'checkbox',onChange:()=>{delete f.default;builderRefresh();}});
+ if(builderOptions.includes(f.type)){
+  const section=builderElement('fieldset');section.append(builderElement('legend',t("builder_options")));parent.append(section);
+  f.options.forEach((o,i)=>{const row=builderElement('div',undefined,'builder-option');row.dataset.option=i;builderInput(row,o,'id');builderInput(row,o,'label');builderInput(row,o,'description',{optional:true});if(builderQuestion.version===3&&!column)builderCondition(row,o,'when',prior);builderArrayTools(row,f.options,i);section.append(row);});
+  const add=builderButton(section,t("builder_add_option"),()=>{f.options.push({id:builderNewId(f.options,'option'),label:t("builder_option")});builderRefresh();});add.disabled=f.options.length>=32;
+ }
+ if(!column){const section=builderElement('fieldset');section.append(builderElement('legend',t("builder_default")));const state={enabled:Object.hasOwn(f,'default')};builderInput(section,state,'enabled',{label:t("builder_use_default"),type:'checkbox',onChange:v=>{if(v)f.default=BoardFormContract.multiple(f)?[]:f.type==='slider'||f.dataType==='number'?f.min:builderOptions.includes(f.type)?f.options[0]?.id:f.type==='date-picker'?'2026-10-20':'';else delete f.default;builderRefresh();}});if(Object.hasOwn(f,'default'))builderValueInput(section,f,'default',f,t("builder_default"));parent.append(section);}
+}
+function builderTable(parent,f){
+ const columns=builderElement('fieldset');columns.append(builderElement('legend',t("builder_columns")));parent.append(columns);
+ f.columns.forEach((c,i)=>{const section=builderElement('details',undefined,'builder-column');section.append(builderElement('summary',c.label));const grid=builderElement('div',undefined,'builder-grid');section.append(grid);let old=c.id;
+ builderInput(grid,c,'id',{onChange:id=>{for(const r of f.rows){const values={...r.values,[id]:r.values[old]};if(old!==id)delete values[old];r.values=values;}old=id;}});builderInput(grid,c,'label');builderInput(grid,c,'required',{type:'checkbox'});builderInput(grid,c,'help',{optional:true});const select=builderInput(grid,c,'type',{choices:['text','number','select','boolean'],onChange:type=>{if(!confirm(t("builder_type_confirm"))){c.type=select.dataset.old;renderFormBuilder();return;}const fresh=builderDefaultField(type,c.id,true);fresh.label=c.label;fresh.required=c.required;f.columns[i]=fresh;for(const r of f.rows)r.values[c.id]=builderCellInitial(fresh);builderRefresh();}});select.dataset.old=c.type;builderScalar(section,c,{column:true});builderButton(section,t("builder_remove"),()=>{if(!confirm(t("builder_remove_confirm")))return;f.columns.splice(i,1);for(const r of f.rows)delete r.values[c.id];builderRefresh();});columns.append(section);});
+ const addColumn=builderButton(columns,t("builder_add_column"),()=>{const c=builderDefaultField('text',builderNewId(f.columns,'column'),true);f.columns.push(c);for(const r of f.rows)r.values={...r.values,[c.id]:null};builderRefresh();});addColumn.disabled=f.columns.length>=8;
+ const rows=builderElement('fieldset');rows.append(builderElement('legend',t("builder_rows")));parent.append(rows);f.rows.forEach((r,i)=>{const row=builderElement('div',undefined,'builder-row');row.dataset.row=i;builderInput(row,r,'id');for(const c of f.columns)builderValueInput(row,r.values,c.id,c,c.label);builderArrayTools(row,f.rows,i);rows.append(row);});const addRow=builderButton(rows,t("builder_add_row"),()=>{f.rows.push({id:builderNewId(f.rows,'row'),values:Object.fromEntries(f.columns.map(c=>[c.id,builderCellInitial(c)]))});builderRefresh();});addRow.disabled=f.rows.length>=50;
+ if(builderQuestion.version===3){const section=builderElement('fieldset');section.append(builderElement('legend',t("builder_row_permissions")));parent.append(section);const state={enabled:!!f.rowOperations};builderInput(section,state,'enabled',{label:t("builder_enable_rows"),type:'checkbox',onChange:v=>{if(v)f.rowOperations={add:true,remove:true,reorder:true,minRows:0,maxRows:Math.max(8,f.rows.length)};else delete f.rowOperations;builderRefresh();}});if(f.rowOperations){for(const k of ['add','remove','reorder'])builderInput(section,f.rowOperations,k,{type:'checkbox'});for(const k of ['minRows','maxRows'])builderInput(section,f.rowOperations,k,{type:'number'});}}
+}
+function builderCellInitial(c){return c.type==='boolean'?false:c.type==='number'?c.min:c.type==='select'?c.options[0]?.id??null:c.required?c.label:null;}
+function renderFormBuilder(){
+ const root=$('#formBuilder');root.replaceChildren();const q=builderQuestion;if(!q)return;const head=builderElement('div',undefined,'builder-grid');root.append(head);builderInput(head,q,'id');builderInput(head,q,'prompt');builderInput(head,q,'version',{choices:['2','3'],onChange:v=>{q.version=Number(v);builderRefresh();}});
+ q.fields.forEach((f,i)=>{const section=builderElement('details',undefined,'builder-field');section.open=true;section.dataset.field=i;section.append(builderElement('summary',f.label));const grid=builderElement('div',undefined,'builder-grid');section.append(grid);builderInput(grid,f,'id');builderInput(grid,f,'label');builderInput(grid,f,'help',{optional:true});builderInput(grid,f,'required',{type:'checkbox'});
+ const select=builderInput(grid,f,'type',{choices:builderKinds,onChange:type=>{if(!confirm(t("builder_type_confirm"))){f.type=select.dataset.old;renderFormBuilder();return;}const fresh=builderDefaultField(type,f.id);fresh.label=f.label;fresh.required=f.required;if(f.help)fresh.help=f.help;if(f.visibleWhen)fresh.visibleWhen=f.visibleWhen;q.fields[i]=fresh;builderRefresh();}});select.dataset.old=f.type;
+ const prior=q.fields.slice(0,i).filter(v=>v.type!=='editable-table'&&!BoardFormContract.multiple(v));if(f.type==='editable-table')builderTable(section,f);else builderScalar(section,f,{prior});if(q.version===3)builderCondition(section,f,'visibleWhen',prior);builderArrayTools(section,q.fields,i);root.append(section);});
+ const actions=builderElement('div',undefined,'tool-actions'),type=builderElement('select');type.id='builderNewType';type.setAttribute('aria-label',t("builder_type"));for(const kind of builderKinds){const o=builderElement('option',kind);o.value=kind;type.append(o);}actions.append(type);const add=builderButton(actions,t("builder_add_field"),()=>{q.fields.push(builderDefaultField(type.value,builderNewId(q.fields,'field')));builderRefresh();});add.disabled=q.fields.length>=24;root.append(actions);
+ if(q.version===3){const section=builderElement('fieldset');section.append(builderElement('legend',t("builder_rules")));root.append(section);(q.validations||[]).forEach((r,i)=>{const row=builderElement('div',undefined,'builder-rule');row.dataset.rule=i;const choices=q.fields.filter(f=>f.type!=='editable-table'&&!BoardFormContract.multiple(f)).map(f=>[f.id,f.label]);builderInput(row,r,'left',{choices});builderInput(row,r,'op',{choices:['eq','ne','lt','lte','gt','gte']});builderInput(row,r,'right',{choices});builderInput(row,r,'message');builderArrayTools(row,q.validations,i);section.append(row);});const addRule=builderButton(section,t("builder_add_rule"),()=>{q.validations??=[];const fields=q.fields.filter(f=>f.type!=='editable-table'&&!BoardFormContract.multiple(f));q.validations.push({left:fields[0]?.id||'',op:'eq',right:fields[1]?.id||'',message:t("builder_rule_message")});builderRefresh();});addRule.disabled=(q.validations||[]).length>=24;}
+ const buttons=builderElement('fieldset');buttons.append(builderElement('legend',t("builder_buttons")));q.buttons.forEach(b=>{builderInput(buttons,b,'id');builderInput(buttons,b,'label');});const reset={enabled:q.buttons.some(b=>b.action==='reset')};builderInput(buttons,reset,'enabled',{label:t("builder_reset_button"),type:'checkbox',onChange:v=>{if(v)q.buttons.push({id:builderNewId(q.buttons,'reset'),label:t("builder_reset"),action:'reset'});else q.buttons=q.buttons.filter(b=>b.action!=='reset');builderRefresh();}});root.append(buttons);root.append(builderElement('p',t("builder_validate_note"),'hint'));
+}
+function openFormBuilder(){
+ try{const q=parseStructured($('#structuredKind').value,$('#structuredJson').value);if($('#structuredKind').value!=='form')throw Error(t("builder_form_only"));builderQuestion=structuredClone(q);renderFormBuilder();$('#formBuilder').hidden=false;$('#structuredJson').hidden=true;$('#structuredJsonLabel').hidden=true;}catch(e){$('#structuredError').textContent=e.message;}
+}
+function showAuthoringJson(){builderQuestion=null;$('#formBuilder').hidden=true;$('#structuredJson').hidden=false;$('#structuredJsonLabel').hidden=false;}
+function newBuilderForm(){if(!authoringReplaceAllowed())return;$('#structuredKind').value='form';$('#structuredJson').value=JSON.stringify({version:3,id:'local-question',type:'form',prompt:t("builder_new_prompt"),fields:[builderDefaultField('input')],buttons:[{id:'submit',label:t("builder_submit"),action:'submit'}]},null,2);invalidateAuthoring();persistAuthoring();openFormBuilder();}
+function wireFormBuilder(){$('#authoringBuilder').onclick=openFormBuilder;$('#authoringJson').onclick=showAuthoringJson;$('#authoringNewForm').onclick=newBuilderForm;}
 
 /* END BUNDLED OFFLINE TOOLS */
 
@@ -3794,13 +4115,14 @@ async function init(){
   applySettings();
   applyI18n();
   wire();
+  await initAuthoringStorage();
   renderChrome();
   setInterval(tick, 1000);
   document.body.inert=false; document.body.setAttribute("aria-busy","false");
   offerLast();
 }
 /* test hooks: pure functions and state accessors; they add no capability the UI does not have */
-window.__boardTest = {formDraftsSettled:()=>formStorageWrites, STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
+window.__boardTest = {formDraftsSettled:()=>formStorageWrites,authoringSettled:()=>authoringWrites, STRINGS, SAME_OK, VIEWER_VERSION, buildModel, composeMessage, writeNewFile, guardWritePath,
   guidanceEditorUrls, parseHeaders, formatBody, messageMetadata, questionValue, inSchedule, zoneNow, stats, getModel:()=>B, getSettings:()=>S, getSel:()=>sel, loading:()=>historyLoading || activeBodyReads>0 || bodySearch.pending || !!(B && messagePage(matchingMessages()).rows.some(m=>!m.bodyLoaded)), cachedBodies:()=>bodyCache.size, loadFiles:(files,dirs)=>{ loadBoard(buildModel(files,dirs,{name:"test"})); }};
 window.__boardTest.ready=init();
 </script>

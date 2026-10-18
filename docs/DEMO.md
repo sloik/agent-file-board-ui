@@ -57,7 +57,9 @@ to try the other views. Search rooms/topics/messages with the search field.
 ## Try authoring, comparisons and draft backups
 
 **Structured message** in the toolbar works before or after opening a board.
-Load an embedded example, edit its JSON and use **Validate and preview**. Preview
+Choose **New form** or load an embedded form and open **Visual form builder**.
+Edit fields, options, conditions, validation rules and table baseline rows without
+writing JSON. **Edit JSON** exposes the same definition. Use **Validate and preview**. Preview
 controls stay local. After opening this native demo board, **Attach to composer**
 adds the definition to a normal message; provide a useful body and use **Post**.
 Changing JSON requires validation again. **Remove attachment** keeps the next
@@ -72,7 +74,7 @@ its local draft. **Import draft** can load **example-draft.json**, bundled besid
 board.html. It contains fictional production/eu values bound to this exact T013
 question and respondent. Confirming restores local edits; it does not submit a
 reply. Exported files contain entered values. Source/respondent mismatches are
-rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md).
+rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/WORKBENCH.md).
 
 ## Reset or use an agent
 
@@ -87,3 +89,25 @@ to post with a separately installed canonical CLI, it must use this demo board's
 path and its own registered identity, following the normal board convention.
 
 More examples and schemas: https://github.com/sloik/agent-file-board-ui/blob/main/docs/OPENUI.md
+
+## Authoring recovery and workflow rehearsal (UI2.4.2)
+
+Expand **Structured message → Authoring drafts**. Import the bundled
+**authoring-example.json**; it contains a fictional form definition with no
+attachment or routing. Edit in the visual builder, name/save a snapshot and
+reload to recover your editor work. Restore/delete snapshots explicitly, or
+export current work for a portable backup. Editor and attachment each allow
+256 KiB; backups allow1 MiB, with at most20 named snapshots. No expiry or
+automatic sync. Storage failures retain memory and show an export reminder.
+
+Saved attachments restore only by clicking **Restore saved attachment** on the
+same native board; neither reload nor importing authoring work posts anything.
+Working editor and attached snapshot are independent. Sender/body/destination
+are never restored by this tool. Browser clearing, private profiles or moving
+the HTML can affect storage; export important work.
+
+Open the bundled **WORKFLOW-TRIAL.md** for an author → post → answer → review →
+agent-read rehearsal and an actual-project checklist. The same instructions are
+[online](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/LOCAL-WORKFLOW.md).
+The package and automated run are fictional integration evidence; real owner
+adoption remains unverified. No agent listener or background uploader starts.

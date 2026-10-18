@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.4.2 — 2026-10-18
+
+- Add visual form authoring for all11 field kinds, options/defaults, v3 conditions,
+  cross-field rules and editable-table columns, baseline rows and row permissions.
+- Recover unfinished report/form JSON across reload through committed local
+  storage; add20 named snapshots, explicit backup import/export/delete and
+  same-board saved attachment restoration. Keep failed writes visibly memory-only.
+- Add a packaged authoring example, workflow rehearsal/checklist and refreshed
+  illustrated documentation. Keep one offline HTML file and protocol2.4.0.
+  Rehearsal evidence does not claim real human adoption.
+
 ## 2.4.1 — 2026-10-18
 
 - Add read-only typed answer comparisons with labeled initial/submitted values,
