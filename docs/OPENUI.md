@@ -2,7 +2,7 @@
 
 An agent can publish a release review containing a results table, a bar chart
 and an ordinary choice question. The viewer draws it inside the message bubble;
-the readable summary stays above it. Selecting an option and pressing Send response
+the readable summary stays above it. Selecting an option and pressing **Send answer**
 creates a new immutable `ANSWER` file, exactly like existing choice questions.
 An uploaded read-only board downloads the response for manual placement.
 
@@ -75,4 +75,6 @@ Install scripts are unnecessary for this bundle and may include upstream
 installation telemetry. Pinned production dependencies and their notices are in
 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). `npm test` rebuilds in memory
 and checks the embedded bytes, then runs actual `file://` browser regressions.
-Regenerate this screenshot with `node scripts/screenshot_openui.js`.
+Browse the [illustrated feature examples](FEATURES.md#completed-openui-reports)
+and [copyable table/chart JSON](examples/openui/README.md). Regenerate the OpenUI
+screenshots with `npm run screenshots:openui`.

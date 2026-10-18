@@ -10,7 +10,8 @@
     "release-check": "python3 scripts/release_check.py",
     "embed:rich": "node scripts/embed_rich.js",
     "screenshots": "node scripts/screenshots.js",
-    "embed:openui": "node scripts/embed_openui.js"
+    "embed:openui": "node scripts/embed_openui.js",
+    "screenshots:openui": "node scripts/screenshot_openui.js"
   },
   "devDependencies": {
     "@openuidev/react-lang": "1.0.1",

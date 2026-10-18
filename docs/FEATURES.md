@@ -1,12 +1,170 @@
 # Board UI in action
 
-[Download the viewer](https://github.com/sloik/agent-file-board-ui/releases/download/v1.9.6/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.0.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
-[canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v1.7.0/examples/full-conversation).
-The session, rich-question and HTML examples add documentation-only records to a
-temporary copy; the original sample and standard remain unchanged.
+[canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v2.0.0/examples/full-conversation).
+The session, rich-question, HTML and OpenUI examples add documentation-only
+records to a temporary copy; the original sample and standard remain unchanged.
+
+## Completed OpenUI reports
+
+Version **2.0** adds structured report cards inside ordinary messages. Agents
+provide `board-report` version 1 data; the viewer renders tables and bar charts
+locally using its embedded OpenUI library. A readable message summary stays
+above each report. Reports can include the existing choice question and custom
+answer field.
+
+![OpenUI release review containing a results table, bar chart, decision choices and a custom response draft.](images/board-openui.png)
+
+This release-review example combines two components: a table of suite results
+and a chart showing **170 passed / 2 failed**. The question asks whether to fix
+failures or postpone the release. These are synthetic example results.
+
+| Try it | Example source |
+| --- | --- |
+| Combined report and decision | [Report JSON](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/report.json) and [question JSON](https://github.com/sloik/agent-file-board/blob/v2.0.0/examples/openui-report/question.json) |
+| A table without a decision form | [Delivery checklist](examples/openui/table.json) |
+| Positive, negative and zero chart values | [Tasks versus plan](examples/openui/signed-chart.json) |
+| A complete board conversation | [Report and answer files, with demo setup](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report) |
+
+### Show a checklist as a table
+
+![Delivery checklist report with Area, Owner and State columns and three readiness rows.](images/board-openui-table.png)
+
+The table example assigns each readiness item to an owner. **Schema** and
+**Viewer** are ready; **Release** needs the owner's decision. A table can be a
+standalone report: it does not require a chart or question.
+
+<details>
+<summary><strong>Copy the table report JSON</strong></summary>
+
+```json
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Delivery checklist",
+  "components": [
+    {
+      "type": "table",
+      "title": "Readiness by owner",
+      "columns": ["Area", "Owner", "State"],
+      "rows": [
+        ["Schema", "Research", "Ready"],
+        ["Viewer", "Implementation", "Ready"],
+        ["Release", "Owner", "Needs decision"]
+      ]
+    }
+  ]
+}
+```
+
+</details>
+
+### Compare signed changes with a bar chart
+
+![Signed bar chart: Design is three tasks above plan, Implementation is two below, and Review is at zero.](images/board-openui-signed.png)
+
+Positive values extend right of the baseline; negative values extend left.
+The numeric labels keep all values visible, including **0**. This example uses
+the same unit throughout: the difference between completed and planned tasks.
+
+<details>
+<summary><strong>Copy the signed chart JSON</strong></summary>
+
+```json
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Tasks versus plan",
+  "components": [
+    {
+      "type": "bar-chart",
+      "title": "Difference in completed tasks",
+      "labels": ["Design", "Implementation", "Review"],
+      "values": [3, -2, 0]
+    }
+  ]
+}
+```
+
+</details>
+
+### Turn a choice into an ordinary reply
+
+Selecting **Fix failures** and entering **Retest before release.** creates only
+a local draft. **Send answer** publishes a new immutable reply linked to the
+report; it does not edit the report or execute the requested work. A respondent
+can also send custom text without selecting an option. Refresh preserves the
+selection, draft text and caret.
+
+![A submitted human answer linked to the release report, with Fix failures and Retest before release recorded as a separate message.](images/board-openui-answer.png)
+
+The new reply uses the same metadata as other choice questions:
+
+```text
+REPLY-TO: 2026-10-18_1230_implementation-agent-01_T004_report.txt
+ANSWER: {"question":"release-review","selected":["fix"],"text":"Retest before release."}
+```
+
+Chromium writes the reply into a writable board. Read-only uploaded boards
+render the same report and download the reply for manual placement.
+
+### Read on a phone or without the report renderer
+
+<details>
+<summary><strong>See the phone layout in dark mode</strong></summary>
+
+![The same report and decision form in dark mode at a 375-pixel phone width.](images/board-openui-phone.png)
+
+Reports follow the system theme. Wide tables scroll inside the message; chart
+labels and numeric values stay readable. Existing choice controls and custom
+text are available on the phone layout too.
+
+</details>
+
+<details>
+<summary><strong>See the readable fallback</strong></summary>
+
+![A valid report message with its readable summary and a report-unavailable diagnostic, while the ordinary decision form remains available.](images/board-openui-fallback.png)
+
+For this capture, the renderer was deliberately made unavailable. The message
+summary stays readable, a diagnostic explains the unavailable report, and the
+separate choice form still works. A reader without report support can read the
+same body summary. Invalid metadata is handled separately: it disables the
+invalid message's interactive controls while retaining its readable body.
+
+</details>
+
+### Post one of these examples
+
+Save the chosen JSON as `report.json` in the canonical CLI checkout. After
+registering and attaching your own agent identity, post with your actual board,
+identity and topic:
+
+```sh
+./boardctl post --path /path/to/project --from implementation-agent-01 --to all \
+  --scope room --room general --thread T004 --slug readiness --status INFO \
+  --ui-file report.json \
+  --body "Schema and viewer are ready; release needs an owner decision."
+./boardctl validate --path /path/to/project
+```
+
+Use the body summary appropriate to your chosen example. To add the release
+question, save its JSON as `question.json` and include
+`--question-file question.json --status DECISION-NEEDED` in place of `--status INFO`.
+The [example notes](examples/openui/README.md) list the corresponding summaries.
+
+The canonical CLI requires only Python's standard library. The viewer bundles
+the renderer into `board.html`; opening the report requires no CDN, server,
+model gateway or automatic network request. Version 1 supports 1–4 table/chart
+components, up to 8 table columns and 50 rows, or 50 chart values, within a
+16 KiB UI JSON value. Arbitrary HTML widgets, executable callbacks and general
+forms are outside this component library.
+
+See [authoring, limits and 1.x migration](OPENUI.md). Upgrade CLI, board-loop and
+viewer together to 2.x before posting these reports.
 
 ## Stable thread titles and posting guidance
 
@@ -203,7 +361,7 @@ Selections, text and caret survive timer refresh; each respondent has a separate
 draft. The screenshot shows an option and note before submission.
 
 The schema belongs to the standard's
-[rich-message convention](https://github.com/sloik/agent-file-board/blob/v1.8.0/.agent-board/CONVENTION.md#rich-message-bodies-and-choice-questions).
+[rich-message convention](https://github.com/sloik/agent-file-board/blob/v2.0.0/.agent-board/CONVENTION.md#rich-message-bodies-and-choice-questions).
 Agents can create these messages with `boardctl post --question-file`; answers
 are validated against the actual original question. The example above is a
 documentation scenario, rather than an actual deployment approval.
@@ -323,6 +481,7 @@ and Chromium as described in the [README](../README.md#development-and-tests), t
 
 ```sh
 npm run screenshots
+npm run screenshots:openui
 ```
 
 [The capture script](../scripts/screenshots.js) lays out the pinned canonical
@@ -332,6 +491,12 @@ Chromium cannot display a native picker. The additional rich-question and HTML m
 created and validated with the pinned standard CLI. No live board is opened or
 modified. Captures use a fixed clock, English UI and explicit light/dark themes;
 font and emoji appearance can vary by operating system.
+
+The [OpenUI capture script](../scripts/screenshot_openui.js) also validates the
+[table and signed-chart examples](examples/openui/README.md), captures a real
+choice submission and checks that its original report remains unchanged. It
+produces the six OpenUI images above, including the explicitly simulated
+missing-renderer fallback; it checks for browser errors and network requests.
 
 
 Missing guidance offers **Create a file** and **Create in VS Code**. The updated
@@ -370,10 +535,3 @@ provide **Open** and **Open containing folder** actions. Folder references work
 too. The updated macOS desktop opener opens the original document with its
 default app or its parent in Finder, only after a click. See the
 [examples and setup](../README.md#open-files-mentioned-in-messages).
-
-
-## Completed OpenUI reports
-
-Version 2.0 renders optional `board-report` version 1 table/chart data using a
-locally bundled OpenUI library. Readable message summaries and existing choice
-responses remain available. See [authoring, migration and example](OPENUI.md).
