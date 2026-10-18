@@ -59,13 +59,28 @@ class PrepareReleaseTests(unittest.TestCase):
             (root / 'scripts/build_demo.py').write_text('fixture')
             (root / 'docs').mkdir()
             (root / 'docs/DEMO.md').write_text('fixture')
-            with patch('prepare_release.archive_demo', side_effect=ValueError('bad demo')):
+            with patch('prepare_release.build_demo_asset', side_effect=ValueError('bad demo')):
                 with self.assertRaisesRegex(ValueError, 'bad demo'):
                     prepare(root, 'v2.2.1', root / 'failed')
             def archive(source, destination):
                 self.assertEqual(source, root)
                 destination.write_bytes(b'exact demo bytes')
-            with patch('prepare_release.archive_demo', side_effect=archive):
+            with patch('prepare_release.build_demo_asset', side_effect=archive):
                 prepare(root, 'v2.2.1', root / 'ok')
             self.assertEqual({p.name for p in (root / 'ok').iterdir()}, {Path(p).name for p in ASSETS} | {'notes.md', 'agent-file-board-demo.zip'})
             self.assertEqual((root / 'ok/agent-file-board-demo.zip').read_bytes(), b'exact demo bytes')
+
+
+    def test_demo_uses_the_checked_out_tag_builder(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'CHANGELOG.md').write_text('## 2.2.1\nnotes\n')
+            for name in ASSETS:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('exact source bytes')
+            (root / 'docs').mkdir()
+            (root / 'docs/DEMO.md').write_text('tag tour')
+            (root / 'scripts/build_demo.py').write_text("import sys\nfrom pathlib import Path\nPath(sys.argv[sys.argv.index('--output')+1]).write_bytes(b'tested tag builder output')\n")
+            prepare(root, 'v2.2.1', root / 'release')
+            self.assertEqual((root / 'release/agent-file-board-demo.zip').read_bytes(), b'tested tag builder output')

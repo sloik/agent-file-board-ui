@@ -1,9 +1,21 @@
 # Release notes
 
+## 2.3.0 — 2026-10-18
+
+- Add offline typed forms, selectors and editable table replies across all three
+  planned batches: 11 field types and all 23 remaining upstream helper/control entries.
+  Pinned catalogue coverage is 82/82 bounded adaptations; 34 static report types remain.
+- Version QUESTION/ANSWER form metadata, typed required/default validation, calendar
+  dates, slider steps and stable row/column cell-change replies. Preserve legacy formats.
+- Keep drafts, focus and edits through polling/localization/navigation; append new
+  replies with existing sender guards or download them in read-only mode.
+- Add schemas, shared CLI/browser cases, safe 2.2.0 metadata upgrades, illustrated
+  examples and downloadable demo forms with a historical typed response.
+
 ## 2.2.1 — 2026-10-18
 
 - Ship a downloadable offline demo ZIP with the exact viewer, a synthetic board,
-  fictional discussions/replies and all34 static report types from the gallery.
+  fictional discussions/replies and all 34 static report types from the gallery.
 - Add a guided tour and download/open instructions to OPENUI.md. Explore local
   controls or try a normal choice answer, including read-only upload/download.
 - Build and validate the demo reproducibly from pinned public fixtures; attach

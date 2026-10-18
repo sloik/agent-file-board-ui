@@ -51,13 +51,17 @@ def build_demo(root: Path, destination: Path):
     vendor = root / 'vendor/agent-file-board'
     examples = vendor / 'examples'
     version = json.loads((root / 'package.json').read_text())['version']
+    forms_enabled = tuple(map(int, version.split('.'))) >= (2, 3, 0)
     destination.mkdir(parents=True)
     board = destination / 'demo-board'
     base = board / '.agent-board'
     base.mkdir(parents=True)
     # Exact metadata allowlist: no private context, external read state or presence.
-    for rel in ['CONVENTION.md', 'GLOSSARY.md', 'components/board-report-v1.schema.json',
-                'components/board-report-v2.schema.json', 'components/board-report-v3.schema.json']:
+    metadata = ['CONVENTION.md', 'GLOSSARY.md', 'components/board-report-v1.schema.json',
+                'components/board-report-v2.schema.json', 'components/board-report-v3.schema.json']
+    if forms_enabled:
+        metadata += ['components/form-question-v2.schema.json', 'components/form-answer-v2.schema.json']
+    for rel in metadata:
         target = base / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(vendor / '.agent-board' / rel, target)
@@ -83,7 +87,7 @@ def build_demo(root: Path, destination: Path):
             return cli(root, 'post', '--path', board, '--from', sender, '--to', recipient,
                        '--scope', 'room', '--room', room, '--thread', thread, '--slug', slug,
                        '--at', f'2026-10-18T10:{minute:02}:00Z', '--language', 'en', '--body', body, *extra)
-        post('T000', 'start-here', '# Welcome to the offline demo\n\nEverything here is **fictional**: participants, conversations, results and embedded images.\n\nStart with the reports room: T004 is a report and historical answer; T007 is the v2 dashboard; T008 has specialty charts; T009 has images, card grids, carousel and modal; T010 is an unanswered choice you can try.\n\nArchitecture and product contain sample discussions; Direct contains an agent handoff. Select human-owner-01 to try posting. The package README has the complete tour.', room='general', extra=('--content-type', 'text/markdown'))
+        post('T000', 'start-here', '# Welcome to the offline demo\n\nEverything here is **fictional**: participants, conversations, results and embedded images.\n\nStart with the reports room: T004 is a report and historical answer; T007 is the v2 dashboard; T008 has specialty charts; T009 has images, card grids, carousel and modal; T010 is an unanswered choice; T011 is an editable form; T012 has a historical typed form answer.\n\nArchitecture and product contain sample discussions; Direct contains an agent handoff. Select human-owner-01 to try posting. The package README has the complete tour.', room='general', extra=('--content-type', 'text/markdown'))
         post('T000', 'how-to-try', 'This is a real file board. Tabs, filters, charts, carousel and modal only change your local view. Send answer or Post creates a file in this demo folder; read-only uploads download a reply instead. Extract another copy of the ZIP to reset.', room='general', sender='research-agent-01', minute=31)
         report_examples = examples / 'openui-report'
         question = report_examples / 'question.json'
@@ -113,6 +117,16 @@ def build_demo(root: Path, destination: Path):
         write_json(pending_file, pending)
         post('T010', 'try-an-answer', 'Try the choice controls on this fictional report. Select Fix failures or Postpone release, add a note, and press Send answer. The original report stays unchanged.', recipient='human-owner-01',
              extra=('--ui-file', report_examples / 'report.json', '--question-file', pending_file, '--status', 'DECISION-NEEDED'))
+        if forms_enabled:
+            form_file = report_examples / 'form-question.json'
+            form_definition = json.loads(form_file.read_text())
+            post('T011', 'offline-form', 'Synthetic release configuration. Try every input, selector and editable cell; Send form answer appends a typed reply. Defaults and reset are local.', recipient='human-owner-01', extra=('--question-file', form_file, '--status', 'DECISION-NEEDED'))
+            example = post('T012', 'form-answer-example', 'Synthetic form with a separate historical typed response below. The original table remains unchanged.', recipient='human-owner-01', extra=('--question-file', form_file, '--status', 'DECISION-NEEDED'))
+            post('T012', 'historical-form-answer', 'Synthetic typed response: schema estimate changed to1; viewer approval changed totrue. See ANSWER values for every submitted field.', sender='human-owner-01', recipient='implementation-agent-01', minute=40, extra=('--answer-file', report_examples / 'form-answer.json', '--reply-to', Path(example).name, '--status', 'REPLY'))
+            actual = {f['type'] for f in form_definition['fields']}
+            expected = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedFormFields'])
+            if actual != expected:
+                raise ValueError(f'Demo form coverage differs: {actual ^ expected}')
     cli(root, 'validate', '--path', board)
     implemented = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedTypes'])
     if types != implemented:
@@ -120,6 +134,9 @@ def build_demo(root: Path, destination: Path):
     manifest = {'viewerVersion': version, 'synthetic': True, 'boardFolder': 'demo-board',
                 'componentTypes': sorted(types), 'reports': reports,
                 'tryAnswer': {'room': 'reports', 'thread': 'T010', 'question': 'demo-next-step'}}
+    if forms_enabled:
+        manifest['formFieldTypes'] = sorted(actual)
+        manifest['formTopics'] = ['T011', 'T012']
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

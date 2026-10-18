@@ -30,12 +30,15 @@ manual placement. Files must be extracted first; a ZIP cannot be selected as a b
 | reports / T007 | Try the v2 dashboard tabs, table filter/sort, collapsible notes and Chart data. |
 | reports / T008 | Inspect pie/donut, radial, radar, scatter and stacked bar plots; expand Chart data for full values. |
 | reports / T009 | See icons, comparisons, tags, Markdown, embedded PNGs and card grids. Scroll to Card layouts for Previous/Next (or arrow/Home/End keys) and Open supporting details for the modal. Close it with Close or Escape. |
+| reports / T011 | Complete the typed form: text/number, selections, date, slider, switches and editable table cells. Reset restores local defaults; Send form answer appends a typed reply. |
+| reports / T012 | Compare the original form/table with its separate historical typed answer. |
 | reports / T010 | Select **human-owner-01** in **I am**, pick an option, add a note and press **Send answer**. |
 
 The reports cover all **34 board component types** across versions 1, 2 and 3.
-They use the same pinned JSON examples as the screenshot gallery. This is a
-board adaptation of OpenUI; it does not demonstrate the 23 upstream entries
-that still need an interaction contract.
+The demo also covers all **11 form field types**, their label/button helpers,
+and typed immutable responses. It uses the same pinned JSON examples as the
+screenshot gallery. All 82 upstream entries have bounded board adaptations;
+this does not imply full upstream props, arbitrary actions or streaming support.
 
 Tabs, sorting, filters, carousel and modal only change your local view. **Post**
 and **Send answer** create ordinary message files in this disposable demo board

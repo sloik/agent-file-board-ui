@@ -48,3 +48,14 @@ test('the extracted demo uploads read-only, keeps local controls and downloads a
   assert.deepEqual(h.readTree(demo.project),before);assert.equal(log.requests.filter(u=>!u.startsWith('file:')).length,0);assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.consoleErrors,[]);
  }finally{await ctx.close();}
 });
+
+test('downloadable demo exposes every form field and a historical typed table-change response',async()=>{
+ const {ctx,page,log}=await open();try{
+  assert.equal(demo.manifest.formFieldTypes.length,11);assert.deepEqual(demo.manifest.formTopics,['T011','T012']);
+  await page.locator('.tcard[data-tk="room:reports|T011"]').click();await page.waitForSelector('.typed-form');assert.equal(await page.locator('.form-field').count(),12);assert.equal(await page.locator('[data-form-field=tasks] tbody tr').count(),2);
+  await page.locator('[data-form-field=owner] input').fill('Demo tour owner');await page.locator('[data-form-field=tasks] [data-row=schema][data-column=hours] input').fill('4');
+  const original=await page.evaluate(()=>window.__fakefs.dump());await page.locator('.form-buttons [type=submit]').click();await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('ANSWER: {"version":2')&&f.text.includes('Demo tour owner')));
+  const after=await page.evaluate(()=>window.__fakefs.dump());for(const file of original)assert.deepEqual(after.find(f=>f.path===file.path),file);
+  await page.locator('.tcard[data-tk="room:reports|T012"]').click();await page.waitForSelector('.typed-form');assert.match(await page.locator('#feed').innerText(),/Synthetic typed response/);assert.equal(await page.locator('.metadata-error,.form-error:not([hidden])').count(),0);assert.equal(log.requests.filter(u=>!u.startsWith('file:')).length,0);assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.consoleErrors,[]);
+ }finally{await ctx.close();}
+});

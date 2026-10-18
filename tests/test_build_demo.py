@@ -36,6 +36,8 @@ class DemoTests(unittest.TestCase):
             expected = json.loads((ROOT / 'vendor/agent-file-board/openui-upstream.json').read_text())['boardLibrary']['implementedTypes']
             self.assertEqual(set(manifest['componentTypes']), set(expected))
             self.assertEqual(len(expected), 34)
+            self.assertEqual(len(manifest['formFieldTypes']), 11)
+            self.assertEqual(manifest['formTopics'], ['T011','T012'])
             self.assertTrue(manifest['synthetic'])
             self.assertEqual(manifest['viewerVersion'], json.loads((ROOT / 'package.json').read_text())['version'])
             self.assertEqual({r['version'] for r in manifest['reports']}, {1, 2, 3})

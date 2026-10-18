@@ -26,14 +26,14 @@ can also use `--question-file question.json --status DECISION-NEEDED`.
 The [complete canonical demo](https://github.com/sloik/agent-file-board/tree/main/examples/openui-report)
 provides historical report/answer messages and temporary-board setup instructions.
 
-See [OPENUI.md](../../OPENUI.md#examples) for all rendered examples, authoring
+See [OPENUI.md](../../OPENUI.md#version-1-examples) for all rendered examples, authoring
 instructions, the contract and migration details.
 `npm run screenshots:openui` validates these payloads through the pinned CLI,
 renders the actual standalone viewer and regenerates their screenshots.
 
 
 - [static-dashboard.json](static-dashboard.json) — board-report v2 example with
-  all18 static types, local navigation/filtering and signed multi-series charts.
+  all 18 static types, local navigation/filtering and signed multi-series charts.
   Requires2.1 CLI/viewer/metadata; see [the static dashboard guide](../../OPENUI.md#static-dashboard-21).
 
 - [static-candidates.json](static-candidates.json) — v3 specialty charts, offline
@@ -42,3 +42,7 @@ renders the actual standalone viewer and regenerates their screenshots.
 To try these examples without developer tools, [download the complete offline
 demo](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)
 and follow the [tour](../../DEMO.md).
+
+- [form-question.json](form-question.json) and [form-answer.json](form-answer.json) —
+  version2 typed form, all 11 control types and stable editable-cell replies.
+  Requires2.3 CLI/viewer/metadata; see [the form guide](../../OPENUI.md#forms-selectors-and-editable-tables-23).

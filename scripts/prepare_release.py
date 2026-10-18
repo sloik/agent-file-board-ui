@@ -3,11 +3,20 @@
 import argparse
 import re
 import shutil
+import subprocess
+import sys
 from pathlib import Path
-from build_demo import ARCHIVE, archive_demo
+from build_demo import ARCHIVE
 
 ASSETS = ("board.html", "scripts/desktop_opener.applescript", "scripts/install_desktop_opener.py")
 DEMO_SINCE = (2, 2, 1)
+
+
+def build_demo_asset(root: Path, output: Path) -> None:
+    # Backfills must execute the tested tag's builder, not today's demo code.
+    subprocess.run([sys.executable, '-I', '-B', str(root / 'scripts/build_demo.py'),
+                    '--root', str(root), '--output', str(output)], check=True,
+                   capture_output=True, text=True)
 
 
 def release_notes(changelog: str, tag: str) -> str:
@@ -33,7 +42,7 @@ def prepare(root: Path, tag: str, output: Path) -> None:
         for name in ('scripts/build_demo.py', 'docs/DEMO.md'):
             if not (root / name).is_file():
                 raise ValueError(f"missing demo source: {name}")
-        archive_demo(root, output / ARCHIVE)
+        build_demo_asset(root, output / ARCHIVE)
     (output / "notes.md").write_text(notes, encoding="utf-8")
 
 

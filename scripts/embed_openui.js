@@ -18,7 +18,7 @@ for(const [from,to,count] of [
   source=source.split(from).join(to);
 }
 source=source.replace(/<\/script/gi,"<\\/script").replace(/^[ \t]+$/gm,"");
-const validation=["static-report-validation.js","extended-static-validation.js"].map(name=>fs.readFileSync(path.join(root,"scripts",name),"utf8")).join("\n");
+const validation=["static-report-validation.js","extended-static-validation.js","form-contract.js"].map(name=>fs.readFileSync(path.join(root,"scripts",name),"utf8")).join("\n");
 const block=start+"\n<script>\n"+validation+"\n"+source+"\n</script>\n"+end;
 const old=fs.readFileSync(file,"utf8");
 const next=old.includes(start)?old.slice(0,old.indexOf(start))+block+old.slice(old.indexOf(end)+end.length):old.replace('<!-- END BUNDLED RICH LIBRARIES -->',()=> '<!-- END BUNDLED RICH LIBRARIES -->\n'+block);

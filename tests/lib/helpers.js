@@ -102,6 +102,7 @@ function fakeFsScript(tree, rootName) {
   const nf = n => new DOMException("not found: " + n, "NotFoundError");
   const nodeAt = p => p.reduce((n, k) => n && n.children && n.children[k], root);
   class FakeFile { constructor(path) { this.kind = "file"; this.name = path[path.length - 1]; this.__path = path; }
+    async isSameEntry(other) { return other?.kind === "file" && JSON.stringify(other.__path) === JSON.stringify(this.__path); }
     async getFile() { await settled(); const n = nodeAt(this.__path); if (!n) throw nf(this.name); const text = n.text, bytes = new TextEncoder().encode(text);
       return { name: this.name, size: bytes.length, lastModified: n.lastModified,
         slice: (start,end) => ({ text: async () => new TextDecoder().decode(bytes.subarray(start,end)) }), text: async () => text }; }

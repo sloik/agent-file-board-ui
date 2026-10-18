@@ -55,3 +55,6 @@ window.BoardReportRenderer={
     return dispose;
   }
 };
+
+import {BoardFormRenderer} from "./form-renderer.jsx";
+window.BoardFormRenderer=BoardFormRenderer;

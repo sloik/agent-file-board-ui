@@ -6,7 +6,7 @@ import {z} from 'zod/v4';
 import {ReportLabels} from './report-labels.js';
 import {SpecialtyChart} from './specialty-charts.jsx';
 const ICON_PATHS={info:'M12 8h.01 M12 11v6 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',check:'M4 12l5 5L20 5',warning:'M12 3 2 21h20L12 3 M12 9v5 M12 17h.01',error:'M5 5l14 14 M19 5 5 19 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',star:'m12 2 3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1Z',heart:'M12 21 3 12C-3 4 7-1 12 6c5-7 15-2 9 6Z',file:'M5 2h9l5 5v15H5Z M14 2v6h5 M8 12h8 M8 16h8',folder:'M2 5h8l2 3h10v13H2Z',chart:'M3 2v19h19 M7 16v-5 M12 16V5 M17 16V8',image:'M3 3h18v18H3Z M3 18l6-7 4 4 3-3 5 6 M8 7h.01',clock:'M12 6v6l4 3 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',user:'M8 6a4 4 0 1 0 8 0 4 4 0 0 0-8 0 M3 22v-3c0-7 18-7 18 0v3'};
-function IconGlyph({name}){return <svg className="report-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICON_PATHS[name]}/></svg>;}
+export function IconGlyph({name}){return <svg className="report-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICON_PATHS[name]}/></svg>;}
 function ImageFrame({src,alt,caption}){
  const [failed,setFailed]=useState(false),words=useContext(ReportLabels);
  return <figure className="report-image">{failed?<p className="report-image-error">{words.imageFailed}: {alt}</p>:<img src={src} alt={alt} decoding="async" onError={()=>setFailed(true)}/ >}{caption && <figcaption>{caption}</figcaption>}</figure>;
