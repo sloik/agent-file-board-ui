@@ -1,12 +1,12 @@
 // Data-only board-report v2 contract. Keep parity with canonical static_reports.py.
-function validateStaticReport(report){
+function validateStaticReport(report,version=2,extra=null){
   const require=(ok,message)=>{if(!ok) throw Error('UI v2: '+message);};
   const keys=(o,names)=>o && typeof o==='object' && !Array.isArray(o) && Object.keys(o).sort().join(',')===names.split(' ').sort().join(',');
   const text=(v,n=200,multi=false)=>typeof v==='string' && !!v.trim() && [...v].length<=n && !(multi?/[\u0000-\u0008\u000b-\u001f\u007f\uD800-\uDFFF]/u:/[\u0000-\u001f\u007f\uD800-\uDFFF]/u).test(v);
   const strings=(a,n=200,max=50)=>Array.isArray(a) && a.length>=1 && a.length<=max && a.every(v=>text(v,n));
   const values=(a,n)=>Array.isArray(a) && a.length===n && a.every(v=>typeof v==='number' && Number.isFinite(v) && Math.abs(v)<=1e12);
   const tones=['info','success','warning','danger'];
-  require(keys(report,'library version title components') && report.library==='board-report' && report.version===2 && text(report.title),'invalid report');
+  require(keys(report,'library version title components') && report.library==='board-report' && report.version===version && text(report.title),'invalid report');
   let count=0;
   function children(items,depth){
     require(Array.isArray(items) && items.length>=1 && items.length<=16,'requires 1–16 children');
@@ -51,7 +51,8 @@ function validateStaticReport(report){
     }else if(kind==='steps'){
       require(keys(c,'type title items') && Array.isArray(c.items) && c.items.length>=1 && c.items.length<=16,'invalid steps');
       for(const item of c.items) require(keys(item,'title text state') && text(item.title) && text(item.text,1000) && ['pending','current','complete'].includes(item.state),'invalid step');
-    }else throw Error('UI v2: unknown component '+kind);
+    }else if(extra) extra(c,depth,children);
+    else throw Error('UI v2: unknown component '+kind);
   }
   children(report.components,1);
   return report;

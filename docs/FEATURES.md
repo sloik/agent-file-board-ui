@@ -21,7 +21,7 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## Completed OpenUI reports
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.1** embeds
+structured interfaces from a defined component library. Board UI **2.2** embeds
 it to show **metrics, tables, charts and local tabs/accordions** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.

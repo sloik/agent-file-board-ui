@@ -4,7 +4,7 @@ import {createRoot} from "react-dom/client";
 import {flushSync} from "react-dom";
 import {Renderer, defineComponent, createLibrary, useRenderNode} from "@openuidev/react-lang";
 import {z} from "zod/v4";
-import {ReportLabels,ReportTable,staticComponents,componentProgram} from "./static-components.jsx";
+import {ReportLabels,DEFAULT_REPORT_LABELS,ReportTable,staticComponents,componentProgram} from "./static-components.jsx";
 
 const Table=defineComponent({
   name:"Table", description:"A completed report table with plain text cells",
@@ -47,7 +47,7 @@ window.BoardReportRenderer={
       const signature=JSON.stringify(words);
       if(signature===previous && previous!==undefined) return;
       previous=signature;
-      flushSync(()=>root.render(<ReportLabels.Provider value={words || {filter:'Filter rows',chartData:'Chart data',label:'Label',pending:'Pending',current:'Current',complete:'Complete'}}><Boundary fail={fail}><Renderer response={program(report)} library={library} isStreaming={false} onError={errors=>{if(errors.length) fail();}} /></Boundary></ReportLabels.Provider>));
+      flushSync(()=>root.render(<ReportLabels.Provider value={words || DEFAULT_REPORT_LABELS}><Boundary fail={fail}><Renderer response={program(report)} library={library} isStreaming={false} onError={errors=>{if(errors.length) fail();}} /></Boundary></ReportLabels.Provider>));
     };
     try{draw(labels);}catch(error){root.unmount();throw error;}
     const dispose=()=>root.unmount();

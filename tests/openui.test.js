@@ -224,3 +224,110 @@ test("static v2 invalid nested data is isolated and a missing renderer retains t
   assert.match(await article(missing.page).locator(".body").innerText(),/170 passed/);
   assert.equal(await article(missing.page).locator(".choice-form").count(),1);await missing.ctx.close();
 });
+
+const CANDIDATES=JSON.parse(h.fs.readFileSync(h.path.join(h.VENDOR,"examples/openui-report/static-candidates.json"),"utf8"));
+
+test("v3 renders all remaining static adapters and embedded PNGs without external requests",async()=>{
+  const {ctx,page,log}=await boot({ui:CANDIDATES});
+  await page.waitForSelector('.report-specialty');
+  assert.equal(await article(page).locator('.report-error').isVisible(),false);
+  assert.equal(await article(page).locator('.report-specialty').count(),5);
+  assert.equal(await article(page).locator('.report-icon-text').count()>=2,true);
+  assert.equal(await article(page).locator('.report-metric-comparison').count()>=1,true);
+  assert.match(await article(page).locator('.report-metric-comparison').first().innerText(),/1\.3 MB.*1\.1 MB/s);
+  assert.equal(await article(page).locator('.report-markdown strong').first().innerText(),'Static Markdown');
+  assert.equal(await article(page).locator('.report-tag-block').count()>=1,true);
+  assert.equal(await article(page).locator('.report-card-grid').count(),4);
+  await page.waitForFunction(()=>[...document.querySelectorAll('.board-report img')].length===6 && [...document.querySelectorAll('.board-report img')].every(i=>i.complete && i.naturalWidth>0));
+  assert.equal(await page.locator('.report-image-error').count(),0);
+  assert.equal(await page.locator('dialog.report-modal').isVisible(),false);
+  assert.equal(log.requests.filter(url=>!url.startsWith('file:')).length,0);
+  assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.consoleErrors,[]);await ctx.close();
+});
+
+test("v3 carousel/modal remain local across refresh and dispose native dialog portals",async()=>{
+  const {ctx,page,log}=await boot({ui:CANDIDATES});await page.waitForSelector('.report-carousel');
+  const before=await page.evaluate(()=>window.__fakefs.dump());
+  const carousel=article(page).locator('.report-carousel');
+  await carousel.getByRole('button',{name:'Next',exact:true}).click();
+  assert.equal(await carousel.locator('[data-carousel-panel=context]').isVisible(),true);
+  await carousel.getByRole('button',{name:'Next',exact:true}).focus();await page.keyboard.press('End');
+  assert.equal(await carousel.locator('[data-carousel-panel=composite]').isVisible(),true);
+  const trigger=article(page).locator('.report-modal-trigger>button');await trigger.click();
+  const dialog=page.locator('dialog.report-modal');await dialog.waitFor({state:'visible'});
+  await dialog.locator('.report-filter input').fill('Offline');
+  await dialog.locator('.report-filter input').evaluate(el=>el.setSelectionRange(1,4));
+  const builds=await page.evaluate(()=>window.__boardTest.stats.builds);await page.clock.runFor(61000);
+  await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);
+  assert.equal(await dialog.evaluate(el=>el.open),true);
+  assert.equal(await dialog.locator('.report-filter input').inputValue(),'Offline');
+  assert.deepEqual(await dialog.locator('.report-filter input').evaluate(el=>[el===document.activeElement,el.selectionStart,el.selectionEnd]),[true,1,4]);
+  await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
+  assert.equal(await trigger.evaluate(el=>el===document.activeElement),true);
+  assert.equal(await carousel.locator('[data-carousel-panel=composite]').isVisible(),true);
+  assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),before);
+  await trigger.click();await dialog.waitFor({state:'visible'});
+  // Simulate a route change while the modal is open; disposal must remove its portal.
+  await page.evaluate(()=>[...document.querySelectorAll('.fname')].find(el=>el.textContent.includes('product')).click());
+  await page.waitForFunction(()=>!document.querySelector('dialog.report-modal'));
+  await page.locator('#cBody').focus();assert.equal(await page.locator('#cBody').evaluate(el=>el===document.activeElement),true);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});
+
+test("v3 Markdown removes active resources while literal data and bad images stay isolated",async()=>{
+  const ui=structuredClone(CANDIDATES);
+  ui.components.find(c=>c.type==='markdown').text='**Safe**\n<script>window.attack=1</script><img src="https://example.invalid/image"><iframe src="https://example.invalid"></iframe><style>body{display:none}</style><form><button onclick="window.attack=2">Run</button></form>\n[link](javascript:alert(1))';
+  const {ctx,page,log}=await boot({ui});await page.waitForSelector('.report-markdown strong');
+  const md=article(page).locator('.report-markdown');
+  assert.equal(await md.locator('script,img,iframe,style,form,button,a[href]').count(),0);
+  assert.equal(await page.evaluate(()=>window.attack),undefined);
+  assert.equal(log.requests.filter(url=>!url.startsWith('file:')).length,0);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+  const invalid=structuredClone(CANDIDATES);invalid.components.find(c=>c.type==='image').src='https://example.invalid/photo.png';
+  const bad=await boot({ui:invalid});assert.equal(await article(bad.page).locator('.board-report,.choice-form').count(),0);assert.equal(await article(bad.page).locator('.metadata-error').count(),1);await bad.ctx.close();
+});
+
+test("v3 works in read-only uploads and at phone widths with local controls and translated labels",async()=>{
+  const {ctx,page,log}=await boot({ui:CANDIDATES,upload:true});await page.waitForSelector('.report-carousel');
+  await article(page).locator('.report-carousel').getByRole('button',{name:'Next',exact:true}).click();
+  await page.click('#gear');await page.selectOption('#sLang','pl');await page.keyboard.press('Escape');
+  await page.waitForFunction(()=>document.querySelector('.report-carousel-controls').textContent.includes('Następny'));
+  assert.equal(await article(page).locator('[data-carousel-panel=context]').isVisible(),true);
+  await article(page).locator('.report-modal-trigger>button').click();const dialog=page.locator('dialog.report-modal');await dialog.waitFor({state:'visible'});
+  assert.equal(await dialog.getByRole('button',{name:'Zamknij',exact:true}).count(),1);await dialog.getByRole('button',{name:'Zamknij',exact:true}).click();
+  for(const theme of ['light','dark']) for(const width of [1280,375]){
+    await page.emulateMedia({colorScheme:theme});await page.setViewportSize({width,height:1500});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    assert.equal(await article(page).locator('.report-error').isVisible(),false);
+  }
+  assert.match(await page.locator('#cInfo').innerText(),/tylko.*odczyt/i);
+  assert.equal(log.requests.filter(url=>!url.startsWith('file:')).length,0);assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});
+
+test("v3 large image headers hydrate completely; zero and one-point charts keep finite geometry",async()=>{
+  const cases=JSON.parse(h.fs.readFileSync(h.path.join(h.VENDOR,'tests/fixtures/ui-metadata.json'),'utf8'));
+  const broken=JSON.parse(cases.find(c=>c.name==='v3-png-decode-fallback').headers.UI);
+  broken.components.push({type:'text',title:'Sibling',text:'Still readable'});
+  const failed=await boot({ui:broken});await failed.page.waitForSelector('.board-report img');
+  // Chromium tolerates corrupt pixel streams as transparent images, including
+  // img.decode(). Exercise an explicit browser error event for the fallback.
+  await article(failed.page).locator('img').dispatchEvent('error');
+  await failed.page.waitForSelector('.report-image-error');
+  assert.match(await article(failed.page).locator('.report-image-error').innerText(),/Synthetic red pixel/);
+  assert.match(await article(failed.page).innerText(),/Still readable/);
+  assert.equal(await article(failed.page).locator('.report-error').isVisible(),false);
+  assert.deepEqual(failed.log.pageErrors,[]);await failed.ctx.close();
+  const large=JSON.parse(cases.find(c=>c.name==='v3-large-header-image').headers.UI);
+  assert.ok(JSON.stringify(large).length>16384);
+  const loaded=await boot({ui:large});await loaded.page.waitForFunction(()=>document.querySelector('.board-report img')?.naturalWidth===240);
+  assert.equal(await article(loaded.page).locator('.report-error').isVisible(),false);await loaded.ctx.close();
+  const ui={library:'board-report',version:3,title:'Degenerate data',components:[{type:'pie-chart',title:'Zero',labels:['Zero'],values:[0],variant:'pie'},{type:'pie-chart',title:'One',labels:['Only'],values:[1],variant:'pie'},{type:'scatter-chart',title:'One point',xLabel:'x',yLabel:'y',datasets:[{name:'Only',points:[{x:0,y:0,z:0}]}]}]};
+  const {ctx,page,log}=await boot({ui});await page.waitForSelector('.report-specialty');
+  assert.equal(await article(page).locator('.report-error').isVisible(),false);
+  assert.match(await article(page).locator('[data-chart-kind=pie-chart]').first().innerText(),/No positive values/);
+  const point=article(page).locator('[data-chart-kind=scatter-chart] circle');
+  assert.equal(await point.count(),1);assert.equal(await point.getAttribute('cx'),'330');assert.equal(await point.getAttribute('cy'),'125');
+  await article(page).locator('[data-chart-kind=scatter-chart] summary').click();
+  assert.deepEqual(await article(page).locator('[data-chart-kind=scatter-chart] tbody td').allTextContents(),['Only','0','0','0']);
+  assert.deepEqual(log.pageErrors,[]);await ctx.close();
+});

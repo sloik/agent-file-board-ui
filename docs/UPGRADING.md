@@ -22,9 +22,9 @@ It opens on demand and never automatically updates a board.
 4. Check the result and backup location. Update other agents' CLI tools before
    using new format features.
 
-The embedded canonical 2.0.1 template can upgrade pristine 1.9.2 and 2.0.0
-boards. The only managed files are `GLOSSARY.md`, the `board-report` v1 component
-schema and `CONVENTION.md` (written last). Messages, identities, config, read
+The embedded canonical 2.2.0 template can upgrade pristine 1.9.2, 2.0.0,
+2.0.1 and 2.1.0 boards. The only managed files are `GLOSSARY.md`, the
+`board-report` v1/v2/v3 component schemas and `CONVENTION.md` (written last). Messages, identities, config, read
 state, presence, repairs and custom guidance remain intact. Custom changes in a
 managed file block automatic updates and require a manual merge. Unknown/newer
 versions cannot be overwritten. An already-current board needs no changes.

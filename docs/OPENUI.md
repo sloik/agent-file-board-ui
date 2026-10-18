@@ -1,7 +1,7 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.1 uses its embedded renderer
+defined component library. Agent File Board UI 2.2 uses its embedded renderer
 for static report cards, charts and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
@@ -10,11 +10,63 @@ choice question. **Send answer** creates a new immutable reply linked to the
 original report. An uploaded read-only board downloads that reply for manual
 placement.
 
+## Complete static catalogue (2.2)
+
+Version 3 adds **16 board types**, giving **34 types** in total. All 28 static
+candidates from the pinned upstream catalogue now have board adaptations.
+
+![Offline chart examples with pie, radial, radar, scatter and stacked bars.](images/board-openui-specialty.png)
+
+| Family | New board types |
+| --- | --- |
+| Charts | `pie-chart` (pie/donut), `radial-chart`, `radar-chart`, `scatter-chart`, `single-stacked-bar-chart` |
+| Summaries | `icon`, `icon-text`, `metric-comparison`, `tag-block` |
+| Content | `markdown`, `image`, `image-gallery`, `image-text` |
+| Composition | `card-grid` (snippet/context/composite/visual), `carousel`, `modal` |
+
+<details>
+<summary><strong>Embedded images, cards and local navigation</strong></summary>
+
+![Embedded PNGs, visual cards and a local carousel.](images/board-openui-media.png)
+
+Carousel buttons and arrow/Home/End keys select an embedded panel. Modal opens
+on a click and closes with its button or Escape. Filters, carousel selection,
+modal state and input selection survive polling; language changes keep local
+state. These controls work on read-only uploads and do not change message files.
+
+![Native report modal with a local searchable table.](images/board-openui-modal.png)
+
+</details>
+
+<details>
+<summary><strong>Phone layout in dark mode</strong></summary>
+
+![Static report media and cards at 375 pixels in dark mode.](images/board-openui-media-phone.png)
+
+</details>
+
+Copy the complete [v3 example](examples/openui/static-candidates.json) and follow
+its exact [v3 schema](../vendor/agent-file-board/.agent-board/components/board-report-v3.schema.json).
+Upgrade CLI, viewer and board metadata to **2.2** together. V1/v2 reports retain
+their existing contracts. V3 allows **256 KiB** of UI JSON; all versions retain
+their component/depth bounds. V1/v2 keep the **16 KiB** header limit.
+
+Images use embedded `data:image/png;base64,` only: **64 KiB decoded bytes per
+image**, at most **1024 × 1024 pixels**, and **4,194,304 image pixels per report**.
+External/file URLs, SVG, animated PNG and malformed PNG structure/CRC are
+rejected. A browser decode failure shows a per-image fallback. Markdown permits
+static headings, paragraphs, lists, quotes, tables and code; active links,
+resources, styles, forms and scripts are removed. Icons use twelve fixed names
+listed in the schema. This remains an offline page with no backend or image fetches.
+
+`npm run screenshots:candidates` reproduces these four captures from CLI-validated
+temporary boards and verifies immutable files and zero network requests.
+
 ## Static dashboard (2.1)
 
 ![Static dashboard with metric cards, status, callout, tabs and trend charts.](images/board-openui-static.png)
 
-The first static batch adds **18 board component types**. Everything is embedded
+The first static batch supports **18 board component types**. Everything is embedded
 in the immutable message and works from `file://` without a backend.
 
 | Family | Supported components |
@@ -70,11 +122,10 @@ classifies all 82 upstream catalogue entries, including helper components.
 arbitrary OpenUI Lang compatibility. Board `metric`, for example, covers a
 metric-card use case through its own compact data contract.
 
-Later static candidates include pie/radial/scatter/radar charts, richer card
-composites, carousel/modal and media. Images would need an explicitly offline
-asset contract. Forms, editable tables and action buttons require a separate
-interaction contract; they could eventually submit immutable files, but this
-batch adds no submission or execution behavior.
+The matrix now contains **59 adapted entries**, **0 later static candidates**
+and **23 entries needing an interaction contract**. Forms, editable tables and
+action buttons remain deferred. Their eventual submissions could use immutable
+reply files, but they need defined validation, permissions and response semantics.
 
 `npm run screenshots:static` reproduces these three captures through a validated
 CLI post on a temporary board, checks immutable files and zero network requests.

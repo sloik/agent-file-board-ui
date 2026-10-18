@@ -2,8 +2,10 @@
 import React, {useContext,useId,useState} from 'react';
 import {defineComponent,useRenderNode} from '@openuidev/react-lang';
 import {z} from 'zod/v4';
+import {ReportLabels} from './report-labels.js';
+export {ReportLabels,DEFAULT_REPORT_LABELS} from './report-labels.js';
+import {extendedComponents,extendedProgram} from './extended-static-components.jsx';
 
-export const ReportLabels=React.createContext({filter:'Filter rows',chartData:'Chart data',label:'Label',pending:'Pending',current:'Current',complete:'Complete'});
 
 export function ReportTable({title,columns,rows,interactive=false}){
   const labels=useContext(ReportLabels);
@@ -72,6 +74,7 @@ export function staticComponents(Table,BarChart){
   const Accordion=component('ReportAccordion',sections,({props:p})=><Sections {...p} accordion/>);
   const Steps=component('ReportSteps',{title,items:z.array(z.object({title,text:content,state:content}))},({props:p})=>{const words=useContext(ReportLabels);return <section><h4>{p.title}</h4><ol className="report-steps">{p.items.map((item,i)=><li key={i} data-state={item.state}><span className="report-step-state">{words[item.state]}</span><strong>{item.title}</strong><p>{item.text}</p></li>)}</ol></section>;});
   all=[Table,BarChart,Metric,Callout,Tag,Text,Code,List,Separator,Chart,Card,Stack,Tabs,Accordion,Steps];
+  all.push(...extendedComponents(component,nodes));
   return {components:all,nodes};
 }
 
@@ -80,7 +83,7 @@ export function componentProgram(c,version){
   const call=(name,...args)=>`${name}(${args.map(quote).join(', ')})`;
   const children=items=>'['+items.map(n=>componentProgram(n,version)).join(', ')+']';
   switch(c.type){
-    case 'table':return call('Table',c.title,c.columns,c.rows,version===2);
+    case 'table':return call('Table',c.title,c.columns,c.rows,version>=2);
     case 'bar-chart':return call('BarChart',c.title,c.labels,c.values);
     case 'metric':return call('Metric',c.title,c.value,...(c.detail===undefined?[]:[c.detail]));
     case 'callout':return call('Callout',c.title,c.text,c.tone);
@@ -94,6 +97,6 @@ export function componentProgram(c,version){
     case 'stack':return `ReportStack(${quote(c.title)}, ${quote(c.direction)}, ${children(c.children)})`;
     case 'tabs':case 'accordion':return `Report${c.type==='tabs'?'Tabs':'Accordion'}(${quote(c.title)}, [${c.items.map(i=>`{id:${quote(i.id)},title:${quote(i.title)},children:${children(i.children)}}`).join(', ')}])`;
     case 'line-chart':case 'area-chart':case 'grouped-bar-chart':case 'stacked-bar-chart':return call('SeriesChart',c.title,c.labels,c.series,c.type);
-    default:throw Error('Unsupported report component');
+    default:return extendedProgram(c,children);
   }
 }
