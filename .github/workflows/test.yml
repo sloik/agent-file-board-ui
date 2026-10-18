@@ -3,14 +3,21 @@ name: test
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      tag:
-        description: Existing version tag to test and publish (e.g. v2.0.1)
-        required: true
+      ref:
+        description: Source ref to test (defaults to the triggering commit)
+        required: false
         type: string
+      tag:
+        description: Optional exact version tag to validate
+        required: false
+        type: string
+    outputs:
+      commit:
+        description: Exact source commit that passed the test suite
+        value: ${{ jobs.test.outputs.commit }}
 
 permissions:
   contents: read
@@ -19,30 +26,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.target.outputs.tag }}
+      commit: ${{ steps.source.outputs.commit }}
     steps:
-      - name: Select release tag
-        id: target
-        env:
-          EVENT: ${{ github.event_name }}
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
-          INPUT_TAG: ${{ inputs.tag }}
-        run: |
-          tag=""
-          if [[ "$EVENT" == workflow_dispatch ]]; then
-            tag="$INPUT_TAG"
-          elif [[ "$EVENT" == push && "$REF_TYPE" == tag ]]; then
-            tag="$REF_NAME"
-          fi
-          if [[ -n "$tag" || "$EVENT" == workflow_dispatch ]]; then
-            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
-          fi
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-
       - uses: actions/checkout@v4
+        id: source
         with:
-          ref: ${{ steps.target.outputs.tag && format('refs/tags/{0}', steps.target.outputs.tag) || github.ref }}
+          ref: ${{ inputs.ref || github.sha }}
           submodules: recursive
           fetch-depth: 0
           persist-credentials: false
@@ -73,68 +62,8 @@ jobs:
       - name: Release consistency check
         run: python3 scripts/release_check.py
 
-      - name: Release consistency check against the pushed tag
-        if: steps.target.outputs.tag != ''
+      - name: Release consistency check against the requested tag
+        if: inputs.tag != ''
         env:
-          RELEASE_TAG: ${{ steps.target.outputs.tag }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: python3 scripts/release_check.py --tag "$RELEASE_TAG"
-
-      # Fetch workflow tooling separately: old backfill tags do not contain it.
-      - uses: actions/checkout@v4
-        if: steps.target.outputs.tag != ''
-        with:
-          ref: ${{ github.sha }}
-          path: release-tools
-          persist-credentials: false
-
-      - name: Prepare tested release assets and notes
-        if: steps.target.outputs.tag != ''
-        env:
-          RELEASE_TAG: ${{ steps.target.outputs.tag }}
-        run: python3 release-tools/scripts/prepare_release.py --tag "$RELEASE_TAG" --output release-assets
-
-      - uses: actions/upload-artifact@v4
-        if: steps.target.outputs.tag != ''
-        with:
-          name: release-assets
-          path: release-assets/
-          if-no-files-found: error
-
-  release:
-    needs: test
-    if: needs.test.outputs.tag != ''
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    concurrency:
-      group: publish-release
-      cancel-in-progress: false
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: release-assets
-          path: release-assets
-
-      - name: Publish matching GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ needs.test.outputs.tag }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Query errors fail the job; only a successful list can prove absence.
-          gh api --paginate "repos/$GH_REPO/releases?per_page=100" --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' > published-tags.txt
-          if grep -Fxq "$RELEASE_TAG" published-tags.txt; then
-            echo "Release $RELEASE_TAG already published; preserving it."
-            exit 0
-          fi
-          newest=$( { cat published-tags.txt; echo "$RELEASE_TAG"; } | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
-          latest=false
-          if [[ "$newest" == "$RELEASE_TAG" ]]; then latest=true; fi
-          gh release create "$RELEASE_TAG" \
-            release-assets/board.html \
-            release-assets/desktop_opener.applescript \
-            release-assets/install_desktop_opener.py \
-            --verify-tag --title "$RELEASE_TAG" \
-            --notes-file release-assets/notes.md --latest="$latest"

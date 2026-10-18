@@ -1,0 +1,76 @@
+name: release
+run-name: Release ${{ inputs.tag || github.ref_name }}
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to test and publish (e.g. v2.0.1)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  target:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.select.outputs.tag }}
+    steps:
+      - name: Select release tag
+        id: select
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: target
+    uses: ./.github/workflows/test.yml
+    with:
+      ref: refs/tags/${{ needs.target.outputs.tag }}
+      tag: ${{ needs.target.outputs.tag }}
+
+  prepare:
+    needs: [target, test]
+    runs-on: ubuntu-latest
+    steps:
+      # Current tooling supports old tags that do not contain the release scripts.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/checkout@v4
+        with:
+          # Bind assets to the tested commit, even if a ref changes between jobs.
+          ref: ${{ needs.test.outputs.commit }}
+          path: source
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Prepare release assets and notes
+        env:
+          RELEASE_TAG: ${{ needs.target.outputs.tag }}
+        run: python3 scripts/prepare_release.py --root source --tag "$RELEASE_TAG" --output release-assets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: release-assets/
+          if-no-files-found: error
+
+  publish:
+    needs: [target, prepare]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/publish.yml
+    with:
+      tag: ${{ needs.target.outputs.tag }}

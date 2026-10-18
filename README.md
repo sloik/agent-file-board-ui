@@ -148,7 +148,15 @@ Message posting never edits or deletes an existing message and writes only new f
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
 - Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html` and both desktop opener scripts. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
-- To publish an existing tag, run `gh workflow run test.yml --ref main -f tag=v2.0.1` (or use **Actions → test → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow test.yml` and `gh run watch RUN_ID`.
+- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.0.1` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
+
+The workflows have separate responsibilities:
+
+| Workflow | Responsibility |
+| --- | --- |
+| [test.yml](.github/workflows/test.yml) | Branch/PR CI and the reusable test suite; returns the tested commit. |
+| [release.yml](.github/workflows/release.yml) | Tag pushes and manual backfills: run tests, prepare assets from that exact commit, then call publishing. |
+| [publish.yml](.github/workflows/publish.yml) | Reusable publisher with write permission; downloads tested assets and runs [publish_release.sh](scripts/publish_release.sh). |
 
 ## Development and tests
 

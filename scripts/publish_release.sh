@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Publish the tested artifact. Requires gh and GNU sort (GitHub's Linux runner).
+set -euo pipefail
+
+: "${GH_REPO:?Set GH_REPO to owner/repository}"
+: "${RELEASE_TAG:?Set RELEASE_TAG to the tested version tag}"
+[[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
+
+# Query errors fail the job; only a successful list can prove absence.
+gh api --paginate "repos/$GH_REPO/releases?per_page=100" --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' > published-tags.txt
+if grep -Fxq "$RELEASE_TAG" published-tags.txt; then
+  echo "Release $RELEASE_TAG already published; preserving it."
+  exit 0
+fi
+
+newest=$( { cat published-tags.txt; echo "$RELEASE_TAG"; } | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+latest=false
+if [[ "$newest" == "$RELEASE_TAG" ]]; then latest=true; fi
+gh release create "$RELEASE_TAG" \
+  release-assets/board.html \
+  release-assets/desktop_opener.applescript \
+  release-assets/install_desktop_opener.py \
+  --verify-tag --title "$RELEASE_TAG" \
+  --notes-file release-assets/notes.md --latest="$latest"
