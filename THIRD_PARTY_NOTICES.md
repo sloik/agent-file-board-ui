@@ -17,7 +17,7 @@ bundles. The viewer's original application code remains under its MIT license.
 ## Embedded OpenUI report renderer
 
 Regenerate with `npm run embed:openui`. The production build uses a custom
-Report/Table/BarChart library and the actual OpenUI renderer. It includes these
+bounded report and form component library and the actual OpenUI renderer. It includes these
 locked runtime packages (no hosted observability sink or development inspector):
 
 - react 19.2.4 — MIT; [full notice](licenses/react-MIT.txt).

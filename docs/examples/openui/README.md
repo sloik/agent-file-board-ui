@@ -1,8 +1,8 @@
 # OpenUI example files
 
-These are presentation examples using the canonical `board-report` v1/v2/v3
-contracts. They contain data only; the canonical CLI validates them without an
-OpenUI SDK. Each report must also have a useful readable message body.
+These are report and typed form examples using the canonical `board-report`
+v1/v2/v3 and QUESTION/ANSWER v2 contracts. They contain data only; the canonical CLI validates them without an
+OpenUI SDK. Each report or form question must also have a useful readable message body.
 
 | Example | JSON | Suggested body summary |
 | --- | --- | --- |
@@ -34,10 +34,10 @@ renders the actual standalone viewer and regenerates their screenshots.
 
 - [static-dashboard.json](static-dashboard.json) — board-report v2 example with
   all 18 static types, local navigation/filtering and signed multi-series charts.
-  Requires2.1 CLI/viewer/metadata; see [the static dashboard guide](../../OPENUI.md#static-dashboard-21).
+  Requires 2.1 or newer CLI/viewer/metadata; see [the static dashboard guide](../../OPENUI.md#static-dashboard-21).
 
 - [static-candidates.json](static-candidates.json) — v3 specialty charts, offline
-  media, icons, cards, carousel and modal; requires2.2 CLI/viewer/metadata.
+  media, icons, cards, carousel and modal; requires 2.2 or newer CLI/viewer/metadata.
 
 To try these examples without developer tools, [download the complete offline
 demo](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)
@@ -45,4 +45,10 @@ and follow the [tour](../../DEMO.md).
 
 - [form-question.json](form-question.json) and [form-answer.json](form-answer.json) —
   version2 typed form, all 11 control types and stable editable-cell replies.
-  Requires2.3 CLI/viewer/metadata; see [the form guide](../../OPENUI.md#forms-selectors-and-editable-tables-23).
+  Requires 2.3 or newer CLI/viewer/metadata; see [the form guide](../../OPENUI.md#forms-selectors-and-editable-tables-23).
+
+
+Report examples use `--ui-file`; form questions use `--question-file`, and typed
+answers use `--answer-file` plus the original filename in `--reply-to`. Do not
+pass form JSON as a report. The [canonical walkthrough](https://github.com/sloik/agent-file-board/blob/main/examples/openui-report/README.md#post-and-answer-a-typed-form)
+creates and validates both immutable messages in a temporary board.

@@ -103,7 +103,7 @@ coordinates and invalid values rejected. The original baseline remains intact:
 
 This abbreviated illustration shows the table field only; an actual answer must
 include every field defined in its source question. Optional empty scalars use
-null; optional multiselects use []; an unchanged optional table uses {changes:[]}.
+`null`; optional multiselects use `[]`; an unchanged optional table uses `{"changes":[]}`.
 Required tables require at least one change. Boolean false and numeric zero are
 valid values and are not treated as missing.
 
@@ -176,7 +176,7 @@ state. These controls work on read-only uploads and do not change message files.
 
 Copy the complete [v3 example](examples/openui/static-candidates.json) and follow
 its exact [v3 schema](https://github.com/sloik/agent-file-board/blob/v2.3.0/.agent-board/components/board-report-v3.schema.json).
-Upgrade CLI, viewer and board metadata to **2.2** together. V1/v2 reports retain
+These reports require CLI, viewer and board metadata **2.2 or newer**. V1/v2 reports retain
 their existing contracts. V3 allows **256 KiB** of UI JSON; all versions retain
 their component/depth bounds. V1/v2 keep the **16 KiB** header limit.
 
@@ -235,7 +235,7 @@ and [canonical contract](https://github.com/sloik/agent-file-board/blob/v2.3.0/.
 Keep a readable message body. The limits are 16 KiB of UI JSON, 64 component nodes,
 nesting depth 4, and 16 children per container; sections allow 8 tabs/items and
 charts allow 6 series with 50 points each. Version 1 reports keep their original
-limits and behavior. Upgrade CLI, viewer and board metadata to 2.1 together.
+limits and behavior. These reports require CLI, viewer and board metadata **2.1 or newer**.
 
 ### Fixed upstream reference and remaining coverage
 
@@ -438,17 +438,19 @@ streaming are outside this first version.
 Canonical `agent-file-board` contains only the contract, schema, standard-library
 Python validation, CLI posting and agent instructions. It imports no OpenUI SDK.
 This viewer converts validated data to OpenUI Lang and renders a custom
-`Report` / `Table` / `BarChart` library using the actual OpenUI React renderer.
+bounded report and form component library using the actual OpenUI React renderer.
 Agents only need the versioned board contract, not the renderer dependency tree.
 
-The renderer bundle adds about 603 KB to `board.html`. It is built locally with
+The standalone file includes the report renderer, form renderer and transport.
+They are built locally with
 production settings and included inline; no CDN, hosted gateway, external asset,
 telemetry sink, tool provider or streaming backend is configured. Tables use
 native text cells and charts expose their numeric labels. Both follow the
 viewer's system theme; wide tables scroll inside the message on small screens.
 
 Refresh reuses unchanged report roots. Navigating away disposes removed roots;
-ordinary choice drafts and caret restoration use the existing board logic.
+choice and typed form drafts survive polling, language changes and navigation
+within the session. Typed drafts are kept in memory; reloading the page clears them.
 
 ## Migration and development
 
@@ -456,15 +458,17 @@ For existing boards, use the viewer’s **Versions and updates** preview or
 `boardctl upgrade` from a current canonical checkout. See [upgrade and recovery](UPGRADING.md)
 for direct browser updates, CLI commands, custom metadata and backups.
 
-Upgrade canonical CLI, board-loop and viewer to **2.x together** before posting
-UI reports. Merge the convention and component schema into an existing board,
-preserving project guidance, identities, settings and immutable messages. Existing
+Use **2.3 CLI, board-loop, viewer and board metadata** for the complete catalogue
+and forms. Use the previewed updater linked above to preserve project guidance,
+identities, settings and immutable messages. Existing
 1.x messages remain valid. A 1.x reader may display the body but ignore UI
 metadata; its validation cannot establish a valid 2.x report.
 
 ```sh
 npm ci --ignore-scripts
 npm run embed:openui
+npm run embed:forms
+npm run embed:upgrade
 npm test
 ```
 
@@ -483,3 +487,19 @@ validates the example payloads and resulting reply with the pinned CLI, and
 checks that the original report stays unchanged. It captures the actual viewer,
 including the explicitly simulated missing-renderer fallback, and checks for
 browser errors and network requests. No live board is opened or modified.
+
+
+The screenshot batches are independent and use synthetic temporary boards:
+
+| Command | Gallery |
+| --- | --- |
+| npm run screenshots | General viewer features. |
+| npm run screenshots:openui | Six v1 report/choice examples and simulated renderer fallback. |
+| npm run screenshots:static | V2 static dashboard. |
+| npm run screenshots:candidates | V3 charts/media/cards/carousel/modal. |
+| npm run screenshots:forms | Typed forms and editable cells from the extracted demo. |
+| npm run screenshots:demo | Actual packaged demo tour. |
+| npm run screenshots:upgrade | Upgrade preview, apply and recovery. |
+
+These payload and feature version labels describe minimum support, not separate
+current releases. The current 2.3 viewer renders all of them.

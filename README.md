@@ -155,8 +155,8 @@ Message posting never edits or deletes an existing message and writes only new f
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
-- Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html` and both desktop opener scripts. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
-- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.0.1` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
+- Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html`, both desktop opener scripts and (since 2.2.1) the complete offline demo ZIP. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
+- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.3.0` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
 
 The workflows have separate responsibilities:
 
@@ -175,11 +175,11 @@ git clone --recurse-submodules https://github.com/sloik/agent-file-board-ui.git
 cd agent-file-board-ui
 npm ci --ignore-scripts
 npx playwright install chromium
-npm test                          # Playwright viewer tests + release_check unit tests
+npm test                          # Embedded bundle checks, browser/JS and Python tests
 python3 scripts/release_check.py  # add --tag vX.Y.Z when releasing
 ```
 
-`board.html` is ready to open without a build step. After changing the pinned Marked/DOMPurify dependencies, run `npm run embed:rich` to refresh their inline bundles. `npm test` checks that embedded bytes match the pinned packages. Upstream licenses are retained in the bundles and listed in `THIRD_PARTY_NOTICES.md`. The tests drive it in headless Chromium from `file://`. Because a headless browser cannot show a directory picker, the tests substitute an in-memory File System Access implementation (`tests/lib/helpers.js`); the viewer's real write path runs against it and the written tree is then checked with `boardctl validate`. `tests/mutation.test.js` deliberately breaks each guard in a copy of `board.html` and requires the corresponding check to fail. A smoke test fails on any `pageerror` or console error.
+`board.html` is ready to open without a build step. After changing the pinned Marked/DOMPurify dependencies, run `npm run embed:rich` to refresh their inline bundles. Renderer changes use `npm run embed:openui`; form transport changes use `npm run embed:forms`; canonical upgrade metadata changes use `npm run embed:upgrade`. `npm test` checks that embedded bytes match the pinned packages. Upstream licenses are retained in the bundles and listed in `THIRD_PARTY_NOTICES.md`. The tests drive it in headless Chromium from `file://`. Because a headless browser cannot show a directory picker, the tests substitute an in-memory File System Access implementation (`tests/lib/helpers.js`); the viewer's real write path runs against it and the written tree is then checked with `boardctl validate`. `tests/mutation.test.js` deliberately breaks each guard in a copy of `board.html` and requires the corresponding check to fail. A smoke test fails on any `pageerror` or console error.
 
 ## Specification
 
@@ -290,7 +290,20 @@ committed bundle against the pinned lockfile and source. Install with
 production bundle omits development inspectors and has no hosted telemetry sink.
 
 
-Static OpenUI reports in 2.1 add 18 report types with offline table filters/sorting,
+The v2 report payload (minimum 2.1) provides 18 types with offline table filters/sorting,
 tabs and accordions. See the [illustrated static dashboard guide](docs/OPENUI.md#static-dashboard-21),
 [pinned upstream coverage](vendor/agent-file-board/openui-upstream.json) and
 [SPEC-002-003](vendor/agent-file-board/specs/SPEC-002-003-static-openui-components.md).
+
+
+For current OpenUI support see the [complete illustrated guide](docs/OPENUI.md):
+34 report types and 11 typed form fields in 2.3, with bounded adaptations for
+all 82 pinned catalogue entries. Older versioned report examples remain valid.
+
+To build a fresh offline demo, run `npm run demo`. The builder refuses an existing
+output; choose a new output with
+`python3 scripts/build_demo.py --output /tmp/my-board-demo.zip` instead. For an
+unpacked copy use `--directory --output /tmp/my-new-demo-folder`. The public tour
+in [docs/DEMO.md](docs/DEMO.md) becomes the package README; the manifest records
+coverage and versions. See [screenshot commands](docs/OPENUI.md#migration-and-development)
+for each gallery batch.

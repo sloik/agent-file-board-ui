@@ -1,10 +1,10 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.0.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.3.0/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
-[canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v2.0.0/examples/full-conversation).
+[canonical conversation sample](https://github.com/sloik/agent-file-board/tree/v2.3.0/examples/full-conversation).
 The session, rich-question and HTML examples add documentation-only records to a
 temporary copy; the original sample and standard remain unchanged.
 
@@ -18,7 +18,7 @@ explicit direct updates in writable Chromium, backups and CLI instructions.
 Customized protocol files and newer boards require manual action. Messages,
 settings and identities remain intact. See [all upgrade examples and recovery](UPGRADING.md).
 
-## Completed OpenUI reports
+## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
 structured interfaces from a defined component library. Board UI **2.3** embeds
