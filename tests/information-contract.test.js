@@ -22,6 +22,7 @@ test('strict information wire accepts inert claims and rejects ambiguity or unsa
  assert.throws(()=>C.validateInformation({version:1,items:[{id:'x',value:Infinity}]}));
  assert.throws(()=>C.validateInformation({version:1,items:[{id:'x',value:'\ud800'}]}));
  assert.throws(()=>C.time('2026-02-30T10:00:00Z'));
+ assert.throws(()=>C.time('0000-01-01T10:00:00Z'));
  assert.throws(()=>C.time('2026-10-19T10:00:00+00:00'));
  assert.equal(C.time(instant),now);
 });
