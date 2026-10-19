@@ -1,0 +1,54 @@
+{
+  "browser": "151.0.7922.34",
+  "date": "2026-10-19",
+  "rtcProbe": "STUN/ICE probe uses only an owned UDP listener on 127.0.0.1; no external traffic.",
+  "rtc": [
+    {
+      "blockRtc": false,
+      "udpPackets": 3,
+      "report": {
+        "available": true,
+        "state": "new",
+        "gathering": "gathering"
+      },
+      "consoleErrors": []
+    },
+    {
+      "blockRtc": true,
+      "udpPackets": 3,
+      "report": {
+        "available": true,
+        "state": "new",
+        "gathering": "gathering"
+      },
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'webrtc'.",
+        "Unrecognized Content-Security-Policy directive 'webrtc'.",
+        "Unrecognized Content-Security-Policy directive 'webrtc'.",
+        "Unrecognized Content-Security-Policy directive 'webrtc'."
+      ]
+    }
+  ],
+  "worker": {
+    "report": {
+      "document": "undefined",
+      "rtc": "undefined",
+      "workerConstructor": "function",
+      "fetch": "TypeError",
+      "socket": "constructed",
+      "importScripts": "NetworkError",
+      "dynamicImport": "TypeError",
+      "indexedDB": "SecurityError",
+      "origin": "null",
+      "navigationUnchanged": true,
+      "locationScheme": "data:"
+    },
+    "requests": [],
+    "consoleErrors": [],
+    "termination": {
+      "hostResponsive": true,
+      "elapsedMs": 32
+    }
+  },
+  "evidence_note": "Actual Chromium run; local fixture paths normalized. HTTP(S) attempts intercepted locally. RTC probes contact only an owned loopback UDP listener."
+}

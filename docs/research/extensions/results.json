@@ -1,0 +1,93 @@
+{
+  "browser": "151.0.7922.34",
+  "date": "2026-10-19",
+  "networkInterception": "All HTTP(S) intercepted and fulfilled locally; no DNS/network connection required.",
+  "cases": [
+    {
+      "parentCsp": false,
+      "parentPolicy": null,
+      "childPolicy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; worker-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "rendered": "Approve 1",
+      "events": [
+        {
+          "type": "ready"
+        },
+        {
+          "type": "reply-proposal",
+          "value": 1
+        }
+      ],
+      "limits": {
+        "parentDom": "SecurityError",
+        "storage": "SecurityError",
+        "fetchResult": "TypeError",
+        "childWorker": "constructed"
+      },
+      "requests": [
+        {
+          "url": "https://plugin-probe.invalid/self-navigation?synthetic=1",
+          "kind": "document",
+          "navigation": true
+        }
+      ],
+      "frameUrls": [
+        "file://<probe-directory>/parent-open.html",
+        "https://plugin-probe.invalid/self-navigation?synthetic=1"
+      ],
+      "violations": [
+        "Connecting to 'https://plugin-probe.invalid/fetch' violates the following Content Security Policy directive: \"connect-src 'none'\". The action has been blocked.",
+        "Fetch API cannot load https://plugin-probe.invalid/fetch. Refused to connect because it violates the document's Content Security Policy.",
+        "Creating a worker from 'blob:null/8e90cd39-1832-46c1-8b9c-8c972e876147' violates the following Content Security Policy directive: \"worker-src 'none'\". The action has been blocked.",
+        "Loading the image 'https://plugin-probe.invalid/image' violates the following Content Security Policy directive: \"img-src data: blob:\". The action has been blocked."
+      ],
+      "errors": []
+    },
+    {
+      "parentCsp": true,
+      "parentPolicy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; worker-src blob:; frame-src about: blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "childPolicy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; worker-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "rendered": "Approve 1",
+      "events": [
+        {
+          "type": "ready"
+        },
+        {
+          "type": "reply-proposal",
+          "value": 1
+        }
+      ],
+      "limits": {
+        "parentDom": "SecurityError",
+        "storage": "SecurityError",
+        "fetchResult": "TypeError",
+        "childWorker": "constructed"
+      },
+      "requests": [],
+      "frameUrls": [
+        "file://<probe-directory>/parent-csp.html",
+        "chrome-error://chromewebdata/"
+      ],
+      "violations": [
+        "Connecting to 'https://plugin-probe.invalid/fetch' violates the following Content Security Policy directive: \"connect-src 'none'\". The action has been blocked.",
+        "Connecting to 'https://plugin-probe.invalid/fetch' violates the following Content Security Policy directive: \"connect-src 'none'\". The action has been blocked.",
+        "Fetch API cannot load https://plugin-probe.invalid/fetch. Refused to connect because it violates the document's Content Security Policy.",
+        "Creating a worker from 'blob:null/3b13e60b-7779-4000-bea6-af252e732715' violates the following Content Security Policy directive: \"worker-src 'none'\". The action has been blocked.",
+        "Loading the image 'https://plugin-probe.invalid/image' violates the following Content Security Policy directive: \"img-src data: blob:\". The action has been blocked.",
+        "Loading the image 'https://plugin-probe.invalid/image' violates the following Content Security Policy directive: \"img-src data: blob:\". The action has been blocked.",
+        "Framing 'https://plugin-probe.invalid/' violates the following Content Security Policy directive: \"frame-src about: blob: data:\". The request has been blocked.\n"
+      ],
+      "errors": []
+    }
+  ],
+  "fileCapabilities": {
+    "secureContext": true,
+    "notifications": "function",
+    "permission": "denied",
+    "serviceWorker": true,
+    "workerRegistration": {
+      "name": "TypeError",
+      "message": "Failed to register a ServiceWorker: The URL protocol of the current origin ('null') is not supported."
+    }
+  },
+  "evidence_note": "Actual Chromium run; local fixture paths normalized. HTTP(S) attempts intercepted locally. RTC probes contact only an owned loopback UDP listener."
+}
