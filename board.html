@@ -356,6 +356,27 @@ input{accent-color:var(--accent)}
 }
 :root[data-theme="dracula"] .tcard.unread{border-left-color:#3b6fe0}
 :root[data-theme="dracula"] .unread-badge{color:var(--on-accent)}
+
+/* Keep exit controls reachable while long dialog content scrolls. */
+dialog{--dialog-pad:20px;overflow:auto;scroll-padding-top:80px}
+.report-modal{--dialog-pad:16px}
+dialog>.vocabulary-head,dialog>.report-modal-toolbar{
+ position:sticky;top:calc(-1 * var(--dialog-pad));z-index:10;
+ margin:calc(-1 * var(--dialog-pad)) calc(-1 * var(--dialog-pad)) 12px;
+ padding:12px var(--dialog-pad);background:var(--panel);border-bottom:1px solid var(--line);isolation:isolate
+}
+.vocabulary-head h2,.report-modal-toolbar h4{min-width:0;overflow-wrap:anywhere}
+.vocabulary-head>button,.report-modal-toolbar>button{flex-shrink:0}
+.settings{width:var(--settings-width,340px);max-width:calc(100vw - 32px);max-height:calc(100dvh - 80px);padding:0;overflow:hidden}
+.settings.show{display:flex;flex-direction:column}
+.settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;flex:none;border-bottom:1px solid var(--line)}
+.settings-head h3{margin:0;min-width:0;overflow-wrap:anywhere}.settings-head>button{flex:none}
+.settings-scroll{overflow:auto;min-height:0;padding:0 16px;scroll-padding-block:12px;overscroll-behavior:contain}
+.settings-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;flex:none;padding:12px 16px;border-top:1px solid var(--line)}
+#settingsResize{position:absolute;left:0;top:0;bottom:0;width:9px;cursor:col-resize;touch-action:none;z-index:12;border-left:3px solid transparent}
+#settingsResize:hover,#settingsResize:focus-visible{border-left-color:var(--accent);outline:none}
+#settingsResize::after{content:"";position:absolute;top:calc(50% - 24px);left:1px;width:3px;height:48px;border-radius:3px;background:var(--line)}
+#settingsResize:hover::after,#settingsResize:focus-visible::after{background:var(--accent)}
 </style>
 </head>
 <body>
@@ -381,7 +402,9 @@ input{accent-color:var(--accent)}
 <div class="banner" id="banner"><span><span data-i18n="last_folder"></span> <b id="lastName"></b></span><button class="btn primary" id="reopen" data-i18n="reopen_last"></button><button class="btn" id="forget" data-i18n="forget"></button></div>
 <div class="banner warn" id="verwarn" role="status"><span id="verwarnText"></span><button class="btn" id="upgradeOpen" data-i18n="upgrade_title"></button></div>
 <div class="settings" id="settings">
-  <h3 data-i18n="settings_h"></h3>
+  <div class="settings-head"><h3 data-i18n="settings_h"></h3><button class="btn" id="settingsClose" data-i18n="vocabulary_close"></button></div>
+  <div id="settingsResize" role="separator" aria-orientation="vertical" aria-controls="settings" tabindex="0" data-i18n-aria="settings_resize" data-i18n-title="settings_resize"></div>
+  <div class="settings-scroll" id="settingsScroll">
   <div class="set"><span data-i18n="s_language"></span><select id="sLang"><option value="en">English</option><option value="pl">Polski</option></select></div>
   <div class="set"><label for="sTheme" data-i18n="s_theme"></label><select id="sTheme"><option value="system" data-i18n="theme_system"></option><option value="light" data-i18n="theme_light"></option><option value="dark" data-i18n="theme_dark"></option><option value="dracula">Dracula</option></select></div>
   <div class="set"><span data-i18n="s_lh"></span> <span class="val" id="vLh"></span><input type="range" id="sLh" min="1.2" max="2.2" step="0.05"></div>
@@ -403,7 +426,8 @@ input{accent-color:var(--accent)}
   <div class="set"><label class="ck"><input type="checkbox" id="rWin"> <span data-i18n="s_window"></span></label>
     <div class="row2c"><span data-i18n="s_from"></span> <input type="time" id="rFrom"> <span data-i18n="s_to"></span> <input type="time" id="rTo"></div></div>
   <div class="set" data-i18n="s_refresh_note"></div>
-  <div style="display:flex;justify-content:space-between;margin-top:8px"><button class="btn" id="sReset" data-i18n="s_reset"></button><button class="btn primary" id="sClose" data-i18n="s_done"></button></div>
+  </div>
+  <div class="settings-actions"><button class="btn" id="sReset" data-i18n="s_reset"></button><button class="btn primary" id="sClose" data-i18n="s_done"></button></div>
 </div>
 <div class="app">
   <aside class="side" id="side">
@@ -1132,7 +1156,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.5";
+const VIEWER_VERSION = "2.4.6";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1146,7 +1170,7 @@ const SAFE_SEG_RE = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 const RUNTIME_HUMAN = "agent-file-board-ui " + VIEWER_VERSION;
 const RUNTIME_AGENT = "agent-file-board-ui " + VIEWER_VERSION + " (manual post, sender is an agent)";
 const DEF = {lang:"en",theme:"system",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showReceipts:false,expandAll:false,autoOpen:true,
-  sideW:270,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
+  sideW:270,settingsW:340,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
   me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null};
 const $ = s => document.querySelector(s);
 const stats = {autoRefreshes:0,builds:0,messageReads:0,indexReads:0};
@@ -1402,7 +1426,7 @@ const STRINGS = {
   open_folder:"Open board folder", change_folder:"Change folder", last_folder:"Last opened folder:",
   reopen_last:"Open last folder", forget:"Forget", folder_none:"No folder selected", folder_is:"Folder: {name}",
   read_only:"read-only (upload)", resizer_title:"Drag to resize the sidebar",
-  settings_h:"Settings (saved in this browser)", s_language:"Language", s_theme:"Color theme", theme_system:"System", theme_light:"Light", theme_dark:"Dark", s_lh:"Line spacing", s_fs:"Text size",
+  settings_resize:"Drag the left edge to resize settings; Left/Right arrows adjust; double-click or Home resets", settings_h:"Settings (saved in this browser)", s_language:"Language", s_theme:"Color theme", theme_system:"System", theme_light:"Light", theme_dark:"Dark", s_lh:"Line spacing", s_fs:"Text size",
   s_bubble:"Bubble width", s_feed:"Chat width", s_align:"Bubble layout", s_align_split:"mine on the right, others on the left",
   s_align_left:"all on the left", s_receipts:"show read receipts", s_expand:"always expand long messages",
   s_autoopen:"offer the last folder on start", s_me_note:"\"My\" messages are those from the person chosen in \"I am\".",
@@ -1682,7 +1706,7 @@ const STRINGS = {
   open_folder:"Otwórz folder tablicy", change_folder:"Zmień folder", last_folder:"Ostatnio otwierany folder:",
   reopen_last:"Otwórz ostatni folder", forget:"Nie pamiętaj", folder_none:"Nie wybrano folderu", folder_is:"Folder: {name}",
   read_only:"tylko do odczytu (wczytany)", resizer_title:"Przeciągnij, aby zmienić szerokość panelu",
-  settings_h:"Ustawienia (zapisywane w tej przeglądarce)", s_language:"Język", s_theme:"Motyw kolorystyczny", theme_system:"Systemowy", theme_light:"Jasny", theme_dark:"Ciemny", s_lh:"Odstęp między wierszami", s_fs:"Rozmiar tekstu",
+  settings_resize:"Przeciągnij lewą krawędź ustawień; strzałki lewo/prawo zmieniają szerokość; dwuklik lub Home resetuje", settings_h:"Ustawienia (zapisywane w tej przeglądarce)", s_language:"Język", s_theme:"Motyw kolorystyczny", theme_system:"Systemowy", theme_light:"Jasny", theme_dark:"Ciemny", s_lh:"Odstęp między wierszami", s_fs:"Rozmiar tekstu",
   s_bubble:"Szerokość dymka", s_feed:"Szerokość czatu", s_align:"Układ dymków", s_align_split:"moje po prawej, inne po lewej",
   s_align_left:"wszystkie po lewej", s_receipts:"pokaż potwierdzenia odczytu", s_expand:"zawsze rozwijaj długie wiadomości",
   s_autoopen:"przy starcie proponuj ostatni folder", s_me_note:"„Moje” wiadomości to te od osoby wybranej w polu „Jestem”.",
@@ -3347,6 +3371,7 @@ function saveSettings(){
   applySettings();
 }
 function applySettings(){
+  applySettingsWidth();
   applyTheme();
   const r = document.documentElement.style;
   if(S.composerH) r.setProperty("--composerh",S.composerH+"px"); else r.removeProperty("--composerh");
@@ -3819,7 +3844,7 @@ function updateToolsChrome(){
 }
 function downloadLocalJson(name,value){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json;charset=utf-8'}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function wireOfflineTools(){
- wireAuthoringDrafts();wireFormBuilder();wireLocations();wireTheme();
+ wireAuthoringDrafts();wireFormBuilder();wireLocations();wireTheme();wirePanelLayout();
  $('#structuredOpen').onclick=openAuthoring;$('#structuredClose').onclick=closeAuthoring;$('#structuredDialog').addEventListener('cancel',event=>{event.preventDefault();closeAuthoring();});$('#structuredDialog').addEventListener('close',()=>{if(!$('#structuredDialog').open){disposeAuthoring();authoringValid=null;$('#structuredAttach').disabled=true;$('#structuredPreview').replaceChildren();}});
  $('#structuredLoad').onclick=()=>loadAuthoringExample();$('#structuredKind').onchange=()=>{showAuthoringJson();invalidateAuthoring();persistAuthoring();};$('#structuredJson').oninput=()=>{invalidateAuthoring();persistAuthoring();};$('#structuredValidate').onclick=validateAuthoring;$('#structuredAttach').onclick=attachStructured;$('#structuredRemove').onclick=clearStructuredAttachment;
  $('#draftsOpen').onclick=openDraftManager;$('#draftsClose').onclick=closeDraftManager;$('#draftImport').onchange=importManagedDraft;$('#draftImportPick').onclick=()=>$('#draftImport').click();$('#draftsDialog').addEventListener('cancel',event=>{event.preventDefault();closeDraftManager();});$('#draftsDialog').addEventListener('close',()=>{if(!$('#draftsDialog').open){draftManagerBinding=null;draftManagerGeneration++;}});
@@ -4091,6 +4116,33 @@ function applyTheme(){
 }
 function wireTheme(){
  $('#sTheme').onchange=()=>{S.theme=$('#sTheme').value;saveSettings();};
+}
+
+/* Settings keeps controls inside the viewport without rewriting saved desktop width. */
+function settingsWidthBounds(){const max=Math.max(1,Math.min(900,innerWidth-32));return {min:Math.min(280,max),max};}
+function applySettingsWidth(){
+ const {min,max}=settingsWidthBounds(),width=Math.max(min,Math.min(max,Number.isFinite(S.settingsW)?S.settingsW:340));
+ $('#settings').style.setProperty('--settings-width',width+'px');
+ const handle=$('#settingsResize');handle.setAttribute('aria-valuemin',min);handle.setAttribute('aria-valuemax',max);handle.setAttribute('aria-valuenow',Math.round(width));
+}
+function wirePanelLayout(){
+ const pane=$('#settings'),handle=$('#settingsResize');
+ const resize=width=>{const {min,max}=settingsWidthBounds();S.settingsW=Math.round(Math.max(min,Math.min(max,width)));applySettingsWidth();};
+ const reset=()=>{S.settingsW=340;saveSettings();};
+ $('#settingsClose').onclick=()=>{pane.classList.remove('show');$('#gear').focus();};
+ handle.onpointerdown=e=>{
+  if(e.button!==0)return;e.preventDefault();const x=e.clientX,width=pane.getBoundingClientRect().width;
+  handle.setPointerCapture(e.pointerId);document.body.classList.add('resizing');
+  handle.onpointermove=event=>resize(width+x-event.clientX);
+  const done=()=>{handle.onpointermove=null;handle.onpointerup=null;handle.onpointercancel=null;handle.onlostpointercapture=null;document.body.classList.remove('resizing');saveSettings();};
+  handle.onpointerup=done;handle.onpointercancel=done;handle.onlostpointercapture=done;
+ };
+ handle.ondblclick=reset;
+ handle.onkeydown=e=>{
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();resize(pane.getBoundingClientRect().width+(e.key==='ArrowLeft'?20:-20));saveSettings();}
+  else if(e.key==='Home'){e.preventDefault();reset();}
+ };
+ addEventListener('resize',applySettingsWidth);
 }
 
 /* END BUNDLED OFFLINE TOOLS */

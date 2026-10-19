@@ -29,9 +29,14 @@ accepted by boardctl as a question or answer file. See the
 
 ### Appearance while drafting
 
-In UI2.4.5, **Settings → Color theme** offers System, Light, Dark and Dracula.
+In UI2.4.6, **Settings → Color theme** offers System, Light, Dark and Dracula.
 Switching preserves the editor and unsent values. See [themes](../../THEMES.md).
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
+
+Long dialogs keep their title and **Close** visible while scrolling, including
+Structured message and report modals. Settings has a saved, resizable width:
+drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).

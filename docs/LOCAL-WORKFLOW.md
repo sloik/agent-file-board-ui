@@ -64,10 +64,15 @@ No automatic acceptance, synthetic owner participation or telemetry is implied.
 ## Optional appearance trial
 
 Before editing, open **Settings → Color theme** and try System, Light, Dark and
-Dracula (UI2.4.5). Try another palette with unsent form values or a report filter:
+Dracula (UI2.4.6). Try another palette with unsent form values or a report filter:
 those local values remain in place. This preference belongs to the browser; it
 is not shared with the agent or saved into a message.
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
+
+Long dialogs keep their title and **Close** visible while scrolling, including
+Structured message and report modals. Settings has a saved, resizable width:
+drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).

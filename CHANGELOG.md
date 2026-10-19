@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.4.6 — 2026-10-19
+
+- Keep titles and Close controls visible when long Structured message, saved
+  drafts, locations, protocol, vocabulary, presence, repairs, guidance and report
+  dialogs scroll. Use opaque themed headers and wrapping titles.
+- Add left-edge pointer/keyboard resizing to Settings, with saved width, viewport
+  bounds and double-click/Home/default reset. Keep top Close and bottom actions
+  visible while settings content scrolls.
+- Update docs, demo, desktop/phone captures and layout regressions. Preserve
+  Dracula semantic colors, one offline HTML file and canonical2.4.0.
+
 ## 2.4.5 — 2026-10-19
 
 - Correct Dracula to style interface chrome only. Restore the established Dark

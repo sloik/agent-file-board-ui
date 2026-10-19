@@ -1,6 +1,6 @@
 # Author, review and manage drafts offline
 
-UI **2.4.5** provides these tools to the same local `board.html`. No server, account,
+UI **2.4.6** provides these tools to the same local `board.html`. No server, account,
 model, CDN or extra runtime file is required. The canonical contract and CLI
 remain **2.4.0**: these are viewer features, with no new message format.
 
@@ -141,7 +141,7 @@ are synchronized automatically between browsers or devices.
 
 ## Try the complete demo
 
-[Download the offline demo](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.5/agent-file-board-demo.zip),
+[Download the offline demo](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.6/agent-file-board-demo.zip),
 extract it, open `board.html`, and select `demo-board`.
 
 1. Open **reports → T014** to inspect a historical v3 answer comparison.
@@ -191,13 +191,18 @@ Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
 [illustrated location guide](LOCATIONS.md).
 
-## Color themes (UI2.4.5)
+## Color themes (UI2.4.6)
 
 Choose **Settings → Color theme → System, Light, Dark or Dracula**.
 The browser saves this choice; report/form inputs and filters remain mounted
 while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
+
+Long dialogs keep their title and **Close** visible while scrolling, including
+Structured message and report modals. Settings has a saved, resizable width:
+drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).

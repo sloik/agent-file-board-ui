@@ -85,13 +85,18 @@ Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
 [illustrated location guide](../../LOCATIONS.md).
 
-## Color themes (UI2.4.5)
+## Color themes (UI2.4.6)
 
 Choose **Settings → Color theme → System, Light, Dark or Dracula**.
 The browser saves this choice; report/form inputs and filters remain mounted
 while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
+
+Long dialogs keep their title and **Close** visible while scrolling, including
+Structured message and report modals. Settings has a saved, resizable width:
+drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).

@@ -41,3 +41,8 @@ and demo archive.
 Try the [fictional offline demo](DEMO.md). Reproduce these captures with
 `npm run screenshots:themes`; `tests/themes.test.js` covers selection, committed
 reload/reset, system overrides, retained editor/report state and phone bounds.
+
+Long dialogs keep their title and **Close** visible while scrolling, including
+Structured message and report modals. Settings has a saved, resizable width:
+drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).
