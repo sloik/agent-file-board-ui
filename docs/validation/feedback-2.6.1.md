@@ -37,3 +37,19 @@ weakened.
 
 GitHub form field reference:
 https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms
+
+
+## Public delivery
+
+Viewer2.6.1/928787c and canonical2.6.1/0b1db1c are published. Source main CI
+39319044771 (viewer) and39318815664 (canonical) passed. Tagged release39319043447
+attempt2 passed the complete test/prepare/publish workflow. Four downloaded assets
+and both release notes exactly match staged tested bytes; archived feedback
+skill/guide bytes also match. Previous2.6.0 assets and notes are unchanged.
+Receipt:/tmp/afb-261-release-receipt.json.
+
+The first release attempt timed out in the existing unsupported draft-import
+check; its code was unchanged. MainCI on the same commit and a focused unchanged
+local control passed. One unchanged failed-job retry passed. Root cause remains
+unestablished; this is not represented as a repaired test/runtime bug. The first
+failure log is retained at/tmp/afb-261-release-failure.log.
