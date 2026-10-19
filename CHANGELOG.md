@@ -1,5 +1,15 @@
 # Release notes
 
+## Unreleased
+
+- Add local room, thread and participant follows, a bounded notification center
+  and optional explicit browser alerts. Keep baseline history quiet and isolate
+  native folder/identity preferences, with honest session-only upload/storage fallback.
+- Navigate alerts to exact messages and prepare guarded quick replies through the
+  normal immutable composer. Preserve unsent work; retain download posting on uploads.
+- Document offline refresh/permission limits and absent inline OS reply. Add EN/PL,
+  phone, storage, isolation, validation and transport regressions.
+
 ## 2.4.8 — 2026-10-19
 
 - Turn the current folder label into one chooser for a new folder and recent
