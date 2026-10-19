@@ -1,6 +1,6 @@
 # Release notes
 
-## 2.5.0 — 2026-10-19
+## 2.5.1 — 2026-10-19
 
 - Import portable local extension packages in the stock viewer; inspect facets,
   exact bytes, version ranges/exclusions, enable/disable, and retain old snapshots.
@@ -10,7 +10,7 @@
   or downloaded source-hash-bound answers. Original messages remain unchanged.
 - Explicit compatible renderer switching/revert preserves historical contracts;
   copied boards retain packages without transferring browser approval.
-- Ship matching convention/CLI2.5.0, creator docs and examples. Living specs remain
+- Ship matching convention/CLI2.5.1, creator docs and examples. Living specs remain
   parked and are excluded from this release.
 
 
@@ -25,6 +25,12 @@
   normal immutable composer. Preserve unsent work; retain download posting on uploads.
 - Document offline refresh/permission limits and absent inline OS reply. Add EN/PL,
   phone, storage, isolation, validation and transport regressions.
+
+## 2.5.0 — source tag only
+
+Publication cancelled before delivery after finding that CLI optional-package
+unavailability could hide readable messages and permit repair. Preserved source
+tag; the corrected complete feature is delivered as2.5.1.
 
 ## 2.4.8 — 2026-10-19
 
