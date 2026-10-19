@@ -78,14 +78,27 @@ without rewriting messages or approving actions. Authoring work recovers after r
 
 See the [illustrated authoring and review guide](docs/WORKBENCH.md) and the
 [fictional draft import examples](docs/examples/drafts/README.md), plus the [local workflow trial](docs/LOCAL-WORKFLOW.md). These viewer
-features need UI2.4.2 or newer; the canonical CLI/protocol and submodule remain2.4.0.
+features need UI2.4.2 or newer; their original wire contracts remain supported in2.5.0.
 
-## Version 2.4.8
+## Company extensions, fully offline
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.8/board.html) (save as `board.html`), or use the included file.
+**Extensions** imports one local package with convention contracts, UI components,
+or both. Use declarative views or compiled custom code through the constrained
+SDK. Copy the board to share its packages; code approval stays local to each
+browser profile. New package versions never silently replace historical rendering.
+Choose a compatible renderer explicitly and revert whenever needed.
+
+Compose a contract example, preview it, attach it to a readable message, and
+review/send typed replies through the trusted host. No company-specific server
+integration is needed. See [the SDK and author guide](docs/EXTENSIONS.md).
+Extra powers require a GitHub issue. Living specifications are parked separately.
+
+## Version 2.5.0
+
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.5.0/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
-[agent-file-board 2.4.0](https://github.com/sloik/agent-file-board).
+[agent-file-board 2.5.0](https://github.com/sloik/agent-file-board).
 For existing boards, use **Versions and updates** in the version display or
 mismatch warning. It previews managed metadata and can update the selected
 writable Chromium board directly, with backups. See [upgrade and recovery](docs/UPGRADING.md)
@@ -165,7 +178,7 @@ Message posting never edits or deletes an existing message and writes only new f
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.4.0`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.5.0`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).

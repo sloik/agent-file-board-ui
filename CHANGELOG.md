@@ -1,6 +1,18 @@
 # Release notes
 
-## Unreleased
+## 2.5.0 — 2026-10-19
+
+- Import portable local extension packages in the stock viewer; inspect facets,
+  exact bytes, version ranges/exclusions, enable/disable, and retain old snapshots.
+- Render declarative and compiled custom components through a bounded offline
+  worker SDK. Approve/revoke exact code bytes locally, with readable fallbacks.
+- Compose/preview pinned contract examples, review typed replies and append native
+  or downloaded source-hash-bound answers. Original messages remain unchanged.
+- Explicit compatible renderer switching/revert preserves historical contracts;
+  copied boards retain packages without transferring browser approval.
+- Ship matching convention/CLI2.5.0, creator docs and examples. Living specs remain
+  parked and are excluded from this release.
+
 
 - Add sidebar room/thread **...** menus for exact-scope Follow/Unfollow and
   preselected notification settings. Preserve drafts/navigation, keyboard focus,

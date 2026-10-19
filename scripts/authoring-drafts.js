@@ -3,7 +3,7 @@ const AUTHORING_STORE='authoring-workspace-v1',AUTHORING_LIMIT=1048576;
 let authoringWorkspace={active:null,saved:[]},authoringWrites=Promise.resolve(),authoringStorageOk=true,authoringReady=false,authoringSavedAttachment=null,authoringPending=0;
 function authoringRecord(){return {kind:$('#structuredKind').value,raw:$('#structuredJson').value,attachment:authoringSavedAttachment};}
 function checkedAuthoringRecord(v){
- if(!v||Object.keys(v).sort().join()!=='attachment,kind,raw'||!['report','form'].includes(v.kind)||typeof v.raw!=='string'||new TextEncoder().encode(v.raw).length>262144)throw Error(t("authoring_backup_invalid"));
+ if(!v||Object.keys(v).sort().join()!=='attachment,kind,raw'||!['report','form','extension'].includes(v.kind)||typeof v.raw!=='string'||new TextEncoder().encode(v.raw).length>262144)throw Error(t("authoring_backup_invalid"));
  if(v.attachment!==null){const a=v.attachment;if(!a||Object.keys(a).sort().join()!=='board,kind,raw'||typeof a.board!=='string'||a.board.length>2000||typeof a.raw!=='string')throw Error(t("authoring_backup_invalid"));parseStructured(a.kind,a.raw);}
  if(new TextEncoder().encode(JSON.stringify(v)).length>AUTHORING_LIMIT-128)throw Error(t("authoring_backup_invalid"));return structuredClone(v);
 }
