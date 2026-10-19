@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.6/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.7/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -21,7 +21,7 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.4.6** embeds
+structured interfaces from a defined component library. Board UI **2.4.7** embeds
 it to show **reports, charts, offline forms and editable tables** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.
@@ -433,9 +433,14 @@ protocol/metadata upgrade is required on canonical2.4.0. See the
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
 
 Long dialogs keep their title and **Close** visible while scrolling, including
 Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/PANELS.md).
+
+Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+digit/unit changes, paused/off and read-only states keep button positions and
+header height stable. Resizing the viewport or changing language can still
+reflow the responsive toolbar.

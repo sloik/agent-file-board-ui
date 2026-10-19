@@ -74,7 +74,7 @@ body.resizing{cursor:col-resize;user-select:none}
 .pbar{height:3px;background:transparent;position:relative;overflow:hidden}
 .pbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 50%,transparent),var(--accent))}
 .pbar.off i{display:none}
-.rstat{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.rstat{flex:0 0 100%;min-width:0;height:18px;line-height:18px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .verbar{font-size:11.5px;color:var(--muted);white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .btn.verbar{padding:0;border:0;background:none;font-size:11.5px;text-align:left}
 .btn.verbar:hover{text-decoration:underline}
@@ -387,7 +387,6 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
   <div class="spacer"></div>
   <button class="btn verbar" id="verbar" data-i18n-title="upgrade_title"></button>
   <label class="pill me"><span data-i18n="i_am"></span> <select id="me"></select></label>
-  <span class="rstat" id="rstat"></span>
   <button class="btn" id="reload" data-i18n-title="refresh_now">&#8635;</button>
   <button class="btn" id="vocabularyOpen" data-i18n="vocabulary_title"></button>
   <button class="btn" id="presenceOpen" data-i18n="presence_title"></button>
@@ -396,6 +395,7 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
   <button class="btn" id="gear" data-i18n-title="settings_title">&#9881;</button>
   <button class="btn primary" id="open"></button>
   <button class="btn" id="locationsOpen" data-i18n="locations_open"></button>
+  <span class="rstat" id="rstat"></span>
   <input type="file" id="fallback" webkitdirectory multiple hidden>
 </div>
 <div class="pbar off" id="pbar"><i></i></div>
@@ -1156,7 +1156,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.6";
+const VIEWER_VERSION = "2.4.7";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};

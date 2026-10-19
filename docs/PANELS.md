@@ -1,6 +1,6 @@
 # Dialogs and Settings
 
-In UI2.4.6, long dialogs keep their title and **Close** in an opaque pinned
+In UI2.4.7, long dialogs keep their title and **Close** in an opaque pinned
 header. This applies to **Structured message**, saved drafts, recent locations,
 protocol upgrades, board vocabulary, participants/presence, message repairs,
 guidance and embedded report modals. Scroll to the end and close directly;
@@ -33,3 +33,16 @@ Try the [fictional offline demo](DEMO.md). Reproduce captures with
 `npm run screenshots:panels`. Layout tests use real preview/report rendering,
 long-content fixtures for all dialog headers, hit-tested close clicks and
 pointer/keyboard resize with committed reload/reset checks.
+
+Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+digit/unit changes, paused/off and read-only states keep button positions and
+header height stable. Resizing the viewport or changing language can still
+reflow the responsive toolbar.
+
+![Stable toolbar with a running countdown](images/board-toolbar-stable.png)
+
+![Polish phone toolbar and refresh status](images/board-toolbar-phone.png)
+
+Reproduce these captures with `npm run screenshots:toolbar`. Timer geometry
+tests advance the real scheduler, including polling rollover, and compare every
+header control plus the toolbar/feed boundaries at six widths in both locales.

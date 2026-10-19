@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.4.7 — 2026-10-19
+
+- Stop toolbar actions jumping when refresh countdown text changes width. Place
+  status in a reserved line below actions, preserving button positions and
+  toolbar/feed boundaries through minute/second changes, refresh rollover and
+  paused/off/read-only states.
+- Add real-scheduler geometry regressions across six screen widths in English
+  and Polish; retain full phone status text, click targets and composer drafts.
+- Update docs, examples, demo and captures. Keep one offline HTML page and
+  canonical2.4.0; preserve dialog exits, Settings resizing and semantic colors.
+
 ## 2.4.6 — 2026-10-19
 
 - Keep titles and Close controls visible when long Structured message, saved
