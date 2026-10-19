@@ -27,6 +27,8 @@ class DemoTests(unittest.TestCase):
                 self.assertFalse(any(any(x in Path(name).parts for x in ('external-state', 'state', 'presence', '.agent-context', '__pycache__', '.git')) for name in names))
                 self.assertEqual(archive.read(PREFIX + '/board.html'), (ROOT / 'board.html').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/README.md'), (ROOT / 'docs/DEMO.md').read_bytes())
+                self.assertEqual(archive.read(PREFIX + '/skills/board-feedback/SKILL.md'), (ROOT / 'vendor/agent-file-board/skills/board-feedback/SKILL.md').read_bytes())
+                self.assertEqual(archive.read(PREFIX + '/docs/FEEDBACK.md'), (ROOT / 'vendor/agent-file-board/docs/FEEDBACK.md').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/LICENSE'), (ROOT / 'LICENSE').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/licenses/dracula-MIT.txt'), (ROOT / 'licenses/dracula-MIT.txt').read_bytes())
                 archive.extractall(directory / 'extracted')
@@ -34,6 +36,7 @@ class DemoTests(unittest.TestCase):
             board = package / 'demo-board'
             cli(ROOT, 'validate', '--path', board)
             manifest = json.loads((package / 'demo-manifest.json').read_text())
+            self.assertEqual(manifest['feedback'], {'guide':'docs/FEEDBACK.md','skill':'skills/board-feedback/SKILL.md'})
             expected = json.loads((ROOT / 'vendor/agent-file-board/openui-upstream.json').read_text())['boardLibrary']['implementedTypes']
             self.assertEqual(set(manifest['componentTypes']), set(expected))
             self.assertEqual(len(expected), 34)

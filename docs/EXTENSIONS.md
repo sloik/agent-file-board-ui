@@ -182,7 +182,7 @@ FILE`. Later publications must name the expected revision with `--expect HASH`.
 metadata; attach it with `post --information-file FILE`. The artifact ID is an
 automatically generated local UUID. Names are labels, never reference identities.
 Generic state needs no extension contract. Typed state reuses an installed
-contract's schema. The [canonical guide](../vendor/agent-file-board/docs/EXTENSIONS.md#shared-observations-and-provenance-convention-26)
+contract's schema. The [canonical guide](https://github.com/sloik/agent-file-board/blob/v2.6.1/docs/EXTENSIONS.md#shared-observations-and-provenance-convention-26)
 contains complete commands, wire shapes and limits; the copied convention also
 contains the essential format.
 
@@ -235,3 +235,10 @@ re-reads the declared local artifacts before writing. Refresh and review again.
 A downloaded reply retains the copied review context; canonical posting must
 validate it against the destination's current files. Historical replies preserve
 what was reviewed even after the source changes again.
+
+
+For capability requests, bugs or general feedback, use the shared
+[feedback guide](https://github.com/sloik/agent-file-board/blob/v2.6.1/docs/FEEDBACK.md) and
+[board-feedback skill](https://github.com/sloik/agent-file-board/blob/v2.6.1/skills/board-feedback/SKILL.md).
+Settings → Send feedback opens the viewer issue chooser explicitly; the guide
+routes convention/CLI reports to canonical. Offline drafts need no GitHub tooling.

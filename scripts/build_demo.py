@@ -165,6 +165,13 @@ def build_demo(root: Path, destination: Path):
         shutil.copyfile(root / 'docs/examples/drafts/authoring-workflow.json', destination / 'authoring-example.json')
         shutil.copyfile(root / 'docs/LOCAL-WORKFLOW.md', destination / 'WORKFLOW-TRIAL.md')
         shutil.copyfile(root / 'docs/examples/drafts/demo-workflow-draft.json', destination / 'example-draft.json')
+    if tuple(map(int, version.split('.'))) >= (2, 6, 1):
+        skill = destination / 'skills/board-feedback'
+        skill.mkdir(parents=True)
+        shutil.copyfile(vendor / 'skills/board-feedback/SKILL.md', skill / 'SKILL.md')
+        (destination / 'docs').mkdir()
+        shutil.copyfile(vendor / 'docs/FEEDBACK.md', destination / 'docs/FEEDBACK.md')
+        manifest['feedback'] = {'guide': 'docs/FEEDBACK.md', 'skill': 'skills/board-feedback/SKILL.md'}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

@@ -50,7 +50,7 @@ test("AC2: example laid out as proj/.agent-board renders in DATE order with kind
   assert.ok(await page.isVisible("#tree .folder:has-text('implementation-agent-01 \u2194 research-agent-01')"));
   // versions: viewer 2.5.1 and board 2.5.1 (from CONVENTION.md); no mismatch warning
   const bar = await page.textContent("#verbar");
-  assert.match(bar, /Viewer v2\.6\.0/); assert.match(bar, /Board v2\.6\.0/);
+  assert.match(bar, /Viewer v2\.6\.1/); assert.match(bar, /Board v2\.6\.1/);
   assert.equal(await page.isVisible("#verwarn"), false);
   await ctx.close();
 });

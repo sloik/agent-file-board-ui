@@ -155,3 +155,12 @@ Click the folder label under **Agent File Board** to choose a new folder or
 reopen one from **Recent locations**. This replaces the separate Change folder
 and Recent locations toolbar buttons. The label works on phones and with
 keyboard Enter/Space; native cancellation preserves the active board.
+
+
+## Feedback
+
+Use **Settings → Send feedback** when connected. For offline drafting and agent
+installation, read [docs/FEEDBACK.md](docs/FEEDBACK.md) and the included
+[board-feedback skill](skills/board-feedback/SKILL.md). These files explain how
+to choose the repository and submit useful, redacted feedback. No report is sent
+automatically, and GitHub CLI is optional.

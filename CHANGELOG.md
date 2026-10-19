@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.6.1 — 2026-10-19
+
+- Add Settings → Send feedback with English/Polish labels and explicit GitHub
+  issue navigation that preserves board drafts.
+- Ship bug and feature/general feedback forms with cross-repository routing.
+- Reference the canonical portable board-feedback skill and feedback guide;
+  include exact offline copies in the downloadable demo ZIP.
+- Preserve2.6 shared state, plugin boundaries and existing board behavior.
+
 ## 2.6.0 — 2026-10-19
 
 - Attach bounded per-information provenance to plain or extension messages.

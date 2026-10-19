@@ -365,3 +365,19 @@ Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.
+
+
+## Feedback from people and agents
+
+Open **Settings → Send feedback**, or choose
+[viewer feedback](https://github.com/sloik/agent-file-board-ui/issues/new/choose)
+for bugs, features, documentation or general feedback. File-format/CLI feedback
+belongs in the [canonical board](https://github.com/sloik/agent-file-board/issues/new/choose).
+A problem description is enough to start; versions and a minimal example help.
+
+The pinned [feedback guide](https://github.com/sloik/agent-file-board/blob/v2.6.1/docs/FEEDBACK.md) and shared
+[board-feedback skill](https://github.com/sloik/agent-file-board/blob/v2.6.1/skills/board-feedback/SKILL.md)
+cover agent submission and offline drafts. Copy the skill folder into your
+harness's skill root. The demo ZIP also includes both files for offline use.
+
+Source checkouts also contain the guide and skill under `vendor/agent-file-board/`.
