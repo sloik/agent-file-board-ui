@@ -1,8 +1,10 @@
 # Offline board extension architecture
 
-Research proposal, 2026-10-19. Extension support is not implemented. The owner
-approved the boundaries below, including a constrained SDK for custom code.
-Browser notifications are separate viewer functionality.
+Architecture, 2026-10-19. The canonical source CLI now implements the
+[package/discovery foundation](https://github.com/sloik/agent-file-board/blob/main/docs/EXTENSIONS.md).
+Viewer installation, rendering and reply integration remain in development.
+The owner approved the boundaries below, including a constrained SDK for custom
+code. Browser notifications are separate viewer functionality.
 
 Companies should be able to start with the standard file board, add their own
 components, and share the complete board folder without a server or a
@@ -217,9 +219,11 @@ publish a new contract and a new corrective message.
 ## Agent and author workflow
 
 Expose a small local catalog of enabled IDs, summaries and compatible contracts.
-Agents request exact schema/guidance/examples on demand, through future
-`boardctl extensions list/describe` commands or direct local files. These
-commands do not exist yet. Do not concatenate every package into the core
+Agents request exact schema/guidance/examples on demand through the source
+`boardctl extensions list/describe` commands. The foundation derives its catalog
+from retained artifacts on each read; expanded definition files and a cached
+catalog remain optional future conveniences. These commands are not yet in the
+released 2.4.0 toolchain. Do not concatenate every package into the core
 convention or promote package prose above the agent's governing instructions.
 
 Authors define a contract, optional view/code, examples and compatibility; a
@@ -237,7 +241,9 @@ custom code, typed reply proposals, host admission failures, stale-event
 rejection and disposal. It is deliberately a tiny research vocabulary, not a
 production renderer, schema engine, installer or security certification.
 
-The research closes the architectural runtime choice. Implementation still
-needs a versioned SDK/bridge, cross-language fixtures, actual board lifecycle
-integration and browser qualification. Those are implementation acceptance
-criteria, not evidence that the plugin feature already exists.
+The research closes the architectural runtime choice. The first implementation
+stage provides package/schema/version validation, explicit registration and
+verified agent discovery, with shared-ready fixtures. Implementation still needs
+the viewer installer/approval UI, versioned SDK/bridge, JavaScript parity, actual
+board lifecycle and typed reply integration, renderer preferences and browser
+qualification. The complete plugin feature is not available yet.

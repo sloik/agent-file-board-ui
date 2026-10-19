@@ -197,8 +197,9 @@ python3 scripts/release_check.py  # add --tag vX.Y.Z when releasing
 
 ## Specification
 
-The [offline extension architecture](docs/EXTENSIONS.md) records the proposed
-plugin contract and browser research. Plugin support is not implemented yet.
+The [offline extension architecture](docs/EXTENSIONS.md) records the plugin
+contract and browser research. Package/discovery support has started in canonical
+source; viewer plugin rendering is not implemented yet.
 
 The requirements and acceptance criteria are SPEC-002 in the standard's repository: [`vendor/agent-file-board/specs/SPEC-002-board-viewer.md`](vendor/agent-file-board/specs/SPEC-002-board-viewer.md) (also at <https://github.com/sloik/agent-file-board/blob/main/specs/SPEC-002-board-viewer.md>), with the legacy prototype notes under `specs/reference/SPEC-002/`.
 
