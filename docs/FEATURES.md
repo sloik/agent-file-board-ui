@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.3/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.4/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -21,7 +21,7 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.4.3** embeds
+structured interfaces from a defined component library. Board UI **2.4.4** embeds
 it to show **reports, charts, offline forms and editable tables** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.
@@ -331,11 +331,13 @@ when the tab is hidden and requires a writable folder. A read-only folder upload
 does not auto-refresh. The viewer offers to reopen the last folder on the next
 visit, subject to browser permission.
 
-## Use the system's light or dark theme
+## Choose System, Light, Dark or Dracula
 
 ![The same canonical architecture thread in dark mode, with readable participant colors, status capsules, unread badges and the composer.](images/board-dark.png)
 
-The viewer follows the system theme. Its interface is available in English and
+Use **Settings → Color theme** to choose a fixed Light, Dark or Dracula palette,
+or System to follow live OS changes. The choice is saved locally. See the
+[theme guide and Dracula captures](THEMES.md). Its interface is available in English and
 Polish; interface language does not translate message content. Board, topic,
 participant and explicit message language preferences determine the language
 recorded on a new message.

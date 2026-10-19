@@ -28,6 +28,7 @@ class DemoTests(unittest.TestCase):
                 self.assertEqual(archive.read(PREFIX + '/board.html'), (ROOT / 'board.html').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/README.md'), (ROOT / 'docs/DEMO.md').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/LICENSE'), (ROOT / 'LICENSE').read_bytes())
+                self.assertEqual(archive.read(PREFIX + '/licenses/dracula-MIT.txt'), (ROOT / 'licenses/dracula-MIT.txt').read_bytes())
                 archive.extractall(directory / 'extracted')
             package = directory / 'extracted' / PREFIX
             board = package / 'demo-board'
@@ -46,6 +47,7 @@ class DemoTests(unittest.TestCase):
             self.assertEqual((package / manifest['draftExample']).read_bytes(), (ROOT / 'docs/examples/drafts/demo-workflow-draft.json').read_bytes())
             self.assertEqual((package / manifest['authoringExample']).read_bytes(), (ROOT / 'docs/examples/drafts/authoring-workflow.json').read_bytes())
             self.assertEqual((package / manifest['workflowTrial']).read_bytes(), (ROOT / 'docs/LOCAL-WORKFLOW.md').read_bytes())
+            self.assertEqual(manifest['colorThemes'], ['system','light','dark','dracula'])
             self.assertEqual(manifest['locationHistory'], {'limit':20,'order':'last-open-wins','native':'handle-identity','uploads':'reselect'})
             self.assertTrue(manifest['synthetic'])
             self.assertEqual(manifest['viewerVersion'], json.loads((ROOT / 'package.json').read_text())['version'])

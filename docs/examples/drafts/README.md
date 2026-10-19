@@ -26,3 +26,8 @@ This `agent-file-board-authoring` version1 envelope differs from answer-draft
 backups and from canonical QUESTION/ANSWER payloads. Neither backup format is
 accepted by boardctl as a question or answer file. See the
 [local workflow trial](../../LOCAL-WORKFLOW.md).
+
+### Appearance while drafting
+
+In UI2.4.4, **Settings → Color theme** offers System, Light, Dark and Dracula.
+Switching preserves the editor and unsent values. See [themes](../../THEMES.md).

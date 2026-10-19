@@ -21,7 +21,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
 | **History** | Lazy history on scroll, a bounded transcript and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
-| **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and system light/dark themes. |
+| **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/THEMES.md)). |
 | **Recent locations** | Up to 20 local locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/LOCATIONS.md). |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
@@ -79,9 +79,9 @@ See the [illustrated authoring and review guide](docs/WORKBENCH.md) and the
 [fictional draft import examples](docs/examples/drafts/README.md), plus the [local workflow trial](docs/LOCAL-WORKFLOW.md). These viewer
 features need UI2.4.2 or newer; the canonical CLI/protocol and submodule remain2.4.0.
 
-## Version 2.4.3
+## Version 2.4.4
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.3/board.html) (save as `board.html`), or use the included file.
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.4/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
 [agent-file-board 2.4.0](https://github.com/sloik/agent-file-board).
@@ -169,7 +169,7 @@ Message posting never edits or deletes an existing message and writes only new f
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
 - Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html`, both desktop opener scripts and (since 2.2.1) the complete offline demo ZIP. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
-- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.3` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
+- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.4` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
 
 The workflows have separate responsibilities:
 

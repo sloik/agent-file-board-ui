@@ -40,3 +40,10 @@ prompt descriptions from “fetch” to “load” wording. These are matched co
 prompt strings, not network API rewrites. Runtime source/resource guards remain
 unchanged and reject newly introduced networking. Whitespace-only lines in
 upstream comments are trimmed; script terminators are escaped for HTML embedding.
+
+## Dracula application palette
+
+Adapted from the [official Dracula palette](https://spec.draculatheme.com/)
+by [Dracula Theme](https://draculatheme.com/), MIT, copyright (c) 2023 Dracula Theme.
+[Full license](licenses/dracula-MIT.txt); also retained inside `board.html`.
+Application surfaces and readable labels are adapted locally; no remote assets.

@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.4.4 — 2026-10-19
+
+- Add saved System, Light, Dark and Dracula choices in Settings, localized in
+  English and Polish. System follows live OS changes; fixed choices override it.
+- Apply palettes to the viewer, native controls, reports, forms and charts without
+  rebuilding conversations or losing mounted inputs, filters or composer drafts.
+- Adapt Dracula’s official palette with readable labels, dark accent-button text
+  and seven distinct status colors; retain its MIT notice in the standalone page.
+- Update the offline demo, docs, captures and theme regressions. Keep one local
+  HTML page and canonical2.4.0, with no backend or automatic network access.
+
 ## 2.4.3 — 2026-10-19
 
 - Add Recent locations: up to 20 browser-local entries with last-successful-open

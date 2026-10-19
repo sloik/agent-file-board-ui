@@ -160,6 +160,7 @@ def build_demo(root: Path, destination: Path):
         manifest['draftExample']='example-draft.json'
         manifest['authoringExample']='authoring-example.json'
         manifest['workflowTrial']='WORKFLOW-TRIAL.md'
+        manifest['colorThemes']=['system','light','dark','dracula']
         manifest['locationHistory']={'limit':20,'order':'last-open-wins','native':'handle-identity','uploads':'reselect'}
         shutil.copyfile(root / 'docs/examples/drafts/authoring-workflow.json', destination / 'authoring-example.json')
         shutil.copyfile(root / 'docs/LOCAL-WORKFLOW.md', destination / 'WORKFLOW-TRIAL.md')
@@ -169,6 +170,7 @@ def build_demo(root: Path, destination: Path):
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')
     for name in ['LICENSE', 'THIRD_PARTY_NOTICES.md']:
         shutil.copyfile(root / name, destination / name)
+    shutil.copytree(root / 'licenses', destination / 'licenses')
     return manifest
 
 

@@ -60,3 +60,10 @@ read its typed values without manually repairing files?
 
 Until those actual people/agents complete the workflow, adoption is **unverified**.
 No automatic acceptance, synthetic owner participation or telemetry is implied.
+
+## Optional appearance trial
+
+Before editing, open **Settings → Color theme** and try System, Light, Dark and
+Dracula (UI2.4.4). Try another palette with unsent form values or a report filter:
+those local values remain in place. This preference belongs to the browser; it
+is not shared with the agent or saved into a message.

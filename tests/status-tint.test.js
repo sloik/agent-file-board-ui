@@ -12,7 +12,7 @@ async function boot(scheme){
     const tid='T'+String(9+i).padStart(3,'0');
     h.fs.writeFileSync(h.path.join(dir,`2026-10-15_120${i}_research-agent-01_${tid}_status-${i}.txt`),`FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: status-check\nTHREAD: ${tid}-status-check\nDATE: 2026-10-15 12:0${i}\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: ${status}\n---\nStatus example ${status}\n`);
   }
-  const s=await h.openPage(browser,{tree:h.readTree(proj),colorScheme:scheme,clock:new Date("2026-10-15T10:30:00Z")});await h.openBoardViaUi(s.page);await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));return s;
+  const s=await h.openPage(browser,{tree:h.readTree(proj),colorScheme:scheme==="dracula"?"light":scheme,clock:new Date("2026-10-15T10:30:00Z")});await h.openBoardViaUi(s.page);if(scheme==="dracula"){await s.page.click("#gear");await s.page.selectOption("#sTheme","dracula");await s.page.click("#sClose");}await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));return s;
 }
 function contrast(a,b){
   const luminance=color=>{
@@ -21,7 +21,7 @@ function contrast(a,b){
   };
   const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);
 }
-for(const scheme of ["light","dark"])test(`composer and chat share status colors in ${scheme} mode`,async()=>{
+for(const scheme of ["light","dark","dracula"])test(`composer and chat share status colors in ${scheme} mode`,async()=>{
   const {ctx,page,log}=await boot(scheme);const colors={},palettes=[];
   await page.click("[data-closed=\"room:status-check\"]");
   await page.fill("#cBody","Keep this draft");
@@ -42,7 +42,7 @@ for(const scheme of ["light","dark"])test(`composer and chat share status colors
   for(const channel of [0,1,2]) assert.equal(new Set(palettes.map(p=>p[channel])).size,7,"pill backgrounds, text and borders are individually distinct");
   // The same palette also follows a live system-theme switch.
   await page.emulateMedia({colorScheme:scheme==="light"?"dark":"light"});
-  assert.notEqual(await page.locator("#cBody").evaluate(el=>getComputedStyle(el).backgroundColor),colors.CLOSED);
+  if(scheme==="dracula")assert.equal(await page.locator("#cBody").evaluate(el=>getComputedStyle(el).backgroundColor),colors.CLOSED);else assert.notEqual(await page.locator("#cBody").evaluate(el=>getComputedStyle(el).backgroundColor),colors.CLOSED);
   assert.deepEqual(log.pageErrors,[]);await ctx.close();
 });
 test("polling preserves the selected status, tint, capsule and draft",async()=>{

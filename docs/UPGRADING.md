@@ -107,3 +107,10 @@ Confirmed remove/clear changes browser history/reminders, not messages or drafts
 Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
 [illustrated location guide](LOCATIONS.md).
+
+## Color theme preference (UI2.4.4)
+
+System (default), Light, Dark and Dracula use the existing committed settings
+store. Older/missing/unknown values resolve to System; Reset restores System.
+Explicit choices override OS changes. The canonical board remains2.4.0; no
+message migration is needed. See [themes](THEMES.md).

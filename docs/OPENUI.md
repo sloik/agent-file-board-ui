@@ -1,7 +1,7 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.4.3 uses its embedded renderer
+defined component library. Agent File Board UI 2.4.4 uses its embedded renderer
 for report cards, charts, offline forms and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
@@ -13,7 +13,7 @@ placement.
 ## Try the examples live, offline
 
 **[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)**
-([v2.4.2](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.3/agent-file-board-demo.zip)).
+([v2.4.4](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.4/agent-file-board-demo.zip)).
 It includes `board.html`, a visible `demo-board` folder and a short README tour.
 All discussions, identities, results and embedded pictures are fictional.
 
@@ -437,7 +437,7 @@ render the same report and download the reply for manual placement.
 
 ![The same report and decision form in dark mode at a 375-pixel phone width.](images/board-openui-phone.png)
 
-Reports follow the system theme. Wide tables scroll inside the message; chart
+Reports follow the selected color theme (System, Light, Dark or Dracula). Wide tables scroll inside the message; chart
 labels and numeric values stay readable. Existing choice controls and custom
 text are available on the phone layout too.
 
@@ -519,7 +519,7 @@ They are built locally with
 production settings and included inline; no CDN, hosted gateway, external asset,
 telemetry sink, tool provider or streaming backend is configured. Tables use
 native text cells and charts expose their numeric labels. Both follow the
-viewer's system theme; wide tables scroll inside the message on small screens.
+viewer's selected color theme; wide tables scroll inside the message on small screens.
 
 Refresh reuses unchanged report roots. Navigating away disposes removed roots;
 choice and typed form drafts survive polling, language changes and navigation
@@ -591,3 +591,10 @@ Confirmed remove/clear changes browser history/reminders, not messages or drafts
 Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
 [illustrated location guide](LOCATIONS.md).
+
+## Color themes (UI2.4.4)
+
+Choose **Settings → Color theme → System, Light, Dark or Dracula**.
+The browser saves this choice; report/form inputs and filters remain mounted
+while switching. Try all palettes in the fictional demo. No backend or network
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/THEMES.md).

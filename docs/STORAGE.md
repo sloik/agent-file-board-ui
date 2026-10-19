@@ -132,3 +132,10 @@ records and reports failure. Confirmed removal/clear preserves current view,
 board files, drafts and permissions. The separate native identity registry for
 read markers/drafts remains intact. See [the guide](LOCATIONS.md) and
 `tests/locations.test.js`. Nothing is synchronized or uploaded.
+
+## Color theme preference (UI2.4.4)
+
+System (default), Light, Dark and Dracula use the existing committed settings
+store. Older/missing/unknown values resolve to System; Reset restores System.
+Explicit choices override OS changes. The canonical board remains2.4.0; no
+message migration is needed. See [themes](THEMES.md).
