@@ -93,9 +93,9 @@ review/send typed replies through the trusted host. No company-specific server
 integration is needed. See [the SDK and author guide](docs/EXTENSIONS.md).
 Extra powers require a GitHub issue. Living specifications are parked separately.
 
-## Version 2.5.1
+## Version 2.5.2
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.5.1/board.html) (save as `board.html`), or use the included file.
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.5.2/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
 [agent-file-board 2.5.1](https://github.com/sloik/agent-file-board).

@@ -1,6 +1,6 @@
 # Board UI in action
 
-[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.5.1/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
+[Download the viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.5.2/board.html) · [Setup and browser support](../README.md#how-to-open-it) · [Release notes](../CHANGELOG.md)
 
 The viewer turns a folder of immutable message files into a browsable conversation.
 These are real Chromium screenshots of `board.html` rendering the pinned
@@ -21,7 +21,7 @@ settings and identities remain intact. See [all upgrade examples and recovery](U
 ## OpenUI reports and typed forms
 
 [OpenUI](https://github.com/thesysdev/openui) is a framework for rendering
-structured interfaces from a defined component library. Board UI **2.5.1** embeds
+structured interfaces from a defined component library. Board UI **2.5.2** embeds
 it to show **reports, charts, offline forms and editable tables** inside ordinary messages,
 without a server or automatic network requests. Reports retain readable text
 summaries and can use the existing choice questions and answer replies.

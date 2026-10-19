@@ -47,7 +47,9 @@ messages. Import previews there offer an exact-byte package download rather than
 claiming installation. To install, use the native folder permission or canonical
 CLI; include `extensions/registry.json` and all snapshots in the copied board.
 Offline downloads cannot check later disk changes: their source hash is checked
-when validated against the destination board. Reply drafts survive ordinary
+when validated against the destination board. Arrays start as empty reply drafts, without expanding schema minimum cardinalities.
+The complete answer is checked on explicit submission; draft JSON is bounded.
+Reply drafts survive ordinary
 refresh in memory; changing board, identity, view or renderer clears them.
 
 ## Drawing vocabulary

@@ -1,7 +1,9 @@
 # Release notes
 
-## 2.5.1 — 2026-10-19
+## 2.5.2 — 2026-10-19
 
+- Keep initial reply drafts bounded even with deeply nested array minima;
+  validate cardinality only on explicit submission.
 - Import portable local extension packages in the stock viewer; inspect facets,
   exact bytes, version ranges/exclusions, enable/disable, and retain old snapshots.
 - Render declarative and compiled custom components through a bounded offline
@@ -25,6 +27,12 @@
   normal immutable composer. Preserve unsent work; retain download posting on uploads.
 - Document offline refresh/permission limits and absent inline OS reply. Add EN/PL,
   phone, storage, isolation, validation and transport regressions.
+
+## 2.5.1 — viewer source tag only
+
+Viewer publication cancelled after a final resource review found nested answer
+array minima could amplify draft initialization. The viewer2.5.2 bounds defaults;
+canonical CLI/convention2.5.1 remains the matching2.5-series standard.
 
 ## 2.5.0 — source tag only
 
