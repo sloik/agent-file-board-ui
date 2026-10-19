@@ -102,3 +102,18 @@ test('canonical Python/JS validation and freshness fixture parity',async()=>{
  for(const row of shared.validation){let valid=true;try{validators[row.kind](row.value);}catch{valid=false;}assert.equal(valid,row.valid,row.name);}
  for(const row of shared.freshness){const f=await fixture();f.definition.staleAfterSeconds=row.staleAfterSeconds;const raw=text(f.definition),definition=await E.hash(E.bytes(raw));f.files=new Map([[f.prefix+'definition.json',raw]]);const revision={version:1,artifact,definition,parents:[],author:'agent-alpha',recordedAt:instant,reading:{data:90,observedAt:row.observedAt},availability:{state:'available',reportedAt:instant}},r=text(revision),hash=await E.hash(E.bytes(r));f.files.set(f.prefix+'revisions/'+hash+'.json',r);assert.equal((await C.resolve(f.files,{artifact,definition,revision:hash},'rooms/general',new Map(),Date.parse(row.now))).freshness,row.expected,JSON.stringify(row));}
 });
+test('custom direct directories reject correctly hashed revisions by outsiders',async()=>{
+ const f=await fixture(),scope='private/agent-a--human-b';
+ const definition={...f.definition,scope},raw=text(definition),hash=await E.hash(E.bytes(raw));
+ const revision={version:1,artifact,definition:hash,parents:[],author:'outsider-agent',recordedAt:instant,reading:{data:'PRIVATE'},availability:{state:'available',reportedAt:instant}};
+ const bytes=text(revision),digest=await E.hash(E.bytes(bytes)),files=new Map([[f.prefix+'definition.json',raw],[f.prefix+'revisions/'+digest+'.json',bytes]]);
+ const out=await C.resolve(files,{artifact,definition:hash,revision:digest},scope,new Map(),now);
+ assert.equal(out.status,'corrupt');assert.equal(out.data,undefined);
+});
+test('unchanged immutable byte snapshots reuse verification across refresh maps',async()=>{
+ const f=await fixture(),files=new Map([...f.files].map(([k,v])=>[k,E.bytes(v)])),hash=E.hash;let calls=0;
+ E.hash=async bytes=>{calls++;return hash(bytes);};
+ try{await C.resolve(files,f.tracking,'rooms/general',new Map(),now);await C.resolve(new Map(files),f.tracking,'rooms/general',new Map(),now+1);assert.equal(calls,2);
+  const changed=new Map(files);changed.set(f.prefix+'revisions/'+f.first+'.json',E.bytes('{}'));assert.equal((await C.resolve(changed,f.tracking,'rooms/general',new Map(),now)).status,'corrupt');assert.equal(calls,3);
+ }finally{E.hash=hash;}
+});

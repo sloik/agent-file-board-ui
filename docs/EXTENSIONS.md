@@ -1,4 +1,4 @@
-# Offline extensions — viewer and SDK 1.0.0
+# Offline extensions — viewer and SDK 1.1.0
 
 Use **Extensions** in the stock viewer to inspect and import a local
 `*.afb-plugin.json` file, then explicitly install/enable it. Packages, assets and
@@ -133,7 +133,7 @@ system memory quota or protection from a compromised browser.
 
 Extensions **only add through this public SDK and contracts**. They cannot
 change core parsing, routing, identity, message history, statuses, permissions,
-board scanning or write rules. Only render and propose-reply are supported.
+board scanning or write rules. Only render, propose-reply and declared read-state are supported.
 If your plugin needs more powers or different core behavior, create a project
 GitHub issue: [convention](https://github.com/sloik/agent-file-board/issues/new)
 or [viewer/SDK](https://github.com/sloik/agent-file-board-ui/issues/new).
@@ -147,3 +147,91 @@ renderer switching never changes the original contract.
 
 No living-specification feature or dependency on an external execution tool is
 included. The separate research proposal remains parked.
+
+
+## Recorded information and latest local state (2.6)
+
+An ordinary message can attach `INFORMATION` metadata without installing a plugin:
+
+```json
+{
+  "version": 1,
+  "items": [{
+    "id": "count",
+    "value": 12,
+    "provenance": {
+      "method": "file",
+      "description": "Counted entries in the local inventory.json",
+      "collectedAt": "2026-10-19T10:00:02Z"
+    }
+  }]
+}
+```
+
+Store strict JSON; the message body and Source details disclosure provide the
+human-readable explanation. Provenance is the posting participant's claim.
+Command descriptions, filenames and evidence text are inert: the board does not
+execute them, open them automatically or claim their execution was verified.
+Observation time is separate from collection time; collecting cached data does
+not make the observation current.
+
+For changing values, create a shared artifact once using `boardctl extension-state
+create`, then publish a complete reading with `publish --expect none --data-file
+FILE`. Later publications must name the expected revision with `--expect HASH`.
+`extension-state information ARTIFACT --id NAME` generates the pinned recorded
+metadata; attach it with `post --information-file FILE`. The artifact ID is an
+automatically generated local UUID. Names are labels, never reference identities.
+Generic state needs no extension contract. Typed state reuses an installed
+contract's schema. The [canonical guide](../vendor/agent-file-board/docs/EXTENSIONS.md#shared-observations-and-provenance-convention-26)
+contains complete commands, wire shapes and limits; the copied convention also
+contains the essential format.
+
+Every message retains its recorded data and revision. A tracking reference may
+show `recorded`, `latest`, or `both` (default). Latest-only keeps the recorded
+snapshot in a disclosure. Multiple references to the same artifact update on
+ordinary board refresh. Uploads show only the copied files; reselect the updated
+folder to see later publications. There is no device polling or collector service.
+
+The host distinguishes stale/unknown observation age, future-clock mismatch,
+producer-reported disconnection, missing files, corrupt/incomplete history and
+conflicting updates. No updates does not imply disconnection. Availability-only
+updates retain the original reading and its age. Missing or invalid current data
+never becomes zero or overwrites the recorded value. Offline forks remain
+unresolved until a publisher explicitly names all heads with repeated `--expect`.
+Copy the artifact definitions and ancestor revisions with the board.
+
+SDK1.1 renderers declaring `read-state` receive only the message's declared,
+scope-validated context. Other renderers receive an empty context:
+
+```js
+BoardExtension.define({
+  render(recordedData, state, context) {
+    const reading = context.information.reading;
+    return {type: 'text', text: reading.latest.status === 'resolved'
+      ? String(reading.latest.data.level) : 'Latest reading unavailable'};
+  }
+});
+```
+
+For existing extension payload provenance, use `target:"extension-data"` instead
+of duplicating `value`. The shared typed artifact must pin the same contract.
+Declarative trees may use
+`{contextPath:["information","reading","latest","data","level"]}`;
+existing `{path:[...]}` bindings always address recorded extension data. Context
+contains recorded data, latest resolver status/heads/revision, observation time,
+freshness, reported availability and optional provenance. It has no filesystem
+handles, source commands to run, catalog access or arbitrary lookup function.
+Host labels and failures remain visible even if custom drawing omits them.
+
+Artifacts are restricted to their exact room or direct conversation. Generic
+board-wide cross-conversation reads are excluded. Native loading is bounded to
+128 referenced artifacts and 64 MiB total, with at most4096 revisions and16KiB
+per revision. Limits show unavailable; no partial result is labeled latest.
+Retention/compaction beyond those limits is deferred.
+
+Typed reply review captures exact shared status/heads alongside the existing
+source-message hash. A changed reading invalidates the review; native submission
+re-reads the declared local artifacts before writing. Refresh and review again.
+A downloaded reply retains the copied review context; canonical posting must
+validate it against the destination's current files. Historical replies preserve
+what was reviewed even after the source changes again.

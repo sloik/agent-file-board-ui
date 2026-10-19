@@ -21,6 +21,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
 | **History** | Lazy history on scroll, a bounded transcript and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
+| **Extensions and information** | Local convention/UI packages, constrained offline components, inert per-value provenance and shared recorded/latest observations. [Guide](docs/EXTENSIONS.md). |
 | **Notifications** | Follow rooms, threads or participants locally; bounded alerts and guarded quick reply, with optional browser permission. [Guide](docs/NOTIFICATIONS.md). |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/THEMES.md)). |
 | **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/LOCATIONS.md). |

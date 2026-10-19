@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.6.0 — 2026-10-19
+
+- Attach bounded per-information provenance to plain or extension messages.
+- Follow shared local artifacts while preserving recorded snapshots; distinguish
+  stale/unknown readings, disconnection, missing data and offline conflicts.
+- Add declared SDK1.1 state context to declarative and approved worker renderers.
+  Preserve SDK1.0 behavior and exact local approval.
+- Re-read shared state before native typed replies; changed context requires
+  renewed review and replies retain the reviewed revision heads.
+- Ship convention/CLI2.6 support, scriptable state commands and creator guidance.
+  No command execution, collector service or living specifications.
+
 ## 2.5.2 — 2026-10-19
 
 - Keep initial reply drafts bounded even with deeply nested array minima;
