@@ -1,5 +1,15 @@
 # Release notes
 
+## 2.4.5 — 2026-10-19
+
+- Correct Dracula to style interface chrome only. Restore the established Dark
+  participant and status colors in pills, speech bubbles, sidebar indicators and
+  composer tints; keep report/chart data colors unchanged.
+- Preserve exact message surfaces, borders, avatar/mention colors and hover tints
+  when switching between Dark and Dracula, without rebuilding content.
+- Add computed-color equality regressions, update docs/examples/demo and refresh
+  the Dracula desktop/phone captures. Keep one offline HTML and canonical2.4.0.
+
 ## 2.4.4 — 2026-10-19
 
 - Add saved System, Light, Dark and Dracula choices in Settings, localized in

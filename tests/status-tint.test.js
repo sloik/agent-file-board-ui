@@ -53,6 +53,25 @@ test("polling preserves the selected status, tint, capsule and draft",async()=>{
   assert.equal(await page.locator("#cBody").evaluate(el=>getComputedStyle(el).backgroundColor),tint);await ctx.close();
 });
 
+test('Dracula chrome preserves every Dark participant, pill, bubble and composer indicator',async()=>{
+ const {ctx,page,log}=await boot('dark');try{
+  await page.click('[data-closed="room:status-check"]');await page.click('#gear');await page.selectOption('#sTheme','dark');
+  const snapshot=()=>page.evaluate(()=>{
+   const read=selector=>[...document.querySelectorAll(selector)].map(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.color,s.borderColor];});
+   return {messages:read('#feed .msg,#feed .avatar,#feed .avatar b,#feed .who,#feed .kind,#feed .chip,#cStatusPreview,#cBody,.unread-badge'),
+    unread:[...document.querySelectorAll('.tcard.unread')].map(el=>getComputedStyle(el).borderLeftColor),
+    people:[...document.querySelectorAll('.faces i,.sdot,#me')].map(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.color];})};
+  });
+  for(const status of statuses){
+   await page.selectOption('#cStatus',status);await page.selectOption('#sTheme','dark');await page.mouse.move(0,0);const dark=await snapshot();
+   await page.selectOption('#sTheme','dracula');assert.deepEqual(await snapshot(),dark,status+' semantic colors must match Dark exactly');
+  }
+  const message=page.locator('#feed .msg').first();await page.selectOption('#sTheme','dark');await message.hover();const hover=await message.evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.borderColor];});
+  await page.selectOption('#sTheme','dracula');assert.deepEqual(await message.evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.borderColor];}),hover,'hover retains sender tint');
+  assert.deepEqual(log.pageErrors,[]);
+ }finally{await ctx.close();}
+});
+
 for(const scheme of ["light","dark"])test(`speech bubbles keep sender colors across statuses and composer changes in ${scheme} mode`,async()=>{
   const {ctx,page,log}=await boot(scheme);
   await page.mouse.move(0,0);

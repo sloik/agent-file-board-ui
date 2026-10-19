@@ -74,7 +74,7 @@ its local draft. **Import draft** can load **example-draft.json**, bundled besid
 board.html. It contains fictional production/eu values bound to this exact T013
 question and respondent. Confirming restores local edits; it does not submit a
 reply. Exported files contain entered values. Source/respondent mismatches are
-rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/WORKBENCH.md).
+rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/WORKBENCH.md).
 
 ## Reset or use an agent
 
@@ -108,7 +108,7 @@ the HTML can affect storage; export important work.
 
 Open the bundled **WORKFLOW-TRIAL.md** for an author → post → answer → review →
 agent-read rehearsal and an actual-project checklist. The same instructions are
-[online](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/LOCAL-WORKFLOW.md).
+[online](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/LOCAL-WORKFLOW.md).
 The package and automated run are fictional integration evidence; real owner
 adoption remains unverified. No agent listener or background uploader starts.
 
@@ -122,15 +122,19 @@ latest entry; an upload never silently reopens an older writable folder.
 Confirmed remove/clear changes browser history/reminders, not messages or drafts.
 Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/LOCATIONS.md).
+[illustrated location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/LOCATIONS.md).
 
 Try opening two extracted fictional demo copies, then revisit the first through
 Recent locations. It moves to the top without another entry. The release ZIP
 contains no personal history.
 
-## Color themes (UI2.4.4)
+## Color themes (UI2.4.5)
 
 Choose **Settings → Color theme → System, Light, Dark or Dracula**.
 The browser saves this choice; report/form inputs and filters remain mounted
 while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/THEMES.md).
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+
+Dracula styles interface chrome only. Participant/status pills, speech bubbles,
+composer status tints and report/chart indicators keep the established Dark
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).

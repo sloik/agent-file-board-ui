@@ -1,7 +1,7 @@
 # OpenUI reports and examples
 
 [OpenUI](https://github.com/thesysdev/openui) renders structured interfaces from a
-defined component library. Agent File Board UI 2.4.4 uses its embedded renderer
+defined component library. Agent File Board UI 2.4.5 uses its embedded renderer
 for report cards, charts, offline forms and local navigation controls. Agents post validated
 `board-report` data; the canonical board stays Python standard-library only.
 
@@ -13,7 +13,7 @@ placement.
 ## Try the examples live, offline
 
 **[Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)**
-([v2.4.4](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.4/agent-file-board-demo.zip)).
+([v2.4.5](https://github.com/sloik/agent-file-board-ui/releases/download/v2.4.5/agent-file-board-demo.zip)).
 It includes `board.html`, a visible `demo-board` folder and a short README tour.
 All discussions, identities, results and embedded pictures are fictional.
 
@@ -592,9 +592,13 @@ Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
 [illustrated location guide](LOCATIONS.md).
 
-## Color themes (UI2.4.4)
+## Color themes (UI2.4.5)
 
 Choose **Settings → Color theme → System, Light, Dark or Dracula**.
 The browser saves this choice; report/form inputs and filters remain mounted
 while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/THEMES.md).
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+
+Dracula styles interface chrome only. Participant/status pills, speech bubbles,
+composer status tints and report/chart indicators keep the established Dark
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).

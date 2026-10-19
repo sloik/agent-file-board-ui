@@ -153,13 +153,13 @@ body.resizing{cursor:col-resize;user-select:none}
 .status-tone.s-DONE{--status-bg:#e7f6ee;--status-ink:#11733f;--status-border:#bfe7cf}
 .status-tone.s-CLOSED{--status-bg:#f2edfb;--status-ink:#69449d;--status-border:#d7c7ee}
 .chip.status{font-weight:600;background:var(--status-bg);color:var(--status-ink);border-color:var(--status-border)}
-:root[data-theme="dark"] .status-tone.s-INFO{--status-bg:#192b48;--status-ink:#a9c5ff;--status-border:#344e79}
-:root[data-theme="dark"] .status-tone.s-REPLY{--status-bg:#123039;--status-ink:#8fdae2;--status-border:#28515a}
-:root[data-theme="dark"] .status-tone.s-QUESTION{--status-bg:#362e13;--status-ink:#f1d77c;--status-border:#5b4e1e}
-:root[data-theme="dark"] .status-tone.s-REQUEST{--status-bg:#382617;--status-ink:#ffb783;--status-border:#634324}
-:root[data-theme="dark"] .status-tone.s-DECISION-NEEDED{--status-bg:#3c1626;--status-ink:#ff9dbf;--status-border:#5d2238}
-:root[data-theme="dark"] .status-tone.s-DONE{--status-bg:#123224;--status-ink:#8be0b2;--status-border:#1f4d37}
-:root[data-theme="dark"] .status-tone.s-CLOSED{--status-bg:#2b223d;--status-ink:#cdb4ff;--status-border:#51416b}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-INFO{--status-bg:#192b48;--status-ink:#a9c5ff;--status-border:#344e79}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-REPLY{--status-bg:#123039;--status-ink:#8fdae2;--status-border:#28515a}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-QUESTION{--status-bg:#362e13;--status-ink:#f1d77c;--status-border:#5b4e1e}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-REQUEST{--status-bg:#382617;--status-ink:#ffb783;--status-border:#634324}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-DECISION-NEEDED{--status-bg:#3c1626;--status-ink:#ff9dbf;--status-border:#5d2238}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-DONE{--status-bg:#123224;--status-ink:#8be0b2;--status-border:#1f4d37}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .status-tone.s-CLOSED{--status-bg:#2b223d;--status-ink:#cdb4ff;--status-border:#51416b}
 .draft-status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .composer.status-tone .write textarea{background:color-mix(in srgb,var(--status-bg) 55%,var(--panel2));border-color:var(--status-border)}
 .thread-link{cursor:pointer}
@@ -335,21 +335,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 
 #locationsDialog{width:min(650px,94vw)}.location-entry{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.location-entry p{margin:5px 0}
 
-:root[data-theme="dracula"]{color-scheme:dark;--bg:#282a36;--panel:#21222c;--panel2:#303341;--ink:#f8f8f2;--muted:#b3bbd8;--line:#54586f;--hover:#44475a;--accent:#bd93f9;--on-accent:#282a36;--on-participant:#282a36;--mention:#44475a;--mention-ink:#f1fa8c;--mark:#44475a;--warn-bg:#493c36;--warn-ink:#ffb86c;--shadow:none;--p0:#bd93f9;--p1:#ff79c6;--p2:#50fa7b;--p3:#8be9fd;--p4:#ffb86c;--p5:#f1fa8c;--p6:#ff5555;--p7:#d6acff;--p-unknown:#b3bbd8}
-:root[data-theme="dracula"] .status-tone.s-INFO{--status-bg:#373249;--status-ink:#bd93f9;--status-border:#5f4f7e}
-:root[data-theme="dracula"] .status-tone.s-REPLY{--status-bg:#303e49;--status-ink:#8be9fd;--status-border:#4b7280}
-:root[data-theme="dracula"] .status-tone.s-QUESTION{--status-bg:#3e4039;--status-ink:#f1fa8c;--status-border:#747852}
-:root[data-theme="dracula"] .status-tone.s-REQUEST{--status-bg:#403735;--status-ink:#ffb86c;--status-border:#7a5e46}
-:root[data-theme="dracula"] .status-tone.s-DECISION-NEEDED{--status-bg:#36212b;--status-ink:#ff5555;--status-border:#7a363c}
-:root[data-theme="dracula"] .status-tone.s-DONE{--status-bg:#284037;--status-ink:#50fa7b;--status-border:#34784c}
-:root[data-theme="dracula"] .status-tone.s-CLOSED{--status-bg:#402e42;--status-ink:#ff79c6;--status-border:#7a456a}
-:root[data-theme="dracula"] .board-report .series-0{color:#bd93f9}
-:root[data-theme="dracula"] .board-report .series-1{color:#ffb86c}
-:root[data-theme="dracula"] .board-report .series-2{color:#8be9fd}
-:root[data-theme="dracula"] .board-report .series-3{color:#50fa7b}
-:root[data-theme="dracula"] .board-report .series-4{color:#ff79c6}
-:root[data-theme="dracula"] .board-report .series-5{color:#f1fa8c}
-:root[data-theme="dracula"] .time.fixed{color:#ffb86c}
+:root[data-theme="dracula"]{color-scheme:dark;--bg:#282a36;--panel:#21222c;--panel2:#303341;--ink:#f8f8f2;--muted:#b3bbd8;--line:#54586f;--hover:#44475a;--accent:#bd93f9;--on-accent:#282a36;--mention:#44475a;--mention-ink:#f1fa8c;--mark:#44475a;--warn-bg:#493c36;--warn-ink:#ffb86c;--shadow:none;--p0:#7aa2ff;--p1:#c39bff;--p2:#ff86b0;--p3:#5fd39a;--p4:#ffb066;--p5:#5fd0e8;--p6:#ff8f78;--p7:#c3d36b;--p-unknown:#7a7f87}
 input{accent-color:var(--accent)}
 @media (prefers-color-scheme:dark){:root[data-theme="system"]{color-scheme:dark;
   --bg:#111418;--panel:#181c22;--panel2:#1d2229;--ink:#e7eaf0;--muted:#98a1ad;--line:#2a3039;--hover:#222831;
@@ -362,8 +348,14 @@ input{accent-color:var(--accent)}
 :root[data-theme="system"] .status-tone.s-DECISION-NEEDED{--status-bg:#3c1626;--status-ink:#ff9dbf;--status-border:#5d2238}
 :root[data-theme="system"] .status-tone.s-DONE{--status-bg:#123224;--status-ink:#8be0b2;--status-border:#1f4d37}
 :root[data-theme="system"] .status-tone.s-CLOSED{--status-bg:#2b223d;--status-ink:#cdb4ff;--status-border:#51416b}}
-:root[data-theme="dracula"] .board-report .tone-success{--report-tone:#50fa7b}:root[data-theme="dracula"] .board-report .tone-warning{--report-tone:#ffb86c}:root[data-theme="dracula"] .board-report .tone-danger{--report-tone:#ff5555}
 :root[data-theme="dracula"] .set select{color:var(--ink)}
+/* Dracula changes chrome; message and report colors retain Dark's meaning. */
+:root[data-theme="dracula"] :where(.msg,.report-modal,#cBody,.sdot,.unread-badge){
+ --bg:#111418;--panel:#181c22;--panel2:#1d2229;--ink:#e7eaf0;--muted:#98a1ad;--line:#2a3039;--hover:#222831;
+ --accent:#3b6fe0;--on-accent:#fff;--on-participant:#fff;--mention:#4a3d0c;--mention-ink:#ffe39a;--mark:#123b52;--shadow:none;--warn-bg:#3a2a10;--warn-ink:#ffcf86;color:var(--ink)
+}
+:root[data-theme="dracula"] .tcard.unread{border-left-color:#3b6fe0}
+:root[data-theme="dracula"] .unread-badge{color:var(--on-accent)}
 </style>
 </head>
 <body>
@@ -1140,7 +1132,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.4";
+const VIEWER_VERSION = "2.4.5";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};

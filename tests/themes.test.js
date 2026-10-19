@@ -4,6 +4,18 @@ let browser;
 before(async()=>{browser=await h.launch();});after(async()=>{await browser.close();});
 const palette=page=>page.evaluate(()=>{const s=getComputedStyle(document.body),r=getComputedStyle(document.documentElement);return [s.backgroundColor,s.color,r.colorScheme];});
 const expected={light:['rgb(244, 245, 247)','rgb(28, 34, 48)','light'],dark:['rgb(17, 20, 24)','rgb(231, 234, 240)','dark'],dracula:['rgb(40, 42, 54)','rgb(248, 248, 242)','dark']};
+test('Dracula styles chrome while report data colors stay identical to Dark',async()=>{
+ const demo=demoFixture();try{
+ const {ctx,page,log}=await h.openPage(browser,{html:demo.html,tree:h.readTree(demo.project),clock:new Date('2026-10-19T12:00:00Z')});try{
+  await h.openBoardViaUi(page);await topic(page,'T007');await page.click('#gear');await page.selectOption('#sTheme','dark');await page.mouse.move(0,0);
+  const content=()=>page.locator('.msg,.board-report *').evaluateAll(els=>els.map(el=>{const s=getComputedStyle(el);return [el.tagName,el.className.baseVal??el.className,s.color,s.backgroundColor,s.borderColor,s.fill,s.stroke];}));
+  const dark=await content(),before=await page.evaluate(()=>window.__fakefs.dump());assert.ok(dark.length>30);
+  await page.selectOption('#sTheme','dracula');assert.deepEqual(await content(),dark);assert.deepEqual(await palette(page),expected.dracula);
+  assert.equal(await page.locator('.top').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(33, 34, 44)');
+  assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),before);assert.deepEqual(log.pageErrors,[]);assert.equal(log.requests.filter(u=>!u.startsWith('file:')).length,0);
+ }finally{await ctx.close();}
+ }finally{h.fs.rmSync(demo.tmp,{recursive:true,force:true});}
+});
 for(const os of ['light','dark'])test(`explicit themes override ${os} OS; System responds live`,async()=>{
  const {ctx,page,log}=await h.openPage(browser,{colorScheme:os});
  assert.equal(await page.inputValue('#sTheme'),'system');assert.deepEqual(await palette(page),expected[os]);await page.click('#gear');
