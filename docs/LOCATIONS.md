@@ -1,7 +1,16 @@
-# Recent board locations
+# Folder chooser and recent locations
 
-UI **2.4.3** adds **Recent locations** beside **Change folder**, within the same
-local HTML page. No backend or automatic network requests.
+In UI **2.4.8**, click the **Folder: name ▾** label under **Agent File Board**.
+One chooser provides **Choose another folder…** and **Recent locations**.
+Before opening a board the label says **Choose board folder…**; uploaded boards
+show their read-only name. The label stays visible on phones and is keyboard
+accessible with Tab, Enter or Space. Long names truncate visually while their
+full text remains available to accessibility APIs.
+
+The separate Change folder and Recent locations toolbar buttons are removed.
+This remains one local HTML page, with no backend or automatic network requests.
+The chooser title, new-folder action and Close remain pinned during scrolling.
+Cancelling a native picker leaves the chooser and current board intact.
 
 ![Recent locations, newest first.](images/board-locations.png)
 
@@ -58,7 +67,7 @@ remove/separate history. No synchronization or upload is performed.
 
 ## Try it and reproduce the checks
 
-Extract two copies of the fictional demo, open each, then use **Recent locations**
+Extract two copies of the fictional demo, open each, then click the folder label and use **Recent locations**
 to reopen the first: it moves to the top without a duplicate. Select a read-only
 upload to try reselection. The release ZIP contains no personal history.
 

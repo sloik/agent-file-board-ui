@@ -64,20 +64,27 @@ No automatic acceptance, synthetic owner participation or telemetry is implied.
 ## Optional appearance trial
 
 Before editing, open **Settings → Color theme** and try System, Light, Dark and
-Dracula (UI2.4.7). Try another palette with unsent form values or a report filter:
+Dracula (UI2.4.8). Try another palette with unsent form values or a report filter:
 those local values remain in place. This preference belongs to the browser; it
 is not shared with the agent or saved into a message.
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
 
 Long dialogs keep their title and **Close** visible while scrolling, including
 Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/PANELS.md).
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
 
-Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.
+
+## Folder label chooser (UI2.4.8)
+
+Click the folder label under **Agent File Board** to choose a new folder or
+reopen one from **Recent locations**. This replaces the separate Change folder
+and Recent locations toolbar buttons. The label works on phones and with
+keyboard Enter/Space; native cancellation preserves the active board.

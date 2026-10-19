@@ -85,23 +85,30 @@ Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
 [illustrated location guide](../../LOCATIONS.md).
 
-## Color themes (UI2.4.7)
+## Color themes (UI2.4.8)
 
 Choose **Settings → Color theme → System, Light, Dark or Dracula**.
 The browser saves this choice; report/form inputs and filters remain mounted
 while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
 
 Long dialogs keep their title and **Close** visible while scrolling, including
 Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/PANELS.md).
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
 
-Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.
+
+## Folder label chooser (UI2.4.8)
+
+Click the folder label under **Agent File Board** to choose a new folder or
+reopen one from **Recent locations**. This replaces the separate Change folder
+and Recent locations toolbar buttons. The label works on phones and with
+keyboard Enter/Space; native cancellation preserves the active board.

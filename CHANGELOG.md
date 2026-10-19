@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.4.8 — 2026-10-19
+
+- Turn the current folder label into one chooser for a new folder and recent
+  locations. Remove the separate Change folder and Recent locations toolbar
+  buttons; keep the folder label available on phones with bounded long names.
+- Keep the new-folder action and Close pinned in the chooser. Preserve native
+  cancellation, permissions, upload reselection, history identity and startup
+  behavior. Show uploaded board names in the read-only folder label.
+- Update UI flows, regression helpers/tests, docs, examples, demo and captures.
+  Retain the stable timer line, resizable Settings, semantic colors and
+  canonical2.4.0 in one offline HTML page.
+
 ## 2.4.7 — 2026-10-19
 
 - Stop toolbar actions jumping when refresh countdown text changes width. Place

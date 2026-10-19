@@ -133,16 +133,20 @@ board files, drafts and permissions. The separate native identity registry for
 read markers/drafts remains intact. See [the guide](LOCATIONS.md) and
 `tests/locations.test.js`. Nothing is synchronized or uploaded.
 
-## Color theme preference (UI2.4.7)
+## Color theme preference (UI2.4.8)
 
 System (default), Light, Dark and Dracula use the existing committed settings
 store. Older/missing/unknown values resolve to System; Reset restores System.
 Explicit choices override OS changes. The canonical board remains2.4.0; no
 message migration is needed. See [themes](THEMES.md).
 
-## Settings panel width (UI2.4.7)
+## Settings panel width (UI2.4.8)
 
 Width uses the existing committed browser preferences. The default is340px;
 left-edge drag or arrow keys resize it, double-click/Home/default reset restores
 it. Viewport changes only clamp display width, preserving the saved desktop
 width. No board migration. See [panels](PANELS.md).
+
+UI2.4.8 opens the existing location history from the current folder label.
+The unified new/recent chooser changes no storage format, permissions or
+last-open startup rules; no canonical migration is required.

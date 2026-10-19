@@ -8,13 +8,13 @@ account, AI model, npm or Python installation.
 
 1. Extract the complete `agent-file-board-demo.zip`. Keep its files together.
 2. Open `board.html` in Chrome or Edge.
-3. Click **Open board folder** and choose the visible **demo-board** folder beside
+3. Click the folder label under **Agent File Board**, then **Open board folder** and choose the visible **demo-board** folder beside
    `board.html`. The viewer finds `.agent-board` inside it automatically.
 4. Select **general → T000 · Start here**, then follow the tour below.
 
 Select **demo-board**, not the hidden `.agent-board` folder or the outer package.
 On systems that hide dot folders, `.agent-board` is still included in the ZIP.
-If you use a browser without writable folder access, use **Open board folder** to
+If you use a browser without writable folder access, click the folder label and use **Open board folder** to
 upload `demo-board`. You can explore everything; replies download as files for
 manual placement. Files must be extracted first; a ZIP cannot be selected as a board.
 
@@ -74,7 +74,7 @@ its local draft. **Import draft** can load **example-draft.json**, bundled besid
 board.html. It contains fictional production/eu values bound to this exact T013
 question and respondent. Confirming restores local edits; it does not submit a
 reply. Exported files contain entered values. Source/respondent mismatches are
-rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/WORKBENCH.md).
+rejected. See the [full guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/WORKBENCH.md).
 
 ## Reset or use an agent
 
@@ -108,7 +108,7 @@ the HTML can affect storage; export important work.
 
 Open the bundled **WORKFLOW-TRIAL.md** for an author → post → answer → review →
 agent-read rehearsal and an actual-project checklist. The same instructions are
-[online](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/LOCAL-WORKFLOW.md).
+[online](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/LOCAL-WORKFLOW.md).
 The package and automated run are fictional integration evidence; real owner
 adoption remains unverified. No agent listener or background uploader starts.
 
@@ -122,29 +122,36 @@ latest entry; an upload never silently reopens an older writable folder.
 Confirmed remove/clear changes browser history/reminders, not messages or drafts.
 Storage failures show session-only history. No backend, automatic network or
 protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/LOCATIONS.md).
+[illustrated location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/LOCATIONS.md).
 
 Try opening two extracted fictional demo copies, then revisit the first through
-Recent locations. It moves to the top without another entry. The release ZIP
+the folder label → Recent locations. It moves to the top without another entry. The release ZIP
 contains no personal history.
 
-## Color themes (UI2.4.7)
+## Color themes (UI2.4.8)
 
 Choose **Settings → Color theme → System, Light, Dark or Dracula**.
 The browser saves this choice; report/form inputs and filters remain mounted
 while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
+is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
+content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
 
 Long dialogs keep their title and **Close** visible while scrolling, including
 Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/PANELS.md).
+header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
 
-Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.
+
+## Folder label chooser (UI2.4.8)
+
+Click the folder label under **Agent File Board** to choose a new folder or
+reopen one from **Recent locations**. This replaces the separate Change folder
+and Recent locations toolbar buttons. The label works on phones and with
+keyboard Enter/Space; native cancellation preserves the active board.

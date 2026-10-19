@@ -177,9 +177,18 @@ async function openPage(browser, opts = {}) {
   try{ await page.evaluate(async()=>{await window.__fakefs?.ready;await window.__boardTest?.ready;}); }catch(e){ log.pageErrors.push("Startup: "+e.message); }
   return { ctx, page, log };
 }
-async function openBoardViaUi(page) {
+async function openFolderMenu(page){
+  if(await page.locator('#locationsDialog').isVisible())await page.waitForFunction(()=>!document.querySelector('#locationsDialog').open||!document.querySelector('#open').disabled);
+  if(!await page.locator('#locationsDialog').isVisible())await page.click('#folderName');
+  await page.waitForFunction(()=>document.querySelector('#locationsList').getAttribute('aria-busy')==='false');
+}
+async function pickFolder(page){
+  await openFolderMenu(page);
   await page.click("#open");
-  await page.waitForFunction(() => window.__boardTest.getModel() !== null, null, { timeout: 5000 });
+}
+async function openBoardViaUi(page) {
+  await pickFolder(page);
+  await page.waitForFunction(() => window.__boardTest.getModel() !== null && !document.querySelector('#locationsDialog').open, null, { timeout: 5000 });
 }
 function boardctl(args) {
   // Isolated Python omits the script directory; admit only the pinned CLI's
@@ -230,4 +239,4 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
 }
 
 module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
-  fakeFsScript, launch, openPage, openBoardViaUi, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };
+  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };

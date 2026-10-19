@@ -1,6 +1,6 @@
 # Dialogs and Settings
 
-In UI2.4.7, long dialogs keep their title and **Close** in an opaque pinned
+In UI2.4.8, long dialogs keep their title and **Close** in an opaque pinned
 header. This applies to **Structured message**, saved drafts, recent locations,
 protocol upgrades, board vocabulary, participants/presence, message repairs,
 guidance and embedded report modals. Scroll to the end and close directly;
@@ -34,7 +34,7 @@ Try the [fictional offline demo](DEMO.md). Reproduce captures with
 long-content fixtures for all dialog headers, hit-tested close clicks and
 pointer/keyboard resize with committed reload/reset checks.
 
-Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.
@@ -46,3 +46,10 @@ reflow the responsive toolbar.
 Reproduce these captures with `npm run screenshots:toolbar`. Timer geometry
 tests advance the real scheduler, including polling rollover, and compare every
 header control plus the toolbar/feed boundaries at six widths in both locales.
+
+## Folder label chooser (UI2.4.8)
+
+Click the folder label under **Agent File Board** to choose a new folder or
+reopen one from **Recent locations**. This replaces the separate Change folder
+and Recent locations toolbar buttons. The label works on phones and with
+keyboard Enter/Space; native cancellation preserves the active board.

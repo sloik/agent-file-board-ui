@@ -32,18 +32,32 @@ async function rememberNativeLocation(handle,boardHandle){const fresh={id:crypto
 async function rememberUploadLocation(name,fingerprint){const fresh={id:crypto.randomUUID(),kind:'upload',name,fingerprint,openedAt:new Date().toISOString()};return changeLocations(records=>{const prior=records.find(r=>r.kind==='upload'&&r.fingerprint===fingerprint);return [{...fresh,id:prior?.id||fresh.id},...records.filter(r=>r.kind!=='upload'||r.fingerprint!==fingerprint)];});}
 function locationButton(parent,label,action){const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=label;b.disabled=locationBusy||locationLoading;b.onclick=action;parent.append(b);return b;}
 function renderLocations(){
- if(!$('#locationsDialog').open)return;const list=$('#locationsList');list.setAttribute('aria-busy',String(locationLoading));list.replaceChildren();$('#locationsStorage').textContent=t(locationStored?"locations_local":"locations_memory");$('#locationsClear').disabled=locationBusy||locationLoading||!locationRecords.length;
+ if(!$('#locationsDialog').open)return;$('#open').disabled=locationBusy||locationLoading;const list=$('#locationsList');list.setAttribute('aria-busy',String(locationLoading));list.replaceChildren();$('#locationsStorage').textContent=t(locationStored?"locations_local":"locations_memory");$('#locationsClear').disabled=locationBusy||locationLoading||!locationRecords.length;
  if(locationLoading){const p=document.createElement('p');p.textContent=t("locations_loading");list.append(p);return;}
  if(!locationRecords.length){const p=document.createElement('p');p.textContent=t("locations_empty");list.append(p);return;}
  for(const row of locationRecords){const item=document.createElement('section');item.className='location-entry';item.dataset.location=row.id;item.dataset.kind=row.kind;const name=document.createElement('strong');name.textContent=row.name;item.append(name);const meta=document.createElement('p');meta.className='hint';meta.textContent=t(row.kind==='native'?"locations_native":"locations_upload")+' · '+(row.openedAt?new Date(row.openedAt).toLocaleString(S.lang==='pl'?'pl-PL':'en-GB'):t("locations_previous"));item.append(meta);const actions=document.createElement('div');actions.className='tool-actions';locationButton(actions,t(row.kind==='native'?"locations_reopen":"locations_choose"),()=>openRecentLocation(row));locationButton(actions,t("locations_remove"),()=>removeLocation(row));item.append(actions);list.append(item);}
 }
-async function openLocations(){const generation=++locationDialogGeneration;$('#locationsResult').textContent='';$('#locationsDialog').showModal();locationLoading=true;renderLocations();await locationWrites;try{const stored=cleanLocations(await readLocations());if(generation!==locationDialogGeneration)return;let rows=stored.records;for(const pending of locationPendingUpdates)rows=await pending(rows);if(generation!==locationDialogGeneration)return;locationRecords=rows.slice(0,LOCATION_LIMIT);}catch{locationStored=false;}finally{if(generation===locationDialogGeneration){locationLoading=false;renderLocations();}}}
-function closeLocations(){locationDialogGeneration++;locationLoading=false;$('#locationsDialog').close();}
+async function openLocations(){const generation=++locationDialogGeneration;$('#locationsResult').textContent='';if(!$('#locationsDialog').open)$('#locationsDialog').showModal();$('#folderName').setAttribute('aria-expanded','true');locationLoading=true;renderLocations();await locationWrites;try{const stored=cleanLocations(await readLocations());if(generation!==locationDialogGeneration)return;let rows=stored.records;for(const pending of locationPendingUpdates)rows=await pending(rows);if(generation!==locationDialogGeneration)return;locationRecords=rows.slice(0,LOCATION_LIMIT);}catch{locationStored=false;}finally{if(generation===locationDialogGeneration){locationLoading=false;renderLocations();}}}
+function closeLocations(){locationDialogGeneration++;locationLoading=false;$('#locationsDialog').close();$('#folderName').setAttribute('aria-expanded','false');}
 async function openRecentLocation(row){
  if(locationBusy)return;const intent=++locationIntent,generation=locationDialogGeneration;
  if(row.kind==='upload'){closeLocations();$('#fallback').value='';$('#fallback').click();return;}
  locationBusy=true;renderLocations();$('#locationsResult').textContent=t("locations_opening");
  try{if(typeof row.handle.requestPermission!=='function'||await row.handle.requestPermission({mode:'readwrite'})!=='granted')throw Error(t("toast_no_perm"));if(intent!==locationIntent)return;const ok=await useDir(row.handle);if(intent!==locationIntent||generation!==locationDialogGeneration)return;if(!ok)throw Error(t("e_no_board"));closeLocations();}catch(e){if(intent===locationIntent&&generation===locationDialogGeneration){$('#locationsResult').textContent=e.message;if(!$('#locationsDialog').open)toast(e.message);}}finally{locationBusy=false;renderLocations();}
+}
+async function chooseNewLocation(){
+ if(locationBusy||locationLoading)return;
+ const intent=++locationIntent,generation=locationDialogGeneration;
+ if(!window.showDirectoryPicker){closeLocations();$('#fallback').value='';$('#fallback').click();return;}
+ locationBusy=true;renderLocations();$('#locationsResult').textContent='';
+ try{
+  const handle=await window.showDirectoryPicker({mode:'readwrite',id:'agent-board'});
+  if(intent!==locationIntent)return;
+  const ok=await useDir(handle);
+  if(intent!==locationIntent||generation!==locationDialogGeneration)return;
+  if(ok)closeLocations();else $('#locationsResult').textContent=t('e_no_board');
+ }catch(error){if(error?.name!=='AbortError'&&intent===locationIntent&&generation===locationDialogGeneration)$('#locationsResult').textContent=error.message;}
+ finally{locationBusy=false;renderLocations();}
 }
 async function withoutLocation(records,row){const keep=[];for(const item of records){if(item.id===row.id||row.kind==='upload'&&item.kind==='upload'&&item.fingerprint===row.fingerprint||row.kind==='native'&&await nativeLocationMatches(item,row.handle,row.boardHandle||row.handle))continue;keep.push(item);}return keep;}
 async function removeLocation(row){
@@ -58,4 +72,4 @@ async function offerLastLocation(){
  if(row.kind==='native'&&window.showDirectoryPicker)try{if(await row.handle.queryPermission({mode:'readwrite'})==='granted'){if(intent===locationIntent)await useDir(row.handle);return;}}catch{}
  if(intent!==locationIntent)return;$('#lastName').textContent=row.name;$('#banner').classList.add('show');$('#reopen').onclick=()=>openRecentLocation(row);$('#forget').onclick=forgetLastLocation;
 }
-function wireLocations(){$('#locationsOpen').onclick=openLocations;$('#locationsClose').onclick=closeLocations;$('#locationsClear').onclick=clearLocations;$('#locationsDialog').addEventListener('cancel',e=>{e.preventDefault();closeLocations();});}
+function wireLocations(){$('#folderName').onclick=openLocations;$('#locationsClose').onclick=closeLocations;$('#locationsClear').onclick=clearLocations;$('#locationsDialog').addEventListener('cancel',e=>{e.preventDefault();closeLocations();});}

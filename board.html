@@ -53,7 +53,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 .top{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
 .brand{font-weight:700;font-size:15px;white-space:nowrap}
-.brand small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
 .search{flex:1;min-width:180px;max-width:520px;position:relative}
 .search input{width:100%;padding:8px 12px 8px 32px;border:1px solid var(--line);border-radius:999px;background:var(--panel2)}
 .search::before{content:"\2315";position:absolute;left:12px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:16px}
@@ -269,7 +268,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .presence-session{margin:8px 0 0 16px;font-size:13px}
 .presence-session p{margin:4px 0}
 .menu{display:none}
-@media (max-width:820px){.app{grid-template-columns:1fr}.resizer{display:none}.side{display:none}.side.open{display:block;position:fixed;inset:56px 0 0 0;z-index:5}.menu{display:inline-block}.brand small{display:none}}
+@media (max-width:820px){.app{grid-template-columns:1fr}.resizer{display:none}.side{display:none}.side.open{display:block;position:fixed;inset:56px 0 0 0;z-index:5}.menu{display:inline-block}}
 .file-reference{overflow-wrap:anywhere}.file-action{display:inline-block;font-size:.8em;border:1px solid currentColor;border-radius:5px;padding:0 5px;margin:2px 0;text-decoration:none}.file-action:hover{text-decoration:underline}
 .board-report{margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);min-width:0;max-width:100%}
 .board-report h3{margin:0 0 14px;font-size:1.1em}.board-report h4{margin:14px 0 8px;font-size:1em}
@@ -377,12 +376,19 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 #settingsResize:hover,#settingsResize:focus-visible{border-left-color:var(--accent);outline:none}
 #settingsResize::after{content:"";position:absolute;top:calc(50% - 24px);left:1px;width:3px;height:48px;border-radius:3px;background:var(--line)}
 #settingsResize:hover::after,#settingsResize:focus-visible::after{background:var(--accent)}
+
+.brand{max-width:min(320px,100%);min-width:0}
+#folderName{display:block;position:relative;max-width:100%;margin:0 -4px;padding:3px 18px 3px 4px;border:1px solid transparent;border-radius:5px;background:none;color:var(--muted);font-size:11.5px;font-weight:500;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#folderName::after{content:"▾";position:absolute;right:3px;top:50%;transform:translateY(-50%)}
+#folderName:hover,#folderName:focus-visible{color:var(--ink);background:var(--hover);border-color:var(--line)}
+.folder-picker-head{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.folder-picker-head button{max-width:100%}
 </style>
 </head>
 <body>
 <div class="top">
   <button class="btn menu" id="menu" data-i18n-aria="menu">&#9776;</button>
-  <div class="brand">Agent File Board<small id="folderName"></small></div>
+  <div class="brand">Agent File Board<button type="button" id="folderName" aria-haspopup="dialog" aria-controls="locationsDialog" aria-expanded="false" data-i18n-title="folder_picker"></button></div>
   <div class="search"><input id="q" type="search" autocomplete="off" data-i18n-ph="search_ph"><div class="sugg" id="sugg"></div></div>
   <div class="spacer"></div>
   <button class="btn verbar" id="verbar" data-i18n-title="upgrade_title"></button>
@@ -393,8 +399,6 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
   <button class="btn" id="structuredOpen" data-i18n="authoring_open"></button>
   <button class="btn" id="draftsOpen" data-i18n="draft_open" disabled></button>
   <button class="btn" id="gear" data-i18n-title="settings_title">&#9881;</button>
-  <button class="btn primary" id="open"></button>
-  <button class="btn" id="locationsOpen" data-i18n="locations_open"></button>
   <span class="rstat" id="rstat"></span>
   <input type="file" id="fallback" webkitdirectory multiple hidden>
 </div>
@@ -463,8 +467,8 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
     </div>
   </section>
 </div>
-<dialog id="locationsDialog" aria-labelledby="locationsHeading"><div class="vocabulary-head"><h2 id="locationsHeading" data-i18n="locations_open"></h2><button class="btn" id="locationsClose" data-i18n="vocabulary_close"></button></div>
- <p class="hint" data-i18n="locations_note"></p><p id="locationsStorage" class="hint" role="status"></p><p id="locationsResult" class="tool-result" role="status"></p><div id="locationsList"></div><button class="btn" id="locationsClear" data-i18n="locations_clear"></button>
+<dialog id="locationsDialog" aria-labelledby="locationsHeading"><div class="vocabulary-head"><div class="folder-picker-head"><h2 id="locationsHeading" data-i18n="folder_picker"></h2><button class="btn primary" type="button" id="open"></button></div><button class="btn" id="locationsClose" data-i18n="vocabulary_close"></button></div>
+ <p class="hint" data-i18n="locations_note"></p><p id="locationsStorage" class="hint" role="status"></p><p id="locationsResult" class="tool-result" role="status"></p><h3 data-i18n="locations_open"></h3><div id="locationsList"></div><button class="btn" id="locationsClear" data-i18n="locations_clear"></button>
 </dialog>
 <dialog id="structuredDialog" aria-labelledby="structuredHeading">
  <div class="vocabulary-head"><h2 id="structuredHeading" data-i18n="authoring_open"></h2><button class="btn" id="structuredClose" data-i18n="vocabulary_close"></button></div>
@@ -1156,7 +1160,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.4.7";
+const VIEWER_VERSION = "2.4.8";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1335,7 +1339,7 @@ const STRINGS = {
   builder_new_prompt:"Describe the decision to make.",
   builder_submit:"Send answer",
   locations_loading:"Loading recent locations…",
-  locations_open:"Recent locations",
+  folder_picker:"Choose a board folder", locations_open:"Recent locations",
   locations_note:"Most recently opened first, up to 20. Reopening a native board moves it to the top. Folder names are shown; browsers do not expose absolute paths. Uploads require choosing files again; identical snapshots share an entry.",
   locations_local:"History saved locally in this browser. No board files are stored here.",
   locations_memory:"History is available for this session only; browser storage could not save it.",
@@ -1423,8 +1427,8 @@ const STRINGS = {
   find_room:"Find room…", find_topic:"Find topic…", find_party:"Find participant…", composer_resize:"Drag to resize composer; arrows adjust; double-click resets", s_thread_order:"Topic order", s_order_stable:"Stable (topic ID)", s_order_newest:"Newest activity first", unread_count:"{n} unread", topic_title:"Current topic title", set_title:"Set title", title_body:"Topic title: {title}", e_title:"Enter a title containing letters or numbers",
   menu:"Menu", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
   refresh_now:"Refresh now", settings_title:"Appearance and refresh settings",
-  open_folder:"Open board folder", change_folder:"Change folder", last_folder:"Last opened folder:",
-  reopen_last:"Open last folder", forget:"Forget", folder_none:"No folder selected", folder_is:"Folder: {name}",
+  open_folder:"Open board folder", change_folder:"Choose another folder…", last_folder:"Last opened folder:",
+  reopen_last:"Open last folder", forget:"Forget", folder_none:"Choose board folder…", folder_is:"Folder: {name}",
   read_only:"read-only (upload)", resizer_title:"Drag to resize the sidebar",
   settings_resize:"Drag the left edge to resize settings; Left/Right arrows adjust; double-click or Home resets", settings_h:"Settings (saved in this browser)", s_language:"Language", s_theme:"Color theme", theme_system:"System", theme_light:"Light", theme_dark:"Dark", s_lh:"Line spacing", s_fs:"Text size",
   s_bubble:"Bubble width", s_feed:"Chat width", s_align:"Bubble layout", s_align_split:"mine on the right, others on the left",
@@ -1438,7 +1442,7 @@ const STRINGS = {
   tree_h:"Rooms and threads", direct_h:"Direct conversations", all_messages:"All messages",
   closed_group:"closed ({n})", empty_room:"empty room - no threads", no_title:"(untitled)", fold_title:"collapse / expand",
   feed_empty_h:"Open a board folder",
-  feed_empty_p:"Choose a project folder containing .agent-board/ (or the .agent-board folder itself).",
+  feed_empty_p:"Click the folder label under Agent File Board, then choose a project folder containing .agent-board/ (or the .agent-board folder itself).",
   feed_empty_hint:"Chrome and Edge: read and write. Safari and Firefox: read-only; \"Post\" downloads the file to place manually in the room folder.",
   no_messages_h:"No messages", no_messages_p:"Change the filter or the search.",
   message_loading:"Loading message…",
@@ -1615,7 +1619,7 @@ const STRINGS = {
   builder_new_prompt:"Opisz decyzję do podjęcia.",
   builder_submit:"Wyślij odpowiedź",
   locations_loading:"Wczytywanie ostatnich lokalizacji…",
-  locations_open:"Ostatnie lokalizacje",
+  folder_picker:"Wybierz folder tablicy", locations_open:"Ostatnie lokalizacje",
   locations_note:"Najnowsze otwarcia na górze, maksymalnie 20. Ponowne otwarcie tablicy przenosi ją na górę. Widoczne są nazwy folderów; przeglądarka nie ujawnia pełnych ścieżek. Przesłane foldery trzeba wybrać ponownie; identyczne kopie współdzielą wpis.",
   locations_local:"Historia zapisana lokalnie w tej przeglądarce. Nie przechowuje plików tablicy.",
   locations_memory:"Historia jest dostępna tylko w tej sesji; przeglądarka nie mogła jej zapisać.",
@@ -1703,8 +1707,8 @@ const STRINGS = {
   find_room:"Znajdź pokój…", find_topic:"Znajdź wątek…", find_party:"Znajdź uczestnika…", composer_resize:"Przeciągnij, aby zmienić wysokość edytora; strzałki zmieniają; dwuklik resetuje", s_thread_order:"Kolejność wątków", s_order_stable:"Stała (ID wątku)", s_order_newest:"Najnowsza aktywność najpierw", unread_count:"{n} nieprzeczytanych", topic_title:"Aktualny tytuł wątku", set_title:"Ustaw tytuł", title_body:"Tytuł wątku: {title}", e_title:"Podaj tytuł zawierający litery lub cyfry",
   menu:"Menu", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
   refresh_now:"Odśwież teraz", settings_title:"Ustawienia wyglądu i odświeżania",
-  open_folder:"Otwórz folder tablicy", change_folder:"Zmień folder", last_folder:"Ostatnio otwierany folder:",
-  reopen_last:"Otwórz ostatni folder", forget:"Nie pamiętaj", folder_none:"Nie wybrano folderu", folder_is:"Folder: {name}",
+  open_folder:"Otwórz folder tablicy", change_folder:"Wybierz inny folder…", last_folder:"Ostatnio otwierany folder:",
+  reopen_last:"Otwórz ostatni folder", forget:"Nie pamiętaj", folder_none:"Wybierz folder tablicy…", folder_is:"Folder: {name}",
   read_only:"tylko do odczytu (wczytany)", resizer_title:"Przeciągnij, aby zmienić szerokość panelu",
   settings_resize:"Przeciągnij lewą krawędź ustawień; strzałki lewo/prawo zmieniają szerokość; dwuklik lub Home resetuje", settings_h:"Ustawienia (zapisywane w tej przeglądarce)", s_language:"Język", s_theme:"Motyw kolorystyczny", theme_system:"Systemowy", theme_light:"Jasny", theme_dark:"Ciemny", s_lh:"Odstęp między wierszami", s_fs:"Rozmiar tekstu",
   s_bubble:"Szerokość dymka", s_feed:"Szerokość czatu", s_align:"Układ dymków", s_align_split:"moje po prawej, inne po lewej",
@@ -1718,7 +1722,7 @@ const STRINGS = {
   tree_h:"Pokoje i wątki", direct_h:"Rozmowy bezpośrednie", all_messages:"Wszystkie wiadomości",
   closed_group:"zamknięte ({n})", empty_room:"pusty pokój - brak wątków", no_title:"(bez nazwy)", fold_title:"zwiń / rozwiń",
   feed_empty_h:"Otwórz folder tablicy",
-  feed_empty_p:"Wskaż folder projektu zawierający .agent-board/ (albo sam folder .agent-board).",
+  feed_empty_p:"Kliknij nazwę folderu pod Agent File Board, a następnie wskaż folder projektu zawierający .agent-board/ (albo sam folder .agent-board).",
   feed_empty_hint:"Chrome i Edge: czytanie i pisanie. Safari i Firefox: tylko czytanie - „Wyślij” pobierze plik do ręcznego wrzucenia do folderu pokoju.",
   no_messages_h:"Brak wiadomości", no_messages_p:"Zmień filtr albo wyszukiwanie.",
   message_loading:"Wczytywanie wiadomości…",
@@ -3113,7 +3117,7 @@ function renderChrome(){
   $("#repairsOpen").hidden=!B || B.layout.dialect!=="native";
   renderGuidance();
   $("#vocabularyText").textContent=B && B.glossary ? B.glossary : t("vocabulary_missing");
-  $("#folderName").textContent = B ? (dirHandle ? t("folder_is",{name:dirHandle.name}) : t("read_only")) : t("folder_none");
+  $("#folderName").textContent = B ? (dirHandle ? t("folder_is",{name:dirHandle.name}) : t("read_only")+": "+B.name) : t("folder_none");
   const bv = B ? (B.boardVersion || null) : null;
   const parts = [t("ver_viewer",{v:VIEWER_VERSION})];
   if(B){
@@ -4079,18 +4083,32 @@ async function rememberNativeLocation(handle,boardHandle){const fresh={id:crypto
 async function rememberUploadLocation(name,fingerprint){const fresh={id:crypto.randomUUID(),kind:'upload',name,fingerprint,openedAt:new Date().toISOString()};return changeLocations(records=>{const prior=records.find(r=>r.kind==='upload'&&r.fingerprint===fingerprint);return [{...fresh,id:prior?.id||fresh.id},...records.filter(r=>r.kind!=='upload'||r.fingerprint!==fingerprint)];});}
 function locationButton(parent,label,action){const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=label;b.disabled=locationBusy||locationLoading;b.onclick=action;parent.append(b);return b;}
 function renderLocations(){
- if(!$('#locationsDialog').open)return;const list=$('#locationsList');list.setAttribute('aria-busy',String(locationLoading));list.replaceChildren();$('#locationsStorage').textContent=t(locationStored?"locations_local":"locations_memory");$('#locationsClear').disabled=locationBusy||locationLoading||!locationRecords.length;
+ if(!$('#locationsDialog').open)return;$('#open').disabled=locationBusy||locationLoading;const list=$('#locationsList');list.setAttribute('aria-busy',String(locationLoading));list.replaceChildren();$('#locationsStorage').textContent=t(locationStored?"locations_local":"locations_memory");$('#locationsClear').disabled=locationBusy||locationLoading||!locationRecords.length;
  if(locationLoading){const p=document.createElement('p');p.textContent=t("locations_loading");list.append(p);return;}
  if(!locationRecords.length){const p=document.createElement('p');p.textContent=t("locations_empty");list.append(p);return;}
  for(const row of locationRecords){const item=document.createElement('section');item.className='location-entry';item.dataset.location=row.id;item.dataset.kind=row.kind;const name=document.createElement('strong');name.textContent=row.name;item.append(name);const meta=document.createElement('p');meta.className='hint';meta.textContent=t(row.kind==='native'?"locations_native":"locations_upload")+' · '+(row.openedAt?new Date(row.openedAt).toLocaleString(S.lang==='pl'?'pl-PL':'en-GB'):t("locations_previous"));item.append(meta);const actions=document.createElement('div');actions.className='tool-actions';locationButton(actions,t(row.kind==='native'?"locations_reopen":"locations_choose"),()=>openRecentLocation(row));locationButton(actions,t("locations_remove"),()=>removeLocation(row));item.append(actions);list.append(item);}
 }
-async function openLocations(){const generation=++locationDialogGeneration;$('#locationsResult').textContent='';$('#locationsDialog').showModal();locationLoading=true;renderLocations();await locationWrites;try{const stored=cleanLocations(await readLocations());if(generation!==locationDialogGeneration)return;let rows=stored.records;for(const pending of locationPendingUpdates)rows=await pending(rows);if(generation!==locationDialogGeneration)return;locationRecords=rows.slice(0,LOCATION_LIMIT);}catch{locationStored=false;}finally{if(generation===locationDialogGeneration){locationLoading=false;renderLocations();}}}
-function closeLocations(){locationDialogGeneration++;locationLoading=false;$('#locationsDialog').close();}
+async function openLocations(){const generation=++locationDialogGeneration;$('#locationsResult').textContent='';if(!$('#locationsDialog').open)$('#locationsDialog').showModal();$('#folderName').setAttribute('aria-expanded','true');locationLoading=true;renderLocations();await locationWrites;try{const stored=cleanLocations(await readLocations());if(generation!==locationDialogGeneration)return;let rows=stored.records;for(const pending of locationPendingUpdates)rows=await pending(rows);if(generation!==locationDialogGeneration)return;locationRecords=rows.slice(0,LOCATION_LIMIT);}catch{locationStored=false;}finally{if(generation===locationDialogGeneration){locationLoading=false;renderLocations();}}}
+function closeLocations(){locationDialogGeneration++;locationLoading=false;$('#locationsDialog').close();$('#folderName').setAttribute('aria-expanded','false');}
 async function openRecentLocation(row){
  if(locationBusy)return;const intent=++locationIntent,generation=locationDialogGeneration;
  if(row.kind==='upload'){closeLocations();$('#fallback').value='';$('#fallback').click();return;}
  locationBusy=true;renderLocations();$('#locationsResult').textContent=t("locations_opening");
  try{if(typeof row.handle.requestPermission!=='function'||await row.handle.requestPermission({mode:'readwrite'})!=='granted')throw Error(t("toast_no_perm"));if(intent!==locationIntent)return;const ok=await useDir(row.handle);if(intent!==locationIntent||generation!==locationDialogGeneration)return;if(!ok)throw Error(t("e_no_board"));closeLocations();}catch(e){if(intent===locationIntent&&generation===locationDialogGeneration){$('#locationsResult').textContent=e.message;if(!$('#locationsDialog').open)toast(e.message);}}finally{locationBusy=false;renderLocations();}
+}
+async function chooseNewLocation(){
+ if(locationBusy||locationLoading)return;
+ const intent=++locationIntent,generation=locationDialogGeneration;
+ if(!window.showDirectoryPicker){closeLocations();$('#fallback').value='';$('#fallback').click();return;}
+ locationBusy=true;renderLocations();$('#locationsResult').textContent='';
+ try{
+  const handle=await window.showDirectoryPicker({mode:'readwrite',id:'agent-board'});
+  if(intent!==locationIntent)return;
+  const ok=await useDir(handle);
+  if(intent!==locationIntent||generation!==locationDialogGeneration)return;
+  if(ok)closeLocations();else $('#locationsResult').textContent=t('e_no_board');
+ }catch(error){if(error?.name!=='AbortError'&&intent===locationIntent&&generation===locationDialogGeneration)$('#locationsResult').textContent=error.message;}
+ finally{locationBusy=false;renderLocations();}
 }
 async function withoutLocation(records,row){const keep=[];for(const item of records){if(item.id===row.id||row.kind==='upload'&&item.kind==='upload'&&item.fingerprint===row.fingerprint||row.kind==='native'&&await nativeLocationMatches(item,row.handle,row.boardHandle||row.handle))continue;keep.push(item);}return keep;}
 async function removeLocation(row){
@@ -4105,7 +4123,7 @@ async function offerLastLocation(){
  if(row.kind==='native'&&window.showDirectoryPicker)try{if(await row.handle.queryPermission({mode:'readwrite'})==='granted'){if(intent===locationIntent)await useDir(row.handle);return;}}catch{}
  if(intent!==locationIntent)return;$('#lastName').textContent=row.name;$('#banner').classList.add('show');$('#reopen').onclick=()=>openRecentLocation(row);$('#forget').onclick=forgetLastLocation;
 }
-function wireLocations(){$('#locationsOpen').onclick=openLocations;$('#locationsClose').onclick=closeLocations;$('#locationsClear').onclick=clearLocations;$('#locationsDialog').addEventListener('cancel',e=>{e.preventDefault();closeLocations();});}
+function wireLocations(){$('#folderName').onclick=openLocations;$('#locationsClose').onclick=closeLocations;$('#locationsClear').onclick=clearLocations;$('#locationsDialog').addEventListener('cancel',e=>{e.preventDefault();closeLocations();});}
 
 /* Appearance only: never rebuild mounted reports, editors or the conversation. */
 const COLOR_THEMES = new Set(['system','light','dark','dracula']);
@@ -4153,12 +4171,7 @@ function wire(){
   $("#verbar").onclick=openUpgrade; $("#upgradeOpen").onclick=openUpgrade;
   $("#upgradeClose").onclick=()=>$("#upgradeDialog").close();
   $("#upgradePreview").onclick=openUpgrade; $("#upgradeApply").onclick=applyUpgrade;
-  $("#open").onclick = async()=>{
-    locationIntent++;
-    if(!window.showDirectoryPicker){ $("#fallback").click(); return; }
-    try{ await useDir(await window.showDirectoryPicker({mode:"readwrite", id:"agent-board"})); }
-    catch(e){ if(e && e.name!=="AbortError") toast(e.message); }
-  };
+  $("#open").onclick = chooseNewLocation;
   $("#fallback").onchange = async e=>{ const files=[...e.target.files];e.target.value="";if(!files.length)return;locationIntent++;try{await readFromInput(files);schedule();renderChrome();}catch(error){toast(error.message);} };
   $("#reload").onclick = ()=>{
     if(canWrite()) readFromHandle().then(()=>{ schedule(); tick(); toast(t("toast_refreshed")); });

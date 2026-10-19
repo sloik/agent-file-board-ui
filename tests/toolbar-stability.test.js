@@ -16,7 +16,7 @@ for(const lang of ['en','pl'])test(`toolbar stays fixed through real countdown, 
    const builds=await page.evaluate(()=>window.__boardTest.stats.builds);await page.clock.runFor(2000);await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);assert.deepEqual(await geometry(page),initial,'automatic refresh rollover');assert.equal(await page.inputValue('#cBody'),'Keep my unsent draft');
    await page.click('#gear');await page.click('[data-dpre="67"]');await page.click('#sClose');await readable(page);assert.deepEqual(await geometry(page),initial,'paused status');assert.match(await page.textContent('#rstat'),lang==='en'?/paused/:/wstrzymane/);
    await page.click('#gear');await page.uncheck('#rOn');await page.click('#sClose');assert.equal(await page.textContent('#rstat'),'');assert.deepEqual(await geometry(page),initial,'empty/off status');
-   for(const id of ['structuredOpen','draftsOpen','gear','locationsOpen'])assert.equal(await page.locator('#'+id).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);}),true,'clickable '+id);
+   for(const id of ['structuredOpen','draftsOpen','gear','folderName'])assert.equal(await page.locator('#'+id).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);}),true,'clickable '+id);
   }
   assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),files);assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.consoleErrors,[]);assert.equal(log.requests.filter(u=>!u.startsWith('file:')).length,0);
  }finally{await ctx.close();}

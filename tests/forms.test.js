@@ -75,8 +75,8 @@ test('board identity separates drafts even when message paths and definitions ma
  const seed=await boot();await seed.ctx.close();const tree=h.readTree(seed.project),{ctx,page,log}=await h.openPage(browser,{tree:{kind:'directory',children:{one:structuredClone(tree),two:structuredClone(tree)}},clock:AT});try{
   await page.evaluate(async()=>{const root=await window.showDirectoryPicker();let at=0;window.showDirectoryPicker=()=>root.getDirectoryHandle(['one','two'][at++%2]);});
   await h.openBoardViaUi(page);await page.locator('.fname').filter({hasText:'reports'}).click();await page.waitForSelector('.typed-form');await field(page,'owner').locator('input').fill('Board one draft');
-  await page.click('#open');await page.locator('.fname').filter({hasText:'reports'}).click();await page.waitForSelector('.typed-form');assert.equal(await field(page,'owner').locator('input').inputValue(),'');await field(page,'owner').locator('input').fill('Board two draft');
-  await page.click('#open');await page.locator('.fname').filter({hasText:'reports'}).click();await page.waitForSelector('.typed-form');assert.equal(await field(page,'owner').locator('input').inputValue(),'Board one draft');assert.deepEqual(log.pageErrors,[]);
+  await h.pickFolder(page);await page.locator('.fname').filter({hasText:'reports'}).click();await page.waitForSelector('.typed-form');assert.equal(await field(page,'owner').locator('input').inputValue(),'');await field(page,'owner').locator('input').fill('Board two draft');
+  await h.pickFolder(page);await page.locator('.fname').filter({hasText:'reports'}).click();await page.waitForSelector('.typed-form');assert.equal(await field(page,'owner').locator('input').inputValue(),'Board one draft');assert.deepEqual(log.pageErrors,[]);
  }finally{await ctx.close();}
 });
 test('agent confirmation and rapid repeated submit cannot publish duplicate typed replies',async()=>{

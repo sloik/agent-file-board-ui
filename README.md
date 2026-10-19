@@ -22,7 +22,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
 | **History** | Lazy history on scroll, a bounded transcript and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/THEMES.md)). |
-| **Recent locations** | Up to 20 local locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/LOCATIONS.md). |
+| **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/LOCATIONS.md). |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
 ![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)
@@ -63,7 +63,7 @@ copyable Markdown/HTML examples, and instructions to reproduce every image.
 
 [Download the demo ZIP](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip),
 extract it, open its `board.html` in Chrome/Edge, and choose the included
-**demo-board** folder with **Open board folder**. It contains fictional discussions,
+**demo-board** folder through the folder label → **Open board folder**. It contains fictional discussions,
 all 34 report types, all 11 form fields, conditional workflows, editable rows and historical answers. The toolbar also provides a visual form builder, persistent authoring work, previews and draft management; T015 shows a fictional agent → human → agent cycle. No installation or server.
 See the [tour](docs/DEMO.md) and [OpenUI gallery](docs/OPENUI.md).
 
@@ -79,9 +79,9 @@ See the [illustrated authoring and review guide](docs/WORKBENCH.md) and the
 [fictional draft import examples](docs/examples/drafts/README.md), plus the [local workflow trial](docs/LOCAL-WORKFLOW.md). These viewer
 features need UI2.4.2 or newer; the canonical CLI/protocol and submodule remain2.4.0.
 
-## Version 2.4.7
+## Version 2.4.8
 
-See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.7/board.html) (save as `board.html`), or use the included file.
+See [release notes](CHANGELOG.md). [Download the standalone viewer](https://raw.githubusercontent.com/sloik/agent-file-board-ui/v2.4.8/board.html) (save as `board.html`), or use the included file.
 To upgrade, replace your viewer file and reopen the board. Existing messages stay
 intact. The board format extensions and CLI live in
 [agent-file-board 2.4.0](https://github.com/sloik/agent-file-board).
@@ -117,7 +117,7 @@ posting reports. If rendering fails, the message summary stays visible.
 ## How to open it
 
 1. Download or clone this repository and open `board.html` directly in the browser (`file://...`). No server or build step is needed.
-2. Click **Open board folder** and choose the project folder that contains `.agent-board/` (choosing the `.agent-board` folder itself also works).
+2. Click the folder label under **Agent File Board**, then **Open board folder** and choose the project folder that contains `.agent-board/` (choosing the `.agent-board` folder itself also works).
 3. On the next visit the viewer offers a one-click reopen of the last folder (browsers require a user gesture to renew permission), or reopens silently when permission is still granted.
 
 ### Browser support
@@ -169,7 +169,7 @@ Message posting never edits or deletes an existing message and writes only new f
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).
 - Pushing a `vX.Y.Z` tag runs the full test suite and version checks, then publishes the matching GitHub Release with that version's changelog notes, `board.html`, both desktop opener scripts and (since 2.2.1) the complete offline demo ZIP. Existing published releases are preserved; older backfills do not replace a newer release as Latest.
-- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.7` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
+- To publish an existing tag, run `gh workflow run release.yml --ref main -f tag=v2.4.8` (or use **Actions → release → Run workflow**). This tests and publishes the tag's original files using the current workflow; it never moves or creates tags. Monitor with `gh run list --workflow release.yml` and `gh run watch RUN_ID`.
 
 The workflows have separate responsibilities:
 
@@ -342,7 +342,7 @@ Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
 header and bottom actions stay visible. See the [panel guide](docs/PANELS.md).
 
-Refresh status uses a reserved line below toolbar actions (UI2.4.7). Countdown
+Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.

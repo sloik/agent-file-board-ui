@@ -103,7 +103,7 @@ test("native refresh reuses unchanged message bytes, reads changed/new files, an
   await page.fill("#q",""); await page.press("#q","Escape");
   await page.waitForFunction(()=>!window.__boardTest.loading());
   const beforeReopen=await reads(),beforeReopenIndexes=await indexes(),builds=await page.evaluate(()=>window.__boardTest.stats.builds);
-  await page.click("#open");await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);
+  await h.pickFolder(page);await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);
   assert.equal(await reads()-beforeReopen,100);
   assert.equal(await indexes()-beforeReopenIndexes,260);
   await ctx.close();
