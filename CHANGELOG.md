@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add sidebar room/thread **...** menus for exact-scope Follow/Unfollow and
+  preselected notification settings. Preserve drafts/navigation, keyboard focus,
+  polling context and localized narrow layouts.
+
 - Add local room, thread and participant follows, a bounded notification center
   and optional explicit browser alerts. Keep baseline history quiet and isolate
   native folder/identity preferences, with honest session-only upload/storage fallback.

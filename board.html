@@ -385,9 +385,16 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 .folder-picker-head button{max-width:100%}
 #notificationsDialog{width:min(680px,94vw);max-height:90vh;box-sizing:border-box;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
 .notification-entry{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.notification-entry p{margin:6px 0}.notification-scope{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.notification-scope select{flex:1;min-width:0;max-width:100%}#notificationsScopes,#notificationsList,#notificationsFollows{min-width:0;overflow-wrap:anywhere}
+.thread-row{position:relative}.thread-row.has-scope-menu>.tcard{padding-right:40px}
+.scope-menu-trigger{flex:none;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted);width:30px;min-height:30px;padding:2px;font-weight:700;font-size:18px;line-height:1;letter-spacing:1px}
+.scope-menu-trigger:hover,.scope-menu-trigger:focus-visible,.scope-menu-trigger[aria-expanded="true"]{color:var(--ink);background:var(--hover);border-color:var(--line)}
+.thread-row>.scope-menu-trigger{position:absolute;top:4px;right:4px}
+#sidebarNotificationMenu{position:fixed;z-index:60;width:max-content;max-width:calc(100vw - 16px);box-sizing:border-box;padding:5px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 24px #0003}
+#sidebarNotificationMenu[hidden]{display:none}#sidebarNotificationMenu button{display:block;width:100%;border:0;border-radius:5px;background:none;color:inherit;padding:9px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere}#sidebarNotificationMenu button:hover,#sidebarNotificationMenu button:focus-visible{background:var(--hover)}
 </style>
 </head>
 <body>
+<div id="sidebarNotificationMenu" role="menu" hidden><button type="button" role="menuitem" id="sidebarNotificationToggle"></button><button type="button" role="menuitem" id="sidebarNotificationSettings" data-i18n="notify_scope_settings"></button></div>
 <dialog id="notificationsDialog"><div class="vocabulary-head"><h2 data-i18n="notify_title"></h2><button class="btn" id="notificationsClose" data-i18n="vocabulary_close"></button></div>
 <p class="hint" data-i18n="notify_explain"></p><p id="notificationsStorage" class="hint"></p>
 <div class="tool-actions"><button class="btn" id="notificationsPermission" data-i18n="notify_enable"></button><button class="btn" id="notificationsDisable" data-i18n="notify_disable"></button><span id="notificationsPermissionState" class="hint" role="status"></span></div>
@@ -1216,6 +1223,8 @@ const lastPostTimes=new Map();
 /* ===== string tables ===== */
 const STRINGS = {
  en:{
+  notify_scope_menu:"Notification options for {scope}",
+  notify_scope_settings:"Notification settings…",
   notify_title:"Notifications",
   notify_explain:"Local to this viewer and selected identity. New messages are detected only while this viewer is open, after a successful refresh. Automatic refresh runs while visible, or with browser alerts enabled and follows configured. Uploaded folders require explicit reselection. No delivery after closing the viewer, or inline OS replies.",
   notify_enable:"Enable browser alerts",
@@ -1524,6 +1533,8 @@ const STRINGS = {
   next_refresh:"Next refresh: {t}", t_h_min:"{h} h {m} min", t_min_s:"{m} min {s} s", t_s:"{s} s"
  },
  pl:{
+  notify_scope_menu:"Opcje powiadomień: {scope}",
+  notify_scope_settings:"Ustawienia powiadomień…",
   notify_title:"Powiadomienia",
   notify_explain:"Lokalne dla tej przeglądarki i wybranej tożsamości. Nowe wiadomości wykrywane są tylko w otwartej przeglądarce po udanym odświeżeniu. Automatyczne odświeżanie działa na widocznej stronie lub przy włączonych alertach i obserwacjach. Przesłany folder wymaga ponownego wybrania. Bez dostarczania po zamknięciu przeglądarki i odpowiedzi w powiadomieniu systemowym.",
   notify_enable:"Włącz alerty przeglądarki",
@@ -2690,10 +2701,10 @@ function build({background = false, preserveComposer = false} = {}){
   const order = Object.keys(th).filter(match).sort((a,b)=> (S.threadOrder==="newest" ? (th[b].last.localeCompare(th[a].last) || (th[b].lastOrder||0)-(th[a].lastOrder||0)) : 0) || th[a].tid.localeCompare(th[b].tid) || a.localeCompare(b));
   const card = key => { const x = th[key], ht = {title:threadTitle(x)};
     const faces = [...x.who].map(w=>{ const p=personOf(w); return `<i data-party="${esc(w)}" style="--c:${colorOf(w)}">${esc((p.name||"?")[0].toUpperCase())}</i>`; }).join("");
-    return `<button class="tcard ${unreadTopics.get(key)?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
+    return `<div class="thread-row ${sidebarScopeAllowed("thread",key)?"has-scope-menu":""}"><button class="tcard ${unreadTopics.get(key)?"unread":""} ${sel.thread===key?"active":""}" data-nav="thread" data-tk="${esc(key)}" data-dir="${esc(x.dir)}" data-scope="${x.scope}" title="${esc(x.label)}">
       <div class="row1"><span class="sdot status-tone s-${esc(x.status)}"></span><span class="tid">${esc(x.tid)}</span>${badge(unreadTopics.get(key)||0)}</div>
       <div class="ttl">${esc(ht.title||t("no_title"))}</div>
-      <div class="row2"><span class="faces">${faces}</span><span style="margin-left:6px">${esc(x.last.slice(5,16))} \u00b7 ${esc(x.status.toLowerCase())}</span><span class="n">${x.n}</span></div></button>`; };
+      <div class="row2"><span class="faces">${faces}</span><span style="margin-left:6px">${esc(x.last.slice(5,16))} \u00b7 ${esc(x.status.toLowerCase())}</span><span class="n">${x.n}</span></div></button>${sidebarScopeButton("thread",key,x.dir+" · "+x.tid+" · "+ht.title)}</div>`; };
   const folder = (scope, dir) => {
     const dkey = scope+":"+dir;
     const ts = order.filter(k=>th[k].dkey===dkey);
@@ -2703,7 +2714,7 @@ function build({background = false, preserveComposer = false} = {}){
     const n = dirCounts.get(dkey)||0;
     const active = sel.scope===scope && sel.dir===dir && !sel.thread;
     return `<div class="folder"><div class="frow ${active?"active":""}"><button class="chev" data-fold="${esc(dkey)}" data-i18n-title="fold_title" title="${esc(t("fold_title"))}" aria-expanded="${!col}">${col?"\u25b8":"\u25be"}</button>
-      <button class="fname" data-nav="${scope}" data-dir="${esc(dir)}"><span>${col?"\u{1F4C1}":"\u{1F4C2}"}</span><span class="t">${esc(dirTitle(scope,dir))}</span>${badge(unreadDirs.get(dkey)||0)}<span class="cnt">${n}</span></button></div>
+      <button class="fname" data-nav="${scope}" data-dir="${esc(dir)}"><span>${col?"\u{1F4C1}":"\u{1F4C2}"}</span><span class="t">${esc(dirTitle(scope,dir))}</span>${badge(unreadDirs.get(dkey)||0)}<span class="cnt">${n}</span></button>${scope==="room"?sidebarScopeButton("room",dir,dir):""}</div>
       ${col?"":`<div class="children">${open.map(card).join("")}${!open.length&&!closed.length?`<div class="empty-folder">${esc(t("empty_room"))}</div>`:""}${closed.length?`<button class="group" data-closed="${esc(dkey)}">${showC?"\u25be":"\u25b8"} ${esc(t("closed_group",{n:closed.length}))}${badge(closed.reduce((n,key)=>n+(unreadTopics.get(key)||0),0))}</button>${showC?closed.map(card).join(""):""}`:""}</div>`}</div>`;
   };
   const roomsHtml = B.rooms.map(r=>folder("room",r)).join("");
@@ -2712,6 +2723,7 @@ function build({background = false, preserveComposer = false} = {}){
     `<button class="tree-root ${!sel.scope?"active":""}" data-nav="all"><span>\u{1F5C2}</span>${esc(t("all_messages"))}<span class="cnt">${B.msgs.filter(visibleMsg).length}</span></button>`+
     roomsHtml + (B.directs.length? `<h3>${esc(t("direct_h"))}</h3>`+directHtml : "");
   side.scrollTop=sideTop;
+  syncSidebarMenu();
   fillComposer(preserveComposer);
   render(background);
 }
@@ -4261,6 +4273,7 @@ const NOTIFICATION_WORDS={room:"notify_room",thread:"notify_thread",participant:
 function notificationBackgroundRefresh(){const state=notificationState;return !!notificationOS&&typeof window.Notification==="function"&&Notification.permission==="granted"&&!!state&&notificationCurrent(state)&&state.ready&&state.follows.length>0;}
 function notificationHasDraft(){return !!($("#cBody").value.length||$("#cNewThread").value.length||$("#cNewRoom").value.length||replyTo||composerStructured);}
 function renderNotifications(){
+ syncSidebarMenu();
  const button=$("#notificationsOpen");if(!button)return;const state=notificationState,active=state&&notificationCurrent(state),unread=active?state.entries.filter(x=>x.unread).length:0;
  button.textContent=t("notify_title")+(unread?" ("+unread+")":"");button.disabled=!B;
  if(!$("#notificationsDialog").open)return;
@@ -4294,6 +4307,71 @@ function wireNotifications(){
  $("#notificationsPermission").onclick=enableNotificationOS;$("#notificationsDisable").onclick=()=>{notificationOS=false;notificationPermissionNote="off";for(const alert of notificationState?.system||[])try{alert.close();}catch{}renderNotifications();};
  $("#notificationsClear").onclick=()=>{const state=notificationsContext();if(state){state.entries=[];for(const alert of state.system)try{alert.close();}catch{}state.system=[];renderNotifications();}};
  renderNotifications();
+}
+
+/* One local sidebar menu, bound to the exact board, identity and scope. */
+let sidebarMenu=null,sidebarNotificationReturn=null;
+function sidebarScopeAllowed(kind,key){
+ if(!B)return false;
+ if(kind==="room")return B.rooms.includes(key);
+ if(kind!=="thread")return false;
+ const thread=threadsOf()[key];return !!thread&&(thread.scope!=="direct"||thread.dir.split("--").includes(currentUser()));
+}
+function sidebarScopeButton(kind,key,label){
+ if(!sidebarScopeAllowed(kind,key))return "";
+ return `<button type="button" class="scope-menu-trigger" data-notification-menu="${kind}" data-notification-key="${esc(key)}" aria-label="${esc(t("notify_scope_menu",{scope:label}))}" title="${esc(t("notify_scope_menu",{scope:label}))}" aria-haspopup="menu" aria-controls="sidebarNotificationMenu" aria-expanded="false">...</button>`;
+}
+function sidebarTrigger(kind,key){return [...$("#tree").querySelectorAll("[data-notification-menu]")].find(el=>el.dataset.notificationMenu===kind&&el.dataset.notificationKey===key);}
+function sidebarMenuCurrent(menu){return !!menu&&notificationCurrent(menu.state)&&sidebarScopeAllowed(menu.kind,menu.key);}
+function closeSidebarMenu(restore=false){
+ const menu=sidebarMenu;sidebarMenu=null;$("#sidebarNotificationMenu").hidden=true;
+ for(const el of $("#tree").querySelectorAll('[data-notification-menu][aria-expanded="true"]'))el.setAttribute("aria-expanded","false");
+ if(restore&&sidebarMenuCurrent(menu))sidebarTrigger(menu.kind,menu.key)?.focus({preventScroll:true});
+}
+function positionSidebarMenu(){
+ const menu=sidebarMenu,box=$("#sidebarNotificationMenu"),trigger=menu&&sidebarTrigger(menu.kind,menu.key);if(!trigger)return;
+ const r=trigger.getBoundingClientRect(),side=$("#side").getBoundingClientRect();
+ if(r.bottom<side.top||r.top>side.bottom){closeSidebarMenu(false);return;}
+ box.style.left=Math.max(8,Math.min(r.right-box.offsetWidth,innerWidth-box.offsetWidth-8))+"px";
+ box.style.top=Math.max(8,Math.min(r.bottom+4,innerHeight-box.offsetHeight-8))+"px";
+}
+function syncSidebarMenu(){
+ if(!sidebarMenu)return;
+ if(!sidebarMenuCurrent(sidebarMenu)||!sidebarTrigger(sidebarMenu.kind,sidebarMenu.key)){closeSidebarMenu(false);return;}
+ const trigger=sidebarTrigger(sidebarMenu.kind,sidebarMenu.key);trigger.setAttribute("aria-expanded","true");
+ const following=sidebarMenu.state.follows.some(item=>item.kind===sidebarMenu.kind&&item.key===sidebarMenu.key);
+ $("#sidebarNotificationToggle").textContent=t(following?"notify_unfollow":"notify_follow");$("#sidebarNotificationToggle").disabled=!sidebarMenu.state.ready;
+ $("#sidebarNotificationSettings").textContent=t("notify_scope_settings");$("#sidebarNotificationMenu").setAttribute("aria-label",trigger.getAttribute("aria-label"));positionSidebarMenu();
+}
+function openSidebarMenu(trigger,last=false){
+ const kind=trigger.dataset.notificationMenu,key=trigger.dataset.notificationKey,state=notificationsContext();if(!state||!sidebarScopeAllowed(kind,key))return;
+ if(sidebarMenu?.kind===kind&&sidebarMenu.key===key){closeSidebarMenu(true);return;}
+ closeSidebarMenu(false);sidebarMenu={state,kind,key};$("#sidebarNotificationMenu").hidden=false;syncSidebarMenu();
+ const items=[...$("#sidebarNotificationMenu").querySelectorAll("button:not(:disabled)")];(last?items.at(-1):items[0])?.focus({preventScroll:true});
+}
+function openSidebarNotificationSettings(menu){
+ if(!sidebarMenuCurrent(menu))return;
+ closeSidebarMenu(false);sidebarNotificationReturn={state:menu.state,kind:menu.kind,key:menu.key};
+ $("#notificationsResult").textContent="";$("#notificationsDialog").showModal();renderNotifications();
+ if(!sidebarMenuCurrent(menu)){$("#notificationsDialog").close();return;}
+ const select=$("#notification-"+menu.kind);if(select&&[...select.options].some(option=>option.value===menu.key)){select.value=menu.key;select.focus({preventScroll:true});}
+}
+function wireSidebarMenu(){
+ $("#tree").addEventListener("click",event=>{const trigger=event.target.closest("[data-notification-menu]");if(!trigger)return;event.preventDefault();event.stopImmediatePropagation();openSidebarMenu(trigger);},true);
+ $("#tree").addEventListener("keydown",event=>{const trigger=event.target.closest("[data-notification-menu]");if(trigger&&["ArrowDown","ArrowUp"].includes(event.key)){event.preventDefault();event.stopImmediatePropagation();openSidebarMenu(trigger,event.key==="ArrowUp");}},true);
+ $("#sidebarNotificationToggle").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}const following=menu.state.follows.some(item=>item.kind===menu.kind&&item.key===menu.key);changeNotificationFollow(menu.kind,menu.key,following);closeSidebarMenu(true);};
+ $("#sidebarNotificationSettings").onclick=()=>openSidebarNotificationSettings(sidebarMenu);
+ document.addEventListener("pointerdown",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);},true);
+ document.addEventListener("focusin",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);});
+ $("#sidebarNotificationMenu").addEventListener("keydown",event=>{
+  if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeSidebarMenu(true);return;}
+  if(event.key==="Tab"){closeSidebarMenu(true);return;}
+  const items=[...$("#sidebarNotificationMenu").querySelectorAll("button:not(:disabled)")],at=items.indexOf(document.activeElement);let next;
+  if(event.key==="ArrowDown")next=(at+1)%items.length;else if(event.key==="ArrowUp")next=(at-1+items.length)%items.length;else if(event.key==="Home")next=0;else if(event.key==="End")next=items.length-1;
+  if(next!==undefined){event.preventDefault();items[next]?.focus();}
+ });
+ $("#side").addEventListener("scroll",positionSidebarMenu,{passive:true});window.addEventListener("resize",()=>closeSidebarMenu(false));
+ $("#notificationsDialog").addEventListener("close",()=>{if($("#notificationsDialog").open)return;const target=sidebarNotificationReturn;sidebarNotificationReturn=null;if(target&&sidebarMenuCurrent(target))sidebarTrigger(target.kind,target.key)?.focus({preventScroll:true});});
 }
 
 /* Appearance only: never rebuild mounted reports, editors or the conversation. */
@@ -4338,6 +4416,7 @@ function wirePanelLayout(){
 
 /* ===== wiring ===== */
 function wire(){
+  wireSidebarMenu();
   wireNotifications();
   wireOfflineTools();
   $("#verbar").onclick=openUpgrade; $("#upgradeOpen").onclick=openUpgrade;
@@ -4372,7 +4451,7 @@ function wire(){
   $("#sLang").onchange = ()=>{ S.lang=$("#sLang").value; saveSettings(); refreshAll(); };
   $("#showReceipts").onchange = ()=>{ S.showReceipts=$("#showReceipts").checked; saveSettings(); build(); };
   $("#expandAll").onchange = ()=>{ S.expandAll=$("#expandAll").checked; saveSettings(); render(); };
-  $("#me").onchange = ()=>{ S.me=$("#me").value; saveSettings(); updateComposerInfo(); syncLang(); updateIdentityColor(); render(); syncHumanPresence(true); };
+  $("#me").onchange = ()=>{ S.me=$("#me").value; saveSettings(); updateComposerInfo(); syncLang(); updateIdentityColor(); build({preserveComposer:true}); syncHumanPresence(true); };
   $("#menu").onclick = ()=>$("#side").classList.toggle("open");
 
   $("#q").oninput = ()=>{ scrollIntent=0; startBodySearch(); suggest(); build({preserveComposer:true}); };
