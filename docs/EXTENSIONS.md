@@ -143,6 +143,10 @@ external task or grant additional authority.
 Creator documentation must say: **if a plugin needs more powers, different core
 behavior or an additional host primitive, open an issue in the board project**.
 No network/API/credentials capability is part of this first API.
+Use [convention issues](https://github.com/sloik/agent-file-board/issues/new)
+for protocol changes and
+[viewer issues](https://github.com/sloik/agent-file-board-ui/issues/new)
+for host API or rendering capabilities.
 
 ## Convention and validation
 
