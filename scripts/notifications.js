@@ -68,6 +68,7 @@ const NOTIFICATION_WORDS={room:"notify_room",thread:"notify_thread",participant:
 function notificationBackgroundRefresh(){const state=notificationState;return !!notificationOS&&typeof window.Notification==="function"&&Notification.permission==="granted"&&!!state&&notificationCurrent(state)&&state.ready&&state.follows.length>0;}
 function notificationHasDraft(){return !!($("#cBody").value.length||$("#cNewThread").value.length||$("#cNewRoom").value.length||replyTo||composerStructured);}
 function renderNotifications(){
+ syncSidebarMenu();
  const button=$("#notificationsOpen");if(!button)return;const state=notificationState,active=state&&notificationCurrent(state),unread=active?state.entries.filter(x=>x.unread).length:0;
  button.textContent=t("notify_title")+(unread?" ("+unread+")":"");button.disabled=!B;
  if(!$("#notificationsDialog").open)return;

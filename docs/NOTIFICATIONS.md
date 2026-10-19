@@ -5,6 +5,25 @@ threads or participant IDs. Any matching scope is sufficient; overlapping follow
 produce one alert. **Unfollow** removes a subscription. These are viewer
 preferences, never board messages or protocol changes.
 
+## Sidebar shortcuts
+
+Rooms and visible conversation threads have a compact **...** button beside their
+normal navigation button. Choose **Follow** or **Unfollow** for that exact room or
+conversation-scoped thread. **Notification settings…** opens the existing center
+with that scope selected; it does not subscribe automatically. Matching thread
+IDs in different rooms remain separate. Direct conversation folders and the
+synthetic All messages row have no room-follow menu; direct thread shortcuts
+appear only for identities belonging to that conversation.
+
+Menu actions preserve the selected conversation, collapsed groups, sidebar
+scroll position and composer draft. Enter/Space opens the menu; Arrow Down/Up
+can open and move within it, Home/End choose its first/last action. Escape returns
+focus to the source button. Clicking elsewhere dismisses without taking focus
+from that target. Closing scope settings returns focus to the originating button
+when it still belongs to the same board/identity. Polling retains the open menu
+and focused action while its exact source remains available; stale context or a
+removed/hidden source dismisses it. Menus remain inside the viewport on phones.
+
 Native folder follows are saved in this viewer/browser profile's IndexedDB,
 scoped by native folder identity and selected participant. Same folder names do
 not establish identity. Another selected participant has separate follows.
@@ -78,7 +97,7 @@ callbacks; missing or invalid source messages cannot prepare a reply.
 ## Verification
 
 ```sh
-node --test tests/notifications.test.js tests/i18n.test.js tests/toolbar-stability.test.js
+node --test tests/sidebar-menus.test.js tests/notifications.test.js tests/navigation.test.js tests/i18n.test.js
 npm test
 npm run release-check
 ```
