@@ -31,6 +31,9 @@ class DemoTests(unittest.TestCase):
                 self.assertEqual(archive.read(PREFIX + '/docs/FEEDBACK.md'), (ROOT / 'vendor/agent-file-board/docs/FEEDBACK.md').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/LICENSE'), (ROOT / 'LICENSE').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/licenses/dracula-MIT.txt'), (ROOT / 'licenses/dracula-MIT.txt').read_bytes())
+                self.assertEqual(archive.read(PREFIX + '/licenses/highlightjs-BSD-3-Clause.txt'), (ROOT / 'licenses/highlightjs-BSD-3-Clause.txt').read_bytes())
+                for rel in ['docs/SOURCE-CODE.md', 'examples/source-code/review.md', 'examples/source-code/device.patch', 'examples/extensions/source-review.afb-plugin.json']:
+                    self.assertEqual(archive.read(PREFIX + '/' + rel), (ROOT / 'vendor/agent-file-board' / rel).read_bytes())
                 archive.extractall(directory / 'extracted')
             package = directory / 'extracted' / PREFIX
             board = package / 'demo-board'
@@ -47,6 +50,8 @@ class DemoTests(unittest.TestCase):
             self.assertEqual(len(manifest['offlineWorkflows']),5)
             self.assertEqual(manifest['offlineTools'], ['answer-review','authoring-preview','draft-manager','authoring-drafts','visual-form-builder'])
             self.assertEqual(manifest['agentRoundtripTopic'],'T015')
+            self.assertEqual(manifest['extensions']['api'], '1.3.0')
+            self.assertEqual(manifest['sourcePresentation'], {'guide':'docs/SOURCE-CODE.md','room':'reports','thread':'T016','views':['unified','split','source']})
             self.assertEqual((package / manifest['draftExample']).read_bytes(), (ROOT / 'docs/examples/drafts/demo-workflow-draft.json').read_bytes())
             self.assertEqual((package / manifest['authoringExample']).read_bytes(), (ROOT / 'docs/examples/drafts/authoring-workflow.json').read_bytes())
             self.assertEqual((package / manifest['workflowTrial']).read_bytes(), (ROOT / 'docs/LOCAL-WORKFLOW.md').read_bytes())

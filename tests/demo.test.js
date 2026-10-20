@@ -27,6 +27,9 @@ test('extracted downloadable demo renders every gallery topic and posts a valid 
   await topic(page,'T009');await page.waitForFunction(()=>[...document.querySelectorAll('.board-report img')].length===6&&[...document.querySelectorAll('.board-report img')].every(i=>i.complete&&i.naturalWidth>0));
   await page.locator('.report-carousel').getByRole('button',{name:'Next',exact:true}).click();assert.equal(await page.locator('[data-carousel-panel=context]').isVisible(),true);
   await page.locator('.report-modal-trigger>button').click();await page.locator('dialog.report-modal').waitFor({state:'visible'});await page.keyboard.press('Escape');await page.locator('dialog.report-modal').waitFor({state:'hidden'});
+  await page.locator('.tcard[data-tk="room:reports|T016"]').click();await page.locator('.source-code').waitFor();assert.ok(await page.locator('.source-code .hljs-keyword').count()>0);
+  const patch=page.locator('.source-diff').first();await patch.getByRole('button',{name:'Side by side',exact:true}).click();assert.equal(await patch.locator('.source-split').count(),1);
+  await patch.getByRole('button',{name:'Source',exact:true}).click();assert.match(await patch.locator('pre code').textContent(),/@@/);
   assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),before);
   await topic(page,'T010');await page.selectOption('#me','human-owner-01');await page.locator('.choice-form input[value=fix]').check();await page.locator('.choice-form textarea').fill('Demo answer: fix and retest.');await page.locator('.choice-form [type=submit]').click();
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('ANSWER: {"question":"demo-next-step"')));

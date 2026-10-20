@@ -243,7 +243,7 @@ For capability requests, bugs or general feedback, use the shared
 Settings → Send feedback opens the viewer issue chooser explicitly; the guide
 routes convention/CLI reports to canonical. Offline drafts need no GitHub tooling.
 
-## SDK 1.2 lifecycle and diagnostics (unreleased)
+## SDK 1.2 lifecycle and diagnostics
 
 An extension is a package; a component is one rendered instance. The canonical
 [portable lifecycle contract](EXTENSION-LIFECYCLE.md) defines presentation-only
@@ -254,7 +254,17 @@ external agents/scripts. Component refresh uses cached declared inputs; use boar
 refresh to re-read files. Existing SDK 1.0/1.1 packages remain supported unchanged.
 
 A renderer requests `refresh: {intervalSeconds: 30}` with the package `refresh`
-capability and API compatibility including 1.2.0. Both renderer modes may bind
+capability and API compatibility including 1.2.0 or 1.3.0. Both renderer modes may bind
 `{contextPath:["host","now"]}`; workers additionally receive refresh lifecycle
 events. All refresh events, including manual, are forbidden from proposing replies.
 See the full contract and runnable examples before implementing a custom host.
+
+
+## Source and diff drawing (SDK1.3)
+
+Declare API>=1.3.0 to use `{"type":"code","text":"const value = 90;","language":"javascript"}`
+or `{"type":"diff","text":"-old\n+new\n","language":""}`. Both fields may use
+existing path/contextPath bindings. The host owns safe highlighting and local
+unified/split/source/copy controls; they do not run code, apply patches or dispatch
+extension actions. Existing SDK1.0/1.1/1.2 packages retain compatibility. See
+[SOURCE-CODE.md](SOURCE-CODE.md) for limits, all surfaces and portable examples.

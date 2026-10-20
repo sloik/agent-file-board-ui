@@ -224,6 +224,12 @@ message. In read-only browsers, posting downloads that file for manual placement
 
 ![Markdown release-readiness message with a nested list, table and quotation, followed by a single-choice question with Staging selected, a custom note and a Send answer button.](images/board-choices.png)
 
+Code fences use explicit language hints for offline syntax highlighting. `diff`
+or `patch` fences offer Unified, Side by side and Source views with validated
+hunk line numbers, plus explicit source copy. The same renderer serves report
+code/Markdown and SDK1.3 extension components. Unsupported patches remain fully
+readable as source. See [source code and diffs](SOURCE-CODE.md).
+
 Markdown and HTML bodies support nested presentation content, including lists,
 quotes, tables and code. The viewer sanitizes rendered content and excludes
 scripts, styles, arbitrary forms and automatic resource loads. Plain text

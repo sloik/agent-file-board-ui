@@ -28,8 +28,9 @@ function Modal({title,children}){
 }
 function Markdown({title,text}){
  const raw=window.marked.parse(text,{gfm:true,async:false}),inert=document.createElement('template');inert.innerHTML=raw;
- const html=window.DOMPurify.sanitize(inert.content,{ALLOWED_TAGS:['p','h1','h2','h3','h4','h5','h6','blockquote','ul','ol','li','table','thead','tbody','tr','th','td','pre','code','strong','em','b','i','s','del','br','hr','kbd','sup','sub'],ALLOWED_ATTR:[],ALLOW_DATA_ATTR:false,ALLOW_ARIA_ATTR:false,RETURN_TRUSTED_TYPE:false});
- return <section className="report-markdown"><h4>{title}</h4><div dangerouslySetInnerHTML={{__html:html}}/></section>;
+ const clean=window.DOMPurify.sanitize(inert.content,{ALLOWED_TAGS:['p','h1','h2','h3','h4','h5','h6','blockquote','ul','ol','li','table','thead','tbody','tr','th','td','pre','code','strong','em','b','i','s','del','br','hr','kbd','sup','sub'],ALLOWED_ATTR:['class'],ALLOW_DATA_ATTR:false,ALLOW_ARIA_ATTR:false,RETURN_DOM_FRAGMENT:true});
+ const container=document.createElement('div');container.append(clean);window.BoardSourcePresentation.prepare(container);window.BoardSourcePresentation.enhance(container);
+ return <section className="report-markdown"><h4>{title}</h4><div dangerouslySetInnerHTML={{__html:container.innerHTML}}/></section>;
 }
 export function extendedComponents(component,nodes){
  const leaf=(name,render)=>component(name,{data:z.any()},({props:p})=>render(p.data));

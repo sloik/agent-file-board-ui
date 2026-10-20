@@ -54,6 +54,7 @@ def build_demo(root: Path, destination: Path):
     forms_enabled = tuple(map(int, version.split('.'))) >= (2, 3, 0)
     workflows_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 0)
     tools_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 1)
+    source_enabled = tuple(map(int, version.split('.'))) >= (2, 8, 0)
     destination.mkdir(parents=True)
     board = destination / 'demo-board'
     base = board / '.agent-board'
@@ -140,6 +141,8 @@ def build_demo(root: Path, destination: Path):
             cycle = post('T015', 'agent-owner-cycle', 'Fictional agent asks for a release plan. The human response and explicit agent read follow below; no deployment is executed.', recipient='human-owner-01', extra=('--question-file', report_examples / 'workflow-question.json', '--status', 'DECISION-NEEDED'))
             response = post('T015', 'owner-cycle-answer', 'Fictional human chooses production/eu with budget150, adds release-notes, removes viewer and moves release-notes first. Review the read-only comparison.', sender='human-owner-01', recipient='implementation-agent-01', minute=40, extra=('--answer-file', report_examples / 'workflow-answer.json', '--reply-to', Path(cycle).name, '--status', 'REPLY'))
             post('T015', 'agent-read-answer', 'I read the fictional typed answer: production/eu, requested150 within approved200, schema hours3 and the submitted row operations. No deployment was performed; the response remains a separate immutable file.', recipient='human-owner-01', minute=45, extra=('--reply-to', Path(response).name, '--status', 'REPLY'))
+        if source_enabled:
+            post('T016', 'source-review', (examples / 'source-code/review.md').read_text(), extra=('--content-type', 'text/markdown'))
     cli(root, 'validate', '--path', board)
     implemented = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedTypes'])
     if types != implemented:
@@ -180,6 +183,12 @@ def build_demo(root: Path, destination: Path):
         for name in ['example-approvals', 'lifecycle-worker', 'lifecycle-declarative']:
             shutil.copyfile(vendor / 'examples/extensions' / (name + '.afb-plugin.json'), samples / (name + '.afb-plugin.json'))
         manifest['extensions'] = {'api': '1.2.0', 'guide': 'docs/EXTENSION-LIFECYCLE.md', 'examples': 'examples/extensions'}
+    if source_enabled:
+        shutil.copyfile(vendor / 'docs/SOURCE-CODE.md', destination / 'docs/SOURCE-CODE.md')
+        shutil.copytree(examples / 'source-code', destination / 'examples/source-code')
+        shutil.copyfile(examples / 'extensions/source-review.afb-plugin.json', destination / 'examples/extensions/source-review.afb-plugin.json')
+        manifest['extensions']['api'] = '1.3.0'
+        manifest['sourcePresentation'] = {'guide': 'docs/SOURCE-CODE.md', 'room': 'reports', 'thread': 'T016', 'views': ['unified', 'split', 'source']}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

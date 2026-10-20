@@ -1,5 +1,5 @@
 // Offline adapters for the pinned OpenUI catalogue. All inputs are validated data.
-import React, {useContext,useId,useState} from 'react';
+import React, {useContext,useId,useState,useRef,useLayoutEffect} from 'react';
 import {defineComponent,useRenderNode} from '@openuidev/react-lang';
 import {z} from 'zod/v4';
 import {ReportLabels} from './report-labels.js';
@@ -54,6 +54,15 @@ function Sections({title,items,accordion=false}){
   </>}</section>;
 }
 
+function SourceCode({title,code}){
+ const ref=useRef(null),labels=useContext(ReportLabels);
+ useLayoutEffect(()=>{
+  const node=window.BoardSourcePresentation.create({title,text:code,language:window.BoardSourcePresentation.filenameLanguage(title),detectDiff:true});
+  node.querySelector('pre')?.classList.add('report-code');ref.current.replaceChildren(node);
+ },[title,code,labels]);
+ return <div ref={ref}/>;
+}
+
 export function staticComponents(Table,BarChart){
   const component=(name,props,renderer)=>defineComponent({name,description:'Offline board report '+name,props:z.object(props),component:renderer});
   const title=z.string(),content=z.string();
@@ -61,7 +70,7 @@ export function staticComponents(Table,BarChart){
   const Callout=component('Callout',{title,text:content,tone:content},({props:p})=><section className={'report-callout tone-'+p.tone}><h4>{p.title}</h4><p>{p.text}</p></section>);
   const Tag=component('Tag',{title,tone:content},({props:p})=><span className={'report-tag tone-'+p.tone}>{p.title}</span>);
   const Text=component('ReportText',{title,text:content},({props:p})=><section><h4>{p.title}</h4><p>{p.text}</p></section>);
-  const Code=component('CodeBlock',{title,code:content},({props:p})=><section><h4>{p.title}</h4><pre className="report-code" tabIndex={0}><code>{p.code}</code></pre></section>);
+  const Code=component('CodeBlock',{title,code:content},({props:p})=><SourceCode {...p}/>);
   const List=component('ReportList',{title,items:z.array(content)},({props:p})=><section><h4>{p.title}</h4><ul>{p.items.map((v,i)=><li key={i}>{v}</li>)}</ul></section>);
   const Separator=component('Separator',{title},({props:p})=><hr aria-label={p.title}/>);
   const Chart=component('SeriesChart',{title,labels:z.array(content),series:z.array(z.object({name:content,values:z.array(z.number())})),kind:content},({props:p})=><SeriesPlot {...p}/>);

@@ -33,6 +33,7 @@ manual placement. Files must be extracted first; a ZIP cannot be selected as a b
 | reports / T011 | Complete the typed form: text/number, selections, date, slider, switches and editable table cells. Reset restores local defaults; Send form answer appends a typed reply. |
 | reports / T013 | Switch environment to change regions/reveal approver, try invalid dates/budgets, add/remove/move task rows and reload to restore the draft. Reset clears it; Send form answer creates a separate v3 reply. |
 | reports / T015 | Read a complete fictional agent question → human typed response → explicit agent read/follow-up. No deployment is performed. |
+| reports / T016 | Read highlighted source, then switch its Git-style patch between Unified, Side by side and Source. Copy source is explicit; nothing executes or changes files. See the bundled `docs/SOURCE-CODE.md` and `examples/source-code/`. |
 | reports / T014 | Read the historical v3 answer with added/removed/reordered rows relative to its original baseline. |
 | reports / T012 | Compare the original form/table with its separate historical typed answer. |
 | reports / T010 | Select **human-owner-01** in **I am**, pick an option, add a note and press **Send answer**. |

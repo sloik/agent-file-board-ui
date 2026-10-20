@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.8.0 — 2026-10-20
+
+- Share offline syntax-highlighted source presentation across rich messages,
+  report code/Markdown and SDK1.3 extension components.
+- Add Git-style unified and side-by-side diffs, real hunk line numbers,
+  numberless short fragments, source view and explicit source copy.
+- Bound highlighting/parsing and preserve readable raw fallback for unsupported
+  patches; no code execution, file reads, patch application or network activity.
+
 ## 2.7.0 — 2026-10-20
 
 - Support portable SDK1.2 refresh declarations for declarative and approved

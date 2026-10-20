@@ -47,3 +47,11 @@ Adapted from the [official Dracula palette](https://spec.draculatheme.com/)
 by [Dracula Theme](https://draculatheme.com/), MIT, copyright (c) 2023 Dracula Theme.
 [Full license](licenses/dracula-MIT.txt); also retained inside `board.html`.
 Application surfaces and readable labels are adapted locally; no remote assets.
+
+
+## Source syntax highlighting
+
+Highlight.js11.12.0 core and15explicit language grammars are bundled offline by
+`npm run embed:rich` — [upstream](https://github.com/highlightjs/highlight.js),
+BSD-3-Clause; [full notice](licenses/highlightjs-BSD-3-Clause.txt). No language
+autodetection, hosted assets or runtime grammar imports are used.
