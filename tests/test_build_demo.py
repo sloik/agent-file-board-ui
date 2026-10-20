@@ -52,6 +52,23 @@ class DemoTests(unittest.TestCase):
             self.assertEqual(manifest['agentRoundtripTopic'],'T015')
             self.assertEqual(manifest['extensions']['api'], '1.3.0')
             self.assertEqual(manifest['sourcePresentation'], {'guide':'docs/SOURCE-CODE.md','room':'reports','thread':'T016','views':['unified','split','source']})
+            self.assertEqual(manifest['opportunisticObservation'], {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15})
+            for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:
+                self.assertEqual((package / 'skills/board-loop' / rel).read_bytes(), (ROOT / 'vendor/agent-file-board/skills/board-loop' / rel).read_bytes())
+            for rel in ['BOARD-LOOP.md','COMPOSER.md']:
+                self.assertEqual((package / 'docs' / rel).read_bytes(), (ROOT / 'docs' / rel).read_bytes())
+            original_board = {p.relative_to(board):p.read_bytes() for p in board.rglob('*') if p.is_file()}
+            poll = [sys.executable, str(package / 'skills/board-loop/scripts/board_loop.py'), 'poll', '--path', str(board), '--participant', 'implementation-agent-01', '--state-dir', str(directory / 'private-loop-state'), '--ctl', str(ROOT / 'vendor/agent-file-board/boardctl.py'), '--mode', 'OPPORTUNISTIC']
+            first_poll = subprocess.run(poll, capture_output=True, text=True)
+            self.assertEqual(first_poll.returncode,0,first_poll.stderr)
+            observed = json.loads(first_poll.stdout)
+            self.assertTrue(observed['observation']['startup_baseline'])
+            self.assertEqual(observed['interval_seconds'],900)
+            self.assertIsNone(observed['attachment'])
+            second_poll = subprocess.run(poll, capture_output=True, text=True)
+            self.assertEqual(second_poll.returncode,0,second_poll.stderr)
+            self.assertFalse(json.loads(second_poll.stdout)['observation']['emit'])
+            self.assertEqual({p.relative_to(board):p.read_bytes() for p in board.rglob('*') if p.is_file()}, original_board)
             self.assertEqual((package / manifest['draftExample']).read_bytes(), (ROOT / 'docs/examples/drafts/demo-workflow-draft.json').read_bytes())
             self.assertEqual((package / manifest['authoringExample']).read_bytes(), (ROOT / 'docs/examples/drafts/authoring-workflow.json').read_bytes())
             self.assertEqual((package / manifest['workflowTrial']).read_bytes(), (ROOT / 'docs/LOCAL-WORKFLOW.md').read_bytes())

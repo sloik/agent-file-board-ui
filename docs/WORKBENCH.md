@@ -110,7 +110,7 @@ the human-facing view is a convenience, not a second contract.
 
 ## Export, import or delete a local draft
 
-Click **Saved drafts**. The dialog lists known valid form v2/v3 drafts for the
+Click **Tools → Saved drafts**. The dialog lists known valid form v2/v3 drafts for the
 opened board and selected respondent, with source path and saved/memory status.
 Switching respondent or board closes the old manager context.
 
@@ -147,7 +147,7 @@ extract it, open `board.html`, and select `demo-board`.
 1. Open **reports → T014** to inspect a historical v3 answer comparison.
 2. Open **Structured message**, load a form v3 example and exercise its preview.
 3. Open **reports → T013**, select **human-owner-01**, edit a form, then open
-   **Saved drafts** to export or delete it.
+   **Tools → Saved drafts** to export or delete it.
 4. Use **Import draft** to select the bundled **example-draft.json** beside
    `board.html`. It restores a fictional production/eu draft in T013. It does
    not post anything. The same public example is available

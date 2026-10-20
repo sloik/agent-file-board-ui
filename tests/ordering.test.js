@@ -6,13 +6,13 @@ const file=slug=>`2026-10-15_1230_human-owner-01_T009_${slug}.txt`;
 test("same-minute posts follow precise timestamps rather than filenames, before and after reload",async()=>{
  const proj=h.layoutExample(h.tmpDir()),dir=h.path.join(proj,".agent-board/rooms/general");h.fs.mkdirSync(dir,{recursive:true});
  for(const [slug,time] of [["zzz-first","2026-10-15T10:30:01.200Z"],["aaa-last","2026-10-15T10:30:01.250Z"],["mmm-middle","2026-10-15T10:30:01.225Z"]])h.fs.writeFileSync(h.path.join(dir,file(slug)),head(slug,time,slug));
- const {ctx,page}=await h.openPage(browser,{tree:h.readTree(proj)});await h.openBoardViaUi(page);await page.click(".fname:has-text('general')");
+ const {ctx,page}=await h.openPage(browser,{tree:h.readTree(proj)});await h.openBoardViaUi(page);await h.expandComposer(page);await page.click(".fname:has-text('general')");
  const expected=[file("zzz-first"),file("mmm-middle"),file("aaa-last")];assert.deepEqual(await h.feedOrder(page),expected);
  await h.reloadSettled(ctx,page,{lastDir:true});await page.waitForSelector("#feed article");assert.deepEqual(await h.feedOrder(page),expected);await ctx.close();
 });
 test("rapid UI posts retain their actual order even within one frozen millisecond and after a clock step backwards",async()=>{
  const {ctx,page}=await c.openExample(browser,h.BOARD_HTML,{clock:new Date("2026-10-15T10:30:00Z")});await page.clock.pauseAt(new Date("2026-10-15T10:30:05Z"));
- await page.selectOption("#cWhere","room:product");
+ await h.expandComposer(page);await page.selectOption("#cWhere","room:product");
  const expected=["Zzz first post","Aaa second post","Mmm third post"];
  let written=[];
  for(const text of expected){
@@ -50,6 +50,6 @@ for(const upload of [false,true])test(`old message timestamps reach the model th
  for(const [name,ms] of [[first,100000],[last,200000]]){const path=h.path.join(dir,name);h.fs.writeFileSync(path,head(name,null,name));h.fs.utimesSync(path,ms/1000,ms/1000);}
  const tree=h.readTree(proj);for(const [name,ms] of [[first,100000],[last,200000]])tree.children[".agent-board"].children.rooms.children.general.children[name].lastModified=ms;
  const {ctx,page}=await h.openPage(browser,upload?{}:{tree});
- if(upload){await page.setInputFiles("#fallback",proj);await page.waitForSelector("#feed article");}else await h.openBoardViaUi(page);
+ if(upload){await page.setInputFiles("#fallback",proj);await page.waitForSelector("#feed article");}else await h.openBoardViaUi(page);await h.expandComposer(page);
  await page.click(".fname:has-text('general')");assert.deepEqual(await h.feedOrder(page),[first,last]);await ctx.close();
 });

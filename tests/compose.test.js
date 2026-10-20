@@ -15,7 +15,7 @@ async function boot(extra = {}) {
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   const s = await h.openPage(browser, { tree: h.readTree(proj), clock: AT, ...extra });
   await s.page.clock.pauseAt(new Date("2026-10-15T10:30:05Z"));
-  await h.openBoardViaUi(s.page);
+  await h.openBoardViaUi(s.page);await h.expandComposer(s.page);
   return { ...s, tmp, proj };
 }
 function validate(dir) { return h.boardctl(["validate", "--path", dir]); }
@@ -46,7 +46,7 @@ test("AC4: new-thread room post matches boardctl byte for byte with precise post
   const ref = h.path.join(tmp, "ref"); h.copyDir(h.path.join(tmp, "proj"), ref);
   const p = h.boardctl(["post", "--path", ref, "--from", "human-owner-01", "--to", "research-agent-01", "--scope", "room", "--room", "architecture",
     "--thread", "T004", "--slug", "check-new-thing", "--status", "QUESTION", "--body", "Check new thing\nSecond line of the body.",
-    "--at", "2026-10-15 12:30:05.000", "--runtime", "agent-file-board-ui 2.8.0"]);
+    "--at", "2026-10-15 12:30:05.000", "--runtime", "agent-file-board-ui 2.9.1"]);
   assert.equal(p.code, 0, p.err);
   const refText = h.fs.readFileSync(h.path.join(ref, ".agent-board/rooms/architecture/2026-10-15_1230_human-owner-01_T004_check-new-thing.txt"), "utf8");
   assert.equal(msg.text, refText);
@@ -74,7 +74,7 @@ test("AC4: reply in an existing thread keeps THREAD, sets REPLY-TO, validates; c
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /human-owner-01_T001_/.test(f.path));
-  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 2\.8\.0\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
+  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 2\.9\.1\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -108,7 +108,7 @@ test("AC4: agent sender requires confirmation; accepted post validates and is ma
   assert.match(log.dialogs[0].message, /research-agent-01.*agent/);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
-  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 2\.8\.0 \(manual post, sender is an agent\)/);
+  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 2\.9\.1 \(manual post, sender is an agent\)/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -117,7 +117,7 @@ test("AC4: unregistered sender is refused in the UI (empty registry) and nothing
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   h.fs.writeFileSync(h.path.join(proj, ".agent-board", "participants.json"), JSON.stringify({ version: 1, participants: [] }));
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(proj) });
-  await h.openBoardViaUi(page);
+  await h.openBoardViaUi(page);await h.expandComposer(page);
   const before = (await page.evaluate(() => window.__fakefs.dump())).length;
   await page.fill("#cBody", "I am nobody");
   await page.click("#send");
@@ -132,7 +132,7 @@ test("AC4/R9: read-only upload mode downloads a file that validates once placed"
   const { ctx, page } = await h.openPage(browser, { clock: AT });
   await page.clock.pauseAt(new Date("2026-10-15T10:30:05Z"));
   await page.setInputFiles("#fallback", proj);
-  await page.waitForSelector("#feed article.msg");
+  await page.waitForSelector("#feed article.msg");await h.expandComposer(page);
   assert.match(await page.textContent("#cInfo"), /Read-only mode/);
   await page.selectOption("#cWhere", "room:product");
   await page.fill("#cBody", "Odpowiedź z trybu tylko do odczytu");

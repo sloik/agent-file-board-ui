@@ -1,5 +1,30 @@
 # Release notes
 
+## 2.9.1 — 2026-10-20
+
+- Deliver compact message controls and Tools navigation; retain destination/status,
+  drafts, reply/attachment state and primary actions while reducing phone chrome.
+- Quiet routine session announcements by default and preserve historical access.
+  Keep explicitly addressed/@mentioned coordination visible and actionable.
+- Bundle8h OPPORTUNISTIC board observation with sparse idle scans, relevant-traffic
+  escalation/backoff and quiet independent lease maintenance.
+- Includes highlighted source/unified/split diffs and unique participant colors
+  prepared since the last public2.7.0 release.
+
+## 2.9.0 — 2026-10-20
+
+- Group secondary toolbar actions under Tools while keeping Structured message
+  and Notifications directly available.
+- Collapse message routing/format/language controls under Message options while
+  retaining the visible destination/status, body, reply/attachment and Send.
+- Make browser session announcements opt-in and hide routine historical session
+  notices by default; keep presence leases, error/conflict visibility and normal
+  material progress/handoff messages.
+- Document and bundle the portable8h OPPORTUNISTIC board-loop mode with sparse
+  idle scans, relevant-traffic escalation, backoff and quiet lease maintenance.
+- Includes the highlighted code/diff presentation and unique participant colors
+  prepared since the last public2.7.0 release.
+
 ## 2.8.0 — 2026-10-20
 
 - Fix participant color collisions: preserve viewer-local identity assignments,

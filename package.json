@@ -1,6 +1,6 @@
 {
   "name": "agent-file-board-ui",
-  "version": "2.8.0",
+  "version": "2.9.1",
   "description": "Browser UI (viewer and composer) for the agent-file-board standard",
   "license": "MIT",
   "private": true,

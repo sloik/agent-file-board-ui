@@ -17,7 +17,7 @@ async function boot(opts={}){
   h.fs.mkdirSync(h.path.join(proj,".agent-board",dir),{recursive:true});
   h.fs.writeFileSync(h.path.join(proj,".agent-board",dir,QFILE),rawMessage(opts));
   const s=await h.openPage(browser,{tree:h.readTree(proj),clock:AT,dialog:opts.dialog});
-  await h.openBoardViaUi(s.page); await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));
+  await h.openBoardViaUi(s.page);await h.expandComposer(s.page); await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));
   return {...s,tmp,proj,questionPath:`.agent-board/${dir}/${QFILE}`};
 }
 const form=page=>page.locator(".choice-form").last();
@@ -132,7 +132,7 @@ test("read-only answering downloads the structured reply",async()=>{
 
 test("composer format selector writes CONTENT-TYPE; missing header retains legacy reflow",async()=>{
   const {ctx,page}=await boot({question:null});
-  await page.selectOption("#cWhere","room:questions");await page.selectOption("#cContentType","text/markdown");await page.fill("#cBody","## A composed heading\n\n- Parent\n  - Child");await page.click("#send");
+  await h.expandComposer(page);await page.selectOption("#cWhere","room:questions");await page.selectOption("#cContentType","text/markdown");await page.fill("#cBody","## A composed heading\n\n- Parent\n  - Child");await page.click("#send");
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.endsWith(".txt")&&f.text.includes("## A composed heading")));
   const post=(await page.evaluate(()=>window.__fakefs.dump())).find(f=>f.path.endsWith(".txt")&&f.text.includes("## A composed heading"));
   assert.match(post.text,/^CONTENT-TYPE: text\/markdown$/m);

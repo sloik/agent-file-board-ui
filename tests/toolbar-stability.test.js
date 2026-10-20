@@ -3,7 +3,7 @@ const {test,before,after}=require('node:test'),assert=require('node:assert/stric
 let browser;before(async()=>{browser=await h.launch();});after(async()=>{await browser.close();});
 const geometry=page=>page.evaluate(()=>{
  const rect=el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height].map(n=>Math.round(n*100)/100);};
- return {controls:[...document.querySelectorAll('.top button,.top .me,.top .search')].map(el=>[el.id||el.className,rect(el)]),top:rect(document.querySelector('.top')),feed:rect(document.querySelector('.feed-wrap'))};
+ return {controls:[...document.querySelectorAll('.top button,.top summary,.top .me,.top .search')].map(el=>[el.id||el.className,rect(el)]),top:rect(document.querySelector('.top')),feed:rect(document.querySelector('.feed-wrap'))};
 });
 async function readable(page){assert.equal(await page.locator('#rstat').evaluate(el=>el.scrollWidth<=el.clientWidth&&el.scrollHeight<=el.clientHeight),true,'full status text fits its reserved line');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
 for(const lang of ['en','pl'])test(`toolbar stays fixed through real countdown, refresh, pause and off in ${lang}`,async()=>{
@@ -16,7 +16,10 @@ for(const lang of ['en','pl'])test(`toolbar stays fixed through real countdown, 
    const builds=await page.evaluate(()=>window.__boardTest.stats.builds);await page.clock.runFor(2000);await page.waitForFunction(n=>window.__boardTest.stats.builds>n,builds);assert.deepEqual(await geometry(page),initial,'automatic refresh rollover');assert.equal(await page.inputValue('#cBody'),'Keep my unsent draft');
    await page.click('#gear');await page.click('[data-dpre="67"]');await page.click('#sClose');await readable(page);assert.deepEqual(await geometry(page),initial,'paused status');assert.match(await page.textContent('#rstat'),lang==='en'?/paused/:/wstrzymane/);
    await page.click('#gear');await page.uncheck('#rOn');await page.click('#sClose');assert.equal(await page.textContent('#rstat'),'');assert.deepEqual(await geometry(page),initial,'empty/off status');
-   for(const id of ['structuredOpen','draftsOpen','gear','folderName'])assert.equal(await page.locator('#'+id).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);}),true,'clickable '+id);
+   for(const id of ['structuredOpen','toolbarToolsToggle','gear','folderName'])assert.equal(await page.locator('#'+id).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);}),true,'clickable '+id);
+   await page.click('#toolbarToolsToggle');
+   for(const id of ['vocabularyOpen','presenceOpen','extensionsOpen','draftsOpen'])assert.equal(await page.locator('#'+id).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);}),true,'clickable expanded tool '+id);
+   await page.keyboard.press('Escape');assert.equal(await page.locator('#toolbarTools').evaluate(el=>el.open),false);assert.deepEqual(await geometry(page),initial,'closing tools restores geometry');
   }
   assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),files);assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.consoleErrors,[]);assert.equal(log.requests.filter(u=>!u.startsWith('file:')).length,0);
  }finally{await ctx.close();}

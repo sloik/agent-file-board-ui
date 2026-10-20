@@ -14,7 +14,7 @@ test("mentions and participant hints match chat colors through themes and regist
     `2026-10-15_140${i}_research-agent-01_T020_mention-${i}.txt`,{kind:'file',text:`FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: mentions\nTHREAD: T020-mentions\nDATE: 2026-10-15 14:0${i}\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: INFO\nCONTENT-TYPE: ${type}\n---\n${type==='text/html'?'<p>Ask <strong>@human-owner-01</strong>, (@implementation-agent-01) and @RESEARCH-AGENT-01; @nobody. Email x@human-owner-01. <code>@human-owner-01</code></p>':'Ask @human-owner-01, (@implementation-agent-01) and @RESEARCH-AGENT-01; @nobody. Email x@human-owner-01. `@human-owner-01`'}\n`}
   ]))};
   const {ctx,page,log}=await h.openPage(browser,{tree});
-  await h.openBoardViaUi(page);
+  await h.openBoardViaUi(page);await h.expandComposer(page);
   const mentions=page.locator("article[data-author='research-agent-01'][data-file*='_mention-'] .mention");
   const verify=async()=>{
     for(const id of ['human-owner-01','implementation-agent-01','research-agent-01']){

@@ -70,7 +70,7 @@ Typed answers in T012/T014/T015 show source defaults versus submitted values,
 including cell changes, added/removed rows and final order. This is a read-only
 comparison, not approval or execution. Original message bodies remain available.
 
-Select **human-owner-01**, edit T013 and open **Saved drafts** to export or delete
+Select **human-owner-01**, edit T013 and open **Tools → Saved drafts** to export or delete
 its local draft. **Import draft** can load **example-draft.json**, bundled beside
 board.html. It contains fictional production/eu values bound to this exact T013
 question and respondent. Confirming restores local edits; it does not submit a
@@ -170,3 +170,15 @@ installation, read [docs/FEEDBACK.md](docs/FEEDBACK.md) and the included
 [board-feedback skill](skills/board-feedback/SKILL.md). These files explain how
 to choose the repository and submit useful, redacted feedback. No report is sent
 automatically, and GitHub CLI is optional.
+
+
+## Compact composer and quiet lifecycle (UI2.9)
+
+Secondary toolbar actions are under **Tools**. Message options starts collapsed: destination/status, body, reply/attachment and
+Send stay visible. Expand to change routing or format; collapse/refresh retains
+your choices and draft. Settings can show historical session notices or opt into
+browser arrival/goodbye announcements. Presence leases still work independently.
+See the bundled `docs/COMPOSER.md`. The package also includes the canonical
+`skills/board-loop/` and `docs/BOARD-LOOP.md` for adaptive8h observation; it requires
+a separately installed canonical CLI/Python and a real agent consumer. The demo
+starts no listener or agent.

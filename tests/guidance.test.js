@@ -8,7 +8,7 @@ const AT=new Date('2026-10-15T10:30:00Z');
 async function boot(files={}){
   const proj=h.layoutExample(h.tmpDir());
   for(const [path,text] of Object.entries(files)){const file=h.path.join(proj,'.agent-board',path);h.fs.mkdirSync(h.path.dirname(file),{recursive:true});h.fs.writeFileSync(file,text);}
-  const s=await h.openPage(browser,{tree:h.readTree(proj),clock:AT});await h.openBoardViaUi(s.page);return {...s,proj};
+  const s=await h.openPage(browser,{tree:h.readTree(proj),clock:AT});await h.openBoardViaUi(s.page);await h.expandComposer(s.page);return {...s,proj};
 }
 async function refresh(page){const n=await page.evaluate(()=>window.__boardTest.stats.builds);await page.click('#reload');await page.waitForFunction(n=>window.__boardTest.stats.builds>n,n);}
 function message(label,extra='',body='Ordinary reply with an old topic label.'){
@@ -30,7 +30,7 @@ test('explicit full topic title survives later stale replies, refresh and reload
   await page.fill('#cBody','Continue without changing the purpose');await page.click('#send');
   await page.waitForFunction(()=>window.__boardTest.getModel().msgs.some(m=>m.body==='Continue without changing the purpose'));
   assert.equal(await page.textContent('#title'),'T003 · '+title);
-  await h.reloadSettled(ctx,page,{lastDir:true});await page.waitForSelector('#feed article');
+  await h.reloadSettled(ctx,page,{lastDir:true});await page.waitForSelector('#feed article');await h.expandComposer(page);
   assert.equal(await page.textContent('#title'),'T003 · '+title);
   const out=h.path.join(proj,'validated');await h.dumpFakeFs(page,out);const check=h.boardctl(['validate','--path',out]);assert.equal(check.code,0,check.err);
   assert.deepEqual(log.pageErrors,[]);await ctx.close();
@@ -67,7 +67,7 @@ test('room and topic Markdown guidance render safely without renaming, and posti
 });
 test('uploaded guidance detects invalid UTF8; missing files are optional and separate from read errors',async()=>{
   const proj=h.layoutExample(h.tmpDir()),path=h.path.join(proj,'.agent-board/rooms/product/GUIDANCE.md');h.fs.writeFileSync(path,Buffer.from([0xff,0xfe,0xff]));
-  const {ctx,page}=await h.openPage(browser);await page.setInputFiles('#fallback',proj);await page.waitForSelector('#feed article');
+  const {ctx,page}=await h.openPage(browser);await page.setInputFiles('#fallback',proj);await page.waitForSelector('#feed article');await h.expandComposer(page);
   await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');
   await page.waitForSelector('#guidanceDocs .metadata-error');
   assert.equal(await page.locator('#guidanceDocs .metadata-error').count(),1);assert.match(await page.textContent('#guidanceDocs'),/No optional guidance file here/);
@@ -86,7 +86,7 @@ test('guidance bodies load on demand; wrong-kind files remain errors rather than
     const proto=Object.getPrototypeOf(file),original=proto.getFile;
     proto.getFile=async function(){const result=await original.call(this);if(this.name==='GUIDANCE.md'){const text=result.text;result.text=async()=>{window.guideReads++;return text();};}return result;};
   });
-  await h.openBoardViaUi(page);assert.equal(await page.evaluate(()=>window.guideReads),0);
+  await h.openBoardViaUi(page);await h.expandComposer(page);assert.equal(await page.evaluate(()=>window.guideReads),0);
   await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
   assert.equal(await page.evaluate(()=>window.guideReads),1);
   assert.equal(await page.locator('#guidanceDocs .metadata-error').count(),1);
@@ -94,7 +94,7 @@ test('guidance bodies load on demand; wrong-kind files remain errors rather than
   await page.click('#guidanceClose');await page.click('#guidanceOpen');assert.equal(await page.evaluate(()=>window.guideReads),1);
   await ctx.close();
   const other=h.layoutExample(h.tmpDir());h.fs.mkdirSync(h.path.join(other,'.agent-board/rooms/product/GUIDANCE.md'));
-  const s=await h.openPage(browser,{tree:h.readTree(other)});await h.openBoardViaUi(s.page);
+  const s=await h.openPage(browser,{tree:h.readTree(other)});await h.openBoardViaUi(s.page);await h.expandComposer(s.page);
   await s.page.click(".tcard[data-tk='room:product|T003']");await s.page.click('#guidanceOpen');assert.equal(await s.page.locator('#guidanceDocs .metadata-error').count(),1);await s.ctx.close();
 });
 

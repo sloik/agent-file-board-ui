@@ -10,6 +10,7 @@ const AT=new Date("2026-10-15T10:30:00Z");
 async function boot(){
   const s=await c.openExample(browser,h.BOARD_HTML,{clock:AT});
   await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));
+  await h.expandComposer(s.page);
   return s;
 }
 async function addMessage(page,{room="product",tid="T003",label="polish-default",slug="incoming",date="2026-10-15 12:31"}={}){
@@ -183,17 +184,17 @@ test("title updates retain a closed topic's status and require agent confirmatio
 
 test("vocabulary reads the board's canonical glossary, refreshes it, renders safely and reports absent files",async()=>{
   const {ctx,page,log}=await boot();
-  await page.click("#vocabularyOpen");
+  await h.openToolbarTool(page,'vocabularyOpen');
   assert.match(await page.textContent("#vocabularyText"),/no GLOSSARY.md/);
   await page.click("#vocabularyClose");
   const glossary="# Canonical vocabulary\n\nCoordinate: take the next action toward the goal.\n<script>throw Error('must remain text')</script>";
   await page.evaluate(text=>window.__fakefs.addFile(".agent-board/GLOSSARY.md",text),glossary);
-  await refresh(page); await page.click("#vocabularyOpen");
+  await refresh(page); await h.openToolbarTool(page,'vocabularyOpen');
   assert.equal(await page.textContent("#vocabularyText"),glossary);
   assert.equal(await page.locator("#vocabularyText script").count(),0);
   await page.keyboard.press("Escape"); assert.equal(await page.isVisible("#vocabulary"),false);
   await page.evaluate(()=>window.__fakefs.addFile(".agent-board/GLOSSARY.md","# Changed canonical definitions\nRead does not mean accept."));
-  await refresh(page); await page.click("#vocabularyOpen");
+  await refresh(page); await h.openToolbarTool(page,'vocabularyOpen');
   assert.match(await page.textContent("#vocabularyText"),/Changed canonical/);
   assert.deepEqual(log.pageErrors,[]); await ctx.close();
 });
@@ -204,6 +205,6 @@ test("read-only folder upload also loads the canonical glossary",async()=>{
   h.fs.writeFileSync(h.path.join(proj,".agent-board/GLOSSARY.md"),text);
   const {ctx,page}=await h.openPage(browser);
   await page.setInputFiles("#fallback",proj); await page.waitForSelector("#feed article.msg");
-  await page.click("#vocabularyOpen"); assert.equal(await page.textContent("#vocabularyText"),text);
+  await h.openToolbarTool(page,'vocabularyOpen'); assert.equal(await page.textContent("#vocabularyText"),text);
   await ctx.close();
 });

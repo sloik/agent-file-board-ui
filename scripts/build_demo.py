@@ -189,6 +189,14 @@ def build_demo(root: Path, destination: Path):
         shutil.copyfile(examples / 'extensions/source-review.afb-plugin.json', destination / 'examples/extensions/source-review.afb-plugin.json')
         manifest['extensions']['api'] = '1.3.0'
         manifest['sourcePresentation'] = {'guide': 'docs/SOURCE-CODE.md', 'room': 'reports', 'thread': 'T016', 'views': ['unified', 'split', 'source']}
+    if tuple(map(int, version.split('.'))) >= (2, 9, 0):
+        for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:
+            target = destination / 'skills/board-loop' / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(vendor / 'skills/board-loop' / rel, target)
+        shutil.copyfile(root / 'docs/BOARD-LOOP.md', destination / 'docs/BOARD-LOOP.md')
+        shutil.copyfile(root / 'docs/COMPOSER.md', destination / 'docs/COMPOSER.md')
+        manifest['opportunisticObservation'] = {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

@@ -42,7 +42,7 @@ async function main() {
     await capture("board-overview.png");
     await page.selectOption("#me", "implementation-agent-01");
     await capture("board-identity.png");
-    await page.click("#presenceOpen");
+    await h.openToolbarTool(page,'presenceOpen');
     await capture("board-presence.png");
     await page.click("#presenceClose");
     await page.selectOption("#me", "human-owner-01");

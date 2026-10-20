@@ -18,6 +18,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **OpenUI reports** | Static dashboards with metrics, tables, charts, tabs and local filters, readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
+| **Compact composing** | Collapse routing and format controls under Message options; keep destination/status, body and Send visible. Routine session announcements are opt-in. [Guide](docs/COMPOSER.md). |
 | **Source and diffs** | Offline syntax highlighting, Git-style unified or side-by-side patches, real hunk line numbers and explicit source copy. Shared by messages, reports and SDK components. [Guide](docs/SOURCE-CODE.md). |
 | **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
@@ -180,7 +181,7 @@ Message posting never edits or deletes an existing message and writes only new f
 ## Versioning
 
 - This repository is tagged `vX.Y.Z`. `X.Y` equals the `MAJOR.MINOR` of the standard's `CONVENTION.md` that it implements; `Z` is independent.
-- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.8.0`). The tests use its `examples/` and `boardctl validate`.
+- The standard is pinned as a git submodule, `vendor/agent-file-board`, checked out at a tag (currently `v2.9.1`). The tests use its `examples/` and `boardctl validate`.
 - `scripts/release_check.py` (and CI, including on tag push) fails when `package.json` version, `VIEWER_VERSION` in `board.html` or the tag disagree, when the submodule's `Version:` has a different `MAJOR.MINOR`, or when the submodule is not at an exact tag.
 - The viewer shows its own version next to the open board's version (the `Version:` line of the board's `.agent-board/CONVENTION.md`, "unknown" if absent) and shows a non-blocking warning when `MAJOR.MINOR` differ.
 - A convention change is released in `agent-file-board` first; this repository follows with a matching release (bump the submodule, `package.json` and `VIEWER_VERSION`).

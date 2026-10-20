@@ -12,7 +12,7 @@ async function boot(scheme){
     const tid='T'+String(9+i).padStart(3,'0');
     h.fs.writeFileSync(h.path.join(dir,`2026-10-15_120${i}_research-agent-01_${tid}_status-${i}.txt`),`FROM: research-agent-01\nTO: all\nSCOPE: ROOM\nROOM: status-check\nTHREAD: ${tid}-status-check\nDATE: 2026-10-15 12:0${i}\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: ${status}\n---\nStatus example ${status}\n`);
   }
-  const s=await h.openPage(browser,{tree:h.readTree(proj),colorScheme:scheme==="dracula"?"light":scheme,clock:new Date("2026-10-15T10:30:00Z")});await h.openBoardViaUi(s.page);if(scheme==="dracula"){await s.page.click("#gear");await s.page.selectOption("#sTheme","dracula");await s.page.click("#sClose");}await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));return s;
+  const s=await h.openPage(browser,{tree:h.readTree(proj),colorScheme:scheme==="dracula"?"light":scheme,clock:new Date("2026-10-15T10:30:00Z")});await h.openBoardViaUi(s.page);await h.expandComposer(s.page);if(scheme==="dracula"){await s.page.click("#gear");await s.page.selectOption("#sTheme","dracula");await s.page.click("#sClose");}await s.page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));return s;
 }
 function contrast(a,b){
   const luminance=color=>{

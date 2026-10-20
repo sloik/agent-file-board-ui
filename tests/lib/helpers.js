@@ -190,6 +190,14 @@ async function openBoardViaUi(page) {
   await pickFolder(page);
   await page.waitForFunction(() => window.__boardTest.getModel() !== null && !document.querySelector('#locationsDialog').open, null, { timeout: 5000 });
 }
+async function openToolbarTool(page,id) {
+  if(await page.locator('#toolbarTools').count() && !await page.locator('#toolbarTools').evaluate(el=>el.open))await page.click('#toolbarToolsToggle');
+  await page.locator('#'+id).click();
+}
+async function expandComposer(page) {
+  if(await page.locator('#composerOptions').count() && !await page.locator('#composerOptions').evaluate(el=>el.open))
+    await page.locator('#composerOptions > summary').click();
+}
 function boardctl(args) {
   // Isolated Python omits the script directory; admit only the pinned CLI's
   // own module directory so its adjacent message_extensions import works.
@@ -239,4 +247,4 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
 }
 
 module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
-  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };
+  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, expandComposer, openToolbarTool, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };

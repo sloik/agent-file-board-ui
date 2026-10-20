@@ -31,7 +31,7 @@ test('active sessions expire without refreshing or disturbing the editor; pickin
   assert.match(await marker(page).getAttribute('class'),/presence-active/);
   assert.equal(await marker(page).textContent(),'●');
   assert.equal(await marker(page,'implementation-agent-01').textContent(),'👻');
-  await page.click('#presenceOpen');
+  await h.openToolbarTool(page,'presenceOpen');
   const row=page.locator(`[data-presence-id='${ID}']`);
   assert.match(await row.textContent(),/session-one.*test-agent/s);
   assert.match(await row.textContent(),/Implement the parser; can help review tests/);
@@ -64,7 +64,7 @@ test('malformed leases are unknown, simultaneous live leases conflict, and notic
   assert.match(await marker(page).getAttribute('class'),/presence-conflict/);
   assert.match(await marker(page,'implementation-agent-01').getAttribute('class'),/presence-unknown/);
   assert.equal(await marker(page,'human-owner-01').textContent(),'👻');
-  await page.click('#presenceOpen');
+  await h.openToolbarTool(page,'presenceOpen');
   assert.equal(await page.locator('#presenceDialog img').count(),0);
   assert.match(await page.textContent('#presenceDialog'),/<img src=x onerror=alert\(1\)>/);
   assert.match(await page.textContent('#presenceDialog'),/could not be read or validated/);
@@ -79,7 +79,7 @@ test('folder uploads include presence and clearly identify the snapshot as non-l
   const {ctx,page,log}=await h.openPage(browser,{clock:AT});
   await page.setInputFiles('#fallback',proj);await page.waitForSelector('.msg');
   assert.match(await marker(page).getAttribute('class'),/presence-active/);
-  await page.click('#presenceOpen');assert.match(await page.textContent('#presenceSnapshot'),/not live/);
+  await h.openToolbarTool(page,'presenceOpen');assert.match(await page.textContent('#presenceSnapshot'),/not live/);
   await page.setViewportSize({width:375,height:812});
   assert.ok((await page.locator('#presenceDialog').boundingBox()).width<=375);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -106,12 +106,13 @@ test('only exact atomic-write temporary names are ignored; malformed and unreada
 
 test('canonical CLI start and release records are rendered and historical messages remain valid',async()=>{
   const proj=fixture();
-  const start=h.boardctl(['session','start',ID,'--path',proj,'--session','session-integration','--summary','Implement parser; need a schema review.','--runtime','test-cli','--at',AT.toISOString()]);
+  const start=h.boardctl(['session','start',ID,'--announce','--path',proj,'--session','session-integration','--summary','Implement parser; need a schema review.','--runtime','test-cli','--at',AT.toISOString()]);
   assert.equal(start.code,0,start.err);
   const {ctx,page,log}=await open(proj);
   assert.match(await marker(page).getAttribute('class'),/presence-active/);
+  await page.click('#gear');await page.check('#showPresenceNotices');await page.click('#settingsClose');
   assert.match(await page.textContent('#feed'),/Session start: identifier research-agent-01/);
-  const release=h.boardctl(['session','release',ID,'--path',proj,'--session','session-integration','--summary','Parser complete; review is still needed.','--at','2026-10-15T10:30:10Z']);
+  const release=h.boardctl(['session','release',ID,'--announce','--path',proj,'--session','session-integration','--summary','Parser complete; review is still needed.','--at','2026-10-15T10:30:10Z']);
   assert.equal(release.code,0,release.err);
   for(const item of h.fs.readdirSync(h.path.join(proj,'.agent-board/presence',ID))) {
     const path=`.agent-board/presence/${ID}/${item}`;await page.evaluate(({path,text})=>window.__fakefs.addFile(path,text),{path,text:h.fs.readFileSync(h.path.join(proj,path),'utf8')});
@@ -132,14 +133,15 @@ test('unregistered presence directories and stray root files make absence uncert
 
 const HUMAN='human-owner-01';
 const humanRecords=page=>page.evaluate(id=>window.__fakefs.dump().filter(f=>f.path.startsWith(`.agent-board/presence/${id}/`)).map(f=>JSON.parse(f.text)),HUMAN);
+async function enableAnnouncements(page){await page.click('#gear');await page.check('#presenceAnnouncements');await page.check('#showPresenceNotices');await page.click('#settingsClose');}
 async function selectHuman(page){
   await page.selectOption('#me',HUMAN);
   await page.waitForFunction(()=>document.querySelector('#browserPresence').textContent.includes('Browser session active'));
 }
-test('explicit human selection starts a valid browser lease, renews with refresh off, and releases on agent selection',async()=>{
+test('opt-in human announcements accompany a valid lease, independent renewal and release',async()=>{
   const {ctx,page,log}=await open(fixture());
   assert.equal((await humanRecords(page)).length,0,'default inferred sender must not claim an identity');
-  await selectHuman(page);
+  await enableAnnouncements(page);await selectHuman(page);
   const [first]=await humanRecords(page);
   assert.equal(first.participant,HUMAN);assert.equal(first.runtime,'agent-file-board-ui browser');
   assert.equal(Date.parse(first.expires_at)-Date.parse(first.heartbeat_at),900000);
@@ -209,7 +211,7 @@ test('browser write failures are visible, retry recovers, and changing to an upl
     const root=await window.showDirectoryPicker(), file=await root.getFileHandle('probe',{create:true});
     Object.getPrototypeOf(file).createWritable=window.originalWritable;window.__fakefs.removeFile('probe');
   });
-  await page.click('#presenceOpen');
+  await h.openToolbarTool(page,'presenceOpen');
   await page.click('#browserPresence');
   await page.click('#presenceClose');
   await page.waitForFunction(()=>document.querySelector('#browserPresence').textContent.includes('Browser session active'));
@@ -222,7 +224,7 @@ test('browser write failures are visible, retry recovers, and changing to an upl
 });
 
 test('fresh directory-handle wrappers on refresh keep the same browser session and do not repeat notices',async()=>{
-  const {ctx,page}=await open(fixture());await selectHuman(page);
+  const {ctx,page}=await open(fixture());await enableAnnouncements(page);await selectHuman(page);
   const [first]=await humanRecords(page);
   for(let i=0;i<3;i++){ await refresh(page);await page.clock.runFor(61000); }
   await page.waitForFunction(id=>JSON.parse(window.__fakefs.dump().find(f=>f.path.includes(`/presence/${id}/`)).text).heartbeat_at>'2026-10-15T10:32:00.000Z',HUMAN);
@@ -288,7 +290,7 @@ test('a CLI agent post without attachment warns and the viewer explains the miss
   assert.equal(h.fs.existsSync(h.path.join(proj,'.agent-board/presence')),false);
   const {ctx,page,log}=await open(proj);
   assert.equal(await marker(page).getAttribute('title'),'Ghost · no active board session');
-  await page.click('#presenceOpen');
+  await h.openToolbarTool(page,'presenceOpen');
   assert.match(await page.textContent('#presenceDialog'),/boardctl session start or board-loop session-start/);
   assert.match(await page.textContent('#presenceDialog'),/Posting alone does not attach or renew/);
   assert.match(await page.locator(`[data-presence-id='${ID}']`).textContent(),/Ghost · no active board session/);

@@ -17,6 +17,9 @@ async function checkNoNetwork(browser, html) {
   for (const scheme of ["light", "dark"]) {
     const { ctx, page, log } = await openExample(browser, html, { colorScheme: scheme });
     await page.fill("#q", "schema");
+    // Search suggestions can cover the wrapped toolbar; dismiss through the real keyboard path.
+    await page.keyboard.press("Escape");
+    if(await page.locator("#sugg").evaluate(el=>el.classList.contains("show"))) problems.push(`${scheme}: search suggestions did not close`);
     await page.click("#gear");
     await page.selectOption("#sLang", "pl");
     await page.waitForTimeout(150);
