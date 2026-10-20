@@ -1,4 +1,4 @@
-# Extension lifecycle and diagnostics — SDK 1.2 (unreleased)
+# Extension lifecycle and diagnostics — SDK 1.2
 
 The canonical board owns the portable contract. Read the
 [full lifecycle reference](https://github.com/sloik/agent-file-board/blob/main/docs/EXTENSION-LIFECYCLE.md).

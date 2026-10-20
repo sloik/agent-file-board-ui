@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 2.7.0 — 2026-10-20
 
 - Support portable SDK1.2 refresh declarations for declarative and approved
   worker components, with bounded host scheduling and a local automatic-update
