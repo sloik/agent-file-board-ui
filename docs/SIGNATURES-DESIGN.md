@@ -149,3 +149,21 @@ aliases, sender versus recipient selection, actual-signing race/failure, profile
 updates, timeout/reload cleanup and absence of private-key persistence/logs/API
 leaks. Plaintext board files and advisory leases are not made confidential or
 authenticated merely by these message/signing controls.
+
+## Optional agent operator — SPEC-002-026
+
+An agent can declare `operator: "human-owner-01"` in its registration; no value is
+required. Show the link in participant details as Operator claimed by this agent,
+with the human's stable ID and an inspect/open action. Keep message headers compact.
+Unresolved references show association unknown without removing the agent.
+
+The signed agent profile covers this claim. Historical inspection uses that
+snapshot; current association is separate. This does not establish human consent
+or legal ownership. Initial informational association adds no human-confirmed
+badge. A future mandatory confirmation requires a defined endorsement protocol.
+
+Keep sender possession, local key trust and the To picker independent. A linked
+human's key cannot unlock the agent, grant its permissions, take its lease or
+approve its extensions. Do not infer notification follows/forwarding or silently
+trust agents because their claimed operator is trusted. Display names and avatars
+do not strengthen the association beyond its actual evidence.
