@@ -21,7 +21,7 @@ const h=require('../tests/lib/helpers');
     assert.equal(await page.evaluate(()=>document.querySelector('#upgradeDialog').scrollWidth<=document.querySelector('#upgradeDialog').clientWidth),true);
     await page.click('#upgradeApply');
     await page.waitForFunction(()=>!document.querySelector('#upgradePreview').disabled);
-    assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.0\.1/);
+    assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.10\.0/);
     const after=await h.dumpFakeFs(page,out);
     for(const file of before.filter(f=>f.path.endsWith('.txt'))) assert.deepEqual(after.find(f=>f.path===file.path),file);
     const validation=h.boardctl(['validate','--path',out]);assert.equal(validation.code,0,validation.err);

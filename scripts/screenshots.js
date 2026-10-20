@@ -62,6 +62,7 @@ async function main() {
     await page.setViewportSize({ width: 1440, height: 1120 });
     await page.click(".tcard[data-tk='room:architecture|T001']");
 
+    await h.expandComposer(page);
     await page.selectOption("#cStatus", "DECISION-NEEDED");
     await page.fill("#cBody", "Please confirm the schema before implementation starts.\n\nNext action: @rese");
     await page.waitForSelector("#bodySuggestions.show");
@@ -165,6 +166,7 @@ async function main() {
     const palette=await h.openPage(browser,{tree:h.readTree(project),rootName:"canonical-example",clock:AT});
     await palette.page.setViewportSize({width:1440,height:1500});await h.openBoardViaUi(palette.page);
     await palette.page.click(".fname[data-dir='status-palette']");await palette.page.click("[data-closed='room:status-palette']");
+    await h.expandComposer(palette.page);
     await palette.page.selectOption("#cStatus","REQUEST");await palette.page.fill("#cBody","Drafting a request — orange matches its status pill.");
     assert.equal(await palette.page.locator("#feed .chip.status").count(),7);
     await palette.page.locator("#feed").evaluate(el=>{el.scrollTop=0;});

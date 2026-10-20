@@ -1,7 +1,7 @@
 # Signature and avatar UI — proposed implementation
 
 Architecture only, SPEC-002-024. No verification/avatars implemented by this
-proposal; released 2.9.1 behavior remains unchanged. Authoritative cross-client
+proposal; released 2.10.0 has no signing or avatar implementation. Authoritative cross-client
 wire design is `docs/SIGNATURES-AND-IDENTITY.md` in the canonical board repository.
 
 The owner chose publicly verifiable Ed25519 signatures with explicit JWK key and

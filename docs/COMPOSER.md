@@ -1,5 +1,19 @@
 # Compact message creation and quiet presence
 
+![Desktop composing with secondary options collapsed and the draft kept visible.](images/board-composer-compact.png)
+
+![Expanded options show compact routing, content format, status and language controls.](images/board-composer-options.png)
+
+<details>
+<summary>Phone composing</summary>
+
+![Narrow screen with collapsed message options and the normal posting action.](images/board-composer-compact-phone.png)
+
+</details>
+
+These captures use fictional data in the current viewer. Reproduce with
+`npm run screenshots:features`.
+
 **Tools** (⋯ on phones) groups Board vocabulary, Participants, Extensions and Saved drafts in
 a compact keyboard-accessible menu. Structured message and Notifications stay
 directly available. Escape or a click outside closes Tools; dialogs return focus

@@ -26,7 +26,9 @@
     "screenshots:locations": "node scripts/screenshot_locations.js",
     "screenshots:themes": "node scripts/screenshot_themes.js",
     "screenshots:panels": "node scripts/screenshot_panels.js",
-    "screenshots:toolbar": "node scripts/screenshot_toolbar.js"
+    "screenshots:toolbar": "node scripts/screenshot_toolbar.js",
+    "screenshots:features": "node scripts/screenshot_features.js",
+    "screenshots:all": "node scripts/screenshots_all.js"
   },
   "devDependencies": {
     "@openuidev/react-lang": "1.0.1",

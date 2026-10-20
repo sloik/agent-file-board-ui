@@ -1,4 +1,4 @@
-# Offline extensions — viewer and SDK 1.1.0
+# Offline extensions — viewer and SDK 1.3
 
 Use **Extensions** in the stock viewer to inspect and import a local
 `*.afb-plugin.json` file, then explicitly install/enable it. Packages, assets and
@@ -12,6 +12,20 @@ defines the exact format, bounded schema dialect, version ranges/exclusions,
 SHA-256 fingerprints and CLI commands. A package has a convention facet, a UI
 facet, or both. UI-only renderers target retained convention contracts. Built-in
 reports/forms keep their existing meanings and renderers.
+
+## Package and component gallery
+
+![Declarative approval component rendered inside a normal message.](images/board-extensions-component.png)
+
+This fictional request uses the retained convention facet and a declarative UI.
+The readable message remains the fallback; typed responses become new replies.
+
+![Package manager showing facets, versions, local refresh preference and exact-byte code approval.](images/board-extensions-manager.png)
+
+The manager shows enabled/compatible packages and an inspection action. Worker
+code requires approval for the exact package in this browser profile. An update
+never inherits approval or silently replaces the original renderer. See the
+[review, refresh and diagnostics gallery](EXTENSION-LIFECYCLE.md).
 
 ## Import, author and upgrade
 
@@ -151,6 +165,15 @@ included. The separate research proposal remains parked.
 
 ## Recorded information and latest local state (2.6)
 
+![One shared battery artifact: 100 percent recorded with the message and 90 percent as the latest local observation.](images/board-shared-information.png)
+
+This is fictional data published by the CLI. The viewer displays both readings
+and their observation times; it never executes the described collection command.
+A disconnected source retains the last reading with an explicit availability
+state. Missing, stale, conflicting and unverifiable state remain distinguishable
+from a fresh value; no new reading is invented when a source disappears.
+
+
 An ordinary message can attach `INFORMATION` metadata without installing a plugin:
 
 ```json
@@ -242,6 +265,16 @@ For capability requests, bugs or general feedback, use the shared
 [board-feedback skill](https://github.com/sloik/agent-file-board/blob/v2.6.1/skills/board-feedback/SKILL.md).
 Settings → Send feedback opens the viewer issue chooser explicitly; the guide
 routes convention/CLI reports to canonical. Offline drafts need no GitHub tooling.
+
+<details>
+<summary>When the source disconnects</summary>
+
+![Source reported disconnected: the recorded 100 percent and last known 90 percent values remain visible with an explicit disconnection reason.](images/board-shared-information-disconnected.png)
+
+A disconnect is a reported source state, not proof inferred from a missing file.
+Observation time and freshness remain separate from the source's availability.
+
+</details>
 
 ## SDK 1.2 lifecycle and diagnostics
 

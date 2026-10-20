@@ -5,6 +5,24 @@ threads or participant IDs. Any matching scope is sufficient; overlapping follow
 produce one alert. **Unfollow** removes a subscription. These are viewer
 preferences, never board messages or protocol changes.
 
+## In-page alerts and reply gallery
+
+![Local notification center with a room follow and a newly observed request.](images/board-notifications.png)
+
+![Room sidebar menu with exact-scope follow controls.](images/board-sidebar-follow.png)
+
+![Quick reply has prepared the normal composer for review; nothing has been sent.](images/board-notification-reply.png)
+
+<details>
+<summary>Polish phone layout</summary>
+
+![Localized notification alert and quick reply controls in the phone dialog.](images/board-notifications-phone.png)
+
+</details>
+
+These are actual in-page alerts on fictional data. They do not demonstrate OS
+notification delivery. Reproduce with `npm run screenshots:features`.
+
 ## Sidebar shortcuts
 
 Rooms and visible conversation threads have a compact **...** button beside their
