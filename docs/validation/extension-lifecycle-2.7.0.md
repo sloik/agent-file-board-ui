@@ -70,3 +70,23 @@ Local logs/receipts are `/tmp/afb-lifecycle-npm-verified.log`,
 The full reference documents timer limitations, ephemeral worker state, logs lost
 on a hard timeout and the need to inspect extension-authored logs before export.
 No VoiceOver checks were added or run. Living specifications remain parked.
+
+
+## Publication follow-up — 2026-10-20
+
+After owner clarified the expectation of automatic delivery, the UI-specific
+v2.7.0 tag was pushed atfbd9780. Its gated release workflow39381316046 passed
+test, prepare and publish on the first attempt. UIv2.7.0 is published as Latest:
+https://github.com/sloik/agent-file-board-ui/releases/tag/v2.7.0 . All four
+downloaded assets and complete notes match staged tested source bytes. Existing
+canonical/UI2.6.1 release notes and asset IDs/sizes/digests are unchanged.
+Receipt: /tmp/afb-270-release-receipt.json. Canonical v2.7.0 tag/pin remains3f5b512;
+no published tag was moved. The canonical repository automatically runs tests on
+main/tags; UI artifact publication requires the separate UI version tag.
+
+The same-commit main run39381315440 first failed the previously recorded
+unrelated offline-tools unsupported draft-import timeout. Its log is retained
+at /tmp/afb-270-main-ci-failure.log; one unchanged failed-job retry was requested.
+The exact tagged release gate independently passed the whole required suite.
+No test was skipped, weakened or increased in timeout, and the intermittent
+failure is not claimed fixed.
