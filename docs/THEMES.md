@@ -46,3 +46,16 @@ Long dialogs keep their title and **Close** visible while scrolling, including
 Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
 header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
+
+
+Participant identity colors use collision-aware assignments. The eight original
+palette entries are preferred while free; larger groups receive additional
+colors with light/dark variants. The same assignment drives speech bubbles,
+authors, mentions, avatars and the identity picker; status never selects it.
+Assignments stay in this viewer's local preferences, including participants no
+longer in the registry, so additions, reordering, removal/re-addition and reload
+do not recolor established identities. Dark and Dracula share identity colors.
+Separate browser profiles can assign different colors. Clearing browser site data
+resets these assignments; no board file is written.
+Colors help identify participants but names remain the authoritative identity,
+especially in large groups where distinct colors can still look similar.

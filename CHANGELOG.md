@@ -2,6 +2,9 @@
 
 ## 2.8.0 — 2026-10-20
 
+- Fix participant color collisions: preserve viewer-local identity assignments,
+  resolve shared palette slots and generate colors beyond eight participants.
+
 - Share offline syntax-highlighted source presentation across rich messages,
   report code/Markdown and SDK1.3 extension components.
 - Add Git-style unified and side-by-side diffs, real hunk line numbers,
