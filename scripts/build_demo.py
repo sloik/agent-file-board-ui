@@ -172,6 +172,14 @@ def build_demo(root: Path, destination: Path):
         (destination / 'docs').mkdir()
         shutil.copyfile(vendor / 'docs/FEEDBACK.md', destination / 'docs/FEEDBACK.md')
         manifest['feedback'] = {'guide': 'docs/FEEDBACK.md', 'skill': 'skills/board-feedback/SKILL.md'}
+    if tuple(map(int, version.split('.'))) >= (2, 7, 0):
+        for name in ['EXTENSIONS.md', 'EXTENSION-LIFECYCLE.md']:
+            shutil.copyfile(vendor / 'docs' / name, destination / 'docs' / name)
+        samples = destination / 'examples/extensions'
+        samples.mkdir(parents=True)
+        for name in ['example-approvals', 'lifecycle-worker', 'lifecycle-declarative']:
+            shutil.copyfile(vendor / 'examples/extensions' / (name + '.afb-plugin.json'), samples / (name + '.afb-plugin.json'))
+        manifest['extensions'] = {'api': '1.2.0', 'guide': 'docs/EXTENSION-LIFECYCLE.md', 'examples': 'examples/extensions'}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')

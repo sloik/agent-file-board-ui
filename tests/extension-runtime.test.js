@@ -79,3 +79,43 @@ test('ordinary user actions still propose answers and total output including log
   await page.evaluate(()=>make(`postMessage({kind:'result',tree:{type:'text',text:'x'.repeat(57000)},state:{},diagnostics:Array.from({length:16},()=>({level:'info',code:'padding',message:'x'.repeat(500)}))});`));await idle(page);assert.match((await page.evaluate(()=>failures))[0],/worker output limit/);assert.equal(await page.locator('section').nth(1).textContent(),'');
  }finally{await context.close();}
 });
+
+ test('refresh-declared previews get honest host context without scheduling',async()=>{
+ const {context,page}=await fixture();try{
+  const source=`BoardExtension.define({render(d,s,c){return {type:'text',text:JSON.stringify(c.host)};}});`;
+  await page.evaluate(source=>make(source,{meta:{preview:true}}),source);await idle(page);
+  const value=JSON.parse(await page.locator('section').textContent());
+  assert.match(value.now,/^\d{4}-\d{2}-\d{2}T/);assert.deepEqual(value.refresh,{supported:false,automatic:false,intervalSeconds:null});
+  assert.deepEqual(await page.evaluate(()=>failures),[]);assert.equal(await page.evaluate(()=>extensionRuntimeTimer),null);
+ }finally{await context.close();}
+});
+
+test('initial worker output cannot impersonate an explicit reply proposal',async()=>{
+ const {context,page}=await fixture();try{
+  await page.evaluate(()=>make(`postMessage({kind:'result',tree:{type:'text',text:'Ready'},state:{},answer:{approved:true}});`));await idle(page);
+  assert.deepEqual(await page.evaluate(()=>proposals),[]);assert.match((await page.evaluate(()=>failures))[0],/requires user input or action/);
+ }finally{await context.close();}
+});
+test('automatic refresh preserves focused drafts until blur, including focus arriving during a job',async()=>{
+ const {context,page}=await fixture();try{
+  const source=`BoardExtension.define({event(e,d,s){return {state:{reason:e.reason||e.type,slow:e.reason==='timer'}};},render(d,s){if(s.slow){const end=performance.now()+300;while(performance.now()<end){}}return {type:'column',children:[{type:'input',name:'note',label:'Note',inputType:'text'},{type:'text',text:s.reason||'initial'}]};}});`;
+  await page.evaluate(source=>make(source),source);await idle(page);
+  const input=page.getByLabel('Note');await input.fill('Uncommitted draft');
+  await page.evaluate(()=>controllers[0].refresh('timer'));await idle(page);
+  assert.equal(await input.inputValue(),'Uncommitted draft');assert.equal(await input.evaluate(el=>el===document.activeElement),true);
+  await page.evaluate(()=>document.activeElement.blur());await idle(page);assert.match(await page.locator('section').textContent(),/timer/);
+  await page.evaluate(()=>controllers[0].refresh('timer'));await input.fill('Typed during work');await idle(page);
+  assert.equal(await input.inputValue(),'Typed during work');assert.equal(await input.evaluate(el=>el===document.activeElement),true);
+  await page.evaluate(()=>document.activeElement.blur());await idle(page);assert.match(await page.locator('section').textContent(),/timer/);
+  assert.deepEqual(await page.evaluate(()=>failures),[]);
+ }finally{await context.close();}
+});
+test('an automatic job failure arriving during editing preserves the draft and stops retries',async()=>{
+ const {context,page}=await fixture();try{
+  const source=`BoardExtension.define({event(){const end=performance.now()+300;while(performance.now()<end){}throw Error('refresh failed');},render(){return {type:'input',name:'note',label:'Note',inputType:'text'};}});`;
+  await page.evaluate(source=>make(source),source);await idle(page);
+  await page.evaluate(()=>controllers[0].refresh('timer'));const input=page.getByLabel('Note');await input.fill('Keep this draft');await idle(page);
+  assert.equal(await input.inputValue(),'Keep this draft');assert.equal(await input.evaluate(el=>el===document.activeElement),true);
+  const status=await page.evaluate(()=>controllers[0].getRefreshStatus());assert.equal(status.failed,true);assert.equal(status.automatic,false);assert.match((await page.evaluate(()=>failures))[0],/refresh failed/);
+ }finally{await context.close();}
+});

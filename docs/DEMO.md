@@ -159,6 +159,11 @@ keyboard Enter/Space; native cancellation preserves the active board.
 
 ## Feedback
 
+The included [extension lifecycle reference](docs/EXTENSION-LIFECYCLE.md) defines
+SDK1.2 refresh, diagnostics and browser-local approval. Portable examples are in
+`examples/extensions/`; their presentation clocks do not collect device readings.
+The demo does not install or approve these packages automatically.
+
 Use **Settings → Send feedback** when connected. For offline drafting and agent
 installation, read [docs/FEEDBACK.md](docs/FEEDBACK.md) and the included
 [board-feedback skill](skills/board-feedback/SKILL.md). These files explain how

@@ -46,7 +46,7 @@ function extensionRuntimeDispatch(){
  while(extensionRuntimeActive<8&&extensionRuntimeQueue.length){
   let index=extensionRuntimeQueue.findIndex(x=>x.hasUserJob());if(index<0)index=0;
   const instance=extensionRuntimeQueue.splice(index,1)[0];instance.queued=false;
-  if(!instance.live)continue;const job=instance.takeJob();if(!job)continue;
+  if(!instance.live)continue;const job=instance.takeJob();if(!job){instance.notify();continue;}
   extensionRuntimeActive++;instance.running=true;instance.run(job);
  }
 }
@@ -57,9 +57,11 @@ document.addEventListener('visibilitychange',()=>{
  extensionRuntimeSchedule();extensionRuntimeDispatch();
 });
 function startExtensionRuntime(root,pkg,renderer,data,handlers,onError,context={information:{}},meta={}){
- const opted=!!renderer.refresh&&!meta.preview,interval=opted?renderer.refresh.intervalSeconds:0;
+ const declared=!!renderer.refresh,opted=declared&&!meta.preview,interval=opted?renderer.refresh.intervalSeconds:0;
  const identity={artifact:pkg.artifact,packageId:pkg.package.id,version:pkg.package.version,renderer:renderer.id,componentId:meta.componentId||''};
  let state={},active=null,timeout=null,pendingRefresh=null,initialPending=true,lastUser=-Infinity,failed=false;const userJobs=[];
+ const automatic=reason=>reason==='timer'||reason==='resume';
+ const editing=()=>root.contains(document.activeElement)&&document.activeElement.matches('input,textarea,select,[contenteditable]');
  const instance={live:true,running:false,queued:false,interval,due:performance.now()+interval*1000,
   canSchedule:()=>{if(instance.live&&!root.isConnected){controller.dispose();return false;}return instance.live&&opted&&!failed;},
   hasUserJob:()=>userJobs.length>0,
@@ -68,13 +70,13 @@ function startExtensionRuntime(root,pkg,renderer,data,handlers,onError,context={
   enqueueRefresh:reason=>{if(!instance.live||!opted)return;const priorities={timer:0,resume:1,'source-change':2,manual:3};if(!Object.hasOwn(priorities,reason))return;
    if(failed){if(reason!=='manual')return;failed=false;state={};}
    if(!pendingRefresh||priorities[reason]>priorities[pendingRefresh])pendingRefresh=reason;enqueue();},
-  takeJob:()=>{if(userJobs.length)return {event:userJobs.shift(),kind:'user'};if(initialPending){initialPending=false;return {event:opted&&meta.initialReason==='source-change'?{type:'refresh',reason:'source-change'}:null,kind:'initial'};}if(pendingRefresh){const reason=pendingRefresh;pendingRefresh=null;return {event:{type:'refresh',reason},kind:'refresh'};}return null;},
+  takeJob:()=>{if(userJobs.length)return {event:userJobs.shift(),kind:'user'};if(initialPending){initialPending=false;return {event:opted&&meta.initialReason==='source-change'?{type:'refresh',reason:'source-change'}:null,kind:'initial'};}if(pendingRefresh&&!(automatic(pendingRefresh)&&editing())){const reason=pendingRefresh;pendingRefresh=null;return {event:{type:'refresh',reason},kind:'refresh'};}return null;},
   run:job=>run(job)
  };
  function status(){return {busy:instance.running||instance.queued,failed,supported:opted,automatic:opted&&extensionAutomaticRefresh&&!failed,intervalSeconds:opted?interval:null};}
- function enqueue(){if(!instance.live)return;if(!instance.running&&!instance.queued&&(initialPending||pendingRefresh||userJobs.length)){instance.queued=true;extensionRuntimeQueue.push(instance);}instance.notify();extensionRuntimeDispatch();}
+ function enqueue(){if(!instance.live)return;if(!instance.running&&!instance.queued&&(initialPending||userJobs.length||pendingRefresh&&!(automatic(pendingRefresh)&&editing()))){instance.queued=true;extensionRuntimeQueue.push(instance);}instance.notify();extensionRuntimeDispatch();}
  function finish(){clearTimeout(timeout);timeout=null;if(active){active.terminate();active=null;}if(instance.running){instance.running=false;extensionRuntimeActive--;}if(instance.live)enqueue();instance.notify();extensionRuntimeSchedule();extensionRuntimeDispatch();}
- function fail(error,jobMeta){failed=true;pendingRefresh=null;userJobs.length=0;initialPending=false;recordExtensionDiagnostic(jobMeta,{level:'error',code:'component-failed',message:String(error.message||error).slice(0,500)});root.replaceChildren();try{onError(error);}finally{finish();}}
+ function fail(error,jobMeta){failed=true;pendingRefresh=null;userJobs.length=0;initialPending=false;recordExtensionDiagnostic(jobMeta,{level:'error',code:'component-failed',message:String(error.message||error).slice(0,500)});if(!(automatic(jobMeta.reason)&&editing()))root.replaceChildren();try{onError(error);}finally{finish();}}
  function consumeDiagnostics(message,jobMeta){
   let used=0,count=0,dropped=Number.isSafeInteger(message.dropped)&&message.dropped>=0?Math.min(message.dropped,1000000):0;
   if(message.diagnostics!==undefined){if(!Array.isArray(message.diagnostics))dropped++;else for(const raw of message.diagnostics){const entry=extensionDiagnosticEntry(raw);if(!entry||count>=16){dropped++;continue;}const size=extensionRuntimeBytes(entry);if(used+size>8192){dropped++;continue;}used+=size;count++;recordExtensionDiagnostic(jobMeta,entry,'extension');}}
@@ -89,8 +91,8 @@ function startExtensionRuntime(root,pkg,renderer,data,handlers,onError,context={
   if(!root.isConnected){controller.dispose();return;}
   const now=new Date().toISOString(),event=job.event?{...job.event,...(job.event.type==='refresh'?{now}:{})}:null;
   const jobMeta={...identity,jobId:String(++extensionRuntimeJob),event:event?.type||'initial',reason:event?.reason||''};
-  const jobContext=structuredClone(context);if(opted)jobContext.host={now,refresh:{supported:true,automatic:extensionAutomaticRefresh&&!failed,intervalSeconds:interval}};
-  const readOnly=event?.type==='refresh';const guardedHandlers={field:(...args)=>{ExtensionContract.require(!readOnly,'refresh cannot propose a reply');handlers.field(...args);},proposal:(...args)=>{ExtensionContract.require(!readOnly,'refresh cannot propose a reply');handlers.proposal(...args);}};
+  const jobContext=structuredClone(context);if(declared)jobContext.host={now,refresh:{supported:opted,automatic:opted&&extensionAutomaticRefresh&&!failed,intervalSeconds:opted?interval:null}};
+  const readOnly=event?.type==='refresh',userInitiated=event?.type==='input'||event?.type==='action';const guardedHandlers={field:(...args)=>{ExtensionContract.require(!readOnly,'refresh cannot propose a reply');handlers.field(...args);},proposal:(...args)=>{ExtensionContract.require(!readOnly,'refresh cannot propose a reply');ExtensionContract.require(userInitiated,'reply proposal requires user input or action');handlers.proposal(...args);}};
   if(renderer.mode==='declarative'){try{drawExtensionTree(root,pkg.entry(renderer.entry,true),data,pkg,handlers,undefined,jobContext);finish();}catch(error){fail(error,jobMeta);}return;}
   try{
    const bootstrap=`'use strict';(()=>{const send=postMessage.bind(self);let api=null;const diagnostics=[];let diagnosticBytes=0,dropped=0;function log(value){try{const own=(o,required,optional=[])=>o&&typeof o==='object'&&!Array.isArray(o)&&required.every(k=>Object.hasOwn(o,k))&&Object.keys(o).every(k=>[...required,...optional].includes(k));const name=x=>typeof x==='string'&&x.length<=64&&/^[a-z][a-z0-9-]*$/.test(x);if(!own(value,['level','code','message'],['fields'])||!['debug','info','warn','error'].includes(value.level)||!name(value.code)||typeof value.message!=='string'||![...value.message].length||[...value.message].length>500)throw Error();if(value.fields!==undefined){if(!own(value.fields,[],Object.keys(value.fields))||Object.keys(value.fields).length>8)throw Error();for(const [k,v]of Object.entries(value.fields))if(!name(k)||!(v===null||typeof v==='boolean'||typeof v==='number'&&Number.isFinite(v)||typeof v==='string'&&[...v].length<=200))throw Error();}const entry=structuredClone(value),size=new TextEncoder().encode(JSON.stringify(entry)).length;if(diagnostics.length>=16||diagnosticBytes+size>8192)throw Error();diagnostics.push(entry);diagnosticBytes+=size;}catch{dropped++;}}for(const k of ['Worker','SharedWorker','RTCPeerConnection','webkitRTCPeerConnection'])Object.defineProperty(self,k,{value:undefined,writable:false,configurable:false});Object.defineProperty(self,'BoardExtension',{value:Object.freeze({define(a){if(api)throw Error('SDK already defined');api=a;},log}),writable:false});addEventListener('message',e=>{try{const {data,event,context}=e.data;let state=e.data.state,answer,result;if(event&&typeof api?.event==='function')result=api.event(event,data,state,context);if(result&&Object.hasOwn(result,'state'))state=result.state;if(result&&Object.hasOwn(result,'answer'))answer=result.answer;if(typeof api?.render!=='function')throw Error('SDK render required');const output={kind:'result',tree:api.render(data,state,context),state,diagnostics,dropped};if(answer!==undefined)output.answer=answer;send(output);}catch(e){send({kind:'error',message:String(e.message).slice(0,500),diagnostics,dropped});}});})();\n`;
@@ -104,12 +106,14 @@ function startExtensionRuntime(root,pkg,renderer,data,handlers,onError,context={
     ExtensionContract.keys(message,['kind','tree','state'],['answer','diagnostics','dropped']);ExtensionContract.require(message.kind==='result'&&extensionRuntimeBytes(message.state)<=16384,'worker state limit');
     ExtensionContract.require(extensionRuntimeBytes({kind:message.kind,tree:message.tree,state:message.state,...(Object.hasOwn(message,'answer')?{answer:message.answer}:{})})<=65536,'worker output limit');
     if(Object.hasOwn(message,'answer'))guardedHandlers.proposal(message.answer);
+    if(event?.type==='refresh'&&automatic(event.reason)&&editing()){instance.enqueueRefresh(event.reason);finish();return;}
     state=structuredClone(message.state);drawExtensionTree(root,message.tree,data,pkg,handlers,userEvent,jobContext);finish();
    }catch(error){fail(error,jobMeta);}};
    worker.postMessage({data,state,event,context:jobContext});
   }catch(error){fail(error,jobMeta);}
  }
- const controller={dispose(){if(!instance.live)return;instance.live=false;pendingRefresh=null;initialPending=false;userJobs.length=0;const index=extensionRuntimeQueue.indexOf(instance);if(index>=0)extensionRuntimeQueue.splice(index,1);extensionRuntimeInstances.delete(instance);finish();},refresh:(reason='manual')=>instance.enqueueRefresh(reason),getRefreshStatus:status};
+ const afterEditing=()=>queueMicrotask(()=>{if(instance.live)enqueue();});
+ const controller={dispose(){if(!instance.live)return;instance.live=false;root.removeEventListener('focusout',afterEditing);pendingRefresh=null;initialPending=false;userJobs.length=0;const index=extensionRuntimeQueue.indexOf(instance);if(index>=0)extensionRuntimeQueue.splice(index,1);extensionRuntimeInstances.delete(instance);finish();},refresh:(reason='manual')=>instance.enqueueRefresh(reason),getRefreshStatus:status};
  if(extensionRuntimeInstances.size>=256){instance.live=false;failed=true;onError(Error('extensions: mounted component limit'));return controller;}
- extensionRuntimeInstances.add(instance);enqueue();extensionRuntimeSchedule();return controller;
+ root.addEventListener('focusout',afterEditing);extensionRuntimeInstances.add(instance);enqueue();extensionRuntimeSchedule();return controller;
 }

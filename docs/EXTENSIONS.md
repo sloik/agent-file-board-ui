@@ -18,7 +18,7 @@ reports/forms keep their existing meanings and renderers.
 1. Open a native board and **Extensions**. Choose a local artifact. Review the
    manifest, facets, versions, capabilities and hash before **Install and enable**.
 2. Expand **Inspect manifest and source** to read packaged code and files.
-   Worker packages require **Approve these exact code bytes** before any code runs.
+   Worker packages require **Approve this exact package** before any code runs.
    Approval/revocation is browser-local. Storage failure is shown as session-only.
 3. Use **Compose example** to open a contract's example in structured authoring.
    Edit its envelope/data, validate/preview, attach, and write a readable fallback

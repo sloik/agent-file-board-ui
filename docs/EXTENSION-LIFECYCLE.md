@@ -1,8 +1,9 @@
 # Extension lifecycle and diagnostics — SDK 1.2 (unreleased)
 
-The canonical board owns the portable contract. Read the vendored
-[full lifecycle reference](../vendor/agent-file-board/docs/EXTENSION-LIFECYCLE.md)
-or its [public source](https://github.com/sloik/agent-file-board/blob/main/docs/EXTENSION-LIFECYCLE.md).
+The canonical board owns the portable contract. Read the
+[full lifecycle reference](https://github.com/sloik/agent-file-board/blob/main/docs/EXTENSION-LIFECYCLE.md).
+An offline copy is at `vendor/agent-file-board/docs/EXTENSION-LIFECYCLE.md` in
+this checkout and `docs/EXTENSION-LIFECYCLE.md` in the downloadable demo.
 
 An **extension** is a package; a **component** is one rendered instance. The stock
 viewer implements declared periodic/manual presentation refresh for worker and
@@ -35,9 +36,11 @@ inspection without approving; readable content remains available. Installing a
 new package does not switch an approved older pinned renderer.
 
 Portable examples are
-[lifecycle-worker](../vendor/agent-file-board/examples/extensions/lifecycle-worker.afb-plugin.json)
+[lifecycle-worker](https://github.com/sloik/agent-file-board/blob/main/examples/extensions/lifecycle-worker.afb-plugin.json)
 and
-[lifecycle-declarative](../vendor/agent-file-board/examples/extensions/lifecycle-declarative.afb-plugin.json).
+[lifecycle-declarative](https://github.com/sloik/agent-file-board/blob/main/examples/extensions/lifecycle-declarative.afb-plugin.json).
+Offline copies are in `vendor/agent-file-board/examples/extensions/` and the
+demo's `examples/extensions/` folder.
 Install the canonical approvals contract example first; both lifecycle examples
 target `com.example.approvals/request`. Select the renderer in the viewer, and
 approve only the worker's exact package after inspection. The examples display

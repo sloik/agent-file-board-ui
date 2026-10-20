@@ -1,5 +1,15 @@
 # Release notes
 
+## Unreleased
+
+- Support portable SDK1.2 refresh declarations for declarative and approved
+  worker components, with bounded host scheduling and a local automatic-update
+  preference. Component refresh uses loaded board data; collection stays external.
+- Add bounded local extension diagnostics with host/extension origins and
+  explicit filtered export. No automatic uploads or board writes.
+- Make unavailable extension components recognizable with quiet host-owned
+  status and direct inspection of the exact package requiring local approval.
+
 ## 2.6.1 — 2026-10-19
 
 - Add Settings → Send feedback with English/Polish labels and explicit GitHub
