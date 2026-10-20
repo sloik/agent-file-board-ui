@@ -152,6 +152,13 @@ authenticated merely by these message/signing controls.
 
 ## Optional agent operator — SPEC-002-026
 
+Implementation note (SPEC-002-027, unreleased): the informational registry field,
+CLI validation and UI participant-details label are implemented. Current details
+reflect the latest registry only. Signed profiles, historical signed snapshots,
+human endorsement and key-possession checks below remain architecture proposals;
+this implementation does not provide or imply them.
+
+
 An agent can declare `operator: "human-owner-01"` in its registration; no value is
 required. Show the link in participant details as Operator claimed by this agent,
 with the human's stable ID and an inspect/open action. Keep message headers compact.

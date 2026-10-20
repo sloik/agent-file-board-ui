@@ -1,5 +1,11 @@
 # Release notes
 
+## Unreleased
+
+- Add optional informational agent `operator` links to registered human IDs.
+- Show agent claims and invalid-link diagnostics in participant details, in English
+  and Polish. The link grants no trust, signing access or notification follows.
+
 ## 2.9.1 — 2026-10-20
 
 - Denser expanded message options: aligned routing groups and responsive secondary fields reduce wrapping while keeping all searches available.
