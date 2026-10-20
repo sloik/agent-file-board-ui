@@ -90,3 +90,21 @@ at /tmp/afb-270-main-ci-failure.log; one unchanged failed-job retry was requeste
 The exact tagged release gate independently passed the whole required suite.
 No test was skipped, weakened or increased in timeout, and the intermittent
 failure is not claimed fixed.
+
+
+## Synchronized release verification — 2026-10-20
+
+Canonical and UIv2.7.0 now both have published, non-prerelease GitHub Release
+entries marked Latest. Canonical tag remains3f5b512 and UI tag remainsfbd9780;
+UI's exact vendor pin matches the canonical tag. Downloaded canonical source
+archive matches all133tracked files/modes from the tested tag. All4UI asset
+sizes/digests and both exact release notes verified. Previous2.6.1 releases and
+assets remain unchanged. Receipt/tmp/afb-270-synchronized-releases.json.
+
+The canonical release entry was initially omitted because its workflow only
+runs tag tests; it was explicitly published from the existing tested tag after
+owner reported the missing entry. No tags moved. Separate same-commit UI main
+39381315440 attempt2 completed successfully; the original intermittent draft-import
+timeout is retained and is not claimed repaired. Both release URLs:
+https://github.com/sloik/agent-file-board/releases/tag/v2.7.0
+https://github.com/sloik/agent-file-board-ui/releases/tag/v2.7.0
