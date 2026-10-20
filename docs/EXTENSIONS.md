@@ -133,7 +133,7 @@ system memory quota or protection from a compromised browser.
 
 Extensions **only add through this public SDK and contracts**. They cannot
 change core parsing, routing, identity, message history, statuses, permissions,
-board scanning or write rules. Only render, propose-reply and declared read-state are supported.
+board scanning or write rules. Only render, propose-reply, declared read-state and SDK 1.2 refresh are supported.
 If your plugin needs more powers or different core behavior, create a project
 GitHub issue: [convention](https://github.com/sloik/agent-file-board/issues/new)
 or [viewer/SDK](https://github.com/sloik/agent-file-board-ui/issues/new).
@@ -242,3 +242,19 @@ For capability requests, bugs or general feedback, use the shared
 [board-feedback skill](https://github.com/sloik/agent-file-board/blob/v2.6.1/skills/board-feedback/SKILL.md).
 Settings → Send feedback opens the viewer issue chooser explicitly; the guide
 routes convention/CLI reports to canonical. Offline drafts need no GitHub tooling.
+
+## SDK 1.2 lifecycle and diagnostics (unreleased)
+
+An extension is a package; a component is one rendered instance. The canonical
+[portable lifecycle contract](EXTENSION-LIFECYCLE.md) defines presentation-only
+periodic/manual refresh for worker and declarative renderers, custom-host
+negotiation, `context.host.now`, bounded `BoardExtension.log` diagnostics, explicit
+local export and whole-package approval indicators. Source collection stays in
+external agents/scripts. Component refresh uses cached declared inputs; use board
+refresh to re-read files. Existing SDK 1.0/1.1 packages remain supported unchanged.
+
+A renderer requests `refresh: {intervalSeconds: 30}` with the package `refresh`
+capability and API compatibility including 1.2.0. Both renderer modes may bind
+`{contextPath:["host","now"]}`; workers additionally receive refresh lifecycle
+events. All refresh events, including manual, are forbidden from proposing replies.
+See the full contract and runnable examples before implementing a custom host.
