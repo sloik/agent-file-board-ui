@@ -2,6 +2,7 @@
 
 ## 2.9.1 — 2026-10-20
 
+- Denser expanded message options: aligned routing groups and responsive secondary fields reduce wrapping while keeping all searches available.
 - Deliver compact message controls and Tools navigation; retain destination/status,
   drafts, reply/attachment state and primary actions while reducing phone chrome.
 - Quiet routine session announcements by default and preserve historical access.

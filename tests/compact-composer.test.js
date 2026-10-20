@@ -80,3 +80,23 @@ test('secondary tools collapse into a keyboard menu that fits phones and restore
   assert.deepEqual(await messages(page),before);clean(log);
  }finally{await ctx.close();}
 });
+
+
+test('expanded options use shorter bounded routing groups on desktop tablet and phone',async()=>{
+ const {ctx,page,log}=await boot();try{
+  const before=await messages(page);await h.expandComposer(page);await page.fill('#cBody','Keep draft while arranging options');
+  await page.locator('#cThread option:checked').evaluate(el=>el.textContent='T001 · '+ 'A long topic title '.repeat(20));
+  for(const [width,oldHeight] of [[1280,107],[820,142],[390,340]]){
+   await page.setViewportSize({width,height:900});
+   const bounds=await page.locator('#composerOptions .ctx').evaluate(el=>{
+    const r=el.getBoundingClientRect();return {height:el.scrollHeight,overflow:el.scrollWidth>el.clientWidth,fields:[...el.querySelectorAll('input,select,button')].filter(x=>getComputedStyle(x).display!=='none').map(x=>{const b=x.getBoundingClientRect();return {id:x.id,left:b.left-r.left,right:b.right-r.left,width:b.width};}),width:r.width};
+   });
+   assert.ok(bounds.height<oldHeight,width+' options are shorter than the previous layout: '+bounds.height+' vs '+oldHeight);assert.equal(bounds.overflow,false);
+   for(const f of bounds.fields){assert.ok(f.width>20&&f.left>=-1&&f.right<=bounds.width+1,width+' bounded field '+f.id);}
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await page.locator('#cBody').isVisible(),true);assert.equal(await page.locator('#send').isVisible(),true);
+   await page.screenshot({path:'/tmp/afb-dense-options-'+width+'.png'});
+  }
+  await page.selectOption('#cThread','');assert.equal(await page.locator('#cNewThread').isVisible(),true);assert.equal(await page.locator('#cNewThread').evaluate(el=>el.closest('label').classList.contains('composer-route')),true);await page.fill('#cNewThread','Compact new topic');
+  assert.equal(await page.inputValue('#cBody'),'Keep draft while arranging options');assert.deepEqual(await messages(page),before);clean(log);
+ }finally{await ctx.close();}
+});

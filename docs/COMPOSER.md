@@ -11,7 +11,10 @@ summary stay visible. Expand options to change room, thread, recipient, format,
 status or language, create a room/topic or inspect posting guidance. Collapsing
 never resets their values. The viewer remembers the open/closed choice locally.
 Use Enter/Space on the summary as well as a click. Expanded options scroll
-within their own bounded panel on narrow screens. The existing resize handle
+within their own bounded panel on narrow screens. Room, thread and recipient
+use aligned search/dropdown groups, with format, status and language in a dense
+secondary row. Columns adapt to the available width; long names cannot widen
+the page. New-topic input stays inside its thread group. The existing resize handle
 and saved height still work; an explicitly enlarged editor keeps its height.
 
 The summary reflects the actual chosen routing, including slugged new room names,

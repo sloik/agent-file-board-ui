@@ -225,6 +225,19 @@ mark{background:var(--mark);color:inherit;border-radius:3px}
 .toolbar-tools{position:relative;flex:none}.toolbar-tools>summary{cursor:pointer}.toolbar-tools:not([open])>.toolbar-tools-panel{display:none}.toolbar-tools-panel{position:fixed;z-index:80;width:220px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:0 8px 24px #0003;box-sizing:border-box}.toolbar-tools-panel>.btn{display:block;width:100%;text-align:left;margin:3px 0}
 @media(max-width:600px){.top{gap:6px}.top .spacer{display:none}.top .search{flex-basis:100%;max-width:none;min-width:0}.toolbar-tools>summary{font-size:0}.toolbar-tools>summary::after{content:"⋯";font-size:18px;line-height:1}}
 .composer-options-summary{cursor:pointer;font-size:12px;overflow-wrap:anywhere}.composer-options-summary>span{margin-right:8px}#composerRouteSummary{color:var(--muted)}#composerOptions[open]>.ctx{margin-top:10px;max-height:min(28vh,260px);overflow:auto}#composerOptions{flex:none}
+/* Expanded options share bounded columns instead of wrapping whole field pairs. */
+#composerOptions[open]>.ctx{margin-top:6px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px 8px;align-items:center;font-size:12px}
+#composerOptions .ctx label{flex-wrap:nowrap;gap:4px}
+#composerOptions .ctx input,#composerOptions .ctx select{min-width:0;max-width:100%;padding:3px 5px;font-size:12.5px;box-sizing:border-box}
+#composerOptions .composer-route{grid-column:span 2;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 6px}
+#composerOptions .composer-route>.completion{min-width:0}
+#composerOptions .composer-route>.completion input{width:100%}
+#composerOptions .composer-route>select,#composerOptions .composer-route>#cNewThread{grid-column:1/-1;width:100%;max-width:100%}
+#composerOptions .ctx label:not(.composer-route)>select{flex:1;width:0}
+#composerOptions #composeGuidance{padding:4px 6px;font-size:12px;white-space:normal;line-height:1.25}
+#composerOptions #cNewRoom{grid-column:span 2;width:100%}
+@media(max-width:1000px){#composerOptions .ctx label:not(.composer-route){grid-column:span 2}#composerOptions #composeGuidance{grid-column:span 2}#composerOptions #cNewRoom{grid-column:span 4}}
+@media(max-width:600px){#composerOptions[open]>.ctx{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#composerOptions .composer-route,#composerOptions .ctx label:not(.composer-route),#composerOptions #composeGuidance,#composerOptions #cNewRoom{grid-column:auto}#composerOptions .composer-route>.completion input{height:25px}#composerOptions .ctx label:not(.composer-route){display:grid;grid-template-columns:1fr}#composerOptions .ctx label:not(.composer-route)>select{width:100%}}
 .composer .inner{display:flex;flex-direction:column;gap:8px;height:100%}
 .composer .write{flex:1;min-height:46px;position:relative}
 .composer textarea{height:100%;max-height:none}
@@ -476,10 +489,10 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
         <div class="replying" id="replying"><span><span data-i18n="replying_to"></span> <b id="replyName"></b></span><button type="button" id="replyClear" data-i18n-title="cancel_reply">&#10005;</button></div>
         <details id="composerOptions"><summary class="composer-options-summary"><span data-i18n="composer_options"></span><span id="composerRouteSummary"></span><span id="cStatusPreview" data-i18n-title="draft_status" class="chip status status-tone s-INFO">INFO</span></summary>
         <div class="ctx">
-          <label><span data-i18n="c_where"></span> <span class="completion"><input id="cWhereSearch" autocomplete="off" data-i18n-ph="find_room" data-i18n-aria="find_room"><div class="sugg" id="cWhereSuggestions"></div></span> <select id="cWhere"></select></label>
-          <label><span data-i18n="c_thread"></span> <span class="completion"><input id="cThreadSearch" autocomplete="off" data-i18n-ph="find_topic" data-i18n-aria="find_topic"><div class="sugg" id="cThreadSuggestions"></div></span> <select id="cThread" style="max-width:280px"></select></label>
-          <input id="cNewThread" data-i18n-ph="c_new_thread_ph" size="20" style="display:none">
-          <label><span data-i18n="c_to"></span> <span class="completion"><input id="cToSearch" autocomplete="off" data-i18n-ph="find_party" data-i18n-aria="find_party"><div class="sugg" id="cToSuggestions"></div></span> <select id="cTo"></select></label>
+          <label class="composer-route"><span data-i18n="c_where"></span> <span class="completion"><input id="cWhereSearch" autocomplete="off" data-i18n-ph="find_room" data-i18n-aria="find_room"><div class="sugg" id="cWhereSuggestions"></div></span> <select id="cWhere"></select></label>
+          <label class="composer-route"><span data-i18n="c_thread"></span> <span class="completion"><input id="cThreadSearch" autocomplete="off" data-i18n-ph="find_topic" data-i18n-aria="find_topic"><div class="sugg" id="cThreadSuggestions"></div></span> <select id="cThread"></select>
+          <input id="cNewThread" data-i18n-ph="c_new_thread_ph" size="20" style="display:none"></label>
+          <label class="composer-route"><span data-i18n="c_to"></span> <span class="completion"><input id="cToSearch" autocomplete="off" data-i18n-ph="find_party" data-i18n-aria="find_party"><div class="sugg" id="cToSuggestions"></div></span> <select id="cTo"></select></label>
           <label><span data-i18n="content_type"></span> <select id="cContentType"><option value="text/plain" data-i18n="content_plain"></option><option value="text/markdown">Markdown</option><option value="text/html">HTML</option></select></label>
           <label><span data-i18n="c_status"></span> <select id="cStatus"></select></label>
           <label><span data-i18n="c_lang"></span> <select id="cLang"></select></label>

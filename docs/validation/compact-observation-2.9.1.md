@@ -59,3 +59,21 @@ layout assertions cover all six locale/theme combinations. These checks establis
 visible layout, keyboard actions, state and bytes, not spoken-output behavior.
 No live8h listener was started. Nothing was pushed or published; public2.7.0
 remains unchanged. Living specs stay parked.
+
+## Denser expanded options follow-up — SPEC-002-022
+
+Existing search/dropdown pairs now use aligned bounded routing columns, compact
+secondary fields and responsive two-column phone layout. New-topic input remains
+inside the Thread group. Font size of editable controls stays12.5px. No controls,
+searches or message semantics were removed. This is UI-only; the canonical source
+pin and convention remain unchanged.
+
+Measured English fixture content height before → after:1280px viewport107 →90px,
+820px142 →121px,390px340 →201px. A new actual-browser regression asserts reduced
+content height and bounded controls with a very long selected topic, new-topic
+placement, visible body/Send, unchanged draft and unchanged board messages.
+Existing search/real-posting tests pass; both locale/three-theme phone checks stay
+in place. Parent inspected desktop, tablet and phone screenshots from disposable
+fixtures. Final UI352 unit/browser tests pass with no skips; the focused workflow
+suite passes24/24. Full36-test Python suite also passes.
+No live owner-board mutation, push or publication.
