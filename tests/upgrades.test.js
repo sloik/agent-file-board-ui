@@ -31,7 +31,7 @@ async function settled(page){
   await page.evaluate(()=>window.__fakefs.settled);
 }
 test('native upgrades preview and preserve all unmanaged bytes, with exact backups and zero network',async()=>{
-  for(const version of ['1.9.2','2.0.0','2.0.1','2.1.0','2.2.0','2.3.0','2.4.0','2.5.0','2.5.1','2.6.0','2.6.1','2.7.0','2.8.0','2.9.0']){
+  for(const version of ['1.9.2','2.0.0','2.0.1','2.1.0','2.2.0','2.3.0','2.4.0','2.5.0','2.5.1','2.6.0','2.6.1','2.7.0','2.8.0','2.9.0','2.9.1']){
     const s=await open(version),{page,ctx,log}=s;
     const before=await page.evaluate(()=>window.__fakefs.dump());
     if(version==='1.9.2'){
@@ -42,9 +42,9 @@ test('native upgrades preview and preserve all unmanaged bytes, with exact backu
     assert.equal(await page.isEnabled('#upgradeApply'),true);
     assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),before,'preview is read-only');
     await page.click('#upgradeApply');await settled(page);
-    assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.9\.1/);
+    assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.10\.0/);
     assert.equal(await page.isVisible('#verwarn'),false);
-    assert.match(await page.textContent('#verbar'),/Board v2\.9\.1/);
+    assert.match(await page.textContent('#verbar'),/Board v2\.10\.0/);
     const after=await page.evaluate(()=>window.__fakefs.dump());
     const managed=['CONVENTION.md','GLOSSARY.md','components/board-report-v1.schema.json','components/board-report-v2.schema.json','components/board-report-v3.schema.json','components/form-question-v2.schema.json','components/form-answer-v2.schema.json','components/form-question-v3.schema.json','components/form-answer-v3.schema.json'].map(r=>'.agent-board/'+r);
     for(const file of before) if(!managed.includes(file.path)) assert.deepEqual(after.find(f=>f.path===file.path),file);
@@ -152,14 +152,14 @@ test('a normal folder refresh retains the same selected-board preview',async()=>
   await page.evaluate(()=>{window.__preUpgradeModel=window.__boardTest.getModel();document.querySelector('#reload').click();});
   await page.waitForFunction(()=>window.__boardTest.getModel()!==window.__preUpgradeModel);
   await page.click('#upgradeApply');await settled(page);
-  assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.9\.1/);
+  assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.10\.0/);
   await ctx.close();
 });
 test('rapid repeated update clicks publish one backup and one completion',async()=>{
   const {page,ctx}=await open();await preview(page);
   await page.evaluate(()=>{const button=document.querySelector('#upgradeApply');button.click();button.click();button.onclick();});
   await settled(page);
-  assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.9\.1/);
+  assert.match(await page.textContent('#upgradeResult'),/Updated selected board to v2\.10\.0/);
   const files=await page.evaluate(()=>window.__fakefs.dump());
   assert.equal(files.filter(f=>/upgrade-backups\/[^/]+\/snapshot.json$/.test(f.path)).length,1);
   assert.equal(files.filter(f=>/upgrade-backups\/[^/]+\/complete.json$/.test(f.path)).length,1);
