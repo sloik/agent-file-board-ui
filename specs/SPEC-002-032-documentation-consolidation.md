@@ -38,6 +38,10 @@ release archives, node dependencies or vendor contents. No new platform or tooli
 Done: isolated worker21f9a7c reviewed and merged into UI main. No publication.
 No active NFR specs or installed lifecycle engine.
 
+The completed consolidation preserved session evidence under its original scope.
+SPEC-002-036 subsequently removes that material from public documentation and
+packages; this historical completion record describes the earlier work.
+
 ## Outcome and validation — 2026-10-21
 
 - Root docs Markdown19→4: index plus stable FEATURES/OPENUI/EXTENSIONS entry

@@ -247,10 +247,10 @@ MIT, see [LICENSE](LICENSE).
 
 Messages show **Open** and **Open containing folder** beside local references:
 
-- Plain text: put an absolute path in backticks, such as `/Users/ed/My folder/report.md`.
-- Markdown: `[Review report](file:///Users/ed/My%20folder/report.md)`.
-- HTML: `<a href="file:///Users/ed/My%20folder/report.md">Review report</a>`.
-- A bare `file:///Users/ed/report.md` URI also works. Folder paths work too.
+- Plain text: put an absolute path in backticks, such as `/Users/you/My folder/report.md`.
+- Markdown: `[Review report](file:///Users/you/My%20folder/report.md)`.
+- HTML: `<a href="file:///Users/you/My%20folder/report.md">Review report</a>`.
+- A bare `file:///Users/you/report.md` URI also works. Folder paths work too.
 
 These actions use the optional macOS desktop opener described below. **Rerun its
 installer after upgrading** to enable message file actions. Open uses the default

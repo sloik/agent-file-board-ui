@@ -32,6 +32,14 @@ class DemoTests(unittest.TestCase):
                 self.assertEqual(archive.read(PREFIX + '/LICENSE'), (ROOT / 'LICENSE').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/licenses/dracula-MIT.txt'), (ROOT / 'licenses/dracula-MIT.txt').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/licenses/highlightjs-BSD-3-Clause.txt'), (ROOT / 'licenses/highlightjs-BSD-3-Clause.txt').read_bytes())
+                self.assertFalse(any('validation' in Path(name).parts or Path(name).name == 'SIGNING-REVIEW.md' for name in names))
+                for guide in ['SIGNING-CORE.md', 'SIGNATURES-AND-IDENTITY.md', 'SIGNING-POLICY-AND-POSSESSION.md']:
+                    self.assertEqual(archive.read(PREFIX + '/docs/' + guide), (ROOT / 'vendor/agent-file-board/docs' / guide).read_bytes())
+                signing = archive.read(PREFIX + '/docs/SIGNING.md').decode('utf-8')
+                expected_signing = (ROOT / 'docs/guides/signing.md').read_text().replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md')
+                self.assertEqual(signing, expected_signing)
+                self.assertNotIn('SIGNING-REVIEW', signing)
+                self.assertNotIn('../validation/', signing)
                 for rel in ['docs/SOURCE-CODE.md', 'examples/source-code/review.md', 'examples/source-code/device.patch', 'examples/extensions/source-review.afb-plugin.json']:
                     self.assertEqual(archive.read(PREFIX + '/' + rel), (ROOT / 'vendor/agent-file-board' / rel).read_bytes())
                 archive.extractall(directory / 'extracted')
