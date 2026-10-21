@@ -56,3 +56,10 @@ Neither experiment proves native viewer-file replacement or full production
 extension isolation. These remain explicit implementation gates, alongside
 permissions, backup/recovery, concurrency and platform behavior. No runtime
 implementation, release publication or updater installation belongs to this spec.
+
+## Follow-up
+
+SPEC-002-043 supersedes the automatic-file-installation portion of this research.
+The owner chose guided manual app-package installation while retaining daily
+notices. Its revised design preserves parent/worker network denial through a
+separately hosted checker, instead of relocating extension workers.

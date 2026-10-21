@@ -31,7 +31,7 @@ owns the wire format, CLI and portable contracts.
 - [Browser storage](reference/STORAGE.md): record scoping, transaction behavior, limits and reload evidence.
 - [Screenshot inventory](reference/SCREENSHOTS.md): maintained image coverage and reproduction commands.
 - [Copyable OpenUI JSON](examples/openui/README.md) and [fictional draft backups](examples/drafts/README.md).
-- [Viewer update architecture](design/VIEWER-UPDATES.md): agreed behavior and implementation gates; not a released feature.
+- [Package update architecture](design/VIEWER-UPDATES.md): manual installation, daily notices and implementation gates; not a released feature.
 - [Formal signing model](../formal/README.md): bounded interleaving checks, negative controls and implementation limits.
 - [Development, tests and release workflow](../README.md#development-and-tests).
 

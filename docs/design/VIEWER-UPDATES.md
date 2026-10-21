@@ -1,224 +1,214 @@
-# Viewer self-update architecture
+# Board package releases and guided updates
 
-Status: architecture agreed with the owner. Implementation has not started.
-The browser transport and a bounded isolation prototype have been investigated;
-real viewer-file permissions, replacement and recovery remain implementation gates.
+Status: agreed architecture; runtime/package implementation pending.
+SPEC-002-043 replaces the automatic-installation part of SPEC-002-042. The owner
+chose a GitHub release ZIP plus manual update instructions and explicitly retained
+the daily in-app update notice. No installed updater is required.
 
-## Agreed user behavior
+## User contract
 
-1. Check for stable releases once a day while the viewer is open, with an overdue
-   check on reopening. Show a notice; never install automatically. Editing and
-   offline use remain available if checking fails.
-2. Install only after an explicit action. Installation and reload are separate.
-   Show both the installed version and the version this tab is still running.
-3. Reload only on explicit action, after unfinished work is completed or explicitly
-   discarded and active operations finish. Comprehensive draft recovery is outside
-   initial scope; never pretend existing form storage covers every draft.
-4. Use browser-based replacement in supported Chrome/Edge. Firefox and other
-   unsupported browsers get verified download and manual replacement. No installed
-   helper or background application is required for the initial release.
-5. Manage the selected viewer installation independently of board data. One viewer
-   can open many boards, or projects can each use separate viewers. No required
-   adjacency to `.agent-board`, per-board HTML copy or scan for other installations.
-6. Preserve Git checkouts and offer an independent standalone viewer download.
-   Do not modify tracked HTML or invoke Git. Source archives and customized/unknown
-   files follow the same conservative preservation rule as a design default.
-7. Replace a selected standalone viewer in its shared/Dropbox location. Normal
-   sync may deliver the changed file to other computers; open tabs keep their
-   current code until reloaded. The viewer cannot confirm sync completion.
+1. Check daily while the viewer is open, including an overdue check on reopening.
+   Show an update notice, current/latest versions and changes. Failed checks mean
+   latest unknown; offline viewing and composing remain usable.
+2. **Download update package** opens the fixed official GitHub release/package
+   link. Installation is manual; the board neither overwrites files nor claims
+   that starting a download completed installation or verified the saved ZIP.
+3. Show a concise update guide with the download. The user finishes or explicitly
+   discards unfinished work, backs up application files, extracts the new package,
+   replaces only application files and reopens/reloads when ready.
+4. The in-app Reload action remains explicit and checks unfinished work and active
+   operations. Comprehensive draft recovery is outside initial scope. Browser/OS
+   reload and close controls cannot be treated as an unconditional recovery guarantee.
+5. One viewer installation may open any number of boards; per-project viewer copies
+   are also supported. There is no required layout beside `.agent-board`.
+6. Preserve Git checkouts: offer a standalone released package instead of editing
+   tracked files or invoking Git. Apply the same preservation default to source
+   ZIPs, customized installations and unknown source mode.
+7. A user can manually replace application files in a shared/Dropbox installation.
+   Normal sync may propagate them. Existing tabs keep their loaded version until
+   reloaded; the board cannot confirm remote sync completion.
 
-## Installation setup and distribution modes
+## Release package
 
-The user declares a standalone installation or a source checkout/archive. A file
-handle does not expose ancestor directories, so do not claim reliable Git detection
-from a filename or version. Granted-directory observations can inform the UI but
-cannot prove absence of an ancestor `.git`; worktrees may use a `.git` file.
-Unknown/source mode offers a standalone download without writing into that tree.
+Publish an additional app-only `agent-file-board-viewer.zip` from the exact tested
+release checkout. This is distinct from `agent-file-board-demo.zip`, which contains
+fictional boards. Do not advertise the demo ZIP as an in-place update package.
 
-For in-place updates, the user selects the viewer's containing folder and the
-exact HTML inside it. The containing-folder grant provides a writable sibling
-backup destination; selecting only HTML does not imply that permission. Show the
-selected file and dedicated `viewer-update-backups` folder before first install.
-This registration is independent of selected board folders and is remembered
-locally, with permission rechecked/renewed on explicit user action.
+Candidate package layout:
 
-Recognize eligible original bytes through their known published release digest.
-Two copies can have identical bytes: this proves eligibility, not that the selected
-handle is the file running in this tab. Selection is the user's declared target.
-After reload, confirm the actual running version instead of assuming success.
+```text
+agent-file-board-viewer/
+├── board.html
+├── README.md
+├── UPDATE.md
+├── package-manifest.json
+├── LICENSE
+├── THIRD_PARTY_NOTICES.md
+├── licenses/
+└── scripts/
+    ├── voice_helper.py
+    ├── voice-helper.html
+    ├── desktop_opener.applescript
+    └── install_desktop_opener.py
+```
 
-| Distribution | What an update does |
-| --- | --- |
-| Standalone HTML or release/demo ZIP | Replace only selected viewer HTML; board data, examples, packaged helpers and guides stay untouched |
-| Git checkout or source ZIP | Preserve source files; offer standalone viewer download |
-| Unknown or customized HTML | Preserve it; offer standalone download and explain registration |
+The core viewer currently bundles its JavaScript, styles, schemas and upgrade
+metadata. Optional helper tools ship as their required file sets; Python/models
+or OS registration remain optional setup documented by each tool. Normal viewing
+must not require Python or running an installer.
 
-A newly downloaded standalone copy is a separate installation. Do not promise
-that file-origin settings, permissions or private trust automatically migrate
-with a new location. Opening a download must not close the old tab or discard work.
-Legacy HTML without updater controls needs a one-time manual replacement/download.
+The package manifest records format version, viewer version, bundled canonical
+version, and each managed relative path, role, byte count and SHA-256. It excludes
+its own recursive checksum. Future required runtime assets must be included in
+the package/inventory and packaging tests must verify that dependency closure.
+Do not assume future releases remain HTML-only.
 
-## Components and trust boundaries
+Never package real `.agent-board` data, conversations, identities, presence/read
+state, private trust/key storage, user configuration, custom extensions, arbitrary
+source checkout files or session validation reports. Board-format migrations remain
+separate preview/consent operations. Updating bundled helper source does not restart
+an already-running process or silently re-register an OS helper; explain explicit
+restart/setup requirements and protocol compatibility.
 
-**Update controller:** owns schedule, fixed GitHub endpoints, release discovery,
-bounded downloads, candidate verification, selected installation and state reporting.
-Store update metadata privately, not in board messages/config. Coordinate scheduled
-checks where local browser storage permits; if persistence/coordination is unavailable,
-fall back to manual checking instead of repeated automatic requests.
+The existing [release preparation](../../scripts/prepare_release.py) and
+[publisher](../../scripts/publish_release.sh) stage/preserve tested assets. Extend
+that pipeline for the app ZIP and matching notes/checksums; keep existing assets,
+backfills and published releases unchanged. A checksum from the same GitHub channel
+is integrity metadata, not independent publisher authentication. Do not use board
+participant keys as executable-release trust.
 
-**Release candidate:** bind repository, release ID, stable version, exact commit,
-asset ID, expected byte count and SHA-256 into one candidate. Retrieve the exact
-commit's bundled HTML through the GitHub raw-content API and require it to match
-the published release asset digest. Source at a tag alone is insufficient. Use
-explicit discovery cache policy and commit-addressed content. Revalidate identity
-before install; never silently substitute a different candidate or downgrade.
-Hash original bytes, not decoded/re-encoded text; inspect version as data and never
-execute a candidate for validation.
+## Manual update guide
 
-A read-only Chromium probe obtained the current released HTML byte-for-byte
-through the raw API; direct release-asset fetching failed. This supports the API
-route, not a blanket claim about every browser/endpoint. Firefox needs its own
-transport/download test. API rate limits and network failures mean latest unknown.
+The maintained `UPDATE.md` should cover these steps on macOS, Windows and Linux:
 
-**Extension isolation:** the current parent CSP has `connect-src 'none'` and
-[extension-runtime.js](../../scripts/extension-runtime.js) creates `data:` workers.
-Those workers inherit parent policy. Merely allowing GitHub in the parent would
-also give custom code a network destination. JavaScript fetch wrappers or allowed
-URL paths do not restore the existing isolation guarantee.
+1. Read the target version's notes and finish or explicitly discard unfinished
+   work. If using an optional helper, check whether its process needs restarting.
+2. Download the app ZIP from the official release. Extract into a fresh staging
+   folder, not directly over a project/data directory.
+3. Keep the prior application package or back up its application files. For a
+   stable shared installation, copy only managed application files from the new
+   package into the application location; preserve unlisted user/data files.
+4. If using a Git/source copy, open the extracted standalone viewer instead of
+   changing source files. Do not move or delete existing board data. A new viewer
+   location does not guarantee automatic migration of browser settings/private state.
+5. Reopen/reload the intended viewer and check its displayed running version.
+   Reopen the board if permissions require it; uploaded snapshots need reselection.
+   Signing starts locked and requires explicit unlock; never persist private keys
+   to make updates convenient.
+6. If the new viewer fails, restore the prior application files at their original
+   location. Declare storage/rollback compatibility: old HTML cannot undo a newer
+   IndexedDB migration, and restoring code must never reset signing trust/floors.
 
-The selected implementation structure is a fixed trusted opaque iframe with an
-additional strict `connect-src 'none'` policy. It creates extension workers and
-proxies bounded jobs/results through a channel bound to its exact window and
-session. Custom component code stays exclusively in workers. The parent may
-perform bounded update fetching; the child additionally forbids frames and other
-network resources. An iframe cannot relax an inherited parent network prohibition,
-so putting the updater in `srcdoc` while leaving parent networking forbidden is
-not a solution.
+Use clear platform file-manager instructions. Avoid a blanket replace/delete of
+an entire project folder. Optional checksum-verification commands can be documented
+without making terminal use necessary for ordinary installation.
 
-A bounded file-origin Chromium prototype confirmed the distinction: a direct
-worker under a network-enabled parent reached an actual HTTP endpoint; a stricter
-opaque child, its worker and a nested worker made no request. This is an architecture
-feasibility check, not the production broker or complete security qualification.
-Actual extension lifecycle, cancellation, budgets, forged messages, fetch/XHR,
-WebSocket, imports and nested-worker transport controls must pass before enabling
-updater networking. Keep all existing worker/extension regression coverage.
+## Daily notice without widening worker network access
 
-**Installer:** owns permission renewal, backup, serialized browser writes,
-precommit checks, postcommit verification and recoverable state. Prefer
-`createWritable({mode:'exclusive'})` and verify required exclusivity is supported;
-never silently accept overlapping writers. Retain and reread an exact backup
-before replacing the live viewer. The browser writable stream stages bytes and
-commits on close; do not claim direct OS rename/fsync APIs are available to HTML.
-Reread/hash original target around the final commit boundary, coordinate local
-installers/critical application operations and verify actual installed bytes.
+Keep the viewer's parent `connect-src 'none'` and existing `data:` component workers
+unchanged. Direct parent GitHub fetching would widen the CSP inherited by those
+workers, so a simple host allowlist would not preserve current isolation.
 
-Browser exclusivity is not cross-process/cloud compare-and-swap. Dropbox or another
-computer can race the final check/close. Detect changes where observable, preserve
-backup/transaction evidence and explain conflicts; do not promise global locking.
+Deploy one small fixed **cross-origin HTTPS checker page** on publisher-controlled
+GitHub Pages. Unlike `srcdoc`/`data:` documents, an independently fetched HTTP(S)
+page uses its own CSP. Parent `frame-src` permits only that checker endpoint.
+The iframe has `sandbox="allow-scripts allow-same-origin"` and
+`referrerpolicy="no-referrer"`, without popup/navigation/download/form permissions.
+Require checker origin to differ from the viewer origin; a same-origin hosted
+viewer must use a separately qualified opaque/separate-origin variant or fail
+closed to manual checking. Never make same-origin sandbox escape a trusted shortcut.
 
-**Reload gate:** recheck immediately before reload. Cover raw composer text
-(including whitespace), routing/new-room/new-topic/reply state, structured
-attachments, modified v1 choices, v2/v3 forms, extension replies, voice capture or
-uninserted review, authoring/builder changes, pending/failed storage and in-flight
-signing/publication/package installation/board migration. Initialized default
-forms are not dirty merely because a draft Map contains an entry. A discard
-control must name its exact category; it cannot undo committed publication.
+The checker has a restrictive CSP: hash-authorized script, only the fixed public
+GitHub release-metadata API, no frames/workers/images/forms. Fetch live stable
+release metadata with omitted credentials, bounded response/time and explicit
+cache policy. Do not depend on redeploying a baked-in latest version after every
+release. Older releases without an app ZIP link to their release page truthfully.
 
-Reload starts signing locked. Do not persist imported private keys. Existing
-private trust/floor state stays separate. Native folder permissions may need
-renewal; upload snapshots require reselection. Changing board selection must not
-retarget the installed viewer or let unrelated drafts escape the reload guard.
+No board contents, selected paths, participant IDs, file handles, private trust or
+keys are passed to the checker. A response contains only a protocol version,
+validated stable release version/ID/time and package availability. Parent accepts
+one bounded response only from the exact iframe window, expected HTTPS origin
+and unpredictable request channel; render values as text. Ignore forged, stale,
+extra or malformed messages. Dispose the iframe/listeners on completion or timeout.
 
-## User-visible states
+The parent builds release/package links from fixed repository constants; it never
+accepts arbitrary download URLs, HTML or executable code in checker messages.
+The iframe does not read or install package bytes. A downloaded ZIP's validation
+is the release pipeline's job, with public integrity information available for
+manual verification; the UI does not claim to inspect the saved download.
+
+Store schedule, last success and optional skipped-version state locally, independent
+of board data. Use bounded coordination where local storage permits; if scheduling
+state cannot be persisted, fall back to manual checking instead of request storms.
+Display latest unknown on failure and preserve the last-success time. Loading a
+publisher checker is an explicit change to the old no-automatic-network contract;
+update runtime documentation. GitHub Pages receives a connection/IP, but no board
+data or referrer is required.
+
+GitHub Pages configuration and endpoint deployment are required new work. No live
+checker exists or is claimed by this design. A bounded file-origin Chromium
+prototype with an independently served HTTP checker retrieved metadata while
+parent/worker `connect-src 'none'` remained enforced: the worker's attempted request
+did not reach the server. This establishes the architectural distinction, not
+production HTTPS deployment, Firefox support or complete message-protocol testing.
+
+## UI states and implementation scope
 
 | State | Behavior |
 | --- | --- |
-| Unregistered/source installation | Explain current mode; configure standalone target or download a separate viewer |
-| Checking | Nonmodal status; browsing/writing remain available |
-| Check failed/offline | Latest unknown; retry manually; do not say up to date |
-| Update available | Show running/target versions and changes; Install, Later or Skip |
-| Downloading/verifying | Progress/cancel; installed bytes untouched |
-| Ready to install | Confirm declared target, permission, original hash and verified backup |
-| Installing | Serialize target commit; no automatic reload or board migration |
-| Installed; reload pending | “X is installed. This tab is still running Y.” Keep working or Reload |
-| Reload held by work | List unfinished categories and offer Return to work or scoped explicit discard |
-| Reloaded | Confirm running version; signing locked; reopen board subject to permission |
-| Download-only browser | Offer verified viewer download; do not claim manual installation completed |
-| Recovery needed | Classify actual target/backup bytes before offering retry/restore |
+| Checking | Nonmodal; writing remains available |
+| Current | Display successful-check time and current/latest version |
+| Update available | Changes, Download package and Update guide; no Install action |
+| Offline/check failed | Latest unknown; keep working; retry or open official release page |
+| Download requested | Open fixed official package/release URL; no claim that files were replaced |
+| Reload requested with unfinished work | List categories and return to work or scoped explicit discard |
+| Reopened | Display actual running version; no assumptions about other tabs/computers |
 
-## Recovery and release guarantees
+Reload guard categories include composer text/routing/reply/structured attachments,
+modified choices/forms/extension replies, voice capture or uninserted transcript,
+authoring/builder changes, pending/failed storage, and active signing/publication,
+package installation, board migration or other writes. Recheck immediately before
+the in-app reload. Initialized default forms must not count as dirty merely because
+a Map contains them. Discard cannot cancel an already committed publication.
 
-- Fixed public UI repository and stable published releases only. Reject missing or
-  ambiguous assets, wrong version/hash/size, oversized or invalid content and
-  unexpected identity changes. Bound metadata, HTML and elapsed transfer time.
-- A GitHub API digest fetched over HTTPS verifies matching bytes within the GitHub
-  trust channel. It is not independent publisher authentication. Existing release
-  preservation policy is not proof of enforced immutable releases or signed
-  manifests. Board identity keys must not authorize executable releases.
-- Retain original/candidate hashes and transaction phase beside recoverable backup
-  material. A crash before close normally leaves old bytes; a missing completion
-  marker does not establish that commit failed. Classify actual disk bytes.
-- If target matches neither expected version, preserve it and stop automatic
-  recovery. Never overwrite subsequent edits, steal a live writer or recursively
-  delete unknown recovery material.
-- Recovery must be possible outside a broken new viewer: explain manual restoration
-  of the backup to the original selected path. A failed download or backup write
-  cannot replace the current viewer. Downloads beginning do not prove files saved.
-- Restoring older HTML does not undo IndexedDB/schema migrations. Declare a
-  rollback compatibility floor or retain backward-compatible state before offering
-  rollback. Never weaken signing trust/floors as a recovery shortcut.
-- A future release manifest can include helper/storage compatibility and verified
-  metadata. Independent signing needs a separate release root and rotation policy;
-  immutable releases/attestations require an actual verifier. Neither is implied
-  by current asset checksums. Background helpers and helper self-update are outside
-  the chosen initial scope.
+Implement in bounded parts:
 
-Current release/source boundaries:
-[preparation](../../scripts/prepare_release.py),
-[publishing](../../scripts/publish_release.sh),
-[consistency checks](../../scripts/release_check.py),
-[board upgrades](../../scripts/board-upgrade.js),
-[storage](../reference/STORAGE.md),
-[form persistence](../../scripts/form-board.js),
-[authoring](../../scripts/authoring-drafts.js),
-[extension drafts](../../scripts/extension-ui.js),
-[signing](../../scripts/signing-ui.js), [locations](../../scripts/locations.js).
+1. App-only deterministic ZIP builder, inventory, useful update guide and exact
+   tested-release integration. No fictional/demo or user/private data.
+2. Static checker deployment and bounded parent adapter, daily scheduling, notice,
+   package/release link and errors. Keep main/worker network denial intact.
+3. Update help and guarded explicit reload, with existing source/standalone behavior
+   explained. No file registration, write grants, automatic replacement, installer
+   transaction log or local updater application.
 
-## Implementation sequence and verification
+## Verification
 
-1. Qualify the stricter extension-worker broker and preserve all existing lifecycle,
-   output-budget, focus/draft and network-isolation controls before relaxing parent
-   update networking.
-2. Add release discovery/verification, private schedule state, update notice,
-   source/unknown preservation and Firefox download fallback. Test actual API
-   transport, cache/rate-limit failures and byte-level candidate identity.
-3. Add standalone target registration, containing-folder/backup setup, exclusive
-   stream installation and independent recovery. Test actual selected HTML writing
-   through close/reread/reload on supported desktop platforms; simulated filesystems
-   or OPFS do not prove native picker permissions or OS/sync behavior.
-4. Add full dirty-work/active-operation reload gates and installed-versus-running
-   UI. Exercise edits after dialog opens, each unfinished-work category, storage
-   failure, permissions revoked, wrong identical-copy selection, multiple tabs,
-   interrupted download/write/close, external replacement and rollback compatibility.
+Package tests should build reproducibly, verify exact tagged inputs, every inventory
+size/hash, required dependency closure, licenses/tools, no forbidden data/source
+paths and safe archive paths. Extract the real package and exercise its start/help
+paths. Verify new asset publication and preserve old release assets/backfills.
 
-Additional acceptance: one viewer can open multiple boards; updating one of several
-viewer copies leaves others alone; source checkouts remain untouched; shared-file
-sync never forces another tab to reload or claims a distributed transaction.
-Run unit and meaningful Playwright tests in PR/main CI. Platform-specific native
-permission/replacement qualification is separate from mocked tests. No runtime
-implementation or complete installation qualification is claimed by this document.
+Browser tests must cover actual file→HTTPS checker behavior in Chromium and Firefox;
+wrong source/origin/channel, malformed/oversized/late messages; timeout/offline/API
+limits; daily scheduling/reopen; fixed links; iframe disposal; and unchanged custom
+worker network denial. A positive checker transport control must accompany negative
+worker controls. Local prototype traffic is not a deployed HTTPS/Firefox proof.
 
-## References
+Exercise each unfinished-work category independently, edits after opening help,
+storage failure, active publication, same viewer opening multiple boards, multiple
+copies/tabs and shared-file reload behavior. Native OS manual package replacement
+and helper restart are separate user-guide qualifications, not mocked browser writes.
+Run appropriate package/unit/Playwright checks on PR/main CI. No runtime updater,
+release package or hosted checker is implemented by this architecture document.
 
-- [CSP inheritance and additional policies](https://www.w3.org/TR/CSP3/#security-inherit-csp)
-- [File System Access](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access)
-  and [persistent permissions](https://developer.chrome.com/blog/persistent-permissions-for-the-file-system-access-api/)
-- [Exclusive writers](https://developer.chrome.com/blog/new-dev-trial-for-multiple-readers-and-writers/),
-  [external filesystem changes](https://fs.spec.whatwg.org/#files-and-directories)
-- [Mozilla picker support](https://github.com/mdn/browser-compat-data/blob/main/api/Window.json),
-  [origin/storage](https://storage.spec.whatwg.org/#storage-keys)
-- [GitHub raw content](https://docs.github.com/en/rest/repos/contents#get-repository-content),
-  [API CORS](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests),
-  [release assets](https://docs.github.com/en/rest/releases/assets)
-- [Immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases),
-  [release verification](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/verify-release-integrity)
+## References and source boundaries
+
+- [Current release preparation](../../scripts/prepare_release.py),
+  [publishing](../../scripts/publish_release.sh), [demo builder](../../scripts/build_demo.py)
+- [Storage](../reference/STORAGE.md), [board upgrades](../../scripts/board-upgrade.js),
+  [extensions](../../scripts/extension-runtime.js), [signing](../../scripts/signing-ui.js)
+- [CSP policy inheritance](https://www.w3.org/TR/CSP3/#security-inherit-csp)
+- [Cross-document messaging security](https://html.spec.whatwg.org/multipage/web-messaging.html#security-postmsg)
+- [GitHub Pages and data collection](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+- [GitHub API CORS](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests)
+- [GitHub release assets](https://docs.github.com/en/rest/releases/assets)
