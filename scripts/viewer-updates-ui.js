@@ -15,7 +15,7 @@ function viewerReloadBlockers(){
   const raw=$('#structuredJson').value;
   if(raw&&!AUTHORING_EXAMPLES.some(e=>e.kind===$('#structuredKind').value&&JSON.stringify(e.value,null,2)===raw))reasons.push('structured authoring');
   if(voiceWorkPending)reasons.push('voice capture or transcript');
-  if(signingSavePending||viewerActiveWrites||viewerActiveDeliveries||viewerActiveSends||upgradeBusy||repairBusy||draftManagerBusy||locationBusy||authoringPending||formStoragePending||submittingForms.size||submittingChoices.size||extensionSending.size)reasons.push('operation in progress');
+  if(extensionMutationPending||signingSavePending||viewerActiveWrites||viewerActiveDeliveries||viewerActiveSends||upgradeBusy||repairBusy||draftManagerBusy||locationBusy||authoringPending||formStoragePending||submittingForms.size||submittingChoices.size||extensionSending.size)reasons.push('operation in progress');
   return reasons;
 }
 function viewerReload(){const reasons=viewerReloadBlockers();if(reasons.length)return reasons;location.reload();return [];}
