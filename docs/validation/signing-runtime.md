@@ -1,9 +1,7 @@
 # Signing runtime validation — 2026-10-21
 
-Local feature implementation; no push, release, live-board/key migration or frozen
-asset changes. Canonical SPEC-002-034 is complete on feat/signing-core-conformance.
-UI branch: feat/signing-runtime. Exact canonical commit and convention digest:
-[development-standard.json](../../development-standard.json).
+Implementation verification before the coordinated2.11.0 release; no live-board/key migration. Canonical SPEC-002-034 is complete on feat/signing-core-conformance.
+UI branch: feat/signing-runtime. The release pins the exact canonical2.11.0 tag; see SPEC-002-035 for delivery receipts.
 
 - Canonical Python3.10.20:211tests pass; Python3.14.7:211tests pass.
 - Independent OpenSSL/libsodium frozen message/profile conformance passes.
@@ -30,10 +28,8 @@ UI branch: feat/signing-runtime. Exact canonical commit and convention digest:
   within its8MiB aggregate budget. Browser stores public local trust/evidence only.
 - All embedded signing/tools/form/upgrade sources match their generators.
 
-`python3 scripts/release_check.py` deliberately returns nonzero because the vendor
-pin is untagged. The consistency regression proves this strict refusal and the
-exact development pin; release validation has not been weakened. A future release
-requires a canonical tag, compatible UI pin and removal of the development marker.
+`python3 scripts/release_check.py` passes with the exact canonical2.11.0 tag. The
+prior untagged development marker is removed; the strict release gate is retained.
 
 Reproduce: install the pinned optional Python requirements, `npm ci
 --ignore-scripts`, `npx playwright install chromium`, then

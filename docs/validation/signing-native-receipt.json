@@ -1,0 +1,29 @@
+{
+  "synthetic": true,
+  "freshKeys": true,
+  "realNativeFileSystemHandles": true,
+  "clients": [
+    "Chrome 2.11.0 UI",
+    "Python canonical2.11.0 CLI"
+  ],
+  "boardId": "6bbd87e4-03fe-4ca9-8fc4-b54b596dfec9",
+  "messageCount": 4,
+  "reviewedNativeCount": 3,
+  "dualRotationProfile": "a85eff362fe32af84ca01f4e82f858477f620b45b4417d17b91d44351aaea99d",
+  "privateFloorAndRevocationAfterSharedStripping": {
+    "eligibility": "excluded",
+    "signature": "valid",
+    "trust": "trusted",
+    "lifecycle": "compromised",
+    "minimum": "trusted",
+    "reason": "trusted current non-revoked key required",
+    "fingerprint": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:NXzMfqHq_Q18U-8oHDQk40g8f724m476hdgZM3_i_WQ",
+    "profile": "a85eff362fe32af84ca01f4e82f858477f620b45b4417d17b91d44351aaea99d"
+  },
+  "messages": {
+    "2026-10-21_1015_review-agent_T001_cli-peer-reply.txt": "0c5e660db2ac5be729f524571b90062a1f5eb4f8a60f095a6182cdb6ebf5f78a",
+    "2026-10-21_1001_review-human_T001_fresh-key-real-folder-message.txt": "2af594210963c233a9274310fcd898c65d4e08ecdc5d9562db38e1f2e5aa2425",
+    "2026-10-21_1023_review-human_T001_rotated-key-proof.txt": "270b06455d215f4c827c16a9eb60245135f2b1bbf7b94f27509691a538241a5f",
+    "2026-10-21_1019_review-human_T001_reviewed-publication-on-real-nat.txt": "c91b5b948d763c1eb63e7097a74ee12ed2557bd3ad1b5dde86db0f73674ff1d9"
+  }
+}

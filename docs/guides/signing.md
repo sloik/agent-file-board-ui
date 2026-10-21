@@ -1,4 +1,4 @@
-# Message signing (local feature branch, unreleased)
+# Message signing — 2.11.0
 
 Open a writable native board with a board UUID and registered public profiles.
 Choose **Tools → Signing**, select an explicit private Ed25519 JWK outside the
@@ -39,7 +39,7 @@ See the pinned [runtime contract](../../vendor/agent-file-board/docs/SIGNING-COR
 Development installation: `npm ci --ignore-scripts`; install the pinned
 `vendor/agent-file-board/requirements-signing.txt` into the test Python environment.
 Set `AFB_SIGNING_PYTHON` if it differs from `python3`. Run `npm test`. Runtime
-crypto is bundled offline. `development-standard.json` binds the untagged canonical
-commit and convention hash. The release checker deliberately rejects this pin;
-remove the development marker and pin an actual compatible release as part of a
-separately authorized release. Existing2.10.0 release assets remain unchanged.
+crypto is bundled offline. The viewer pins the exact canonical2.11.0 release tag
+and passes the strict release checker. Existing older release assets stay frozen.
+The [security review](../validation/signing-security-review.md) records findings,
+fixes and the independent agent review's limits.

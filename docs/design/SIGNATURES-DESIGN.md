@@ -1,5 +1,7 @@
 # Signature and avatar UI — proposed implementation
 
+Message delivery is implemented in2.11.0; see [setup and current limits](../guides/signing.md). The broader avatar/external-vault proposal remains separate.
+
 Architecture only, SPEC-002-024. No verification/avatars implemented by this
 proposal; released 2.10.0 has no signing or avatar implementation. Authoritative cross-client
 wire design is `docs/SIGNATURES-AND-IDENTITY.md` in the canonical board repository.

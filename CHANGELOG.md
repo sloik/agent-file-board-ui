@@ -1,5 +1,23 @@
 # Release notes
 
+## 2.11.0 — 2026-10-21
+
+- Automatically sign every host message send after explicit private-key unlock,
+  with fresh possession and tab-only non-extractable keys. Viewing, recipient and
+  signing identities remain separate; lock/reload/expiry discards capability.
+- Verify offline Ed25519/DSSE evidence with separate signature, trust and lifecycle
+  labels. Add private trust controls, adopted policy floors and explicit inspection.
+- Exclude unsigned/untrusted required, invalid and revoked traffic from actionable
+  coordination, replies, unread marking and notifications while preserving history.
+- Recheck reviewed source bytes, shared/private context and lock generation through
+  final file writer completion. Transactional private-state CAS prevents stale tabs
+  from restoring trust or weakening adopted requirements.
+- Pin canonical2.11.0, include portable agent guidance, strict cross-client crypto
+  fixtures and security/race regressions. Signed publication needs a writable
+  native folder; read-only uploads verify and retain unsigned-download support.
+- Merge documentation consolidation: task guides under docs/guides, reference and
+  design notes in their own folders, stable feature/OpenUI/extension entry points.
+
 ## 2.10.0 — 2026-10-20
 
 - Add optional informational agent `operator` links to registered human IDs.

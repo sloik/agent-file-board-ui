@@ -14,13 +14,13 @@ release if checks pass. Preserve old published tags/assets and unrelated work.
 
 ## Acceptance Criteria
 
-- [ ] AC1: Independent read-only review of canonical and browser signing covers
+- [x] AC1: Independent read-only review of canonical and browser signing covers
   exact bytes/context, policy/trust/lifecycle, private key/state boundaries and
   asynchronous publication. Findings have dispositions and regressions for fixes.
-- [ ] AC2: Fresh disposable keys and real browser filesystem handles exercise UI
+- [x] AC2: Fresh disposable keys and real browser filesystem handles exercise UI
   signing and CLI interoperability, rotation/revocation and lock/failure behavior.
   No real identity keys or owner boards are changed.
-- [ ] AC3: Documentation cleanup21f9a7c/bd2dd36 and signing feature branches are
+- [x] AC3: Documentation cleanup21f9a7c/bd2dd36 and signing feature branches are
   ancestors of released main. Current docs/changelogs describe final capabilities.
 - [ ] AC4: Canonical and UI compatible new versions have exact immutable tags;
   local full suites and exact-source CI pass. UI pins the released canonical tag,
@@ -41,3 +41,25 @@ Parent owns fixes, tests, merges, pushes, tags and publication. No live migratio
 User: "do it, make sure that the work done by documentation clean up is also
 merged and then if all is ok do a release". No additional permission is needed
 for the release once all evidence passes. If evidence fails, fix it first.
+
+## Pre-publication evidence
+
+Independent review found four publication/private-state blockers; fixes and
+regressions are recorded in docs/validation/signing-security-review.md. Reviewer
+rechecked fixes and independently passed14canonical signing runtime and16UI
+focused cases. Additional parent regressions cover reviewed source baselines,
+provider reconciliation and immediate unlock feedback.
+
+Real Chrome native filesystem handles and freshly generated disposable keys
+completed UI→CLI and CLI→UI verification under required signing. A dual-key
+rotation required new trust and cleared the old browser capability. A new-key
+message was accepted, then excluded on compromise. Both clients retained the
+private trusted floor and learned compromise after shared policy/event stripping.
+Public synthetic receipt: docs/validation/signing-native-receipt.json. No real
+owner keys or live boards.
+
+Documentation cleanup21f9a7c/bd2dd36 and reviewed signing are merged into UI main;
+canonical main is ba9c854 (local v2.11.0 exact pin). Canonical214tests and
+OpenSSL/libsodium conformance pass. UI372Node/browser+37Python pass; final unlock
+feedback regression8/8passes. Strict release check passes for both2.11.0 versions.
+Publication and exact-source CI/download receipts remain pending below.

@@ -197,6 +197,14 @@ def build_demo(root: Path, destination: Path):
         shutil.copyfile(root / 'docs/guides/BOARD-LOOP.md', destination / 'docs/BOARD-LOOP.md')
         shutil.copyfile(root / 'docs/guides/COMPOSER.md', destination / 'docs/COMPOSER.md')
         manifest['opportunisticObservation'] = {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15}
+    if tuple(map(int, version.split('.'))) >= (2, 11, 0):
+        guide = (root / 'docs/guides/signing.md').read_text()
+        guide = guide.replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md').replace('../validation/signing-security-review.md', 'SIGNING-REVIEW.md')
+        (destination / 'docs/SIGNING.md').write_text(guide)
+        shutil.copyfile(root / 'docs/validation/signing-security-review.md', destination / 'docs/SIGNING-REVIEW.md')
+        for name in ['SIGNING-CORE.md', 'SIGNATURES-AND-IDENTITY.md', 'SIGNING-POLICY-AND-POSSESSION.md']:
+            shutil.copyfile(vendor / 'docs' / name, destination / 'docs' / name)
+        manifest['signing'] = {'guide': 'docs/SIGNING.md', 'runtime': 'docs/SIGNING-CORE.md', 'privateKeysIncluded': False, 'automaticAfterExplicitUnlock': True}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/guides/DEMO.md', destination / 'README.md')

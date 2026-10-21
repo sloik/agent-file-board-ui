@@ -174,6 +174,8 @@ async function signingDialog() {
   dialog.append(status);
   const refresh = () => {
     status.textContent = B.signingError || `${signingMode === "signed" ? "Automatic signing after unlock" : "Unsigned mode"} · Signing as: ${signingAs || "none"} · Unlocked identities: ${signingProvider.catalog().map((p) => p.participant).join(", ") || "none"} · Excluded/pending: ${B.msgs.filter((m) => !signingEligible(m)).length}`;
+    const facts = dialog.querySelector("pre");
+    if (facts) facts.textContent = B.msgs.filter((m) => !signingEligible(m) || m.h.SIGNATURE).map((m) => m.path + "\n" + JSON.stringify(m.signing)).join("\n");
   };
   const add = (label, fn) => {
     const b = document.createElement("button");
@@ -183,7 +185,9 @@ async function signingDialog() {
       b.disabled = true;
       try {
         refresh();
-        await fn();
+        const result = await fn();
+        refresh();
+        if (typeof result === "string") status.textContent = result;
       } catch (e) {
         status.textContent = e.message;
       } finally {
@@ -251,7 +255,7 @@ async function signingDialog() {
   dialog.append(fingerprint);
   add("Inspect current profile", async () => {
     const r = await B.signingContext.resolve(participant.value);
-    status.textContent = JSON.stringify({ participant: participant.value, profile: r.head.digest, fingerprint: r.head.fingerprint, lifecycle: r.revoked[r.head.fingerprint] || "current" });
+    return JSON.stringify({ participant: participant.value, profile: r.head.digest, fingerprint: r.head.fingerprint, lifecycle: r.revoked[r.head.fingerprint] || "current" });
   });
   add("Trust exact fingerprint", async () => {
     const r = await B.signingContext.resolve(participant.value);

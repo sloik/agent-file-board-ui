@@ -40,6 +40,12 @@ class DemoTests(unittest.TestCase):
             cli(ROOT, 'validate', '--path', board)
             manifest = json.loads((package / 'demo-manifest.json').read_text())
             self.assertEqual(manifest['feedback'], {'guide':'docs/FEEDBACK.md','skill':'skills/board-feedback/SKILL.md'})
+            self.assertEqual(manifest['signing']['privateKeysIncluded'], False)
+            self.assertTrue(manifest['signing']['automaticAfterExplicitUnlock'])
+            self.assertTrue((package / manifest['signing']['guide']).is_file())
+            self.assertTrue((package / manifest['signing']['runtime']).is_file())
+            self.assertIn('SIGNING-CORE.md', (package / manifest['signing']['guide']).read_text())
+            self.assertNotIn('vendor/agent-file-board', (package / manifest['signing']['guide']).read_text().split('Development installation:')[0])
             expected = json.loads((ROOT / 'vendor/agent-file-board/openui-upstream.json').read_text())['boardLibrary']['implementedTypes']
             self.assertEqual(set(manifest['componentTypes']), set(expected))
             self.assertEqual(len(expected), 34)
