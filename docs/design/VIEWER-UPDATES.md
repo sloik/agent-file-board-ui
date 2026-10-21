@@ -1,6 +1,6 @@
 # Board package releases and guided updates
 
-Status: agreed architecture; runtime/package implementation pending.
+Status: implemented for v2.11.4 under SPEC-002-044; installation remains manual.
 SPEC-002-043 replaces the automatic-installation part of SPEC-002-042. The owner
 chose a GitHub release ZIP plus manual update instructions and explicitly retained
 the daily in-app update notice. No installed updater is required.
@@ -198,8 +198,9 @@ Exercise each unfinished-work category independently, edits after opening help,
 storage failure, active publication, same viewer opening multiple boards, multiple
 copies/tabs and shared-file reload behavior. Native OS manual package replacement
 and helper restart are separate user-guide qualifications, not mocked browser writes.
-Run appropriate package/unit/Playwright checks on PR/main CI. No runtime updater,
-release package or hosted checker is implemented by this architecture document.
+Package/unit/Playwright checks run on PR/main CI, including Chromium and Firefox.
+The fixed checker is deployed separately by `update-checker.yml`. Release preparation
+produces the app-only ZIP and checksums. No automatic file installer is included.
 
 ## References and source boundaries
 

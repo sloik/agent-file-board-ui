@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      live_checker:
+        description: Verify the deployed public checker in both browsers
+        required: false
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       ref:
@@ -69,3 +76,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: python3 scripts/release_check.py --tag "$RELEASE_TAG"
+
+      - name: Verify deployed release checker in both browsers
+        if: github.event_name == 'workflow_dispatch' && inputs.live_checker
+        run: node scripts/check_live_updates.js

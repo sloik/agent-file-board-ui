@@ -26,6 +26,7 @@ function wireViewerUpdates(){
   const render=()=>{
     notice.style.display=state.latest?.packageAvailable&&ViewerUpdates.newer(state.latest.version,VIEWER_VERSION)?'':'none';
     if(!dialog)return;
+    dialog.querySelector('#viewerLatestVersion').textContent=exText('Last known stable release: ','Ostatnie znane stabilne wydanie: ')+(state.latest?.version||exText('unknown','nieznane'));
     dialog.querySelector('#viewerUpdateStatus').textContent=status+(state.lastSuccess?' '+exText('Last successful check: ','Ostatnie udane sprawdzenie: ')+new Date(state.lastSuccess).toLocaleString(): '');
     dialog.querySelector('#viewerCheckNow').disabled=busy;
     const auto=dialog.querySelector('#viewerUpdateAuto');auto.checked=state.auto!==false;auto.disabled=!storage;
@@ -52,7 +53,7 @@ function wireViewerUpdates(){
     dialog=document.createElement('dialog');dialog.id='viewerUpdatesDialog';dialog.style='width:min(560px,90vw);max-height:85vh;overflow:auto;overflow-wrap:anywhere;box-sizing:border-box';
     const add=(tag,text,id)=>{const e=document.createElement(tag);e.textContent=text;if(id)e.id=id;dialog.append(e);return e;};
     add('h2',exText('Viewer updates','Aktualizacje przeglądarki tablic'));
-    add('p',exText('Running viewer: ','Uruchomiona wersja: ')+VIEWER_VERSION);
+    add('p',exText('Running viewer: ','Uruchomiona wersja: ')+VIEWER_VERSION);add('p','','viewerLatestVersion');
     add('p','', 'viewerUpdateStatus').setAttribute('role','status');
     const label=add('label',exText('Check daily while this viewer is open ','Sprawdzaj codziennie, gdy przeglądarka tablic jest otwarta ')),auto=document.createElement('input');auto.id='viewerUpdateAuto';auto.type='checkbox';label.append(auto);
     auto.onchange=async()=>{try{state=await viewerUpdateState(s=>({...s,auto:auto.checked}));if(!auto.checked)task?.cancel();}catch{storage=false;status=exText('Could not save update preference.','Nie udało się zapisać preferencji.');}render();};

@@ -49,7 +49,7 @@ for(const [name,engine]of Object.entries({chromium,firefox})){
  test(name+': phone dialog fits English and Polish; completed check removes its iframe',async()=>{
   const browser=await engine.launch({timeout:30000});try{const s=await boot(browser),p=s.page;try{await p.setViewportSize({width:390,height:844});await updates(p);await complete(p);
    for(const locale of ['en','pl']){if(locale==='pl'){await p.locator('#viewerUpdatesClose').click();await p.click('#gear');await p.selectOption('#sLang','pl');await p.click('#sClose');await updates(p);}
-    assert.equal(await p.locator('#viewerUpdatesDialog').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);const b=await p.locator('#viewerUpdatesDialog').boundingBox();assert.ok(b.x>=0&&b.x+b.width<=391);}
+    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.equal(await p.locator('#viewerUpdatesDialog').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);const b=await p.locator('#viewerUpdatesDialog').boundingBox();assert.ok(b.x>=0&&b.x+b.width<=391);}
    assert.equal(await p.locator('iframe').count(),0);assert.deepEqual(s.errors,[]);
   }finally{await s.ctx.close();}}finally{await browser.close();}
  });

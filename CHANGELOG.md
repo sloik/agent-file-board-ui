@@ -8,6 +8,7 @@
 - Offer daily public release notices through an isolated hosted checker; retain
   offline viewing and explicit opt-out. Installation stays manual on all platforms,
   including Firefox. Reload refuses unfinished drafts and active operations.
+- Keep a local-draft import error visible when an older list refresh completes.
 - Add reviewed voice input with native dictation guidance, on-device browser speech
   where supported, and an optional local whisper.cpp helper; insert into the draft
   before sending through the existing signing flow.

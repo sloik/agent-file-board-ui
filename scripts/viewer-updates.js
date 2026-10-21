@@ -7,7 +7,7 @@ const ViewerUpdates=(()=>{
   function newer(a,b){const x=version(a),y=version(b);if(!x||!y)return false;for(let i=0;i<3;i++)if(x[i]!==y[i])return x[i]>y[i];return false;}
   const due=(last,now)=>!Number.isFinite(last)||last<=0||last>now||now-last>=day;
   function valid(m,channel){
-    if(!m||typeof m!=='object'||Array.isArray(m)||m.protocol!==1||m.channel!==channel)return false;
+    if(typeof channel!=='string'||!channel.length||channel.length>128||!m||typeof m!=='object'||Array.isArray(m)||m.protocol!==1||m.channel!==channel)return false;
     let size;try{size=JSON.stringify(m).length;}catch{return false;}if(size>4096)return false;
     const keys=Object.keys(m).sort().join(',');
     if(m.status==='error')return keys==='channel,protocol,status';
