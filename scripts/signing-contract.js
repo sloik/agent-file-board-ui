@@ -341,7 +341,12 @@ export class Context {
     }
     chain.reverse();
     require(!this.state.heads[id] || seen.has(this.state.heads[id]), "profile rollback or conflicting head");
-    const eventRefs = /* @__PURE__ */ new Set([...refs, ...Object.keys(this.state.evidence).filter((k) => k.startsWith("events/")).map((k) => k.slice(7))]);
+    const learned = Object.entries(this.state.evidence).filter(([k, raw]) => {
+      if (!k.startsWith("events/")) return false;
+      const statement = parse(decode64(parse(decode64(raw)).payload));
+      return statement.boardId === this.boardId && statement.participant === id;
+    }).map(([k]) => k.slice(7));
+    const eventRefs = new Set([...refs, ...learned]);
     require(eventRefs.size <= 64, "event budget");
     const transitions = /* @__PURE__ */ new Map(), revoked = { ...this.state.revoked }, events = [];
     for (const ref of [...eventRefs].sort()) {
@@ -477,6 +482,17 @@ export class Provider {
     this.#board = board;
     this.#activity = performance.now();
     return this.catalog();
+  }
+  async reconcile(context) {
+    this.expire();
+    if (!this.#keys.size) return;
+    if (context.boardId !== this.#board) { this.lock(); return; }
+    try {
+      for (const binding of this.#keys.values()) {
+        const current = await context.resolve(binding.participant);
+        if (current.head.fingerprint !== binding.fingerprint || current.revoked[binding.fingerprint]) { this.lock(); return; }
+      }
+    } catch { this.lock(); }
   }
   async #prove(key, binding, board, epoch) {
     const started = performance.now(), nonce = url64(crypto.getRandomValues(new Uint8Array(32))), payload = canonical({ version: 1, boardId: board, participant: binding.participant, profile: binding.profile, keyId: binding.fingerprint, purpose: "browser-signing-session", nonce }), signature = new Uint8Array(await crypto.subtle.sign("Ed25519", key, pae(TYPES.possession, payload)));

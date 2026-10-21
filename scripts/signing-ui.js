@@ -4,14 +4,14 @@ const signingEligible = (m) => !m?.signing || m.signing.eligibility === "eligibl
 function signingSender(fallback) {
   return signingMode === "signed" ? (SigningContract.require(signingAs, "Select an unlocked signing identity"), signingAs) : fallback;
 }
-async function signingRead(base, path) {
+async function signingRead(base, path, limit = 65536) {
   try {
     let dir = base;
     const parts = path.split("/");
     SigningContract.require(parts.every((p) => p && ![".", ".."].includes(p)), "unsafe signing path");
     for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part);
     const file = await (await dir.getFileHandle(parts.at(-1))).getFile();
-    SigningContract.require(file.size <= 65536, "signing evidence byte budget");
+    SigningContract.require(file.size <= limit, "signing evidence byte budget");
     return await rawBytes(file);
   } catch (e) {
     if (e.name === "NotFoundError") return null;
@@ -32,10 +32,40 @@ async function signingGet(key) {
   }
 }
 async function signingSave(model) {
-  if (model.signingKey && model.signingContext?.boardId) {
-    const raw = JSON.stringify(model.signingContext.state);
-    SigningContract.require(new TextEncoder().encode(raw).length <= 8388608, "private signing history budget");
-    await idbSet(model.signingKey, JSON.parse(raw));
+  if (!model.signingKey || !model.signingContext?.boardId) return;
+  const raw = JSON.stringify(model.signingContext.state);
+  SigningContract.require(new TextEncoder().encode(raw).length <= 8388608, "private signing history budget");
+  const db = await idb();
+  try {
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("kv", "readwrite"), store = tx.objectStore("kv"), q = store.get(model.signingKey);
+      let conflict = false;
+      q.onsuccess = () => {
+        if (JSON.stringify(q.result ?? null) !== model.signingExpected) { conflict = true; tx.abort(); return; }
+        store.put(JSON.parse(raw), model.signingKey);
+      };
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error || Error("Private signing state unavailable"));
+      tx.onabort = () => reject(Error(conflict ? "Private signing context changed in another tab; refresh and review" : "Private signing state unavailable"));
+    });
+    model.signingExpected = raw;
+    model.signingContext.floor = model.signingContext.state.floor;
+  } catch (error) {
+    model.signingError = error.message;
+    for (const m of model.msgs) m.signing = { eligibility: "pending-verification", signature: "unavailable", trust: "unknown", lifecycle: "unknown", reason: error.message };
+    signingProvider.lock();
+    throw error;
+  } finally { db.close(); }
+}
+async function signingFresh(model, base, context, expected, source, sourceDigest) {
+  const C = SigningContract;
+  if (model.signingKey) C.require(JSON.stringify(await signingGet(model.signingKey) ?? null) === expected, "Private signing context changed; refresh and review");
+  if (base) C.require(C.same(C.parse(await signingRead(base, "config.json")), context.config) && C.same(C.parse(await signingRead(base, "participants.json")), context.registry), "Board policy/profile changed; refresh and retry");
+  if (source && base) {
+    const raw = await signingRead(base, source.path, 4194304);
+    C.require(raw && await C.hash(raw) === sourceDigest, "Reply source changed; refresh and review");
+    const fresh = new C.Context(context.config, context.registry, context.read, structuredClone(context.state));
+    C.require((await fresh.evaluate(source.path, parseHeaders(C.text(raw)).native.h, raw)).eligibility === "eligible", "Reply source excluded by signing requirements");
   }
 }
 async function prepareSigning(model, files, base = null) {
@@ -52,8 +82,15 @@ async function prepareSigning(model, files, base = null) {
     const metadata = async (path) => base ? await signingRead(base, path) : source[path]?.metadataFile ? await rawBytes(source[path].metadataFile) : C.bytes(source[path]?.text || "{}");
     const config = C.parse(await metadata("config.json")), registry = C.parse(await metadata("participants.json"));
     const key = base && !location.startsWith("session-") ? "signing-state:" + location : null, state = key ? await signingGet(key) : null;
-    const read = async (path) => base ? signingRead(base, path) : source[path]?.signingFile ? new Uint8Array(await source[path].signingFile.arrayBuffer()) : null;
+    const read = async (path) => {
+      if (base) return signingRead(base, path);
+      const file = source[path]?.signingFile;
+      if (!file) return null;
+      C.require(file.size <= 65536, "signing evidence byte budget");
+      return rawBytes(file);
+    };
     const context = new C.Context(config, registry, read, state || null);
+    model.signingExpected = JSON.stringify(state ?? null);
     model.signingContext = context;
     model.signingKey = key;
     model.signingRead = read;
@@ -71,6 +108,7 @@ async function prepareSigning(model, files, base = null) {
       const raw = m.source?.file ? await rawBytes(m.source.file) : C.bytes(source[m.path]?.text || "");
       m.signing = await context.evaluate(m.path, m.h, raw);
     }
+    await signingProvider.reconcile(context);
     await signingSave(model);
   } catch (e) {
     model.signingError = e.message;
@@ -82,19 +120,21 @@ function signingDraftStamp() {
   return JSON.stringify([composerStructured, [...document.querySelectorAll("#composer input,#composer textarea,#composer select,.choice-form input,.choice-form textarea,.choice-form select,.board-form input,.board-form textarea,.board-form select")].map((el) => [el.id, el.name, el.value, el.checked])]);
 }
 async function signingDelivery(msg, options = {}) {
-  const model = options.model || B, base = options.base || baseHandle, C = SigningContract, origin = dirHandle, epoch = signingProvider.generation, stamp = signingDraftStamp();
+  const model = options.model || B, base = options.base || baseHandle, C = SigningContract, origin = dirHandle, epoch = signingProvider.generation, stamp = signingDraftStamp(), expected = model?.signingExpected;
   C.require(model && !model.signingError, model?.signingError || "Open a board");
   const context = model.signingContext;
   if (!context) return { msg };
   const parsed = parseHeaders(msg.text).native, h = parsed.h;
   const source = model.msgs.find((m) => m.file === h["REPLY-TO"] && m.path.split("/").slice(0, -1).join("/") === msg.relPath.split("/").slice(0, -1).join("/"));
   C.require(!source || signingEligible(source), "Reply source excluded by signing requirements");
+  if (source && base) C.require(source.source?.file && source.source.file.size <= 4194304, "Reviewed reply source unavailable or too large");
+  const sourceDigest = source && base ? await C.hash(await rawBytes(source.source.file)) : null;
   const minimum = context.minimum(msg.relPath, (h.THREAD || "").split("-")[0]);
   if (signingMode !== "signed") {
     C.require(minimum === "optional", "Trusted signing required; unlock and trust a signing identity");
     return { msg, guard: async () => {
       C.require(origin === dirHandle && model === (options.model || B) && stamp === signingDraftStamp() && signingMode === "unsigned", "Posting context changed; review draft");
-      if (base) C.require(C.same(C.parse(await signingRead(base, "config.json")), context.config) && C.same(C.parse(await signingRead(base, "participants.json")), context.registry), "Board policy/profile changed; refresh and retry");
+      await signingFresh(model, base, context, expected, source, sourceDigest);
       C.require(origin === dirHandle && model === (options.model || B) && stamp === signingDraftStamp() && signingMode === "unsigned", "Posting context changed; review draft");
     } };
   }
@@ -113,7 +153,7 @@ async function signingDelivery(msg, options = {}) {
   await C.verifyMessage(envelope, await context.load("profiles", current.head.digest), raw, { boardId: context.boardId, participant: h.FROM, profile: current.head.digest, path: msg.relPath });
   return { guard: async () => {
     C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && signingMode === "signed" && signingAs === h.FROM && stamp === signingDraftStamp(), "Posting context changed; draft preserved");
-    if (base) C.require(C.same(C.parse(await signingRead(base, "config.json")), context.config) && C.same(C.parse(await signingRead(base, "participants.json")), context.registry), "Board signing context changed");
+    await signingFresh(model, base, context, expected, source, sourceDigest);
     C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && signingMode === "signed" && signingAs === h.FROM && stamp === signingDraftStamp() && (minimum !== "trusted" || context.state.pins[h.FROM] === fp), "Posting context changed; draft preserved");
   }, msg: { ...msg, text: message }, sidecar: { path: msg.relPath.split("/").slice(0, -1).join("/") + "/.signatures/" + record + ".json", text: C.text(envelope) } };
 }
@@ -237,6 +277,7 @@ async function signingDialog() {
   add("Verify older messages", async () => {
     const model = B, c = model.signingContext;
     for (const m of model.msgs.filter((m2) => m2.signing?.reason?.startsWith("Outside verification")).slice(-200)) {
+      SigningContract.require(!m.source?.file || m.source.file.size <= 4194304, "message byte budget");
       const raw = m.source?.file ? await rawBytes(m.source.file) : SigningContract.bytes(m.source?.text || "");
       m.signing = await c.evaluate(m.path, m.h, raw);
     }
