@@ -145,11 +145,15 @@ publisher checker is an explicit change to the old no-automatic-network contract
 update runtime documentation. GitHub Pages receives a connection/IP, but no board
 data or referrer is required.
 
-GitHub Pages configuration and endpoint deployment are required new work. No live
-checker exists or is claimed by this design. A bounded file-origin Chromium
-prototype with an independently served HTTP checker retrieved metadata while
-parent/worker `connect-src 'none'` remained enforced: the worker's attempted request
-did not reach the server. This establishes the architectural distinction, not
+The fixed checker is deployed by `update-checker.yml` to publisher GitHub Pages.
+`node scripts/check_live_updates.js` qualifies the deployed endpoint in Chromium
+and Firefox; the test workflow exposes this as the explicit `live_checker` manual
+input. Ordinary PR/main tests intercept public metadata for deterministic scenarios.
+
+Before implementation, a bounded file-origin Chromium prototype with an independently
+served HTTP checker retrieved metadata while parent/worker `connect-src 'none'`
+remained enforced: the worker's attempted request
+did not reach the server. That prototype established the architectural distinction, not
 production HTTPS deployment, Firefox support or complete message-protocol testing.
 
 ## UI states and implementation scope
