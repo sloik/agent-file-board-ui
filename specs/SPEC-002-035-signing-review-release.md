@@ -44,8 +44,9 @@ for the release once all evidence passes. If evidence fails, fix it first.
 
 ## Pre-publication evidence
 
-Independent review found four publication/private-state blockers; fixes and
-regressions are recorded in docs/validation/signing-security-review.md. Reviewer
+Independent review found four publication/private-state blockers. Publication
+guards, transactional private-state checks and fresh reply-source eligibility
+checks fixed them, with regression coverage in the signing tests. Reviewer
 rechecked fixes and independently passed14canonical signing runtime and16UI
 focused cases. Additional parent regressions cover reviewed source baselines,
 provider reconciliation and immediate unlock feedback.
@@ -55,8 +56,7 @@ completed UI→CLI and CLI→UI verification under required signing. A dual-key
 rotation required new trust and cleared the old browser capability. A new-key
 message was accepted, then excluded on compromise. Both clients retained the
 private trusted floor and learned compromise after shared policy/event stripping.
-Public synthetic receipt: docs/validation/signing-native-receipt.json. No real
-owner keys or live boards.
+No real owner keys or live boards were used.
 
 Documentation cleanup21f9a7c/bd2dd36 and reviewed signing are merged into UI main;
 canonical main is ba9c854 (local v2.11.0 exact pin). Canonical214tests and
@@ -87,8 +87,8 @@ bodies match their prepared notes. Demo HTML, five portable board-loop files,
 signing guides, viewer version and absence of private JWKs were checked. Exact
 canonical vendor pin and both public non-prerelease Latest objects were checked.
 Prior2.10.0 release IDs, notes and asset IDs/sizes/digests are unchanged.
-Machine-readable receipt: docs/validation/signing-release-receipt.json.
 
 Documentation cleanup21f9a7c/bd2dd36 are ancestors of released UI f5a2daa.
-Failed UI2.11.0 source tag remains immutable and unpublished. The final receipt
-is a documentation-only follow-up; released source tags/assets remain frozen.
+Failed UI2.11.0 source tag remains immutable and unpublished. Session reports
+and receipts were subsequently removed from public documentation by SPEC-002-036;
+these completed checks and frozen release tags/assets are unchanged.
