@@ -28,3 +28,59 @@ test('provider inactivity expires capability without background renewal',async()
 
 test('malformed private input diagnostics never echo private fragments',async()=>{const provider=new C.Provider();await assert.rejects(provider.unlock(C.bytes('{"d":"PRIVATE_FRAGMENT\\q"}'),{boardId:'board'}),error=>!error.message.includes('PRIVATE_FRAGMENT')&&/Invalid private JWK/.test(error.message));});
 test('refresh discards a capability whose registered key is compromised',async()=>{context.performance=performance;const f=profiles.cases[0],c=f.message_context,p=await C.verifyProfile(raw(f.profile_envelope_base64),f.profile_envelope_sha256,c.board_id,c.participant),ctx=new C.Context({identity:{boardId:c.board_id}},{participants:[{...p.snapshot,identity:{version:1,profile:p.digest}}]},async()=>raw(f.profile_envelope_base64)),provider=new C.Provider();await provider.unlock(C.canonical({...p.descriptor.key,d:Buffer.from(profiles.seed_hex,'hex').toString('base64url')}),ctx);const f2=JSON.parse(fs.readFileSync(path.join(canonical,'tests/fixtures/signing-core/runtime.json'))).cases.find(f=>f.name==='compromise'),next=new C.Context(f2.config,f2.registry,async path=>f2.files[path]?raw(f2.files[path]):null);await provider.reconcile(next);assert.equal(provider.catalog().length,0);});
+
+function rootProviderContext() {
+ const f=profiles.cases[0],c=f.message_context;
+ const registry={participants:[{...f.snapshot,identity:{version:1,profile:f.profile_envelope_sha256}}]};
+ const ctx=new C.Context({identity:{boardId:c.board_id}},registry,async()=>raw(f.profile_envelope_base64));
+ return {ctx,participant:c.participant,key:{...vectors.descriptor.key,d:Buffer.from(profiles.seed_hex,'hex').toString('base64url')}};
+}
+function runtimeContext(name,state=null,withoutSharedEvidence=false) {
+ const f=JSON.parse(fs.readFileSync(path.join(canonical,'tests/fixtures/signing-core/runtime.json'))).cases.find(f=>f.name===name);
+ const config=plain(f.config),registry=plain(f.registry);
+ if(withoutSharedEvidence){delete config.message_signing;registry.participants.find(p=>p.id===f.participant).identity.events=[];}
+ const ctx=new C.Context(config,registry,async p=>withoutSharedEvidence&&p.startsWith('identity/events/')?null:f.files[p]?raw(f.files[p]):null,state);
+ return {ctx,fixture:f};
+}
+for(const change of ['dual-key rotation','different board','missing identity'])test('provider reconciliation clears unlocked capability after '+change,async()=>{
+ context.performance=performance;
+ const {ctx,participant,key}=rootProviderContext(),provider=new C.Provider();await provider.unlock(C.canonical(key),ctx);
+ assert.equal(provider.catalog().length,1);
+ let next;
+ if(change==='dual-key rotation'){
+  next=runtimeContext('rotation').ctx;
+  assert.notEqual((await next.resolve(participant)).head.fingerprint,(await ctx.resolve(participant)).head.fingerprint);
+ }else if(change==='different board'){
+  next=new C.Context({identity:{boardId:'3cda5aba-086d-46db-bfaf-46c51676f8bb'}},ctx.registry,ctx.read);
+ }else next=new C.Context(ctx.config,{participants:[]},async()=>null);
+ const generation=provider.generation;await provider.reconcile(next);
+ assert.equal(provider.catalog().length,0);assert.ok(provider.generation>generation);
+ await assert.rejects(provider.sign(participant,next,C.TYPES.message,C.bytes('cannot sign after context loss')),/unlock/);
+});
+test('same-key profile advance rebinds possession; reconciliation never extends inactivity',async()=>{
+ let tick=0;context.performance={now:()=>tick};
+ try{
+  const {ctx,participant,key}=rootProviderContext(),provider=new C.Provider();await provider.unlock(C.canonical(key),ctx);
+  const next=runtimeContext('same-key').ctx,head=(await next.resolve(participant)).head;
+  assert.notEqual(head.digest,(await ctx.resolve(participant)).head.digest);
+  assert.equal(head.fingerprint,(await ctx.resolve(participant)).head.fingerprint);
+  tick=20;await provider.reconcile(next);assert.equal(provider.catalog().length,1);
+  const proof=await provider.sign(participant,next,C.TYPES.message,C.bytes('same key, advanced profile'));
+  assert.equal(provider.catalog()[0].profile,head.digest);
+  assert.equal(C.text((await C.verifyEnvelope(proof,C.TYPES.message,[head.descriptor])).payload),'same key, advanced profile');
+  tick=900019;await provider.reconcile(next);assert.equal(provider.catalog().length,1);
+  tick=900020;await provider.reconcile(next);assert.equal(provider.catalog().length,0);
+ }finally{context.performance=performance;}
+});
+test('serialized private state retains adopted floor, compromise and UUID binding after shared stripping',async()=>{
+ const {ctx,fixture:f}=runtimeContext('compromise');
+ ctx.state.pins[f.participant]=f.expected.fingerprint;
+ ctx.state.floor=C.mergeFloor(ctx.floor,C.policy({version:1,minimum:'trusted'},ctx.config),ctx.config);
+ const message=raw(f.message),headers=Object.fromEntries(C.text(message).split('\n---\n')[0].split('\n').map(line=>{const at=line.indexOf(': ');return [line.slice(0,at),line.slice(at+2)];}));
+ assert.equal((await ctx.evaluate(f.path,headers,message)).lifecycle,'compromised');
+ const persisted=plain(ctx.state),restored=runtimeContext('compromise',persisted,true).ctx;
+ const result=await restored.evaluate(f.path,headers,message);
+ assert.equal(result.minimum,'trusted');assert.equal(result.lifecycle,'compromised');assert.equal(result.eligibility,'excluded');
+ assert.equal((await restored.evaluate('rooms/general/never-signed.txt',{FROM:f.participant,THREAD:'T001'},C.bytes('unsigned'))).eligibility,'excluded');
+ assert.throws(()=>new C.Context({...restored.config,identity:{boardId:'3cda5aba-086d-46db-bfaf-46c51676f8bb'}},restored.registry,restored.read,plain(persisted)),/board UUID changed/);
+});
