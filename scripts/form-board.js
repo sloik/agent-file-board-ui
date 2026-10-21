@@ -1,5 +1,6 @@
 /* Trusted form transport and root lifetime, inside the viewer scope. */
 const formRoots=new Map(),formDrafts=new Map(),submittingForms=new Set(),formDraftLoads=new Map(),formStorageNotes=new Map(),formDraftDirty=new Set();
+let formStoragePending=0;
 let formStorageIdentity=null,formStorageWrites=Promise.resolve();
 const formKey=m=>JSON.stringify([formStorageIdentity||boardStorageId,currentUser(),m.path,m.h.QUESTION]);
 async function formDraftBucket(identity,mutate){
@@ -10,11 +11,11 @@ async function formDraftBucket(identity,mutate){
 function loadFormDraft(key,q){
  if(formDraftLoads.has(key))return;
  const identity=formStorageIdentity;
- const pending=(async()=>{try{if(!identity)throw Error('No durable folder identity');const digest=await shaBytes(new TextEncoder().encode(key)),bucket=await formDraftBucket(identity);const draft=BoardFormContract.restore(q,bucket[digest]?.draft);if(draft){formDrafts.set(key,draft);formDraftDirty.add(key);}formStorageNotes.set(key,"form_draft_saved");}catch{formStorageNotes.set(key,"form_draft_memory");}finally{formDraftLoads.set(key,true);if(B)mountForms();}})();formDraftLoads.set(key,pending);
+ const pending=(async()=>{try{if(!identity)throw Error('No durable folder identity');const digest=await shaBytes(new TextEncoder().encode(key)),bucket=await formDraftBucket(identity);const draft=BoardFormContract.restore(q,bucket[digest]?.draft);if(draft){formDrafts.set(key,draft);if(JSON.stringify(draft)!==JSON.stringify(BoardFormContract.initial(q)))formDraftDirty.add(key);}formStorageNotes.set(key,"form_draft_saved");}catch{formStorageNotes.set(key,"form_draft_memory");}finally{formDraftLoads.set(key,true);if(B)mountForms();}})();formDraftLoads.set(key,pending);
 }
 function saveFormDraft(key,q,draft,clear=false){
- formDrafts.set(key,structuredClone(draft));if(clear)formDraftDirty.delete(key);else formDraftDirty.add(key);const identity=formStorageIdentity;
- formStorageWrites=formStorageWrites.catch(()=>{}).then(async()=>{let persisted=false;try{if(!identity||!BoardFormContract.restore(q,draft))throw Error('Draft exceeds storage limits');const digest=await shaBytes(new TextEncoder().encode(key));await formDraftBucket(identity,bucket=>{if(clear)delete bucket[digest];else bucket[digest]={updated:Math.max(Date.now(),...Object.values(bucket).map(row=>row.updated+1)),draft};});formStorageNotes.set(key,"form_draft_saved");persisted=true;}catch{formStorageNotes.set(key,"form_draft_memory");}if(B)mountForms();return persisted;});return formStorageWrites;
+ formDrafts.set(key,structuredClone(draft));if(clear||JSON.stringify(draft)===JSON.stringify(BoardFormContract.initial(q)))formDraftDirty.delete(key);else formDraftDirty.add(key);const identity=formStorageIdentity;formStoragePending++;
+ formStorageWrites=formStorageWrites.catch(()=>{}).then(async()=>{let persisted=false;try{if(!identity||!BoardFormContract.restore(q,draft))throw Error('Draft exceeds storage limits');const digest=await shaBytes(new TextEncoder().encode(key));await formDraftBucket(identity,bucket=>{if(clear)delete bucket[digest];else bucket[digest]={updated:Math.max(Date.now(),...Object.values(bucket).map(row=>row.updated+1)),draft};});formStorageNotes.set(key,"form_draft_saved");persisted=true;}catch{formStorageNotes.set(key,"form_draft_memory");}if(B)mountForms();return persisted;}).finally(()=>{formStoragePending--;});return formStorageWrites;
 }
 
 function formWords(){return {hint:t("form_hint"),choose:t("form_choose"),maxLength:t("form_max_length"),range:t("form_range"),step:t("form_step"),row:t("form_row"),changedCells:t("form_changed_cells"),invalid:t("form_invalid"),invalidForm:t("form_invalid_form"),tooLarge:t("form_too_large"),rowActions:t("form_row_actions"),moveUp:t("form_move_up"),moveDown:t("form_move_down"),removeRow:t("form_remove_row"),addRow:t("form_add_row"),rows:t("form_rows")};}

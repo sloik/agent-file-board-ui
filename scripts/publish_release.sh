@@ -19,6 +19,8 @@ if [[ "$newest" == "$RELEASE_TAG" ]]; then latest=true; fi
 assets=(release-assets/board.html release-assets/desktop_opener.applescript release-assets/install_desktop_opener.py)
 demo_since=$(printf '%s\n' 'v2.2.1' "$RELEASE_TAG" | sort -V | head -n 1)
 if [[ "$demo_since" == 'v2.2.1' ]]; then assets+=(release-assets/agent-file-board-demo.zip); fi
+package_since=$(printf '%s\n' 'v2.11.4' "$RELEASE_TAG" | sort -V | head -n 1)
+if [[ "$package_since" == 'v2.11.4' ]]; then assets+=(release-assets/agent-file-board-viewer.zip release-assets/SHA256SUMS); fi
 for asset in "${assets[@]}"; do
   [[ -f "$asset" ]] || { echo "Missing release asset: $asset"; exit 1; }
 done

@@ -1,5 +1,19 @@
 # Release notes
 
+## 2.11.4 — 2026-10-21
+
+- Package the complete viewer, optional helpers, update guide and licenses in a
+  deterministic application-only ZIP with a SHA-256 file inventory and release
+  checksums. Conversations and private signing state stay outside the package.
+- Offer daily public release notices through an isolated hosted checker; retain
+  offline viewing and explicit opt-out. Installation stays manual on all platforms,
+  including Firefox. Reload refuses unfinished drafts and active operations.
+- Add reviewed voice input with native dictation guidance, on-device browser speech
+  where supported, and an optional local whisper.cpp helper; insert into the draft
+  before sending through the existing signing flow.
+- Add executable formal models for viewer state transitions and continuous formal
+  checks, plus unit and Chromium/Firefox regression coverage for package updates.
+
 ## 2.11.3 — 2026-10-21
 
 - Refuse provider signature completion if lock or inactivity expiry happens while

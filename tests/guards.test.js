@@ -10,7 +10,7 @@ let browser;
 before(async () => { browser = await h.launch(); });
 after(async () => { await browser.close(); });
 
-test("AC1: no network requests from file:// in light and dark mode", async () => {
+test("AC1: no network requests with daily checks disabled, in light and dark mode", async () => {
   assert.deepEqual(await c.checkNoNetwork(browser, h.BOARD_HTML), []);
 });
 test("AC1: source declares no external resources", () => {

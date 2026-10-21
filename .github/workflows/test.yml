@@ -55,8 +55,8 @@ jobs:
           python3 -m pip install -r vendor/agent-file-board/requirements-signing.txt
 
       # After npm ci so the browser matches the pinned playwright version.
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium and Firefox for Playwright
+        run: npx playwright install --with-deps chromium firefox
 
       - name: Test (Playwright viewer tests + release_check unit tests)
         run: npm test

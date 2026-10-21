@@ -159,6 +159,13 @@ async function openPage(browser, opts = {}) {
   const ctx = await browser.newContext({
     colorScheme: opts.colorScheme || "light", viewport: { width: 1280, height: 800 },
     acceptDownloads: true, locale: "en-US", permissions: [] });
+  // Existing offline/security fixtures explicitly opt out of the newly optional
+  // daily public-metadata check. Update tests exercise the enabled default.
+  if (!opts.updateChecks) await ctx.addInitScript(() => {
+    const r=indexedDB.open('agent-file-board-ui',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+    r.onsuccess=()=>{const db=r.result,tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({auto:false},'viewer-updates-v1');tx.oncomplete=()=>db.close();};
+  });
   const page = await ctx.newPage();
   const log = { pageErrors: [], consoleErrors: [], requests: [], dialogs: [] };
   page.on("pageerror", e => log.pageErrors.push(String(e && e.message || e)));

@@ -31,7 +31,9 @@ async function signingGet(key) {
     db.close();
   }
 }
-async function signingSave(model) {
+let signingSavePending=0;
+async function signingSave(model){signingSavePending++;try{return await signingSaveImpl(model);}finally{signingSavePending--;}}
+async function signingSaveImpl(model) {
   if (!model.signingKey || !model.signingContext?.boardId) return;
   const raw = JSON.stringify(model.signingContext.state);
   SigningContract.require(new TextEncoder().encode(raw).length <= 8388608, "private signing history budget");

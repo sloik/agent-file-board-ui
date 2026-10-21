@@ -10,7 +10,7 @@ SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "publish_release.s
 
 
 class PublishReleaseTests(unittest.TestCase):
-    def run_publisher(self, tag, published="", api_failure=False, demo_present=True):
+    def run_publisher(self, tag, published="", api_failure=False, demo_present=True, package_present=True):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             assets = root / 'release-assets'
@@ -19,6 +19,9 @@ class PublishReleaseTests(unittest.TestCase):
                 (assets / name).write_text('fixture')
             if demo_present:
                 (assets / 'agent-file-board-demo.zip').write_bytes(b'fixture zip')
+            if package_present:
+                (assets / "agent-file-board-viewer.zip").write_bytes(b"app zip")
+                (assets / "SHA256SUMS").write_text("checksums")
             gh = root / "gh"
             gh.write_text('''#!/usr/bin/env python3
 import json, os, sys
@@ -78,4 +81,16 @@ else:
     def test_invalid_tag_cannot_publish(self):
         result, args = self.run_publisher("main")
         self.assertNotEqual(result.returncode, 0)
+        self.assertIsNone(args)
+
+    def test_package_release_requires_zip_and_checksums_and_preserves_published_versions(self):
+        result, args = self.run_publisher('v2.11.4', 'v2.11.3')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('release-assets/agent-file-board-viewer.zip', args)
+        self.assertIn('release-assets/SHA256SUMS', args)
+        result, args = self.run_publisher('v2.11.4', package_present=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIsNone(args)
+        result, args = self.run_publisher('v2.11.4', 'v2.11.4', package_present=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIsNone(args)

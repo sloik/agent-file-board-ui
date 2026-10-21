@@ -30,7 +30,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/guides/THEMES.md)). |
 | **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/guides/LOCATIONS.md). |
 | **Voice drafts** | System dictation guidance, optional on-device browser speech and an explicitly configured local whisper.cpp helper. Review and insert before normal signed Send. [Guide](docs/guides/VOICE.md). |
-| **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
+| **Local use** | One HTML file, native and legacy boards, no server; optional daily public release checks. Chromium writes directly; other browsers download new messages. |
 
 ![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)
 
@@ -372,7 +372,7 @@ written to the board. Upload snapshots use a metadata fingerprint; identical
 snapshot copies can share drafts, changed snapshots may not restore them. Use
 [form v3](docs/OPENUI.md#conditional-workflows-and-saved-drafts-24) for conditional
 fields/options, cross-field rules and row additions/removals/reordering. All run
-inside the same local board.html, without a server or automatic network requests.
+inside the same local board.html, without a server; daily public release checks can be disabled.
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
@@ -411,3 +411,20 @@ Send. Verification, local trust and current-key lifecycle are separate; required
 scopes exclude unsigned/untrusted input from actions and notifications. Keys live
 only in the tab and lock after15minutes of inactivity. See the [signing guide](docs/guides/signing.md)
 for setup, private trust, inspection and non-CLI agent interoperability.
+
+### Updating the viewer
+
+Tools → Viewer updates checks daily while open (and after an overdue reopening).
+It contacts a fixed isolated checker and GitHub only for public release metadata;
+board contents and signing keys are never sent. Turn daily checks off there for
+offline use, or use Check now. An unavailable check means the latest release is
+unknown. Existing viewing and signing work offline.
+
+Download `agent-file-board-viewer.zip` from the official release, extract it into a
+fresh folder and follow [the manual update guide](docs/guides/UPDATING-VIEWER.md).
+The package includes all runtime files, optional helpers, licenses and an inventory.
+It contains no board data. Installation is manual on Mac, Windows and Linux,
+including Firefox. Source checkouts should use a separate extracted viewer.
+Finish or discard unfinished work before copying application files and reloading;
+the app's reload button guards drafts and active operations. Open tabs retain their
+running version until reloaded. Signing keys must be unlocked again after reload.

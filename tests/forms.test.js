@@ -21,7 +21,7 @@ test('all form adapters render offline; invalid required input refuses and edits
  const {ctx,page,log}=await boot();try{
   await page.waitForSelector('.typed-form');assert.equal(await page.locator('.form-field').count(),12);assert.equal(await page.locator('.form-error:not([hidden])').count(),0);
   const before=await page.evaluate(()=>window.__fakefs.dump());await page.locator('.form-buttons [type=submit]').click();assert.match(await page.locator('.form-result').innerText(),/highlighted/);assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),before);
-  await field(page,'owner').locator('input').fill('Demo owner');await field(page,'notes').locator('textarea').fill('Keep original source unchanged.');
+  assert.ok(!(await page.evaluate(()=>window.__boardTest.viewerReloadBlockers())).includes('form reply'));await field(page,'owner').locator('input').fill('Demo owner');assert.ok((await page.evaluate(()=>window.__boardTest.viewerReloadBlockers())).includes('form reply'));await field(page,'notes').locator('textarea').fill('Keep original source unchanged.');
   await field(page,'tasks').locator('[data-row=schema][data-column=hours] input').fill('3');await field(page,'tasks').locator('[data-row=viewer][data-column=approved] input').check();
   await field(page,'checks').getByLabel('Browser tests').check();await field(page,'labels').getByRole('button',{name:'Needs review',exact:true}).click();
   await page.locator('.form-buttons [type=submit]').click();await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('ANSWER: {"version":2')));

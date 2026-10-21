@@ -62,3 +62,5 @@ Keep public documentation useful to readers: durable behavior, limits, examples
 and reproducible commands belong here. Keep private run logs, temporary file
 references and session receipts outside the repository; do not publish them as
 documentation or include them in demo packages.
+
+- [Manual viewer updates](guides/UPDATING-VIEWER.md) — package installation, shared folders and rollback.

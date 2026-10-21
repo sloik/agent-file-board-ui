@@ -1,3 +1,4 @@
+let voiceWorkPending=false;
 function wireVoiceInput(){
   const button=document.createElement('button');button.id='voiceTools';button.className='btn';button.textContent=exText('Voice input','Wprowadzanie głosowe');$('#toolbarToolsPanel').append(button);
   button.onclick=()=>{
@@ -19,6 +20,7 @@ function wireVoiceInput(){
     let stop=()=>{},selection;
     const context=()=>JSON.stringify([boardStorageId,dirHandle!==null,S.me,signingMode,signingAs,signingDraftStamp(),replyTo]);
     const session=new VoiceInput.Session(context,s=>{
+      voiceWorkPending=s.state==='listening'||s.state==='review';
       status.textContent=s.state==='listening'?exText('Listening… Stop to review.','Słucham… Zatrzymaj, aby sprawdzić.'):s.state==='review'?exText('Review, then insert into the draft.','Sprawdź i wstaw do szkicu.'):s.reason||exText('Ready','Gotowe');
       if(s.state==='listening'){review.value=s.text;interim.textContent=s.interim;}else interim.textContent='';
       if(s.state==='idle')review.value='';
@@ -43,7 +45,7 @@ function wireVoiceInput(){
     const check=()=>{if(['listening','review'].includes(session.state))session.valid(session.id);};
     document.addEventListener('input',check);document.addEventListener('change',check);
     const timer=setInterval(check,200);
-    const dispose=()=>{session.cancel();token.value='';clearInterval(timer);document.removeEventListener('input',check);document.removeEventListener('change',check);window.removeEventListener('pagehide',dispose);dialog.remove();};
+    const dispose=()=>{session.cancel();voiceWorkPending=false;token.value='';clearInterval(timer);document.removeEventListener('input',check);document.removeEventListener('change',check);window.removeEventListener('pagehide',dispose);dialog.remove();};
     dialog.addEventListener('close',dispose,{once:true});window.addEventListener('pagehide',dispose,{once:true});
     document.body.append(dialog);update();dialog.showModal();
   };

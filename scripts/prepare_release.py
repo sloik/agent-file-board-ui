@@ -10,6 +10,7 @@ from build_demo import ARCHIVE
 
 ASSETS = ("board.html", "scripts/desktop_opener.applescript", "scripts/install_desktop_opener.py")
 DEMO_SINCE = (2, 2, 1)
+PACKAGE_SINCE = (2, 11, 4)
 
 
 def build_demo_asset(root: Path, output: Path) -> None:
@@ -46,6 +47,18 @@ def prepare(root: Path, tag: str, output: Path) -> None:
                    ('docs/guides/DEMO.md', 'docs/DEMO.md')):
             raise ValueError("missing demo source: docs/guides/DEMO.md or docs/DEMO.md")
         build_demo_asset(root, output / ARCHIVE)
+    if tuple(map(int, tag[1:].split('.'))) >= PACKAGE_SINCE:
+        builder = root / 'scripts/build_viewer_package.py'
+        if not builder.is_file():
+            raise ValueError('missing application package builder')
+        subprocess.run([sys.executable, '-I', '-B', str(builder), '--root', str(root),
+                        '--output', str(output / 'agent-file-board-viewer.zip')],
+                       check=True, capture_output=True, text=True)
+    import hashlib
+    checksums = ''.join(hashlib.sha256(p.read_bytes()).hexdigest() + '  ' + p.name + '\n'
+                        for p in sorted(output.iterdir()) if p.is_file())
+    if tuple(map(int, tag[1:].split('.'))) >= PACKAGE_SINCE:
+        (output / 'SHA256SUMS').write_text(checksums, encoding='utf-8')
     (output / "notes.md").write_text(notes, encoding="utf-8")
 
 
