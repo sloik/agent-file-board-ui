@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-035
 title: Review and release message signing with documentation consolidation
-status: in_progress
+status: done
 parent: SPEC-002
 type: maintenance
 created: 2026-10-21
@@ -22,10 +22,10 @@ release if checks pass. Preserve old published tags/assets and unrelated work.
   No real identity keys or owner boards are changed.
 - [x] AC3: Documentation cleanup21f9a7c/bd2dd36 and signing feature branches are
   ancestors of released main. Current docs/changelogs describe final capabilities.
-- [ ] AC4: Canonical and UI compatible new versions have exact immutable tags;
+- [x] AC4: Canonical and UI compatible new versions have exact immutable tags;
   local full suites and exact-source CI pass. UI pins the released canonical tag,
   removes development marker and passes the unchanged strict release guard.
-- [ ] AC5: Both actual GitHub Releases are public non-prerelease Latest. Download
+- [x] AC5: Both actual GitHub Releases are public non-prerelease Latest. Download
   UI assets and canonical source archives and verify exact tested bytes, notes,
   demo and embedded sources. Record receipt and leave clean working trees.
 
@@ -70,3 +70,25 @@ files before writer completion; publication was skipped. The immutable tag is
 retained. UI v2.11.1 waits for completion without changing byte assertions and
 adds controlled delayed-close/newer-draft preservation coverage. Canonical pin
 remains v2.11.0; same-major/minor compatibility is intentional.
+
+## Published delivery
+
+Canonical [v2.11.0](https://github.com/sloik/agent-file-board/releases/tag/v2.11.0)
+is Latest at ba9c854; tag CI39569294986 and main CI39569295539 pass. All171
+tracked source blobs/symlinks match the downloaded ZIP and tar archives.
+
+UI [v2.11.1](https://github.com/sloik/agent-file-board-ui/releases/tag/v2.11.1)
+is Latest at f5a2daa; main CI39571497416 and complete tag/release workflow
+39572115081 pass. Full local suite:373Node/browser and37Python, zero skipped.
+Canonical local suite:214tests. Strict release guard passes with canonical2.11.0.
+
+All four downloaded UI assets match prepared/rebuilt bytes exactly. Both release
+bodies match their prepared notes. Demo HTML, five portable board-loop files,
+signing guides, viewer version and absence of private JWKs were checked. Exact
+canonical vendor pin and both public non-prerelease Latest objects were checked.
+Prior2.10.0 release IDs, notes and asset IDs/sizes/digests are unchanged.
+Machine-readable receipt: docs/validation/signing-release-receipt.json.
+
+Documentation cleanup21f9a7c/bd2dd36 are ancestors of released UI f5a2daa.
+Failed UI2.11.0 source tag remains immutable and unpublished. The final receipt
+is a documentation-only follow-up; released source tags/assets remain frozen.

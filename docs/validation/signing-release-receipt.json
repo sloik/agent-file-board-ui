@@ -1,0 +1,58 @@
+{
+  "canonicalCommit": "ba9c8545cb683692eec405dcd8e3e4810f84412e",
+  "canonicalRelease": 419320550,
+  "canonicalSourcePaths": 171,
+  "archives": {
+    "afb-signing-211-canonical.zip": "4f1b08663e2f75b01ef449187505c77b7e245ad6d7704641be959f54b9651fd8",
+    "afb-signing-211-canonical.tar.gz": "99f33ec0b815e95ff38d71a778478d05644b11145d4f1c4f7e84b2e49dff7c57"
+  },
+  "canonicalTag": "v2.11.0",
+  "uiTag": "v2.11.1",
+  "uiCommit": "f5a2daa13652fa85c74f2e10b1f26ec41c26c21a",
+  "agent-file-boardRelease": {
+    "id": 419320550,
+    "url": "https://github.com/sloik/agent-file-board/releases/tag/v2.11.0",
+    "tag": "v2.11.0"
+  },
+  "agent-file-board-uiRelease": {
+    "id": 419338883,
+    "url": "https://github.com/sloik/agent-file-board-ui/releases/tag/v2.11.1",
+    "tag": "v2.11.1"
+  },
+  "priorReleasesPreserved": true,
+  "uiAssets": {
+    "agent-file-board-demo.zip": {
+      "sha256": "0a0f980a4ced9dfc8c9571ce2cf9316ef2c8c158d5b169d5f85496fb361736e3",
+      "bytes": 2429544,
+      "assetId": 661906572
+    },
+    "board.html": {
+      "sha256": "5d3785d08af32b4a690a746748094dd6c50c23c0c2812345c41a81c0a655918a",
+      "bytes": 1847236,
+      "assetId": 661906574
+    },
+    "desktop_opener.applescript": {
+      "sha256": "32195358160dc7428adcf5f490412748b477aec9375f01c7a6ebbe883eb40733",
+      "bytes": 9354,
+      "assetId": 661906577
+    },
+    "install_desktop_opener.py": {
+      "sha256": "4ee68027bc272b32205eddb814f0e23784404c8543c25e42e4498b7b141984bf",
+      "bytes": 2710,
+      "assetId": 661906578
+    }
+  },
+  "demoVerified": {
+    "viewerVersion": "2.11.1",
+    "canonicalVersion": "2.11.0",
+    "portableSkillFiles": 5,
+    "privateKeysIncluded": false,
+    "exactHtml": true
+  },
+  "uiMainCI": 39571497416,
+  "uiTagReleaseCI": 39572115081,
+  "documentationCleanupAncestors": [
+    "21f9a7c",
+    "bd2dd36"
+  ]
+}
