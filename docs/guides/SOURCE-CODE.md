@@ -36,8 +36,8 @@ follows ordinary reader newline parsing; direct component source copy preserves
 its supplied text and line endings.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/source-diffs-dark.png">
-  <img alt="Shared source renderer: highlighted Python followed by a side-by-side patch with before and after line numbers, red removals and green additions." src="images/source-diffs-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="../images/source-diffs-dark.png">
+  <img alt="Shared source renderer: highlighted Python followed by a side-by-side patch with before and after line numbers, red removals and green additions." src="../images/source-diffs-light.png">
 </picture>
 
 The image isolates the same shared component used inside the board.

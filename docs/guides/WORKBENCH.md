@@ -1,8 +1,8 @@
 # Author, review and manage drafts offline
 
-UI **2.4.8** provides these tools to the same local `board.html`. No server, account,
-model, CDN or extra runtime file is required. The canonical contract and CLI
-remain **2.4.0**: these are viewer features, with no new message format.
+These tools were introduced through UI **2.4.8** in the same local `board.html`. No server, account,
+model, CDN or extra runtime file is required. They use canonical **2.4.0** report/form contracts: these viewer features
+introduced no new message format.
 
 ## Validate and preview before posting
 
@@ -12,7 +12,7 @@ board. Choose one of the five embedded examples: report v1/v2/v3 or form v2/v3.
 **Validate and preview**. The existing header validators check the actual
 versioned contract; the preview uses the actual offline report/form renderer.
 
-![Local JSON authoring with a real form preview.](images/board-authoring-preview.png)
+![Local JSON authoring with a real form preview.](../images/board-authoring-preview.png)
 
 You can exercise tabs, charts, conditional choices and editable rows in preview.
 Submitting a preview form only displays a preview result: it never creates a
@@ -43,7 +43,7 @@ and cross-field rules. Buttons let you add/remove/move fields, options and rows.
 Type changes ask before replacing type-specific settings. **Edit JSON** returns
 to the same definition; opening the builder never rewrites invalid JSON.
 
-![Visual form builder inside the standalone viewer.](images/board-form-builder.png)
+![Visual form builder inside the standalone viewer.](../images/board-form-builder.png)
 
 Every visual change updates the JSON and invalidates its preview. **Validate and
 preview** uses the existing contract, including ID uniqueness, conditions that
@@ -87,7 +87,7 @@ the most recently committed editor recovery wins. These are authoring backups,
 separate from source/respondent-bound answer drafts below. Neither backup format
 is a `boardctl --question-file` or `--answer-file` payload.
 
-![Named authoring snapshots and local backups.](images/board-authoring-drafts.png)
+![Named authoring snapshots and local backups.](../images/board-authoring-drafts.png)
 
 ## Read a submitted answer
 
@@ -97,7 +97,7 @@ labels, with explicit zero, false, empty and hidden states. Tables show unchange
 context, changed cells, added and removed rows, and submitted row order. Wide
 tables scroll inside the comparison.
 
-![Typed answer with baseline and submitted values.](images/board-answer-review.png)
+![Typed answer with baseline and submitted values.](../images/board-answer-review.png)
 
 Comparisons are derived from the actual valid original question in the same
 conversation and revalidated when rendered. Missing, invalid or withdrawn
@@ -106,7 +106,7 @@ available. Comparisons do not edit files, approve work or execute actions.
 Agents still read and validate the real `ANSWER` metadata against its source;
 the human-facing view is a convenience, not a second contract.
 
-![Read-only answer comparison on a phone in dark mode.](images/board-answer-review-phone.png)
+![Read-only answer comparison on a phone in dark mode.](../images/board-answer-review-phone.png)
 
 ## Export, import or delete a local draft
 
@@ -114,7 +114,7 @@ Click **Tools → Saved drafts**. The dialog lists known valid form v2/v3 drafts
 opened board and selected respondent, with source path and saved/memory status.
 Switching respondent or board closes the old manager context.
 
-![Saved drafts with explicit export and deletion actions.](images/board-draft-manager.png)
+![Saved drafts with explicit export and deletion actions.](../images/board-draft-manager.png)
 
 - **Export draft** downloads a JSON file containing the exact source definition,
   respondent and entered values. It does not change the board or submit a reply.
@@ -136,7 +136,7 @@ Do not pass it to `boardctl post --question-file` or `--answer-file`.
 Browser retention is still at most 20 stored drafts per board, 30 days and
 256 KiB per raw draft. Storage failures keep a visible memory-only draft. Reset
 and successful posting/download clear saved edits; failed delivery retains them.
-See [storage details and tests](STORAGE.md#form-draft-persistence-24). No drafts
+See [storage details and tests](../reference/STORAGE.md#form-draft-persistence-24). No drafts
 are synchronized automatically between browsers or devices.
 
 ## Try the complete demo
@@ -151,7 +151,7 @@ extract it, open `board.html`, and select `demo-board`.
 4. Use **Import draft** to select the bundled **example-draft.json** beside
    `board.html`. It restores a fictional production/eu draft in T013. It does
    not post anything. The same public example is available
-   [here](examples/drafts/demo-workflow-draft.json).
+   [here](../examples/drafts/demo-workflow-draft.json).
 5. Import **authoring-example.json** using **Structured message → Authoring drafts
    → Import authoring backup**, then try the visual builder, save a named snapshot
    and reload. Follow [the local workflow trial](LOCAL-WORKFLOW.md).
@@ -179,42 +179,12 @@ and posts an explicit follow-up. It checks immutable source/reply bytes and
 zero external requests. This verifies wiring on fictional data; it is not a
 claim of owner adoption or permission to act on a live project.
 
-## Recent locations (UI2.4.3)
+<a id="recent-locations-ui243"></a>
+<a id="color-themes-ui248"></a>
+<a id="folder-label-chooser-ui248"></a>
 
-**Recent locations** keeps up to 20 successful board opens. Last open wins:
-existing native folders move to the top using actual handle identity, including
-project/.agent-board aliases. Same-name folders remain separate. Upload entries
-retain metadata only and require choosing files again. Startup follows only the
-latest entry; an upload never silently reopens an older writable folder.
-Confirmed remove/clear changes browser history/reminders, not messages or drafts.
-Storage failures show session-only history. No backend, automatic network or
-protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](LOCATIONS.md).
+## Related viewer controls
 
-## Color themes (UI2.4.8)
-
-Choose **Settings → Color theme → System, Light, Dark or Dracula**.
-The browser saves this choice; report/form inputs and filters remain mounted
-while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Dracula styles interface chrome only. Participant/status pills, speech bubbles,
-composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Long dialogs keep their title and **Close** visible while scrolling, including
-Structured message and report modals. Settings has a saved, resizable width:
-drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
-
-Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
-digit/unit changes, paused/off and read-only states keep button positions and
-header height stable. Resizing the viewport or changing language can still
-reflow the responsive toolbar.
-
-## Folder label chooser (UI2.4.8)
-
-Click the folder label under **Agent File Board** to choose a new folder or
-reopen one from **Recent locations**. This replaces the separate Change folder
-and Recent locations toolbar buttons. The label works on phones and with
-keyboard Enter/Space; native cancellation preserves the active board.
+See [folder selection and recent locations](LOCATIONS.md), [color themes](THEMES.md)
+and [dialogs, Settings and toolbar layout](PANELS.md). These are local viewer
+features; they require no board metadata migration.

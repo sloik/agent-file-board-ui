@@ -166,7 +166,7 @@ def build_demo(root: Path, destination: Path):
         manifest['colorThemes']=['system','light','dark','dracula']
         manifest['locationHistory']={'limit':20,'order':'last-open-wins','native':'handle-identity','uploads':'reselect'}
         shutil.copyfile(root / 'docs/examples/drafts/authoring-workflow.json', destination / 'authoring-example.json')
-        shutil.copyfile(root / 'docs/LOCAL-WORKFLOW.md', destination / 'WORKFLOW-TRIAL.md')
+        shutil.copyfile(root / 'docs/guides/LOCAL-WORKFLOW.md', destination / 'WORKFLOW-TRIAL.md')
         shutil.copyfile(root / 'docs/examples/drafts/demo-workflow-draft.json', destination / 'example-draft.json')
     if tuple(map(int, version.split('.'))) >= (2, 6, 1):
         skill = destination / 'skills/board-feedback'
@@ -194,12 +194,12 @@ def build_demo(root: Path, destination: Path):
             target = destination / 'skills/board-loop' / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(vendor / 'skills/board-loop' / rel, target)
-        shutil.copyfile(root / 'docs/BOARD-LOOP.md', destination / 'docs/BOARD-LOOP.md')
-        shutil.copyfile(root / 'docs/COMPOSER.md', destination / 'docs/COMPOSER.md')
+        shutil.copyfile(root / 'docs/guides/BOARD-LOOP.md', destination / 'docs/BOARD-LOOP.md')
+        shutil.copyfile(root / 'docs/guides/COMPOSER.md', destination / 'docs/COMPOSER.md')
         manifest['opportunisticObservation'] = {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
-    shutil.copyfile(root / 'docs/DEMO.md', destination / 'README.md')
+    shutil.copyfile(root / 'docs/guides/DEMO.md', destination / 'README.md')
     for name in ['LICENSE', 'THIRD_PARTY_NOTICES.md']:
         shutil.copyfile(root / name, destination / name)
     shutil.copytree(root / 'licenses', destination / 'licenses')

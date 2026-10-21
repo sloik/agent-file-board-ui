@@ -41,7 +41,7 @@ renders the actual standalone viewer and regenerates their screenshots.
 
 To try these examples without developer tools, [download the complete offline
 demo](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)
-and follow the [tour](../../DEMO.md).
+and follow the [tour](../../guides/DEMO.md).
 
 - [form-question.json](form-question.json) and [form-answer.json](form-answer.json) —
   version2 typed form, all 11 control types and stable editable-cell replies.
@@ -64,51 +64,17 @@ creates and validates both immutable messages in a temporary board.
 UI2.4.2 can load all five canonical report/form examples directly through
 **Structured message → Load example → Validate and preview**. Attaching a
 validated snapshot uses normal posting, never preview submission. See
-[authoring/review tools](../../WORKBENCH.md), and keep
+[authoring/review tools](../../guides/WORKBENCH.md), and keep
 [draft export/import JSON](../drafts/README.md) separate from board payloads.
 
 Form definitions can also be edited with **Visual form builder**, including all
 11 field types, v3 conditions/rules and table baselines. **Authoring drafts**
 recovers unfinished JSON locally and offers named snapshots/export/import.
 See the [authoring backup example](../drafts/authoring-workflow.json) and
-[workflow trial](../../LOCAL-WORKFLOW.md). Actual human adoption is unverified.
+[workflow trial](../../guides/LOCAL-WORKFLOW.md). Actual human adoption is unverified.
 
-## Recent locations (UI2.4.3)
+## Related viewer controls
 
-**Recent locations** keeps up to 20 successful board opens. Last open wins:
-existing native folders move to the top using actual handle identity, including
-project/.agent-board aliases. Same-name folders remain separate. Upload entries
-retain metadata only and require choosing files again. Startup follows only the
-latest entry; an upload never silently reopens an older writable folder.
-Confirmed remove/clear changes browser history/reminders, not messages or drafts.
-Storage failures show session-only history. No backend, automatic network or
-protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](../../LOCATIONS.md).
-
-## Color themes (UI2.4.8)
-
-Choose **Settings → Color theme → System, Light, Dark or Dracula**.
-The browser saves this choice; report/form inputs and filters remain mounted
-while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Dracula styles interface chrome only. Participant/status pills, speech bubbles,
-composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Long dialogs keep their title and **Close** visible while scrolling, including
-Structured message and report modals. Settings has a saved, resizable width:
-drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
-
-Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
-digit/unit changes, paused/off and read-only states keep button positions and
-header height stable. Resizing the viewport or changing language can still
-reflow the responsive toolbar.
-
-## Folder label chooser (UI2.4.8)
-
-Click the folder label under **Agent File Board** to choose a new folder or
-reopen one from **Recent locations**. This replaces the separate Change folder
-and Recent locations toolbar buttons. The label works on phones and with
-keyboard Enter/Space; native cancellation preserves the active board.
+See [themes](../../guides/THEMES.md), [dialogs and Settings](../../guides/PANELS.md)
+and [folder selection](../../guides/LOCATIONS.md) for appearance and navigation.
+These controls preserve unfinished work and do not change board messages.

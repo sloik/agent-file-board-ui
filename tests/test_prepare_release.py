@@ -72,6 +72,12 @@ class PrepareReleaseTests(unittest.TestCase):
 
 
     def test_demo_uses_the_checked_out_tag_builder(self):
+        self._assert_checked_out_tag_builder('docs/DEMO.md')
+
+    def test_demo_uses_the_checked_out_builder_with_grouped_docs(self):
+        self._assert_checked_out_tag_builder('docs/guides/DEMO.md')
+
+    def _assert_checked_out_tag_builder(self, guide):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'CHANGELOG.md').write_text('## 2.2.1\nnotes\n')
@@ -79,8 +85,8 @@ class PrepareReleaseTests(unittest.TestCase):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('exact source bytes')
-            (root / 'docs').mkdir()
-            (root / 'docs/DEMO.md').write_text('tag tour')
+            (root / guide).parent.mkdir(parents=True)
+            (root / guide).write_text('tag tour')
             (root / 'scripts/build_demo.py').write_text("import sys\nfrom pathlib import Path\nPath(sys.argv[sys.argv.index('--output')+1]).write_bytes(b'tested tag builder output')\n")
             prepare(root, 'v2.2.1', root / 'release')
             self.assertEqual((root / 'release/agent-file-board-demo.zip').read_bytes(), b'tested tag builder output')

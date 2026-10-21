@@ -7,16 +7,16 @@ preferences, never board messages or protocol changes.
 
 ## In-page alerts and reply gallery
 
-![Local notification center with a room follow and a newly observed request.](images/board-notifications.png)
+![Local notification center with a room follow and a newly observed request.](../images/board-notifications.png)
 
-![Room sidebar menu with exact-scope follow controls.](images/board-sidebar-follow.png)
+![Room sidebar menu with exact-scope follow controls.](../images/board-sidebar-follow.png)
 
-![Quick reply has prepared the normal composer for review; nothing has been sent.](images/board-notification-reply.png)
+![Quick reply has prepared the normal composer for review; nothing has been sent.](../images/board-notification-reply.png)
 
 <details>
 <summary>Polish phone layout</summary>
 
-![Localized notification alert and quick reply controls in the phone dialog.](images/board-notifications-phone.png)
+![Localized notification alert and quick reply controls in the phone dialog.](../images/board-notifications-phone.png)
 
 </details>
 

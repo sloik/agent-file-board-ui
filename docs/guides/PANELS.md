@@ -7,7 +7,7 @@ guidance and embedded report modals. Scroll to the end and close directly;
 there is no need to scroll back to the beginning. Existing Escape behavior stays
 available. Closing Structured message retains its unfinished JSON as before.
 
-![Structured message scrolled to the end, Close still visible](images/board-dialog-scroll.png)
+![Structured message scrolled to the end, Close still visible](../images/board-dialog-scroll.png)
 
 Open **Settings** and drag the grip on its **left edge** to change its width.
 Drag left to widen and right to narrow. Focus the edge with Tab and use
@@ -15,7 +15,7 @@ Drag left to widen and right to narrow. Focus the edge with Tab and use
 to restore340px. **Reset to defaults** also restores the default width.
 
 The desktop range is280–900px, bounded by available viewport space. Width saves
-using the existing [browser settings store](STORAGE.md). A smaller window or
+using the existing [browser settings store](../reference/STORAGE.md). A smaller window or
 phone clamps the displayed width; returning to a larger window restores the
 saved desktop width. Older/missing/invalid width preferences display340px.
 
@@ -23,9 +23,9 @@ Settings has **Close** at the top and **Reset/Done** at the bottom. Both rows st
 visible while the controls in between scroll. The width handle stays reachable
 along the entire left edge, including after scrolling.
 
-![Wider Settings on desktop](images/board-settings-wide.png)
+![Wider Settings on desktop](../images/board-settings-wide.png)
 
-![Polish phone Settings scrolled, with Close and bottom actions visible](images/board-settings-phone.png)
+![Polish phone Settings scrolled, with Close and bottom actions visible](../images/board-settings-phone.png)
 
 These are local viewer layout changes. They require no backend or network,
 change no board messages, and preserve theme color meanings and editor state.
@@ -39,17 +39,15 @@ digit/unit changes, paused/off and read-only states keep button positions and
 header height stable. Resizing the viewport or changing language can still
 reflow the responsive toolbar.
 
-![Stable toolbar with a running countdown](images/board-toolbar-stable.png)
+![Stable toolbar with a running countdown](../images/board-toolbar-stable.png)
 
-![Polish phone toolbar and refresh status](images/board-toolbar-phone.png)
+![Polish phone toolbar and refresh status](../images/board-toolbar-phone.png)
 
 Reproduce these captures with `npm run screenshots:toolbar`. Timer geometry
 tests advance the real scheduler, including polling rollover, and compare every
 header control plus the toolbar/feed boundaries at six widths in both locales.
 
-## Folder label chooser (UI2.4.8)
+## Folder selection
 
-Click the folder label under **Agent File Board** to choose a new folder or
-reopen one from **Recent locations**. This replaces the separate Change folder
-and Recent locations toolbar buttons. The label works on phones and with
-keyboard Enter/Space; native cancellation preserves the active board.
+The [folder chooser guide](LOCATIONS.md) covers opening boards, recent locations,
+keyboard controls and picker cancellation.

@@ -15,7 +15,7 @@ on main. Signature/avatars/scoped trust/possession features remain proposed.
   exact-package approval, refresh controls and local diagnostics.
 - Shared information captures show recorded100%, latest90% and disconnection
   retaining the last reading. Viewer and producer fixture clocks agree.
-- [Screenshot inventory](../SCREENSHOTS.md) links all feature groups and scripts.
+- [Screenshot inventory](../reference/SCREENSHOTS.md) links all feature groups and scripts.
   Seventy PNGs are available. Isolated source/diff images remain applicable.
 - `npm run screenshots:all` passes all14 capture scripts. After refining the
   producer clock, the affected `screenshots:features` batch passes again.
