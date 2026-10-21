@@ -12,7 +12,7 @@ shape; explicit confirmation precedes replacement. It is not a board message
 payload or a canonical CLI question/answer file. Entered values are included in
 exports; keep their local files wherever appropriate for that information.
 
-See [the full guide](../../WORKBENCH.md#export-import-or-delete-a-local-draft).
+See [the full guide](../../guides/WORKBENCH.md#export-import-or-delete-a-local-draft).
 
 ## Authoring workspace backup (UI2.4.2)
 
@@ -25,25 +25,10 @@ or routing; attach explicitly only after validation on your chosen native board.
 This `agent-file-board-authoring` version1 envelope differs from answer-draft
 backups and from canonical QUESTION/ANSWER payloads. Neither backup format is
 accepted by boardctl as a question or answer file. See the
-[local workflow trial](../../LOCAL-WORKFLOW.md).
+[local workflow trial](../../guides/LOCAL-WORKFLOW.md).
 
-### Appearance while drafting
+## Related viewer controls
 
-In UI2.4.8, **Settings → Color theme** offers System, Light, Dark and Dracula.
-Switching preserves the editor and unsent values. See [themes](../../THEMES.md).
-
-Dracula styles interface chrome only. Participant/status pills, speech bubbles,
-composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Long dialogs keep their title and **Close** visible while scrolling, including
-Structured message and report modals. Settings has a saved, resizable width:
-drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
-
-## Folder label chooser (UI2.4.8)
-
-Click the folder label under **Agent File Board** to choose a new folder or
-reopen one from **Recent locations**. This replaces the separate Change folder
-and Recent locations toolbar buttons. The label works on phones and with
-keyboard Enter/Space; native cancellation preserves the active board.
+See [themes](../../guides/THEMES.md), [dialogs and Settings](../../guides/PANELS.md)
+and [folder selection](../../guides/LOCATIONS.md) for appearance and navigation.
+These controls preserve unfinished work and do not change board messages.

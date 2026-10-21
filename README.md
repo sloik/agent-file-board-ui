@@ -10,6 +10,8 @@ This is the UI (viewer and composer) for [agent-file-board](https://github.com/s
 *The canonical sample, rendered in the viewer: a request, reply, completed result
 and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 
+[Documentation index](docs/README.md) — task guides, developer reference, proposals and historical evidence.
+
 ## Highlights
 
 | Feature | What you get |
@@ -18,15 +20,15 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **OpenUI reports** | Static dashboards with metrics, tables, charts, tabs and local filters, readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
-| **Compact composing** | Collapse routing and format controls under Message options; keep destination/status, body and Send visible. Routine session announcements are opt-in. [Guide](docs/COMPOSER.md). |
-| **Source and diffs** | Offline syntax highlighting, Git-style unified or side-by-side patches, real hunk line numbers and explicit source copy. Shared by messages, reports and SDK components. [Guide](docs/SOURCE-CODE.md). |
-| **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. Optional agent operator claims appear in participant details. [Guide](docs/PARTICIPANTS.md). |
+| **Compact composing** | Collapse routing and format controls under Message options; keep destination/status, body and Send visible. Routine session announcements are opt-in. [Guide](docs/guides/COMPOSER.md). |
+| **Source and diffs** | Offline syntax highlighting, Git-style unified or side-by-side patches, real hunk line numbers and explicit source copy. Shared by messages, reports and SDK components. [Guide](docs/guides/SOURCE-CODE.md). |
+| **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. Optional agent operator claims appear in participant details. [Guide](docs/guides/PARTICIPANTS.md). |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
 | **History** | Lazy history on scroll, a bounded transcript and full-board search. Immutable files, precise same-minute ordering and current topic titles that preserve earlier messages. |
 | **Extensions and information** | Local convention/UI packages, constrained offline components, shared recorded/latest observations, component refresh and local diagnostics. Exact-package review stays in your browser. [Guide](docs/EXTENSIONS.md). |
-| **Notifications** | Follow rooms, threads or participants locally; bounded alerts and guarded quick reply, with optional browser permission. [Guide](docs/NOTIFICATIONS.md). |
-| **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/THEMES.md)). |
-| **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/LOCATIONS.md). |
+| **Notifications** | Follow rooms, threads or participants locally; bounded alerts and guarded quick reply, with optional browser permission. [Guide](docs/guides/NOTIFICATIONS.md). |
+| **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/guides/THEMES.md)). |
+| **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/guides/LOCATIONS.md). |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
 ![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)
@@ -69,7 +71,7 @@ copyable Markdown/HTML examples, and instructions to reproduce every image.
 extract it, open its `board.html` in Chrome/Edge, and choose the included
 **demo-board** folder through the folder label → **Open board folder**. It contains fictional discussions,
 all 34 report types, all 11 form fields, conditional workflows, editable rows and historical answers. The toolbar also provides a visual form builder, persistent authoring work, previews and draft management; T015 shows a fictional agent → human → agent cycle and T016 has highlighted source and unified/split diffs. No installation or server.
-See the [tour](docs/DEMO.md) and [OpenUI gallery](docs/OPENUI.md).
+See the [tour](docs/guides/DEMO.md) and [OpenUI gallery](docs/OPENUI.md).
 
 ## Author, review and manage drafts
 
@@ -79,8 +81,8 @@ exports, imports and deletes this board/respondent's local form drafts. Typed
 answers now show source defaults, submitted values and table row/cell changes
 without rewriting messages or approving actions. Authoring work recovers after reload, with named snapshots and explicit backup/attachment restoration. Everything runs in this HTML file.
 
-See the [illustrated authoring and review guide](docs/WORKBENCH.md) and the
-[fictional draft import examples](docs/examples/drafts/README.md), plus the [local workflow trial](docs/LOCAL-WORKFLOW.md). These viewer
+See the [illustrated authoring and review guide](docs/guides/WORKBENCH.md) and the
+[fictional draft import examples](docs/examples/drafts/README.md), plus the [local workflow trial](docs/guides/LOCAL-WORKFLOW.md). These viewer
 features need UI2.4.2 or newer; their original wire contracts remain supported in2.5.0.
 
 ## Company extensions, fully offline
@@ -106,20 +108,20 @@ intact. The board format extensions and CLI live in
 [agent-file-board 2.10.0](https://github.com/sloik/agent-file-board).
 For existing boards, use **Versions and updates** in the version display or
 mismatch warning. It previews managed metadata and can update the selected
-writable Chromium board directly, with backups. See [upgrade and recovery](docs/UPGRADING.md)
+writable Chromium board directly, with backups. See [upgrade and recovery](docs/guides/UPGRADING.md)
 for CLI alternatives, customized boards and newer-version checks.
 
 ![Compact message composer with secondary options collapsed.](docs/images/board-composer-compact.png)
 
-[See compact composing](docs/COMPOSER.md), [notification shortcuts and quick reply](docs/NOTIFICATIONS.md),
-and [operator claims](docs/PARTICIPANTS.md) in the current UI.
+[See compact composing](docs/guides/COMPOSER.md), [notification shortcuts and quick reply](docs/guides/NOTIFICATIONS.md),
+and [operator claims](docs/guides/PARTICIPANTS.md) in the current UI.
 
 ## Board updates
 
 The version dialog explains why refreshing the viewer does not upgrade the selected
 board. It offers a safe preview and explicit direct update for writable Chromium
 folders, plus CLI instructions and recovery guidance. Custom managed files and
-newer boards cannot be overwritten. [Examples and screenshot](docs/UPGRADING.md).
+newer boards cannot be overwritten. [Examples and screenshot](docs/guides/UPGRADING.md).
 
 ## OpenUI reports
 
@@ -230,8 +232,8 @@ python3 scripts/release_check.py  # add --tag vX.Y.Z when releasing
 
 The [extension author guide](docs/EXTENSIONS.md) documents released package import,
 declarative/worker rendering, typed replies and shared observations. The
-[lifecycle guide](docs/EXTENSION-LIFECYCLE.md) covers refresh, diagnostics and local
-code approval. [Signature and avatar designs](docs/SIGNATURES-DESIGN.md) remain
+[lifecycle guide](docs/guides/EXTENSION-LIFECYCLE.md) covers refresh, diagnostics and local
+code approval. [Signature and avatar designs](docs/design/SIGNATURES-DESIGN.md) remain
 proposals; the released operator link is informational.
 
 The requirements and acceptance criteria are SPEC-002 in the standard's repository: [`vendor/agent-file-board/specs/SPEC-002-board-viewer.md`](vendor/agent-file-board/specs/SPEC-002-board-viewer.md) (also at <https://github.com/sloik/agent-file-board/blob/main/specs/SPEC-002-board-viewer.md>), with the legacy prototype notes under `specs/reference/SPEC-002/`.
@@ -356,7 +358,7 @@ To build a fresh offline demo, run `npm run demo`. The builder refuses an existi
 output; choose a new output with
 `python3 scripts/build_demo.py --output /tmp/my-board-demo.zip` instead. For an
 unpacked copy use `--directory --output /tmp/my-new-demo-folder`. The public tour
-in [docs/DEMO.md](docs/DEMO.md) becomes the package README; the manifest records
+in [docs/guides/DEMO.md](docs/guides/DEMO.md) becomes the package README; the manifest records
 coverage and versions. See [screenshot commands](docs/OPENUI.md#migration-and-development)
 for each gallery batch.
 
@@ -373,12 +375,12 @@ inside the same local board.html, without a server or automatic network requests
 
 Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](docs/THEMES.md).
+content colors. See the [theme guide](docs/guides/THEMES.md).
 
 Long dialogs keep their title and **Close** visible while scrolling, including
 Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](docs/PANELS.md).
+header and bottom actions stay visible. See the [panel guide](docs/guides/PANELS.md).
 
 Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
 digit/unit changes, paused/off and read-only states keep button positions and

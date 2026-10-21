@@ -39,9 +39,12 @@ def prepare(root: Path, tag: str, output: Path) -> None:
     for name in ASSETS:
         shutil.copyfile(root / name, output / Path(name).name)
     if tuple(map(int, tag[1:].split('.'))) >= DEMO_SINCE:
-        for name in ('scripts/build_demo.py', 'docs/DEMO.md'):
-            if not (root / name).is_file():
-                raise ValueError(f"missing demo source: {name}")
+        if not (root / 'scripts/build_demo.py').is_file():
+            raise ValueError("missing demo source: scripts/build_demo.py")
+        # Historical checkouts use the old layout; always inspect that checkout.
+        if not any((root / name).is_file() for name in
+                   ('docs/guides/DEMO.md', 'docs/DEMO.md')):
+            raise ValueError("missing demo source: docs/guides/DEMO.md or docs/DEMO.md")
         build_demo_asset(root, output / ARCHIVE)
     (output / "notes.md").write_text(notes, encoding="utf-8")
 

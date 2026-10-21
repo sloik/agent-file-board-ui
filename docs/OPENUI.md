@@ -25,7 +25,7 @@ All discussions, identities, results and embedded pictures are fictional.
 
 No server, account, model, npm or Python is needed to view it. In browsers with
 read-only folder upload, choose/upload `demo-board`; replies download instead of
-being written directly. See the [complete demo tour](DEMO.md).
+being written directly. See the [complete demo tour](guides/DEMO.md).
 
 | Topic | What you can try |
 | --- | --- |
@@ -71,12 +71,12 @@ now recovers locally after reload, with named snapshots, export/import and
 explicit same-board attachment restoration. The visual builder covers all 11
 field types, v3 conditions/rules and table baseline/row settings.
 
-See [the illustrated guide](WORKBENCH.md) and
+See [the illustrated guide](guides/WORKBENCH.md) and
 [draft backup example](examples/drafts/README.md). The demo adds reports/T015's
 fictional agent → human → agent cycle, a bundled example-draft.json for T013,
-an authoring-example.json backup and [local workflow trial](LOCAL-WORKFLOW.md).
-No protocol change is needed: canonical2.4.0 remains pinned; UI2.4.2 provides
-these tools inside the same local HTML page, without a backend.
+an authoring-example.json backup and [local workflow trial](guides/LOCAL-WORKFLOW.md).
+No additional protocol change is needed: canonical 2.4.0 introduced the wire
+contracts; UI2.4.2 introduced these tools inside the same local HTML page, without a backend.
 
 ## Conditional workflows and saved drafts (2.4)
 
@@ -127,7 +127,7 @@ copies can share drafts and changed snapshots may not restore them. A changed
 question definition never restores its previous draft. Drafts are not synced
 across devices and are not evidence that an answer was submitted.
 
-The [downloadable demo](DEMO.md) exposes this workflow in reports/T013 and its
+The [downloadable demo](guides/DEMO.md) exposes this workflow in reports/T013 and its
 separate historical structural answer in T014. Reload after editing T013, then
 use Reset to clear it. `npm run screenshots:workflows` regenerates these views.
 
@@ -529,7 +529,7 @@ with a visible memory fallback when storage is unavailable or over its bound.
 ## Migration and development
 
 For existing boards, use the viewer’s **Versions and updates** preview or
-`boardctl upgrade` from a current canonical checkout. See [upgrade and recovery](UPGRADING.md)
+`boardctl upgrade` from a current canonical checkout. See [upgrade and recovery](guides/UPGRADING.md)
 for direct browser updates, CLI commands, custom metadata and backups.
 
 Use **2.3 CLI, board-loop, viewer and board metadata** for the complete catalogue
@@ -578,44 +578,14 @@ The screenshot batches are independent and use synthetic temporary boards:
 | npm run screenshots:upgrade | Upgrade preview, apply and recovery. |
 
 These payload and feature version labels describe minimum support, not separate
-current releases. The current 2.3 viewer renders all of them.
+current releases. Viewers from 2.3 onward render all of them.
 
-## Recent locations (UI2.4.3)
+<a id="recent-locations-ui243"></a>
+<a id="color-themes-ui248"></a>
+<a id="folder-label-chooser-ui248"></a>
 
-**Recent locations** keeps up to 20 successful board opens. Last open wins:
-existing native folders move to the top using actual handle identity, including
-project/.agent-board aliases. Same-name folders remain separate. Upload entries
-retain metadata only and require choosing files again. Startup follows only the
-latest entry; an upload never silently reopens an older writable folder.
-Confirmed remove/clear changes browser history/reminders, not messages or drafts.
-Storage failures show session-only history. No backend, automatic network or
-protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](LOCATIONS.md).
+## Related viewer controls
 
-## Color themes (UI2.4.8)
-
-Choose **Settings → Color theme → System, Light, Dark or Dracula**.
-The browser saves this choice; report/form inputs and filters remain mounted
-while switching. Try all palettes in the fictional demo. No backend or network
-is required. See the [illustrated theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Dracula styles interface chrome only. Participant/status pills, speech bubbles,
-composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-
-Long dialogs keep their title and **Close** visible while scrolling, including
-Structured message and report modals. Settings has a saved, resizable width:
-drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/PANELS.md).
-
-Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
-digit/unit changes, paused/off and read-only states keep button positions and
-header height stable. Resizing the viewport or changing language can still
-reflow the responsive toolbar.
-
-## Folder label chooser (UI2.4.8)
-
-Click the folder label under **Agent File Board** to choose a new folder or
-reopen one from **Recent locations**. This replaces the separate Change folder
-and Recent locations toolbar buttons. The label works on phones and with
-keyboard Enter/Space; native cancellation preserves the active board.
+See [folder selection and recent locations](guides/LOCATIONS.md), [color themes](guides/THEMES.md)
+and [dialogs, Settings and toolbar layout](guides/PANELS.md). These are local viewer
+features; they require no board metadata migration.

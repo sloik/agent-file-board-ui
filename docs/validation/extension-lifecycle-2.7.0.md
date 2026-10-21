@@ -1,7 +1,7 @@
 # Extension lifecycle implementation — 2.7.0 / SDK1.2
 
 The canonical contract is
-[`docs/EXTENSION-LIFECYCLE.md`](../EXTENSION-LIFECYCLE.md). The installed package
+[`docs/guides/EXTENSION-LIFECYCLE.md`](../guides/EXTENSION-LIFECYCLE.md). The installed package
 is an extension; its rendered instance is an extension component. Canonical
 specification: SPEC-002-018. This is implementation evidence, not a publication
 receipt. Existing public releases and tags were not changed.

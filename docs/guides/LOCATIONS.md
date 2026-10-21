@@ -12,7 +12,7 @@ This remains one local HTML page, with no backend or automatic network requests.
 The chooser title, new-folder action and Close remain pinned during scrolling.
 Cancelling a native picker leaves the chooser and current board intact.
 
-![Recent locations, newest first.](images/board-locations.png)
+![Recent locations, newest first.](../images/board-locations.png)
 
 The list keeps up to **20** successful opens. **Last open wins**: reopening an
 existing location replaces its entry and moves it to the top. Recency follows
@@ -63,7 +63,7 @@ retain session history and show **session only**. Failed removal keeps records
 and reports failure. Browser clearing, private profiles or moving the HTML may
 remove/separate history. No synchronization or upload is performed.
 
-![Phone view in Polish and dark mode.](images/board-locations-phone.png)
+![Phone view in Polish and dark mode.](../images/board-locations-phone.png)
 
 ## Try it and reproduce the checks
 

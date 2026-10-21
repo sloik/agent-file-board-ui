@@ -26,7 +26,7 @@ class DemoTests(unittest.TestCase):
                 self.assertTrue(all(name.startswith(PREFIX + '/') and '..' not in Path(name).parts for name in names))
                 self.assertFalse(any(any(x in Path(name).parts for x in ('external-state', 'state', 'presence', '.agent-context', '__pycache__', '.git')) for name in names))
                 self.assertEqual(archive.read(PREFIX + '/board.html'), (ROOT / 'board.html').read_bytes())
-                self.assertEqual(archive.read(PREFIX + '/README.md'), (ROOT / 'docs/DEMO.md').read_bytes())
+                self.assertEqual(archive.read(PREFIX + '/README.md'), (ROOT / 'docs/guides/DEMO.md').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/skills/board-feedback/SKILL.md'), (ROOT / 'vendor/agent-file-board/skills/board-feedback/SKILL.md').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/docs/FEEDBACK.md'), (ROOT / 'vendor/agent-file-board/docs/FEEDBACK.md').read_bytes())
                 self.assertEqual(archive.read(PREFIX + '/LICENSE'), (ROOT / 'LICENSE').read_bytes())
@@ -56,7 +56,7 @@ class DemoTests(unittest.TestCase):
             for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:
                 self.assertEqual((package / 'skills/board-loop' / rel).read_bytes(), (ROOT / 'vendor/agent-file-board/skills/board-loop' / rel).read_bytes())
             for rel in ['BOARD-LOOP.md','COMPOSER.md']:
-                self.assertEqual((package / 'docs' / rel).read_bytes(), (ROOT / 'docs' / rel).read_bytes())
+                self.assertEqual((package / 'docs' / rel).read_bytes(), (ROOT / 'docs/guides' / rel).read_bytes())
             original_board = {p.relative_to(board):p.read_bytes() for p in board.rglob('*') if p.is_file()}
             poll = [sys.executable, str(package / 'skills/board-loop/scripts/board_loop.py'), 'poll', '--path', str(board), '--participant', 'implementation-agent-01', '--state-dir', str(directory / 'private-loop-state'), '--ctl', str(ROOT / 'vendor/agent-file-board/boardctl.py'), '--mode', 'OPPORTUNISTIC']
             first_poll = subprocess.run(poll, capture_output=True, text=True)
@@ -71,7 +71,7 @@ class DemoTests(unittest.TestCase):
             self.assertEqual({p.relative_to(board):p.read_bytes() for p in board.rglob('*') if p.is_file()}, original_board)
             self.assertEqual((package / manifest['draftExample']).read_bytes(), (ROOT / 'docs/examples/drafts/demo-workflow-draft.json').read_bytes())
             self.assertEqual((package / manifest['authoringExample']).read_bytes(), (ROOT / 'docs/examples/drafts/authoring-workflow.json').read_bytes())
-            self.assertEqual((package / manifest['workflowTrial']).read_bytes(), (ROOT / 'docs/LOCAL-WORKFLOW.md').read_bytes())
+            self.assertEqual((package / manifest['workflowTrial']).read_bytes(), (ROOT / 'docs/guides/LOCAL-WORKFLOW.md').read_bytes())
             self.assertEqual(manifest['colorThemes'], ['system','light','dark','dracula'])
             self.assertEqual(manifest['locationHistory'], {'limit':20,'order':'last-open-wins','native':'handle-identity','uploads':'reselect'})
             self.assertTrue(manifest['synthetic'])

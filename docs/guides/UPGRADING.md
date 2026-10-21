@@ -1,6 +1,6 @@
 # Versions and updates
 
-![Upgrade preview for a pristine 1.9.2 board.](images/board-upgrade.png)
+![Upgrade preview for a pristine 1.9.2 board.](../images/board-upgrade.png)
 
 `board.html` is the viewer. The folder selected inside it has a separate board
 version in `.agent-board/CONVENTION.md`. Refreshing Chrome reloads the viewer;
@@ -11,7 +11,7 @@ warning. The dialog shows the viewer, selected board and bundled canonical
 versions, explains the difference, and previews exactly which files can change.
 It opens on demand and never automatically updates a board.
 
-[Phone preview](images/board-upgrade-phone.png)
+[Phone preview](../images/board-upgrade-phone.png)
 
 ## Update in writable Chromium
 
@@ -96,32 +96,12 @@ files or message schemas. A board already on2.4.0 does not need another metadata
 upgrade for these tools. Viewer and standard patch numbers are independent.
 See [the authoring/review guide](WORKBENCH.md) for usage and draft backup limits.
 
-## Recent locations (UI2.4.3)
+<a id="recent-locations-ui243"></a>
+<a id="color-theme-preference-ui248"></a>
+<a id="settings-panel-width-ui248"></a>
 
-**Recent locations** keeps up to 20 successful board opens. Last open wins:
-existing native folders move to the top using actual handle identity, including
-project/.agent-board aliases. Same-name folders remain separate. Upload entries
-retain metadata only and require choosing files again. Startup follows only the
-latest entry; an upload never silently reopens an older writable folder.
-Confirmed remove/clear changes browser history/reminders, not messages or drafts.
-Storage failures show session-only history. No backend, automatic network or
-protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](LOCATIONS.md).
+## Related viewer controls
 
-## Color theme preference (UI2.4.8)
-
-System (default), Light, Dark and Dracula use the existing committed settings
-store. Older/missing/unknown values resolve to System; Reset restores System.
-Explicit choices override OS changes. The canonical board remains2.4.0; no
-message migration is needed. See [themes](THEMES.md).
-
-## Settings panel width (UI2.4.8)
-
-Width uses the existing committed browser preferences. The default is340px;
-left-edge drag or arrow keys resize it, double-click/Home/default reset restores
-it. Viewport changes only clamp display width, preserving the saved desktop
-width. No board migration. See [panels](PANELS.md).
-
-UI2.4.8 opens the existing location history from the current folder label.
-The unified new/recent chooser changes no storage format, permissions or
-last-open startup rules; no canonical migration is required.
+See [folder selection and recent locations](LOCATIONS.md), [color themes](THEMES.md)
+and [dialogs, Settings and toolbar layout](PANELS.md). These are local viewer
+features; they require no board metadata migration.

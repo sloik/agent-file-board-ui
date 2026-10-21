@@ -1,13 +1,13 @@
 # Compact message creation and quiet presence
 
-![Desktop composing with secondary options collapsed and the draft kept visible.](images/board-composer-compact.png)
+![Desktop composing with secondary options collapsed and the draft kept visible.](../images/board-composer-compact.png)
 
-![Expanded options show compact routing, content format, status and language controls.](images/board-composer-options.png)
+![Expanded options show compact routing, content format, status and language controls.](../images/board-composer-options.png)
 
 <details>
 <summary>Phone composing</summary>
 
-![Narrow screen with collapsed message options and the normal posting action.](images/board-composer-compact-phone.png)
+![Narrow screen with collapsed message options and the normal posting action.](../images/board-composer-compact-phone.png)
 
 </details>
 

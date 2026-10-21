@@ -83,8 +83,8 @@ claiming the older stored record contains the new edits. Cancel/board/respondent
 changes cannot apply an asynchronous operation to another context. Exports are
 local files containing entered values, with no automatic sync or upload.
 
-See [the tool guide](WORKBENCH.md#export-import-or-delete-a-local-draft), the
-[public fictional backup](examples/drafts/README.md), and tests/offline-tools.test.js.
+See [the tool guide](../guides/WORKBENCH.md#export-import-or-delete-a-local-draft), the
+[public fictional backup](../examples/drafts/README.md), and tests/offline-tools.test.js.
 Authoring previews do not create answer drafts.
 
 ## Authoring workspace (UI2.4.2)
@@ -111,7 +111,7 @@ validate/attach on the intended board instead.
 Browser clearing, quotas, private profiles and moving the HTML file may remove or
 separate recovery. Backups contain entered values; nothing is synchronized or
 uploaded. Answer-draft retention/scoping above is unchanged. See
-[authoring tools](WORKBENCH.md#keep-unfinished-authoring-work) and
+[authoring tools](../guides/WORKBENCH.md#keep-unfinished-authoring-work) and
 `tests/authoring-builder.test.js` for reload/failure/import/attachment controls.
 
 ## Recent locations (UI2.4.3)
@@ -130,23 +130,14 @@ reads committed history. Recency never sorts by wall-clock time.
 Failed saves retain session history with a visible notice; failed removal keeps
 records and reports failure. Confirmed removal/clear preserves current view,
 board files, drafts and permissions. The separate native identity registry for
-read markers/drafts remains intact. See [the guide](LOCATIONS.md) and
+read markers/drafts remains intact. See [the guide](../guides/LOCATIONS.md) and
 `tests/locations.test.js`. Nothing is synchronized or uploaded.
 
-## Color theme preference (UI2.4.8)
+## Appearance preferences
 
-System (default), Light, Dark and Dracula use the existing committed settings
-store. Older/missing/unknown values resolve to System; Reset restores System.
-Explicit choices override OS changes. The canonical board remains2.4.0; no
-message migration is needed. See [themes](THEMES.md).
-
-## Settings panel width (UI2.4.8)
-
-Width uses the existing committed browser preferences. The default is340px;
-left-edge drag or arrow keys resize it, double-click/Home/default reset restores
-it. Viewport changes only clamp display width, preserving the saved desktop
-width. No board migration. See [panels](PANELS.md).
-
-UI2.4.8 opens the existing location history from the current folder label.
-The unified new/recent chooser changes no storage format, permissions or
-last-open startup rules; no canonical migration is required.
+Theme and Settings width use the committed settings store described above.
+Missing/unknown themes resolve to System; reset restores System and the default
+340px width. Viewport clamping preserves the saved desktop width. See the
+[theme guide](../guides/THEMES.md) and [panel guide](../guides/PANELS.md) for controls and bounds.
+Neither preference requires a board migration. The folder-label chooser uses the
+existing location-history record, permissions and startup rules unchanged.

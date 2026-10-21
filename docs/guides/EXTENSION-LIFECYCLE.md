@@ -3,7 +3,7 @@
 The canonical board owns the portable contract. Read the
 [full lifecycle reference](https://github.com/sloik/agent-file-board/blob/main/docs/EXTENSION-LIFECYCLE.md).
 An offline copy is at `vendor/agent-file-board/docs/EXTENSION-LIFECYCLE.md` in
-this checkout and `docs/EXTENSION-LIFECYCLE.md` in the downloadable demo.
+this checkout and `docs/guides/EXTENSION-LIFECYCLE.md` in the downloadable demo.
 
 An **extension** is a package; a **component** is one rendered instance. The stock
 viewer implements declared periodic/manual presentation refresh for worker and
@@ -49,18 +49,18 @@ presentation time and do not collect a source reading.
 
 ## Review and runtime gallery
 
-![Worker component awaiting local approval, with Review extension and the readable fallback visible.](images/board-extension-review.png)
+![Worker component awaiting local approval, with Review extension and the readable fallback visible.](../images/board-extension-review.png)
 
 **Review extension** opens inspection; it does not approve or execute code.
 Approval covers the exact package, so another version can require review again.
 
-![Approved component with Refresh component and a presentation clock.](images/board-extension-refresh.png)
+![Approved component with Refresh component and a presentation clock.](../images/board-extension-refresh.png)
 
 **Refresh component** uses already-loaded declared inputs. The manager's
 **Automatic component updates** preference controls supported periodic redraws.
 Use ordinary board refresh to load externally published source changes.
 
-![Local diagnostics preview with host and extension entries and explicit export controls.](images/board-extension-diagnostics.png)
+![Local diagnostics preview with host and extension entries and explicit export controls.](../images/board-extension-diagnostics.png)
 
 **Diagnostics** opens a bounded, local preview. Inspect its content before export;
 logs are not uploaded automatically. The component action scopes the view to that
@@ -69,8 +69,8 @@ instance; the package manager offers the board's current tab-local log.
 <details>
 <summary>Phone rendering</summary>
 
-![Refreshable extension component in the dark phone layout.](images/board-extension-refresh-phone.png)
+![Refreshable extension component in the dark phone layout.](../images/board-extension-refresh-phone.png)
 
 </details>
 
-Reproduce with `npm run screenshots:features`; see [capture inventory](SCREENSHOTS.md).
+Reproduce with `npm run screenshots:features`; see [capture inventory](../reference/SCREENSHOTS.md).

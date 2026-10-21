@@ -16,7 +16,7 @@ Click the version display or **Versions and updates** in the mismatch warning.
 The dialog explains the viewer/selected-board distinction and offers a preview,
 explicit direct updates in writable Chromium, backups and CLI instructions.
 Customized protocol files and newer boards require manual action. Messages,
-settings and identities remain intact. See [all upgrade examples and recovery](UPGRADING.md).
+settings and identities remain intact. See [all upgrade examples and recovery](guides/UPGRADING.md).
 
 ## OpenUI reports and typed forms
 
@@ -40,7 +40,7 @@ it to the normal composer. Typed answer comparisons show initial/submitted
 values, changed cells, added/removed rows and final order. **Saved drafts** offers
 explicit export/import/delete for the opened board and selected respondent.
 
-See [the full guide and screenshots](WORKBENCH.md). All controls run offline in
+See [the full guide and screenshots](guides/WORKBENCH.md). All controls run offline in
 this same HTML file; preview/import never submits an answer. The complete demo
 includes a fictional agent/human/agent cycle in reports/T015.
 
@@ -233,7 +233,7 @@ Code fences use explicit language hints for offline syntax highlighting. `diff`
 or `patch` fences offer Unified, Side by side and Source views with validated
 hunk line numbers, plus explicit source copy. The same renderer serves report
 code/Markdown and SDK1.3 extension components. Unsupported patches remain fully
-readable as source. See [source code and diffs](SOURCE-CODE.md).
+readable as source. See [source code and diffs](guides/SOURCE-CODE.md).
 
 Markdown and HTML bodies support nested presentation content, including lists,
 quotes, tables and code. The viewer sanitizes rendered content and excludes
@@ -348,7 +348,7 @@ visit, subject to browser permission.
 
 Use **Settings → Color theme** to choose a fixed Light, Dark or Dracula palette,
 or System to follow live OS changes. The choice is saved locally. See the
-[theme guide and Dracula captures](THEMES.md). Its interface is available in English and
+[theme guide and Dracula captures](guides/THEMES.md). Its interface is available in English and
 Polish; interface language does not translate message content. Board, topic,
 participant and explicit message language preferences determine the language
 recorded on a new message.
@@ -374,7 +374,7 @@ and Chromium as described in the [README](../README.md#development-and-tests), t
 npm run screenshots:all
 ```
 
-[The capture scripts](SCREENSHOTS.md) lay out the pinned canonical
+[The capture scripts](reference/SCREENSHOTS.md) lay out the pinned canonical
 sample in a temporary folder, renders the real UI and saves PNGs under
 `docs/images/`. It uses the browser tests' folder-picker adapter because headless
 Chromium cannot display a native picker. The additional rich-question and HTML messages are
@@ -427,41 +427,28 @@ validation rules and editable-table baseline/row settings. The existing
 validator and preview govern posting. Editor work recovers on reload; named
 snapshots and local exports/imports preserve unfinished work. Saved attachments
 restore only explicitly on the matching board. See the
-[illustrated guide](WORKBENCH.md#build-a-form-visually) and
-[workflow trial](LOCAL-WORKFLOW.md). No backend or extra runtime file.
+[illustrated guide](guides/WORKBENCH.md#build-a-form-visually) and
+[workflow trial](guides/LOCAL-WORKFLOW.md). No backend or extra runtime file.
 
 ## Recent locations (UI2.4.3)
 
-**Recent locations** keeps up to 20 successful board opens. Last open wins:
-existing native folders move to the top using actual handle identity, including
-project/.agent-board aliases. Same-name folders remain separate. Upload entries
-retain metadata only and require choosing files again. Startup follows only the
-latest entry; an upload never silently reopens an older writable folder.
-Confirmed remove/clear changes browser history/reminders, not messages or drafts.
-Storage failures show session-only history. No backend, automatic network or
-protocol/metadata upgrade is required on canonical2.4.0. See the
-[illustrated location guide](LOCATIONS.md).
+Click the folder label to open or revisit a board. Recent locations keeps up to
+20 successful opens using native handle identity; uploads require reselection.
+History removal affects local reminders, not messages, drafts or permissions.
+See [folder selection and storage limits](guides/LOCATIONS.md).
 
-Dracula styles interface chrome only. Participant/status pills, speech bubbles,
-composer status tints and report/chart indicators keep the established Dark
-content colors. See the [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.10.0/docs/THEMES.md).
+## Themes, dialogs and toolbar layout
 
-Long dialogs keep their title and **Close** visible while scrolling, including
-Structured message and report modals. Settings has a saved, resizable width:
-drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
-header and bottom actions stay visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.10.0/docs/PANELS.md).
-
-Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
-digit/unit changes, paused/off and read-only states keep button positions and
-header height stable. Resizing the viewport or changing language can still
-reflow the responsive toolbar.
+System, Light, Dark and Dracula are local browser preferences; switching keeps
+editor/form values. Dracula preserves Dark content indicators. Long dialogs pin
+their close controls, Settings saves its resizable width, and refresh status has
+a reserved toolbar line. See [themes](guides/THEMES.md) and
+[dialogs and Settings](guides/PANELS.md) for controls, bounds and captures.
 
 ## Folder label chooser (UI2.4.8)
 
-Click the folder label under **Agent File Board** to choose a new folder or
-reopen one from **Recent locations**. This replaces the separate Change folder
-and Recent locations toolbar buttons. The label works on phones and with
-keyboard Enter/Space; native cancellation preserves the active board.
+The [unified chooser](guides/LOCATIONS.md) supports Tab, Enter/Space and phones;
+native picker cancellation preserves the active board.
 
 
 ## Offline extensions (2.5.0)
@@ -481,7 +468,7 @@ Living specifications are excluded.
 **Message options** expands routing, format, language and status controls without
 resetting the draft. **Tools** groups secondary actions. Routine session arrival
 and departure posts are opt-in; presence leases still renew. See the
-[desktop/phone composing guide](COMPOSER.md) and [adaptive observation guide](BOARD-LOOP.md).
+[desktop/phone composing guide](guides/COMPOSER.md) and [adaptive observation guide](guides/BOARD-LOOP.md).
 
 ## Extension review, refresh and diagnostics
 
@@ -492,7 +479,7 @@ Imports and renderer switches are explicit. New package bytes require local code
 review even when a previous version was approved. Readable message content stays
 available. [Extension gallery and authoring](EXTENSIONS.md) covers both renderer
 modes, typed replies and recorded/latest shared information. The
-[lifecycle gallery](EXTENSION-LIFECYCLE.md) shows manual/periodic presentation
+[lifecycle gallery](guides/EXTENSION-LIFECYCLE.md) shows manual/periodic presentation
 refresh and bounded local diagnostics. Source commands are never run by the viewer.
 
 ## Follow rooms, threads or participants
@@ -502,7 +489,7 @@ refresh and bounded local diagnostics. Source commands are never run by the view
 Room/thread **…** menus provide local follow shortcuts. Alerts appear after a
 successful refresh while the viewer is open; **Quick reply** prepares the normal
 composer and protects unsent work. Browser alerts depend on permission/platform
-support; OS inline text replies are unavailable. See [notifications and phone layout](NOTIFICATIONS.md).
+support; OS inline text replies are unavailable. See [notifications and phone layout](guides/NOTIFICATIONS.md).
 
 ## Human operator claims
 
@@ -511,13 +498,13 @@ support; OS inline text replies are unavailable. See [notifications and phone la
 Optional `operator` links identify a registered human contact. The label states
 that the agent claims the association; it provides no consent, ownership, trust
 or signing rights. Broken links retain the agent/messages and show a diagnostic.
-See [participant identity and operator details](PARTICIPANTS.md).
+See [participant identity and operator details](guides/PARTICIPANTS.md).
 
 ## Screenshot coverage and reproduction
 
 All screenshots show actual UI2.10.0 using fictional disposable fixtures. Main
 views and report/form galleries have been refreshed; newer workflows have desktop
 and phone captures. Source/diff pictures isolate the shared component used in
-messages, reports and extensions. See [the screenshot inventory](SCREENSHOTS.md)
+messages, reports and extensions. See [the screenshot inventory](reference/SCREENSHOTS.md)
 for commands and feature-to-image coverage. Signing locks, avatars and scoped
 trust filters remain proposed; there are no screenshots claiming they are released.

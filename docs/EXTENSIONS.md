@@ -25,7 +25,7 @@ The readable message remains the fallback; typed responses become new replies.
 The manager shows enabled/compatible packages and an inspection action. Worker
 code requires approval for the exact package in this browser profile. An update
 never inherits approval or silently replaces the original renderer. See the
-[review, refresh and diagnostics gallery](EXTENSION-LIFECYCLE.md).
+[review, refresh and diagnostics gallery](guides/EXTENSION-LIFECYCLE.md).
 
 ## Import, author and upgrade
 
@@ -279,7 +279,7 @@ Observation time and freshness remain separate from the source's availability.
 ## SDK 1.2 lifecycle and diagnostics
 
 An extension is a package; a component is one rendered instance. The canonical
-[portable lifecycle contract](EXTENSION-LIFECYCLE.md) defines presentation-only
+[portable lifecycle contract](guides/EXTENSION-LIFECYCLE.md) defines presentation-only
 periodic/manual refresh for worker and declarative renderers, custom-host
 negotiation, `context.host.now`, bounded `BoardExtension.log` diagnostics, explicit
 local export and whole-package approval indicators. Source collection stays in
@@ -300,4 +300,4 @@ or `{"type":"diff","text":"-old\n+new\n","language":""}`. Both fields may use
 existing path/contextPath bindings. The host owns safe highlighting and local
 unified/split/source/copy controls; they do not run code, apply patches or dispatch
 extension actions. Existing SDK1.0/1.1/1.2 packages retain compatibility. See
-[SOURCE-CODE.md](SOURCE-CODE.md) for limits, all surfaces and portable examples.
+[SOURCE-CODE.md](guides/SOURCE-CODE.md) for limits, all surfaces and portable examples.
