@@ -69,8 +69,13 @@ class DemoTests(unittest.TestCase):
             self.assertEqual(manifest['opportunisticObservation'], {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15})
             for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:
                 self.assertEqual((package / 'skills/board-loop' / rel).read_bytes(), (ROOT / 'vendor/agent-file-board/skills/board-loop' / rel).read_bytes())
-            for rel in ['BOARD-LOOP.md','COMPOSER.md']:
+            for rel in ['BOARD-LOOP.md','COMPOSER.md','VOICE.md']:
                 self.assertEqual((package / 'docs' / rel).read_bytes(), (ROOT / 'docs/guides' / rel).read_bytes())
+            for name in ['voice_helper.py', 'voice-helper.html']:
+                self.assertEqual((package / 'scripts' / name).read_bytes(), (ROOT / 'scripts' / name).read_bytes())
+            helper_help = subprocess.run([sys.executable, str(package / manifest['voiceDrafts']['helper']), '--help'], capture_output=True, text=True)
+            self.assertEqual(helper_help.returncode, 0, helper_help.stderr)
+            self.assertIn('--whisper-cli', helper_help.stdout)
             original_board = {p.relative_to(board):p.read_bytes() for p in board.rglob('*') if p.is_file()}
             poll = [sys.executable, str(package / 'skills/board-loop/scripts/board_loop.py'), 'poll', '--path', str(board), '--participant', 'implementation-agent-01', '--state-dir', str(directory / 'private-loop-state'), '--ctl', str(ROOT / 'vendor/agent-file-board/boardctl.py'), '--mode', 'OPPORTUNISTIC']
             first_poll = subprocess.run(poll, capture_output=True, text=True)

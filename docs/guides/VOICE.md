@@ -39,7 +39,7 @@ and [processLocally](https://developer.mozilla.org/en-US/docs/Web/API/SpeechReco
 
 ## Optional local whisper.cpp helper
 
-This source checkout includes a small optional loopback helper. Install
+The source checkout and demo ZIP include a small optional loopback helper. Install
 [whisper.cpp](https://github.com/ggml-org/whisper.cpp) separately and obtain a
 compatible model. The helper never installs executables or downloads models.
 Run, substituting your actual local paths:
@@ -74,7 +74,8 @@ the helper does not claim secure erasure.
 The helper requires a browser supporting microphone capture and a 16 kHz
 AudioContext. It uses the browser's older ScriptProcessor capture API for a
 self-contained local page. On unsupported browsers use native dictation. The
-helper is an optional source tool, not part of the single HTML download.
+helper is optional and is not part of the single HTML download; standalone HTML
+users need the source checkout or demo ZIP to obtain it.
 
 ## Verification boundary
 

@@ -196,6 +196,11 @@ def build_demo(root: Path, destination: Path):
             shutil.copyfile(vendor / 'skills/board-loop' / rel, target)
         shutil.copyfile(root / 'docs/guides/BOARD-LOOP.md', destination / 'docs/BOARD-LOOP.md')
         shutil.copyfile(root / 'docs/guides/COMPOSER.md', destination / 'docs/COMPOSER.md')
+        shutil.copyfile(root / 'docs/guides/VOICE.md', destination / 'docs/VOICE.md')
+        (destination / 'scripts').mkdir(exist_ok=True)
+        for name in ['voice_helper.py', 'voice-helper.html']:
+            shutil.copyfile(root / 'scripts' / name, destination / 'scripts' / name)
+        manifest['voiceDrafts'] = {'guide': 'docs/VOICE.md', 'helper': 'scripts/voice_helper.py', 'optional': True, 'cloudFallback': False}
         manifest['opportunisticObservation'] = {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15}
     if tuple(map(int, version.split('.'))) >= (2, 11, 0):
         guide = (root / 'docs/guides/signing.md').read_text()
