@@ -402,3 +402,11 @@ cover agent submission and offline drafts. Copy the skill folder into your
 harness's skill root. The demo ZIP also includes both files for offline use.
 
 Source checkouts also contain the guide and skill under `vendor/agent-file-board/`.
+
+### Message signing — unreleased local implementation
+
+Tools → Signing unlocks explicitly selected private keys for automatic signing on
+Send. Verification, local trust and current-key lifecycle are separate; required
+scopes exclude unsigned/untrusted input from actions and notifications. Keys live
+only in the tab and lock after15minutes of inactivity. See the [signing guide](docs/guides/signing.md)
+for setup, private trust, inspection and non-CLI agent interoperability.

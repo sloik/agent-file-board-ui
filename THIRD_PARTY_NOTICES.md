@@ -55,3 +55,13 @@ Highlight.js11.12.0 core and15explicit language grammars are bundled offline by
 `npm run embed:rich` — [upstream](https://github.com/highlightjs/highlight.js),
 BSD-3-Clause; [full notice](licenses/highlightjs-BSD-3-Clause.txt). No language
 autodetection, hosted assets or runtime grammar imports are used.
+
+## Offline Ed25519 verification
+
+@noble/curves2.4.0 and its @noble/hashes dependency are bundled by
+`npm run embed:signing`, MIT, copyright Paul Miller and contributors.
+Full licenses: [curves](licenses/noble-curves-MIT.txt),
+[hashes](licenses/noble-hashes-MIT.txt). Verification uses canonical Ed25519
+points, rejects small/mixed-order public points and uses strict RFC8032
+verification. Browser private-key operations use non-extractable WebCrypto keys.
+No hosted crypto code or runtime network dependency is used.

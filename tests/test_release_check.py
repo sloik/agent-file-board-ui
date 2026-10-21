@@ -1,4 +1,5 @@
 """Unit tests for scripts/release_check.py, including the mismatch cases that must fail (AC10, AC11)."""
+import hashlib
 import json
 import subprocess
 import sys
@@ -100,9 +101,21 @@ class ReleaseCheck(unittest.TestCase):
         self.assertGreaterEqual(len(errs), 3)
 
     def test_this_repository_is_consistent(self):
-        # the real repo: package.json == VIEWER_VERSION and the pinned submodule is at a matching tag
+        # Development integration has an explicit exact pin. The release guard
+        # must still reject this untagged source; tagged checkouts retain all checks.
+        pin_path = ROOT / "development-standard.json"
         r = run(ROOT)
-        self.assertEqual(r.returncode, 0, r.stderr)
+        if pin_path.exists():
+            pin = json.loads(pin_path.read_bytes())
+            self.assertEqual(pin["status"], "unreleased")
+            sub = ROOT / "vendor/agent-file-board"
+            self.assertEqual(subprocess.check_output(["git", "-C", str(sub), "rev-parse", "HEAD"], text=True).strip(), pin["commit"])
+            self.assertEqual(hashlib.sha256((sub / ".agent-board/CONVENTION.md").read_bytes()).hexdigest(), pin["conventionSha256"])
+            self.assertEqual(r.returncode, 1, "Unreleased integration must not pass the release guard")
+            self.assertIn("exact tag", r.stderr)
+            self.assertEqual(release_check.package_version(ROOT), release_check.viewer_version(ROOT))
+        else:
+            self.assertEqual(r.returncode, 0, r.stderr)
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ function mountForms(){
  for(const[path,saved]of formRoots)if(!saved.element.isConnected){saved.dispose();formRoots.delete(path);}
  for(const element of $('#feed').querySelectorAll('[data-form-path]')){
   const m=B?.byPath.get(element.dataset.formPath);if(!m?.question||m.metadataError)continue;
-  const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
+  const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:signingEligible(m)&&!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
   const saved=formRoots.get(m.path);if(saved?.element===element&&saved.loading===loading){saved.dispose.update(options);continue;}if(saved?.element===element)saved.dispose();
   const fail=()=>{element.querySelector('.form-error').hidden=false;element.querySelector('.form-mount').hidden=true;};let dispose=()=>{};
   try{if(!window.BoardFormRenderer)throw Error('Renderer unavailable');dispose=window.BoardFormRenderer.mount(element.querySelector('.form-mount'),m.question,options,fail);}catch(e){fail();}
@@ -35,20 +35,20 @@ function mountForms(){
 function formAnswerBody(q,answer){const lines=[q.prompt,''];for(const f of q.fields){const value=answer.values[f.id];if(value===null){lines.push(f.label+': null');continue;}if(f.type==='editable-table'){if(f.rowOperations){lines.push(f.label+': '+JSON.stringify(value));continue;}lines.push(f.label+': '+value.changes.length+' '+t("form_changed_cells"));for(const c of value.changes)lines.push('  '+c.row+' / '+f.columns.find(col=>col.id===c.column).label+': '+JSON.stringify(c.value));}else lines.push(f.label+': '+JSON.stringify(value));}return lines.join('\n');}
 async function sendFormAnswer(path,definition,sender,answer){
  const m=B?.byPath.get(path),origin=dirHandle,identity=boardStorageId;
- if(!m||m.metadataError||![2,3].includes(m.question?.version)||m.h.QUESTION!==definition||currentUser()!==sender)throw Error(t("form_stale"));
+ if(!m||!signingEligible(m)||m.metadataError||![2,3].includes(m.question?.version)||m.h.QUESTION!==definition||currentUser()!==sender)throw Error(t("form_stale"));
  const key=formKey(m);if(submittingForms.has(key))return null;
  BoardFormContract.answer(answer,m.question);if(new TextEncoder().encode(JSON.stringify(answer)).length>65536)throw Error(t("form_too_large"));
  if(B.msgs.some(x=>x.dkey===m.dkey&&x.replyTo===m.file&&x.author===sender&&x.answer?.version===m.question.version&&JSON.stringify(x.answer.values)===JSON.stringify(answer.values)))return t("choice_already");
  submittingForms.add(key);
  try{
-  const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return null;
+  const actualSender=signingSender(sender),person=guardRegistered(actualSender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return null;
   if(canWrite()){
    let dir=baseHandle;for(const part of m.path.split('/').slice(0,-1))dir=await dir.getDirectoryHandle(part);
    const source=parseHeaders(new TextDecoder('utf-8',{fatal:true}).decode(await rawBytes(await(await dir.getFileHandle(m.file)).getFile()))).native;
    if(source.duplicates.length||!source.body.trim()||JSON.stringify(source.h)!==JSON.stringify(m.h))throw Error(t("form_stale"));
   }
   if(origin!==dirHandle||identity!==boardStorageId||currentUser()!==sender||B?.byPath.get(path)?.h.QUESTION!==definition)throw Error(t("form_stale"));
-  const msg=composeMessage({sender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,confirmedAgent:confirmed});
+  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,confirmedAgent:confirmed});
   await deliverMessage(msg);saveFormDraft(key,m.question,BoardFormContract.initial(m.question),true);await formStorageWrites;return t(canWrite()?"choice_sent":"form_downloaded");
  }finally{submittingForms.delete(key);if(B)build({background:true,preserveComposer:true});}
 }
