@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-036
 title: Remove session validation artifacts from public documentation
-status: in_progress
+status: done
 parent: SPEC-002
 type: maintenance
 created: 2026-10-21
@@ -14,13 +14,13 @@ purpose and must not be treated as shipped product documentation.
 
 ## Acceptance Criteria
 
-- [ ] AC1: Remove tracked docs/validation session reports and receipts; retain
+- [x] AC1: Remove tracked docs/validation session reports and receipts; retain
   reusable product guidance and reproducible test commands in appropriate guides.
-- [ ] AC2: Update first-party docs/spec links and demo packaging so no removed
+- [x] AC2: Update first-party docs/spec links and demo packaging so no removed
   report is required or shipped. Preserve signing guidance, tests and fixtures.
-- [ ] AC3: Add a concise contributor boundary for session-local artifacts and
+- [x] AC3: Add a concise contributor boundary for session-local artifacts and
   prevent the removed validation directory from being re-added accidentally.
-- [ ] AC4: Existing demo/release Python tests and a real demo build pass; inspect
+- [x] AC4: Existing demo/release Python tests and a real demo build pass; inspect
   the resulting archive for intact signing guides and absence of session reports.
   Merge the isolated worker changes into main without changing frozen releases.
 
