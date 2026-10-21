@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-038
 title: Release current work then close signing unit coverage gaps
-status: in_progress
+status: done
 parent: SPEC-002
 type: maintenance
 created: 2026-10-21
@@ -25,7 +25,7 @@ positive controls and rejection assertions, preserving existing tests.
 - [x] AC4: Deterministic async tests cover crypto rejection and lock/expiry during
   import, possession or signing. Multiple identities, partial unlock failure and
   catalog/evidence/history budgets have explicit boundary assertions.
-- [ ] AC5: Run existing and new signing tests and full project checks; fix any
+- [x] AC5: Run existing and new signing tests and full project checks; fix any
   demonstrated defect without weakening assertions. Commit/push integrated work,
   and publish a follow-up if runtime behavior changes.
 
