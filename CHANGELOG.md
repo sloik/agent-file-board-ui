@@ -1,5 +1,13 @@
 # Release notes
 
+## 2.11.2 — 2026-10-21
+
+- Remove session validation reports and receipts from public docs and the demo;
+  retain durable signing guidance, test fixtures and reproducible commands.
+- Automate browser/CLI signing, explicit trust and policy adoption, rotation,
+  compromise, policy/event stripping and reload using native browser file handles.
+- Add provider reconciliation and retained private-state unit coverage.
+
 ## 2.11.1 — 2026-10-21
 
 - Automatically sign every host message send after explicit private-key unlock,
