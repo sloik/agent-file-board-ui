@@ -1,6 +1,29 @@
 # Release notes
 
-## 2.11.0 — 2026-10-21
+## 2.11.1 — 2026-10-21
+
+- Automatically sign every host message send after explicit private-key unlock,
+  with fresh possession and tab-only non-extractable keys. Viewing, recipient and
+  signing identities remain separate; lock/reload/expiry discards capability.
+- Verify offline Ed25519/DSSE evidence with separate signature, trust and lifecycle
+  labels. Add private trust controls, adopted policy floors and explicit inspection.
+- Exclude unsigned/untrusted required, invalid and revoked traffic from actionable
+  coordination, replies, unread marking and notifications while preserving history.
+- Recheck reviewed source bytes, shared/private context and lock generation through
+  final file writer completion. Transactional private-state CAS prevents stale tabs
+  from restoring trust or weakening adopted requirements.
+- Pin canonical2.11.0, include portable agent guidance, strict cross-client crypto
+  fixtures and security/race regressions. Signed publication needs a writable
+  native folder; read-only uploads verify and retain unsigned-download support.
+- Merge documentation consolidation: task guides under docs/guides, reference and
+  design notes in their own folders, stable feature/OpenUI/extension entry points.
+
+- Preserve newer composer edits made while a previous message finishes committing.
+  Compose regressions wait for completed publication before checking exact bytes.
+- First published UI signing release. The immutable2.11.0 source tag remains
+  unpublished after its CI exposed a file-creation/write-completion test race.
+
+## 2.11.0 — source tag only
 
 - Automatically sign every host message send after explicit private-key unlock,
   with fresh possession and tab-only non-extractable keys. Viewing, recipient and

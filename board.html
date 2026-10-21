@@ -1223,7 +1223,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "2.11.0";
+const VIEWER_VERSION = "2.11.1";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -3441,7 +3441,10 @@ async function send(){
     const msg = composeMessage({sender:me, to, scope, room, pair, tid, threadLabel:label, newThreadName:newName,
       slug: bodySlug, status:$("#cStatus").value, language:$("#cLang").value||undefined, body,
       ...structuredComposerPayload(), contentType:$("#cContentType").value, replyTo: replyTo ? replyTo.file : null, confirmedAgent: confirmed});
-    await deliverMessage(msg); clearStructuredAttachment();
+    const submittedDraft=signingDraftStamp();
+    await deliverMessage(msg);
+    if(submittedDraft!==signingDraftStamp()){toast(exText("Previous message posted; newer draft kept","Poprzednia wiadomość wysłana; nowy szkic zachowany"));return;}
+    clearStructuredAttachment();
     $("#cBody").value = ""; $("#cNewThread").value = ""; $("#cNewRoom").value = ""; clearReply(); syncLang(true);
   }catch(e){
     toast(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)}));

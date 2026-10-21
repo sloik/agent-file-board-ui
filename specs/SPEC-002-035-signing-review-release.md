@@ -63,3 +63,10 @@ canonical main is ba9c854 (local v2.11.0 exact pin). Canonical214tests and
 OpenSSL/libsodium conformance pass. UI372Node/browser+37Python pass; final unlock
 feedback regression8/8passes. Strict release check passes for both2.11.0 versions.
 Publication and exact-source CI/download receipts remain pending below.
+
+Canonical v2.11.0 was published after exact-source CI and all171 archive blobs
+were verified. UI v2.11.0 tag CI found four compose tests observing newly created
+files before writer completion; publication was skipped. The immutable tag is
+retained. UI v2.11.1 waits for completion without changing byte assertions and
+adds controlled delayed-close/newer-draft preservation coverage. Canonical pin
+remains v2.11.0; same-major/minor compatibility is intentional.
