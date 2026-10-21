@@ -474,11 +474,13 @@ export class Provider {
     }
     require(matches.length, "key has no usable registered current profile");
     require((/* @__PURE__ */ new Set([...this.#keys.keys(), ...matches.map((m) => m.participant)])).size <= 32, "signer catalog budget");
+    // Commit only after every binding proves possession. A failed later proof
+    // must not leave a partially unlocked identity in the catalog.
     for (const binding of matches) {
       await this.#prove(key, binding, board, epoch);
       require(epoch === this.#epoch, "signer locked");
-      this.#keys.set(binding.participant, { ...binding, key });
     }
+    for (const binding of matches) this.#keys.set(binding.participant, { ...binding, key });
     this.#board = board;
     this.#activity = performance.now();
     return this.catalog();
@@ -515,6 +517,8 @@ export class Provider {
     require(epoch === this.#epoch && this.#keys.get(participant) === binding, "signer locked during operation");
     const result = canonical({ payloadType: type, payload: b64(payload), signatures: [{ keyid: binding.fingerprint, sig: b64(signature) }] });
     await verifyEnvelope(result, type, [current.head.descriptor]);
+    this.expire();
+    require(epoch === this.#epoch && this.#keys.get(participant) === binding, "signer locked during verification");
     this.#activity = performance.now();
     return result;
   }

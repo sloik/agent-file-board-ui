@@ -1,5 +1,15 @@
 # Release notes
 
+## 2.11.3 — 2026-10-21
+
+- Refuse provider signature completion if lock or inactivity expiry happens while
+  final verification awaits crypto. Publication guards remain in place.
+- Unlock all identity bindings of a key atomically: a failed possession proof
+  adds no partial capability and preserves earlier independent signers.
+- Add adversarial browser-unit matrices for signature bindings and shapes,
+  lifecycle lineage/retirement, scoped policy floors, async failures, multiple
+  identities and resource limits, with valid controls at the boundaries.
+
 ## 2.11.2 — 2026-10-21
 
 - Remove session validation reports and receipts from public docs and the demo;

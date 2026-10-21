@@ -14,15 +14,15 @@ positive controls and rejection assertions, preserving existing tests.
 
 ## Acceptance Criteria
 
-- [ ] AC1: Publish and download-verify UI2.11.2 from the current source plus release
+- [x] AC1: Publish and download-verify UI2.11.2 from the current source plus release
   metadata before implementing the additional unit cases. Keep canonical2.11.0
   and prior releases immutable; no session reports in public documentation/assets.
-- [ ] AC2: Unit matrices reject wrong signature context/type/shape/multiplicity,
+- [x] AC2: Unit matrices reject wrong signature context/type/shape/multiplicity,
   malformed lifecycle chains, rollback, unauthorized/conflicting transitions and
   retired keys, while preserving valid controls.
-- [ ] AC3: Unit matrices cover board/room/direct/stable-thread policy inheritance
+- [x] AC3: Unit matrices cover board/room/direct/stable-thread policy inheritance
   and adopted-floor merges without weakening or broadening unrelated scopes.
-- [ ] AC4: Deterministic async tests cover crypto rejection and lock/expiry during
+- [x] AC4: Deterministic async tests cover crypto rejection and lock/expiry during
   import, possession or signing. Multiple identities, partial unlock failure and
   catalog/evidence/history budgets have explicit boundary assertions.
 - [ ] AC5: Run existing and new signing tests and full project checks; fix any
