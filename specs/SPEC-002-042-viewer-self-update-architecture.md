@@ -17,13 +17,13 @@ before implementation.
 
 ## Acceptance Criteria
 
-- [ ] AC1: Compare standalone HTML, granted-file access, optional local helper,
+- [x] AC1: Compare standalone HTML, granted-file access, optional local helper,
   launcher and hosted delivery against actual browser/CSP/storage constraints;
   identify supported platforms and the first-install/legacy-viewer bootstrap path.
 - [ ] AC2: Record user choices for checking, consent to installation/reload,
   setup burden, offline behavior, multiple viewer copies/tabs and draft handling.
   Unanswered choices remain explicit; recommendations are not recorded as consent.
-- [ ] AC3: Define version/release selection, download identity/integrity,
+- [x] AC3: Define version/release selection, download identity/integrity,
   installation scope, backup/rollback, concurrent updates, failure recovery and
   signing-key/session implications. Distinguish viewer update from board migration.
 - [ ] AC4: Produce one source-backed architecture decision with a user-facing
@@ -41,3 +41,10 @@ reports, private paths or generated traces.
 
 Checking cadence; install/reload behavior; optional helper versus HTML-only or
 managed launcher. Further questions follow the user's answers and team findings.
+
+## Working proposal
+
+See `docs/design/VIEWER-UPDATES.md` for the three-thread synthesis, current
+storage/source boundaries, delivery alternatives, user-visible states, recovery
+invariants and verification scenarios. Owner answers are still pending; the
+optional helper and suggested defaults are recommendations, not decisions.
