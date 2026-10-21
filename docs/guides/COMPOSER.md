@@ -56,3 +56,10 @@ ownership. Canonical CLI/board-loop use `--announce` to opt in.
 
 For the agent's long observation behavior see [opportunistic board-loop](BOARD-LOOP.md).
 Updating these tools does not start a listener.
+
+## Voice drafts
+
+Use **Tools → Voice input** for system dictation guidance, optional on-device
+browser speech or an explicitly configured local transcription helper. Review
+and insert the transcript, then Send normally. See [Voice drafts](VOICE.md) for
+setup, privacy and browser limits.

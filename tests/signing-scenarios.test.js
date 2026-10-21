@@ -168,3 +168,13 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   assert.equal(await article.locator('[data-reply]:enabled').count(),0);
   assert.equal(await page.evaluate(path=>unread(B.byPath.get(path)),proof.replace(/^\.agent-board\//,'')),false);
 });
+
+test('reviewed voice draft is published through the ordinary signed native browser stream',async t=>{
+  const f=await boot(t),{page}=f;
+  await unlock(page,f.owner);await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cTo',f.peer.participant);await page.selectOption('#cThread','');await page.fill('#cNewThread','Voice signing');
+  await page.evaluate(()=>{class R{static async available(){return 'available';}constructor(){window.voiceRecognition=this;}start(){}stop(){this.onend?.();}abort(){}}R.prototype.processLocally=false;window.SpeechRecognition=R;});
+  await h.openToolbarTool(page,'voiceTools');await page.selectOption('#voiceProvider','browser');await page.click('#voiceStart');await expect(page.locator('#voiceStatus')).toContainText('Listening');
+  await page.evaluate(()=>voiceRecognition.onresult({results:[Object.assign([{transcript:'Voice exact bytes 🐈'}],{isFinal:true})]}));await page.click('#voiceStop');await page.fill('#voiceReview','Reviewed voice exact bytes 🐈');await page.click('#voiceInsert');await expect(page.locator('#cBody')).toHaveValue('Reviewed voice exact bytes 🐈');
+  await assertNotPublished(page,'Reviewed voice exact bytes 🐈');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('');await exportBoard(page,f.proj);
+  const room=h.path.join(f.proj,'.agent-board/rooms/architecture'),name=h.fs.readdirSync(room).find(name=>name.endsWith('_reviewed-voice-exact-bytes.txt'));assert.ok(name);const relative='.agent-board/rooms/architecture/'+name;assert.ok(h.fs.readFileSync(h.path.join(room,name),'utf8').endsWith('Reviewed voice exact bytes 🐈\n'));assert.equal(inspect(f,relative).signature,'valid');
+});

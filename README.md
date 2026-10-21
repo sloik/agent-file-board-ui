@@ -29,6 +29,7 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 | **Notifications** | Follow rooms, threads or participants locally; bounded alerts and guarded quick reply, with optional browser permission. [Guide](docs/guides/NOTIFICATIONS.md). |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/guides/THEMES.md)). |
 | **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/guides/LOCATIONS.md). |
+| **Voice drafts** | System dictation guidance, optional on-device browser speech and an explicitly configured local whisper.cpp helper. Review and insert before normal signed Send. [Guide](docs/guides/VOICE.md). |
 | **Local use** | One HTML file, native and legacy boards, no server or automatic network requests. Chromium writes directly; other browsers download new messages. |
 
 ![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)

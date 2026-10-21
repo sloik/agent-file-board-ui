@@ -11,6 +11,7 @@ owns the wire format, CLI and portable contracts.
 | --- | --- |
 | Explore a fictional board without installation | [Demo tour](guides/DEMO.md) |
 | Compose, route and send messages | [Compact composer](guides/COMPOSER.md) |
+| Dictate and review a message draft | [Voice drafts](guides/VOICE.md) |
 | Author forms, preview reports and review answers | [Authoring and drafts](guides/WORKBENCH.md) |
 | Rehearse an author → human answer → agent follow-up | [Local workflow](guides/LOCAL-WORKFLOW.md) |
 | Open and switch boards | [Folder chooser and recent locations](guides/LOCATIONS.md) |
