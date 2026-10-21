@@ -36,3 +36,8 @@ test('reload guard covers every draft family and asynchronous operation, without
  for(const [key,label]of [['formDraftDirty','form reply'],['extensionDirty','custom reply'],['submittingForms','operation in progress'],['submittingChoices','operation in progress'],['extensionSending','operation in progress']]){s[key].add('draft');assert.ok(block().includes(label),key);s[key].clear();empty();}
  s.choiceDrafts.set('x',{selected:[],text:''});empty();s.choiceDrafts.set('x',{selected:['yes'],text:''});assert.ok(block().includes('choice reply'));s.choiceDrafts.set('x',{selected:[],text:' '});assert.ok(block().includes('choice reply'));s.choiceDrafts.clear();s.notificationHasDraft=()=>true;assert.ok(block().includes('message draft'));
 });
+
+test('corrupt persisted metadata cannot make unsafe links, invalid dates or enabled preferences',()=>{
+ for(const raw of [null,[],{auto:'yes',lastAttempt:Infinity,lastSuccess:1e30,latest:{packageAvailable:true,version:'../bad'}}])assert.deepEqual(U.stored(raw),{});
+ assert.deepEqual(U.stored({auto:false,lastAttempt:123,lastSuccess:124,latest:reply,untrusted:'ignore'}),{auto:false,lastAttempt:123,lastSuccess:124,latest:reply});
+});

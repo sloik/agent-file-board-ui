@@ -51,11 +51,11 @@ async function deleteManagedDraft(row,binding){
 }
 function resetManagedForm(key){for(const[path,saved]of formRoots)if(saved.signature===key){saved.dispose();formRoots.delete(path);}if(B)build({background:true,preserveComposer:true});}
 async function importManagedDraft(event){
- const file=event.target.files?.[0],binding=draftManagerBinding;event.target.value='';if(!file||draftManagerBusy)return;draftManagerBusy=true;$('#draftManagerResult').textContent=t("draft_loading");
+ const file=event.target.files?.[0],binding=draftManagerBinding;event.target.value='';if(!file||draftManagerBusy)return;draftManagerBusy=true;draftManagerGeneration++;$('#draftManagerResult').textContent=t("draft_loading");
  try{if(file.size>393216)throw Error(t("draft_file_limit"));const value=jsonObject(await file.text());
   if(Object.keys(value).sort().join(',')!=='draft,format,path,question,respondent,version'||value.format!=='agent-file-board-draft'||value.version!==1||typeof value.path!=='string'||value.path.length>1024||typeof value.question!=='string'||value.respondent!==binding?.user)throw Error(t("draft_invalid"));
   const m=assertDraftSource(binding,value.path,value.question),draft=managedDraft(m.question,value.draft);if(!draft)throw Error(t("draft_invalid"));
   if(!window.confirm(t("draft_import_confirm",{path:m.path,who:binding.user})))return;
   assertDraftSource(binding,m.path,value.question);const key=formKey(m);saveFormDraft(key,m.question,draft);await formStorageWrites;if(!sameDraftBinding(binding))return;formDraftLoads.set(key,true);resetManagedForm(key);await renderDraftManager();$('#draftManagerResult').textContent=t("draft_imported");
- }catch(error){draftManagerMessage(error);}finally{draftManagerBusy=false;}
+ }catch(error){await renderDraftManager();if(sameDraftBinding(binding))draftManagerMessage(error);}finally{draftManagerBusy=false;}
 }

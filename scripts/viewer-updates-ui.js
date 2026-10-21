@@ -2,7 +2,7 @@
 async function viewerUpdateState(change){
   const db=await idb();try{return await new Promise((resolve,reject)=>{
     const tx=db.transaction('kv',change?'readwrite':'readonly'),store=tx.objectStore('kv'),q=store.get('viewer-updates-v1');let result;
-    q.onsuccess=()=>{const old=q.result;result=old&&typeof old==='object'&&!Array.isArray(old)?old:{};if(change){result=change(result);store.put(result,'viewer-updates-v1');}};
+    q.onsuccess=()=>{result=ViewerUpdates.stored(q.result);if(change){result=change(result);store.put(result,'viewer-updates-v1');}};
     tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Update schedule unavailable'));
   });}finally{db.close();}
 }

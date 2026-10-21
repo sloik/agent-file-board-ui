@@ -13,6 +13,13 @@ const ViewerUpdates=(()=>{
     if(m.status==='error')return keys==='channel,protocol,status';
     return keys==='channel,packageAvailable,protocol,releaseId,status,version'&&m.status==='ok'&&!!version(m.version)&&Number.isSafeInteger(m.releaseId)&&m.releaseId>0&&typeof m.packageAvailable==='boolean';
   }
+  function stored(raw){
+    const s=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{},out={};
+    if(typeof s.auto==='boolean')out.auto=s.auto;
+    for(const key of ['lastAttempt','lastSuccess'])if(Number.isSafeInteger(s[key])&&s[key]>0&&s[key]<=8640000000000000)out[key]=s[key];
+    if(s.latest?.status==='ok'&&valid(s.latest,s.latest.channel))out.latest=s.latest;
+    return out;
+  }
   function links(v){if(!version(v))throw Error('Invalid release version');return {release:releases+'/tag/v'+v,package:releases+'/download/v'+v+'/agent-file-board-viewer.zip'};}
   function request(win,timeout=12000){
     let cancel=()=>{};
@@ -30,6 +37,6 @@ const ViewerUpdates=(()=>{
     });
     return {promise,cancel};
   }
-  return {endpoint,releases,day,version,newer,due,valid,links,request};
+  return {endpoint,releases,day,version,newer,due,valid,stored,links,request};
 })();
 if(typeof module!=='undefined')module.exports=ViewerUpdates;
