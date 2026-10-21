@@ -20,7 +20,7 @@ function notificationsContext(reset=false){
  renderNotifications();return state;
 }
 function notificationMatches(state,m){return state.follows.some(x=>x.kind==="room"?m.scope==="room"&&m.dir===x.key:x.kind==="thread"?m.tkey===x.key:m.author===x.key);}
-function notificationEligible(m){return !sessionNotice(m)&&!m.metadataError&&!m.quarantined&&!m.receipt&&!m.source?.readError&&!m.source?.ioError&&m.author!==currentUser()&&repairVisible(m);}
+function notificationEligible(m){return signingEligible(m)&&!sessionNotice(m)&&!m.metadataError&&!m.quarantined&&!m.receipt&&!m.source?.readError&&!m.source?.ioError&&m.author!==currentUser()&&repairVisible(m);}
 function notificationsObserve(model,background){
  const state=notificationsContext(!background);if(!state)return;
  const previous=state.model;state.model=model;

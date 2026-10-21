@@ -3,7 +3,7 @@ const {test,before,after}=require('node:test'),assert=require('node:assert/stric
 const source=name=>fs.readFileSync(path.join(__dirname,'../scripts',name),'utf8');
 function host(context,lang='en'){
  const m={path:'rooms/general/message.txt',bodyLoaded:true,h:{INFORMATION:'{"version":1,"items":[]}'}};
- const sandbox={B:{informationContexts:new Map([[m.path,context]])},S:{lang},ExtensionContract:require('../scripts/extension-contract'),esc:v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'),m};
+ const sandbox={signingEligible:m=>!m?.signing||m.signing.eligibility==='eligible',B:{informationContexts:new Map([[m.path,context]])},S:{lang},ExtensionContract:require('../scripts/extension-contract'),esc:v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'),m};
  vm.createContext(sandbox);vm.runInContext(source('information-ui.js'),sandbox);return {sandbox,html:()=>vm.runInContext('informationPlaceholder(m)',sandbox)};
 }
 const context=(latest,other={})=>({information:{battery:{label:'Device A',presentation:'both',recorded:{data:100,observedAt:'2026-10-19T10:00:00Z',provenance:{method:'command',description:'device-cli battery <script>alert(1)</script>',collectedAt:'2026-10-19T10:01:00Z'}},latest,...other}}});

@@ -52,3 +52,6 @@ these documents do not claim a shipped signing interface.
 The demo tour is also packaged as the demo's root `README.md`. Its package-local
 links intentionally describe the extracted archive layout, which differs from
 this source tree.
+
+- [Message signing: unlock, trust, policy and agents](guides/signing.md) — local,
+  unreleased runtime; frozen2.10.0 release assets are unchanged.

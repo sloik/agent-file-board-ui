@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "node scripts/embed_rich.js --check && node scripts/embed_openui.js --check && node scripts/embed_upgrade.js --check && node scripts/embed_forms.js --check && node scripts/embed_tools.js --check && node --test tests/*.test.js && python3 -m unittest discover -s tests -p \"test_*.py\"",
+    "test": "node scripts/embed_rich.js --check && node scripts/embed_openui.js --check && node scripts/embed_upgrade.js --check && node scripts/embed_forms.js --check && node scripts/embed_tools.js --check && node scripts/embed_signing.js --check && node --test tests/*.test.js && python3 -m unittest discover -s tests -p \"test_*.py\"",
     "test:node": "node --test tests/*.test.js",
     "release-check": "python3 scripts/release_check.py",
     "embed:rich": "node scripts/embed_rich.js",
@@ -28,9 +28,11 @@
     "screenshots:panels": "node scripts/screenshot_panels.js",
     "screenshots:toolbar": "node scripts/screenshot_toolbar.js",
     "screenshots:features": "node scripts/screenshot_features.js",
-    "screenshots:all": "node scripts/screenshots_all.js"
+    "screenshots:all": "node scripts/screenshots_all.js",
+    "embed:signing": "node scripts/embed_signing.js"
   },
   "devDependencies": {
+    "@noble/curves": "2.4.0",
     "@openuidev/react-lang": "1.0.1",
     "dompurify": "3.4.17",
     "esbuild": "0.28.2",
