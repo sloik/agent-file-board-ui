@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Signing has three independent tasks</title>
+  <desc id="desc">Checking received messages uses public evidence. Approving a participant key requires an independent fingerprint comparison and is local to you. Signing outgoing messages requires your own private key, unlocked only in the tab.</desc>
+  <style>text{font-family:system-ui,-apple-system,Segoe UI,sans-serif;fill:#172b45}.heading{font-size:26px;font-weight:700}.label{font-size:22px;font-weight:700}.body{font-size:18px}.small{font-size:16px}.number{fill:white;font-size:23px;font-weight:700}</style>
+  <rect width="800" height="600" rx="18" fill="#f4f7fb"/>
+  <text x="32" y="45" class="heading">Which task do you need?</text>
+  <text x="32" y="75" class="body">A message check, a trust decision and a signing capability.</text>
+  <rect x="24" y="100" width="752" height="140" rx="12" fill="white" stroke="#bbcce0"/>
+  <circle cx="57" cy="135" r="20" fill="#2465a8"/><text x="50" y="143" class="number">1</text>
+  <text x="92" y="143" class="label">Check received messages</text>
+  <text x="92" y="176" class="body">“Do these bytes match this signing key?”</text>
+  <text x="92" y="207" class="small">Uses public evidence. No private key or approval needed to check.</text>
+  <rect x="24" y="258" width="752" height="140" rx="12" fill="white" stroke="#bbcce0"/>
+  <circle cx="57" cy="293" r="20" fill="#2465a8"/><text x="50" y="301" class="number">2</text>
+  <text x="92" y="301" class="label">Review a participant key</text>
+  <text x="92" y="334" class="body">“Is this the exact key I independently compared?”</text>
+  <text x="92" y="365" class="small">Your local approval. It grants no ability to sign as that participant.</text>
+  <rect x="24" y="416" width="752" height="140" rx="12" fill="white" stroke="#bbcce0"/>
+  <circle cx="57" cy="451" r="20" fill="#2465a8"/><text x="50" y="459" class="number">3</text>
+  <text x="92" y="459" class="label">Sign your messages</text>
+  <text x="92" y="492" class="body">“Use my private key for the messages I send.”</text>
+  <text x="92" y="523" class="small">Unlock in this tab, then choose explicitly who to sign as.</text>
+  <text x="32" y="584" class="small">You can check messages without approving keys or unlocking your own.</text>
+</svg>

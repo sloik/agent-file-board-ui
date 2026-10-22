@@ -2,6 +2,7 @@
 """Build the offline demo from pinned, public synthetic fixtures (stdlib only)."""
 import argparse
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -205,10 +206,16 @@ def build_demo(root: Path, destination: Path):
     if tuple(map(int, version.split('.'))) >= (2, 11, 0):
         guide = (root / 'docs/guides/signing.md').read_text()
         guide = guide.replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md')
+        # Preserve the maintained illustrated guide in the offline demo. Copy
+        # only its explicit local image references, never a recursive docs tree.
+        for image in sorted(set(re.findall(r'\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', guide))):
+            target = destination / 'images' / image
+            target.parent.mkdir(exist_ok=True)
+            shutil.copyfile(root / 'docs/images' / image, target)
         (destination / 'docs/SIGNING.md').write_text(guide)
         for name in ['SIGNING-CORE.md', 'SIGNATURES-AND-IDENTITY.md', 'SIGNING-POLICY-AND-POSSESSION.md']:
             shutil.copyfile(vendor / 'docs' / name, destination / 'docs' / name)
-        manifest['signing'] = {'guide': 'docs/SIGNING.md', 'runtime': 'docs/SIGNING-CORE.md', 'privateKeysIncluded': False, 'automaticAfterExplicitUnlock': True}
+        manifest['signing'] = {'guide': 'docs/SIGNING.md', 'runtime': 'docs/SIGNING-CORE.md', 'privateKeysIncluded': False, 'automaticAfterExplicitUnlock': True, 'explicitSignerSelection': True}
     write_json(destination / 'demo-manifest.json', manifest)
     shutil.copyfile(root / 'board.html', destination / 'board.html')
     shutil.copyfile(root / 'docs/guides/DEMO.md', destination / 'README.md')

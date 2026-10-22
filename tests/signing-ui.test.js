@@ -1,5 +1,6 @@
 'use strict';
 const {test,before,after}=require('node:test'),assert=require('node:assert/strict'),{spawnSync}=require('node:child_process'),h=require('./lib/helpers');
+const signingBrowser=require('./lib/signing-browser');
 let browser;before(async()=>{browser=await h.launch();});after(async()=>browser.close());
 const python=process.env.AFB_SIGNING_PYTHON||'python3',canonical=h.path.resolve(__dirname,'../vendor/agent-file-board');
 function fixture(){const tmp=h.tmpDir(),proj=h.layoutExample(tmp),r=spawnSync(python,['-c',`
@@ -18,8 +19,13 @@ assert boardctl.main(['identity','import','human-owner-01','--profile-file',str(
 jwk=json.loads(c._private_descriptor(key))['key'];jwk['d']=base64.urlsafe_b64encode(seed).decode().rstrip('=');(root.parent/'synthetic-key.json').write_text(json.dumps(jwk))
 `,canonical,proj],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);return {tmp,proj,key:h.path.join(tmp,'synthetic-key.json')};}
 async function boot(){const f=fixture(),s=await h.openPage(browser,{tree:h.readTree(f.proj)});await h.openBoardViaUi(s.page);await h.expandComposer(s.page);return {...f,...s};}
-async function unlock(page,key){assert.equal(await page.evaluate(async()=>{try{await B.signingContext.resolve('human-owner-01');return 'ok';}catch(e){return e.stack;}}),'ok');await page.evaluate(()=>signingDialog());await page.locator('#signingDialog input[type=file]').setInputFiles(key);await page.getByRole('button',{name:'Unlock selected keys',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('#signingDialog button').disabled);assert.equal(await page.evaluate(()=>signingProvider.catalog().length),1,await page.locator('#signingDialog').innerText());assert.match(await page.locator('#signingDialog [role=status]').innerText(),/Automatic signing after unlock/);await page.getByRole('button',{name:'Close',exact:true}).click();}
-test('actual file UI unlock auto-signs with distinct viewing identity; Python independently verifies exact published bytes',async()=>{
+async function unlock(page,key){
+ assert.equal(await page.evaluate(async()=>{try{await B.signingContext.resolve('human-owner-01');return 'ok';}catch(e){return e.stack;}}),'ok');
+ await signingBrowser.unlock(page,{key,participant:'human-owner-01'});
+ assert.equal(await page.evaluate(()=>signingProvider.catalog().length),1);
+ assert.equal(await page.evaluate(()=>signingAs),'human-owner-01');
+}
+test('actual file UI signs after explicit signer selection with distinct viewing identity; Python independently verifies exact published bytes',async()=>{
  const {page,ctx,tmp,key}=await boot();await unlock(page,key);await page.selectOption('#me','research-agent-01');await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Browser signed');await page.fill('#cBody','Exact browser bytes 🐈');await page.click('#send');
  await page.waitForFunction(()=>document.querySelector('#cBody').value==='',null,{timeout:5000}).catch(async e=>{throw Error(await page.locator('#toast').innerText());});const out=h.path.join(tmp,'written');h.fs.mkdirSync(out);const files=await h.dumpFakeFs(page,out),msg=files.find(f=>f.path.endsWith('_exact-browser-bytes.txt'));assert.match(msg.text,/FROM: human-owner-01/);assert.match(msg.text,/SIGNATURE: /);assert.equal(files.filter(f=>f.path.includes('/.signatures/')).length,1);
  const r=spawnSync(python,[h.path.join(canonical,'boardctl.py'),'signing','inspect','--path',out,'--message',msg.path.replace('.agent-board/','')],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(r.stdout).signature,'valid');assert.equal(JSON.parse(r.stdout).eligibility,'eligible');

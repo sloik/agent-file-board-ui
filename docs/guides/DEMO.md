@@ -195,7 +195,9 @@ and participant details. T016 in this demo demonstrates source/patch presentatio
 The separate [extension gallery](https://github.com/sloik/agent-file-board-ui/blob/main/docs/EXTENSIONS.md)
 uses disposable fictional packages and observations; those screenshot-only records
 are not claimed to be preinstalled in this ZIP. Optional operator links are agent
-claims, and cryptographic signing/trust remains proposed.
+claims. Message signing and local key approval are released; the
+[illustrated signing guide](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/signing.md)
+explains their setup. The demo does not provide private signing keys.
 
 
 Questions with a recorded first answer display that accepted response instead of

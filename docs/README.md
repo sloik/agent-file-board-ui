@@ -22,7 +22,7 @@ owns the wire format, CLI and portable contracts.
 | Read highlighted source and patches | [Source and diffs](guides/SOURCE-CODE.md) |
 | Upgrade board metadata and recover from partial updates | [Versions and updates](guides/UPGRADING.md) |
 | Understand agent observation alongside the viewer | [Board loop](guides/BOARD-LOOP.md) |
-| Sign messages, unlock keys and manage local trust | [Message signing](guides/signing.md) |
+| Check signatures, compare keys and sign your replies | [Message signing](guides/signing.md) |
 
 ## Developer guides and reference
 
