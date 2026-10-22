@@ -158,3 +158,24 @@ test('closing the dialog during private key import cancels the pending unlock',a
   assert.equal(await page.evaluate(()=>signingMode),mode,'a canceled unlock does not enable signed mode');
   await native.openSigning(page);await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');
 });
+
+test('read-only exact-key approval and removal immediately reverify message eligibility and visible trust',async t=>{
+  const f=await boot(t),{page,peer}=f;
+  const configPath=h.path.join(f.proj,'.agent-board/config.json'),config=JSON.parse(h.fs.readFileSync(configPath));
+  config.message_signing={version:1,minimum:'trusted'};h.fs.writeFileSync(configPath,JSON.stringify(config));
+  f.cli('signing','trust','--participant',peer.participant,'--profile',peer.profile,'--fingerprint',peer.fingerprint);
+  const path=f.cli('post','--from',peer.participant,'--to','all','--scope','room','--room','architecture','--thread','T001','--slug','readonly-approved-key','--body','Read-only exact-key approval example','--signing-key-file',peer.key).replace(/^\.agent-board\//,'');
+  await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();
+  assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.signature,path),'valid');
+  assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'excluded');
+  await native.openSigning(page);await native.trust(page,peer);
+  assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.trust,path),'trusted');
+  assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'eligible');
+  await native.closeSigning(page);await page.locator('.tcard[data-tk="room:architecture|T001"]').click();
+  await expect(page.locator(`article[data-file="${h.path.basename(path)}"] .signing-facts summary`)).toContainText('Signing key trusted by you');
+  await native.openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);await act(page,'remove-trust');
+  assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.trust,path),'unfamiliar');
+  assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'excluded');
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'approval and re-verification never unlock a private key');
+  assert.equal(await page.evaluate(()=>B.signingKey),null,'uploaded approvals are session-only');
+});

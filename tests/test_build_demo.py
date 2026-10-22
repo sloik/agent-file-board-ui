@@ -1,5 +1,6 @@
 """Distribution contract: real CLI validation, exact inputs, deterministic archive."""
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -38,6 +39,11 @@ class DemoTests(unittest.TestCase):
                 signing = archive.read(PREFIX + '/docs/SIGNING.md').decode('utf-8')
                 expected_signing = (ROOT / 'docs/guides/signing.md').read_text().replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md')
                 self.assertEqual(signing, expected_signing)
+                illustrated = re.findall(r'!\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', signing)
+                self.assertGreaterEqual(len(illustrated), 2, 'the signing guide has actual offline illustrations')
+                for image in illustrated:
+                    self.assertEqual(archive.read(PREFIX + '/images/' + image), (ROOT / 'docs/images' / image).read_bytes())
+
                 self.assertNotIn('SIGNING-REVIEW', signing)
                 self.assertNotIn('../validation/', signing)
                 for rel in ['docs/SOURCE-CODE.md', 'examples/source-code/review.md', 'examples/source-code/device.patch', 'examples/extensions/source-review.afb-plugin.json']:
@@ -50,6 +56,7 @@ class DemoTests(unittest.TestCase):
             self.assertEqual(manifest['feedback'], {'guide':'docs/FEEDBACK.md','skill':'skills/board-feedback/SKILL.md'})
             self.assertEqual(manifest['signing']['privateKeysIncluded'], False)
             self.assertTrue(manifest['signing']['automaticAfterExplicitUnlock'])
+            self.assertTrue(manifest['signing']['explicitSignerSelection'])
             self.assertTrue((package / manifest['signing']['guide']).is_file())
             self.assertTrue((package / manifest['signing']['runtime']).is_file())
             self.assertIn('SIGNING-CORE.md', (package / manifest['signing']['guide']).read_text())
