@@ -32,6 +32,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     outputs:
       commit: ${{ steps.source.outputs.commit }}
     steps:
@@ -41,6 +42,13 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
+
+      # Keep current CI setup available when testing historical source tags.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: .ci-tools
           persist-credentials: false
 
       # The pinned standard must be resolvable as an exact tag (release_check uses git describe).
@@ -58,14 +66,16 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --ignore-scripts
-          python3 -m pip install -r vendor/agent-file-board/requirements-signing.txt
+          python3 .ci-tools/scripts/ci_retry.py --seconds 180 -- npm ci --ignore-scripts --fetch-retries=1 --fetch-timeout=30000
+          python3 .ci-tools/scripts/ci_retry.py --seconds 120 -- python3 -m pip install --timeout 15 --retries 1 -r vendor/agent-file-board/requirements-signing.txt
 
       # After npm ci so the browser matches the pinned playwright version.
       - name: Install Chromium and Firefox for Playwright
-        run: npx playwright install --with-deps chromium firefox
+        uses: ./.ci-tools/.github/actions/setup-browsers
+        timeout-minutes: 14
 
       - name: Test (Playwright viewer tests + release_check unit tests)
+        timeout-minutes: 10
         run: npm test
 
       - name: Release consistency check

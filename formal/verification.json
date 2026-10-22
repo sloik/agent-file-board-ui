@@ -9,9 +9,16 @@
       "name": "prepare",
       "commands": [
         [
+          "{python}",
+          "scripts/ci_retry.py",
+          "--seconds",
+          "60",
+          "--",
           "npm",
           "ci",
-          "--ignore-scripts"
+          "--ignore-scripts",
+          "--fetch-retries=1",
+          "--fetch-timeout=30000"
         ]
       ],
       "timeout": 180
