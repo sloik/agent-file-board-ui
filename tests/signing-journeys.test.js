@@ -105,14 +105,16 @@ test('a paused key read cannot unlock or report success after switching to anoth
     const file=input.files[0],read=file.arrayBuffer.bind(file);
     file.arrayBuffer=async()=>{window.signingReadStarted=true;await new Promise(resolve=>window.releaseSigningRead=resolve);return read();};
   });
-  const oldButton=await control(page,'unlock').elementHandle();
+  await control(page,'unlock').evaluate(button=>{
+    const click=button.onclick;button.onclick=async function(...args){try{return await click.apply(this,args);}finally{window.oldSigningOperationFinished=true;}};
+  });
   await control(page,'unlock').click();await expect(control(page,'unlock')).toBeDisabled();
   await expect.poll(()=>page.evaluate(()=>window.signingReadStarted)).toBe(true);
   await native.closeSigning(page);await native.importBoard(page,other.proj);await h.openBoardViaUi(page);
   await native.openSigning(page);
   const before=await page.locator('#signing-own').innerText(),boardId=await page.evaluate(()=>B.signingContext.boardId);
   await page.evaluate(()=>releaseSigningRead());
-  await expect.poll(()=>oldButton.evaluate(button=>button.disabled)).toBe(false);
+  await expect.poll(()=>page.evaluate(()=>window.oldSigningOperationFinished)).toBe(true);
   await expect.poll(()=>page.evaluate(()=>signingProvider.catalog().length)).toBe(0);
   await expect(page.locator('#signing-own')).toHaveText(before);
   assert.equal(await page.evaluate(()=>B.signingContext.boardId),boardId);assert.equal(await page.evaluate(()=>signingAs),'');
