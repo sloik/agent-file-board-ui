@@ -512,6 +512,8 @@ Unlocking your own private key enables signing on Send; it does not approve
 someone else’s key. The [illustrated signing guide](guides/signing.md) walks
 through each task, a two-person comparison and recovery from blocked states.
 
+Follow [signing in action](guides/SIGNING-IN-ACTION.md) for the signed-message → key review → tampered-message story and a reproducible rehearsal. The [security and trust FAQ](guides/SECURITY-AND-TRUST.md) explains optional and required scopes, malicious folder writers and the limits of the guarantees.
+
 ## Screenshot coverage and reproduction
 
 Signing captures show the task-based signing layout; the other galleries show

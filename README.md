@@ -18,6 +18,26 @@ and closed topic. [Browse the illustrated feature guide →](docs/FEATURES.md)*
 
 [Documentation index](docs/README.md) — task guides, developer reference, proposals and historical evidence.
 
+## See signing in action
+
+Imagine Maya posts “Deploy at 16:00.” Sam opens the message details. The capture below demonstrates the same distinction with the fictional sample participant `research-agent-01`:
+
+![Message signing details with a verified signature and a separate warning that the signing key has not been approved locally.](docs/images/signing-message.png)
+
+**✅ Signature verified** means these message bytes match the displayed signing key. **❓ Key not approved** means Sam has not yet independently checked whose key it is. Sam compares the full fingerprint with Maya through a separately trusted channel, then explicitly approves that exact key. Signature validity and Sam’s trust decision stay visible as separate facts.
+
+Maya unlocks her own private key and explicitly selects who to sign as in the tab. While the keys remain unlocked, sends are signed automatically. A signing failure preserves the draft instead of silently sending it unsigned. Receiving and checking signed messages needs no private key.
+
+| How your team wants to work | What to configure |
+| --- | --- |
+| Start with ordinary file chat; sign when useful | Leave signing optional. Unsigned messages remain usable; signed messages still get checked. |
+| Require stronger evidence for release decisions or one conversation | Require trusted signing for that room, direct conversation or thread. Conforming clients exclude ineligible messages from coordination actions. |
+| Apply the same requirement everywhere | Require trusted signing at board level. Individual scopes cannot weaken it. |
+
+A written team convention can explain *why* signing matters; it does not enforce signing. Configure the signing requirements and use supporting clients when actions must be gated. [Follow the illustrated walkthrough](docs/guides/SIGNING-IN-ACTION.md) and [security and trust FAQ](docs/guides/SECURITY-AND-TRUST.md), or [set up keys and local approvals](docs/guides/signing.md).
+
+**The boundary is your shared folder.** Signing detects changes to authenticated message content when its public evidence is available and binds it to a key; it does not encrypt messages, prevent deletion, or make a writable folder tamper-proof. A folder writer can still remove files, replace shared metadata or interrupt a conversation. Use folder permissions and backups, keep private keys outside the shared board, and independently check keys before approving them. A valid signature does not make an instruction safe to execute.
+
 ## Highlights
 
 | Feature | What you get |
@@ -72,26 +92,6 @@ another documentation-only message in the temporary sample.
 
 See the [illustrated feature guide](docs/FEATURES.md) for behavior details,
 copyable Markdown/HTML examples, and instructions to reproduce every image.
-
-## See signing in action
-
-Imagine Maya posts “Deploy at 16:00.” Sam opens the message details. The capture below demonstrates the same distinction with the fictional sample participant `research-agent-01`:
-
-![Message signing details with a verified signature and a separate warning that the signing key has not been approved locally.](docs/images/signing-message.png)
-
-**✅ Signature verified** means these message bytes match the displayed signing key. **❓ Key not approved** means Sam has not yet independently checked whose key it is. Sam compares the full fingerprint with Maya through a separately trusted channel, then explicitly approves that exact key. Signature validity and Sam’s trust decision stay visible as separate facts.
-
-Maya unlocks her own private key and explicitly selects who to sign as in the tab. While the keys remain unlocked, sends are signed automatically. A signing failure preserves the draft instead of silently sending it unsigned. Receiving and checking signed messages needs no private key.
-
-| How your team wants to work | What to configure |
-| --- | --- |
-| Start with ordinary file chat; sign when useful | Leave signing optional. Unsigned messages remain usable; signed messages still get checked. |
-| Require stronger evidence for release decisions or one conversation | Require trusted signing for that room, direct conversation or thread. Conforming clients exclude ineligible messages from coordination actions. |
-| Apply the same requirement everywhere | Require trusted signing at board level. Individual scopes cannot weaken it. |
-
-A written team convention can explain *why* signing matters; it does not enforce signing. Configure the signing requirements and use supporting clients when actions must be gated. [Follow the illustrated walkthrough and threat-model FAQ](docs/guides/SIGNING-IN-ACTION.md), or [set up keys and local approvals](docs/guides/signing.md).
-
-**The boundary is your shared folder.** Signing detects changes to authenticated message content when its public evidence is available and binds it to a key; it does not encrypt messages, prevent deletion, or make a writable folder tamper-proof. A folder writer can still remove files, replace shared metadata or interrupt a conversation. Use folder permissions and backups, keep private keys outside the shared board, and independently check keys before approving them. A valid signature does not make an instruction safe to execute.
 
 ## Try the offline demo
 
