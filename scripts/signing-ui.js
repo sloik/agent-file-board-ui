@@ -368,17 +368,38 @@ async function signingDialog() {
     reviewOut.textContent = "";
     refresh();
   };
-  add(inspectActions, text("Review current key", "Sprawdź bieżący klucz"), "inspect-profile", reviewOut, async () => {
-    const id = participant.value, r = await model.signingContext.resolve(id);
+  add(inspectActions, text("Refresh key details", "Odśwież dane klucza"), "inspect-profile", reviewOut, async () => {
+    const id = participant.value;
+    let context;
+    if (base) {
+      // A native board can change on disk while this dialog remains open.
+      // The normal reader rechecks policy, profile lineage and revocations.
+      await reload(id);
+      active();
+      context = model.signingContext;
+    } else {
+      // An upload is an immutable File snapshot. A fresh Context rechecks the
+      // actual uploaded profile/event bytes instead of reusing resolve's memo.
+      context = new C.Context(model.signingContext.config, model.signingContext.registry,
+        model.signingRead, structuredClone(model.signingContext.state));
+    }
+    const r = await context.resolve(id);
     active();
     C.require(id === participant.value, "Participant changed; review again");
     reviewed = { id, fingerprint: r.head.fingerprint, revoked: r.revoked[r.head.fingerprint] };
-    return reviewed.revoked ? text("This key is revoked. Do not approve or use it. Ask the participant about recovery.", "Klucz jest unieważniony. Nie zatwierdzaj go ani nie używaj. Zapytaj uczestnika o odzyskanie dostępu.") : text("Current key loaded. Compare its full fingerprint independently, then paste the confirmed value.", "Wczytano bieżący klucz. Porównaj cały odcisk niezależnie, a następnie wklej potwierdzoną wartość.");
+    const pin = model.signingContext.state.pins[id];
+    model.signingParticipants[id] = { fingerprint: r.head.fingerprint,
+      trusted: pin === r.head.fingerprint, changed: !!pin && pin !== r.head.fingerprint,
+      revoked: r.revoked[r.head.fingerprint] || null };
+    const source = base ? text("Key details refreshed from the board folder. No approval changed.", "Dane klucza odświeżono z folderu tablicy. Zatwierdzenie nie zmieniło się.") :
+      text("Uploaded key evidence rechecked. This is a fixed snapshot; reopen the folder to see newer keys or revocations. No approval changed.", "Ponownie sprawdzono wczytane dane klucza. To stała kopia; otwórz folder ponownie, aby zobaczyć nowsze klucze lub unieważnienia. Zatwierdzenie nie zmieniło się.");
+    return source + " " + (reviewed.revoked ? text("This key is revoked. Do not approve or use it. Ask the participant about recovery.", "Klucz jest unieważniony. Nie zatwierdzaj go ani nie używaj. Zapytaj uczestnika o odzyskanie dostępu.") :
+      text("Compare the full fingerprint independently before approving.", "Przed zatwierdzeniem porównaj cały odcisk niezależnie."));
   }, () => !!model.signingContext && !!participant.value);
   const reload = async (participantId) => {
     if (base) {
       active();
-      await readFromHandle(true);
+      C.require(await readFromHandle(true), text("Board refresh was superseded. Retry to review current evidence.", "Odświeżanie tablicy zostało zastąpione. Spróbuj ponownie, aby sprawdzić bieżące dane."));
       C.require(sameBoard(), "Board changed; reopen Signing");
       model = B;
       reviewed = null;
