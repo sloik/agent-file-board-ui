@@ -12,9 +12,9 @@ root, where this page becomes `README.md`.
 Read [the illustrated signing walkthrough](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/SIGNING-IN-ACTION.md)
 and [the security and trust FAQ](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/SECURITY-AND-TRUST.md)
 for verified bytes, your key approval and a rejected edit, plus a separate
-hands-on rehearsal with freshly generated keys. Source-built demo packages also
+hands-on rehearsal with freshly generated keys. Demo packages from 2.12.2
 include offline copies at `docs/SIGNING-IN-ACTION.md` and
-`docs/SECURITY-AND-TRUST.md`; the published v2.12.1 ZIP predates those two guides.
+`docs/SECURITY-AND-TRUST.md`. If using an older ZIP, use the online guides above.
 
 This demo board is unsigned and contains no private signing keys; opening it alone
 does not demonstrate an authenticated conversation. The included

@@ -1,5 +1,12 @@
 # Release notes
 
+## 2.12.2 — 2026-10-22
+
+- Put the illustrated signing story and quick demo first; explain opt-in and scoped trusted signing with clear folder security boundaries.
+- Include the tested signing/tampering walkthrough and security FAQ in offline demo packages, with working local links.
+- Bundle corrected canonical signing documentation and 2.12.1 upgrade support from released core 2.12.2.
+- Correct formal coverage documentation without changing model or runtime signing behavior.
+
 ## 2.12.1 — 2026-10-22
 
 - Show emoji-and-text message signing badges with per-state hover explanations
