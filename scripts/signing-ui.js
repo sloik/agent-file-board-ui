@@ -375,13 +375,35 @@ async function signingDialog() {
     reviewed = { id, fingerprint: r.head.fingerprint, revoked: r.revoked[r.head.fingerprint] };
     return reviewed.revoked ? text("This key is revoked. Do not approve or use it. Ask the participant about recovery.", "Klucz jest unieważniony. Nie zatwierdzaj go ani nie używaj. Zapytaj uczestnika o odzyskanie dostępu.") : text("Current key loaded. Compare its full fingerprint independently, then paste the confirmed value.", "Wczytano bieżący klucz. Porównaj cały odcisk niezależnie, a następnie wklej potwierdzoną wartość.");
   }, () => !!model.signingContext && !!participant.value);
-  const reload = async () => {
+  const reload = async (participantId) => {
     if (base) {
       active();
       await readFromHandle(true);
       C.require(sameBoard(), "Board changed; reopen Signing");
       model = B;
       reviewed = null;
+    } else {
+      // Uploaded File objects are the exact read-only snapshot already reviewed.
+      // Re-run verification rather than deriving eligibility from the new pin.
+      // Older messages outside the verification window remain pending until the
+      // user explicitly asks to check them.
+      const context = model.signingContext;
+      const affected = model.msgs.filter(m => m.h.FROM === participantId &&
+        m.h.SIGNATURE !== undefined && m.signing?.signature === "valid" &&
+        !m.signing.reason?.startsWith("Outside verification"));
+      for (const message of affected) {
+        active();
+        C.require(message.source?.file, "Uploaded message source unavailable; reopen the board");
+        C.require(message.source.file.size <= 4194304, "message byte budget");
+        const raw = await rawBytes(message.source.file);
+        active();
+        const result = await context.evaluate(message.path, message.h, raw);
+        active();
+        message.signing = result;
+      }
+      await prepareAnswerStates(model);
+      active();
+      build({ background: true, preserveComposer: true });
     }
   };
   add(reviewActions, text("Approve this exact key", "Zatwierdź ten konkretny klucz"), "trust", reviewOut, async () => {
@@ -396,14 +418,15 @@ async function signingDialog() {
     model.signingContext.state.pins[id] = typed;
     await signingSave(model);
     active();
-    await reload();
+    await reload(id);
     return text("Exact key approved locally. This does not approve message content or share your decision with others.", "Konkretny klucz zatwierdzono lokalnie. Nie oznacza to zatwierdzenia treści ani udostępnienia tej decyzji innym.");
   }, () => !!model.signingContext && !!model.signingParticipants?.[participant.value]?.fingerprint && !model.signingParticipants[participant.value].revoked);
   add(reviewActions, text("Remove my approval", "Usuń moje zatwierdzenie"), "remove-trust", reviewOut, async () => {
-    delete model.signingContext.state.pins[participant.value];
+    const id = participant.value;
+    delete model.signingContext.state.pins[id];
     await signingSave(model);
     active();
-    await reload();
+    await reload(id);
     return text("Local approval removed. No shared files were deleted. Stricter rules may now block affected messages.", "Usunięto lokalne zatwierdzenie. Nie usunięto wspólnych plików. Ostrzejsze reguły mogą teraz blokować te wiadomości.");
   }, () => !!model.signingContext?.state.pins[participant.value]);
   node("p", text("Approval belongs to this browser and board location. A changed key needs a new review. Removing approval does not revoke the participant's key.", "Zatwierdzenie dotyczy tej przeglądarki i lokalizacji tablicy. Zmieniony klucz wymaga nowego sprawdzenia. Usunięcie zatwierdzenia nie unieważnia klucza uczestnika."), review, "signing-help");
