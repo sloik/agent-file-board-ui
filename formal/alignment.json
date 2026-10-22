@@ -84,7 +84,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "ebf06b2595010b2156ce5eb2b357a09068a7f4ed7ac9956087828e652e370a1f"
+      "sha256": "15ff4359857ccdc176bf4024f485d9fe681bcf9a8c2272e949a6d5ec0fcaa250"
     },
     "host-writer": {
       "path": "board.html",
@@ -535,7 +535,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "7c2eb49f237f818766f3473102431248ab7d5a5f84ebcb939191172704a6a5b6"
+      "sha256": "ef7ee96c2c699a610fe3b2a3733dc4dd8101bec15e41c5d6a6599586c9fb3425"
     },
     "host-answer-index": {
       "path": "board.html",
@@ -636,7 +636,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "367a2e80b5de15c97ac98097c1fe4a1d2a115279b105809c866b96853921aa5a"
+      "sha256": "47f197e01f89b68f7ad255adcadea38edbc28dbbe17a617e16c4ec27c9a6b104"
     },
     "tests/signing-journeys.test.js": {
       "path": "tests/signing-journeys.test.js",
@@ -651,12 +651,19 @@
         "kind": "file"
       },
       "sha256": "ff62ba2bed2e3057e422e7b64896bdf2acd8741aec465ad90573c653562419ba"
+    },
+    "tests/signing-message-status.test.js": {
+      "path": "tests/signing-message-status.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "931d9cab129e1040bef14d2827f3c0ca7e8368df276ca7aa9f94dd95527bea51"
     }
   },
   "models": [
     {
       "module": "Signer.tla",
-      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Signing journeys review 2026-10-22 (SPEC-002-051): task layout and explicit signer selection preserve Provider atomicity, generation invalidation, delivery guards and no unsigned fallback. Dialogue actions bind location/UUID and current model; awaited actions refuse changed models, while idle same-board refresh safely rebinds. Close during pending private-key import locks the Provider epoch; normal close retains a completed unlock. Exact-key approval now rechecks current disk/private-state evidence before mutation. Native browser regressions cover explicit signer choice, approval separate from possession, stale board operations, canceled import, focused edits and English/Polish geometry. These UI selection/dialogue states are executable-test coverage, outside the bounded Provider model; no universal refinement claim. Reviewed explicit evidence refresh: native reload and fixed-upload fresh Context validation do not approve a replacement; browser rotation regression retains the old approval and comparison draft. Pinned task navigation/focus/geometry is browser-tested presentation, outside the bounded model. Persistence-failure review: approval edits are rolled back only for the exact target state/pin mutation when private storage refuses saving; original errors are preserved and newer different pin changes are retained. Native fault-injection regression checks both approve/remove badges, memory pins and unchanged actual IndexedDB pins. This local UX transaction is executable-test coverage beyond the Provider finite model.",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Signing journeys review 2026-10-22 (SPEC-002-051): task layout and explicit signer selection preserve Provider atomicity, generation invalidation, delivery guards and no unsigned fallback. Dialogue actions bind location/UUID and current model; awaited actions refuse changed models, while idle same-board refresh safely rebinds. Close during pending private-key import locks the Provider epoch; normal close retains a completed unlock. Exact-key approval now rechecks current disk/private-state evidence before mutation. Native browser regressions cover explicit signer choice, approval separate from possession, stale board operations, canceled import, focused edits and English/Polish geometry. These UI selection/dialogue states are executable-test coverage, outside the bounded Provider model; no universal refinement claim. Reviewed explicit evidence refresh: native reload and fixed-upload fresh Context validation do not approve a replacement; browser rotation regression retains the old approval and comparison draft. Pinned task navigation/focus/geometry is browser-tested presentation, outside the bounded model. Persistence-failure review: approval edits are rolled back only for the exact target state/pin mutation when private storage refuses saving; original errors are preserved and newer different pin changes are retained. Native fault-injection regression checks both approve/remove badges, memory pins and unchanged actual IndexedDB pins. This local UX transaction is executable-test coverage beyond the Provider finite model. SPEC-002-052 display review: one facts formatter supplies emoji/text badges, native title explanations and equivalent expanded descriptions. Signature integrity, local key approval, lifecycle and eligibility are independently projected; no provider, approval or publication decisions change. Native browser cases verify actual signed/unapproved/approved and compromised/blocked messages, keyboard disclosure, Polish/English phone wrapping and hover metadata. Native tooltip OS rendering is supplied by the browser; tests assert declared title content and matching non-hover explanations.",
       "states": {
         "catalog": {
           "anchors": [
@@ -1100,7 +1107,8 @@
         ".github/workflows/test.yml",
         "tests/signing-clarity.test.js",
         "tests/signing-journeys.test.js",
-        "tests/lib/signing-browser.js"
+        "tests/lib/signing-browser.js",
+        "tests/signing-message-status.test.js"
       ],
       "conformance": [
         "tests/signing-provider.test.js",
@@ -1111,7 +1119,8 @@
         "tests/signing-ui.test.js",
         "tests/lib/signing-unit.js",
         "formal/collect_traces.js",
-        "tests/signing-journeys.test.js"
+        "tests/signing-journeys.test.js",
+        "tests/signing-message-status.test.js"
       ],
       "limits": "Bounded production Provider/delivery/writer/composer observations with Node WebCrypto and DOM/stream doubles. No universal refinement, real browser I/O, crypto arithmetic or native filesystem guarantee."
     },

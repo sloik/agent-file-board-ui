@@ -196,7 +196,12 @@ body.resizing{cursor:col-resize;user-select:none}
 .canonical-answer{overflow-wrap:anywhere}
 .signing-facts,.signing-participants,.participant-key-trust{overflow-wrap:anywhere}
 .signing-facts{font-size:.85em;margin:.5em 0;color:var(--muted)}
-.signing-facts summary{cursor:pointer}
+.signing-facts summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:5px;list-style:none}
+.signing-facts summary::-webkit-details-marker{display:none}
+.signing-state{display:inline-flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--line);border-radius:7px;padding:3px 7px;background:var(--panel2);color:var(--ink);cursor:help}
+.signing-state-warning{background:var(--warn-bg);color:var(--warn-ink)}
+.signing-details-label{font-size:.9em;text-decoration:underline;margin-left:3px}
+.signing-state-explanations{line-height:1.5;margin:10px 0}.signing-state-explanations dt{font-weight:650;margin-top:8px}.signing-state-explanations dd{margin:3px 0 8px}
 #signingDialog{width:min(880px,calc(100vw - 32px));box-sizing:border-box;overflow-wrap:anywhere}
 #signingDialog .signing-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
 .signing-nav{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
@@ -5308,16 +5313,35 @@ const signingProvider = new SigningContract.Provider();
 let signingLocation = null, signingMode = "unsigned", signingAs = "", signingInspect = false;
 const signingEligible = (m) => !m?.signing || m.signing.eligibility === "eligible";
 // Signature integrity, local key approval and policy eligibility are independent facts.
+function signingMessageFacts(m) {
+  const f=m.signing || {}, text=exText;
+  const signatures={
+    valid:["✅",text("Signature verified","Podpis zweryfikowany"),text("The message bytes match the signing key. This does not establish your approval of the key or the truth of the content.","Bajty wiadomości zgadzają się z kluczem podpisu. Nie oznacza to Twojego zatwierdzenia klucza ani prawdziwości treści.")],
+    unsigned:["📄",text("Unsigned message","Wiadomość bez podpisu"),text("This message has no signature. Board rules decide whether it can be used for replies and other actions.","Ta wiadomość nie ma podpisu. Reguły tablicy określają, czy można odpowiadać i wykonywać inne działania.")],
+    invalid:["❌",text("Invalid signature","Nieprawidłowy podpis"),text("The signature check failed. Approving a key cannot repair a failed signature; inspect the details with the sender.","Sprawdzenie podpisu nie powiodło się. Zatwierdzenie klucza nie naprawi błędnego podpisu; sprawdź szczegóły z nadawcą.")],
+    stripped:["❌",text("Signature removed","Usunięto podpis"),text("A previously verified signature is now missing. This message is blocked; inspect its history with the sender.","Brakuje wcześniej zweryfikowanego podpisu. Wiadomość jest zablokowana; sprawdź historię z nadawcą.")],
+    unavailable:["⏳",text("Signature not verified yet","Podpis jeszcze niezweryfikowany"),text("Verification has not completed. Evidence may be missing, or the message may be outside the verification window. Open Signing to check older messages.","Weryfikacja nie została zakończona. Może brakować danych lub wiadomość jest poza oknem weryfikacji. Otwórz Podpisy, aby sprawdzić starsze wiadomości.")],
+    unchecked:["❓",text("Signature not checked","Podpis niesprawdzony"),text("No verification result is available. Do not treat this message as verified.","Brak wyniku weryfikacji. Nie traktuj tej wiadomości jako zweryfikowanej.")]
+  };
+  const rows=[],add=(id,values,warning=false)=>rows.push({id,emoji:values[0],label:values[1],explanation:values[2],warning});
+  const signature=Object.hasOwn(signatures,f.signature)?f.signature:"unchecked";
+  add("signature-"+signature,signatures[signature],["invalid","stripped"].includes(signature));
+  if(f.signature==="valid"){
+    if(f.trust==="trusted")add("key-trusted",["🔑",text("Signing key trusted by you","Ufasz kluczowi podpisu"),text("You approved this exact participant key in this browser for this board location. Approval is local and does not endorse the message content.","Zatwierdzono ten konkretny klucz uczestnika w tej przeglądarce dla tej lokalizacji tablicy. Zatwierdzenie jest lokalne i nie potwierdza treści wiadomości.")]);
+    else add("key-unfamiliar",["❓",text("Signing key not approved by you","Nie zatwierdzono klucza podpisu"),text("The signature verifies, but you have not approved this exact key locally. Compare its full fingerprint independently before approval. Optional board rules may still allow actions.","Podpis jest poprawny, ale ten konkretny klucz nie został lokalnie zatwierdzony. Przed zatwierdzeniem porównaj cały odcisk niezależnym kanałem. Opcjonalne reguły tablicy mogą nadal pozwalać na działania.")]);
+  }
+  const lifecycle={
+    superseded:["🕰️",text("Older signing key","Starszy klucz podpisu"),text("This message used an older key from the participant's accepted key history. A newer current key exists; board rules determine whether the old message is usable.","Wiadomość podpisano starszym kluczem z zaakceptowanej historii uczestnika. Istnieje nowszy klucz; reguły tablicy określają, czy stara wiadomość może być używana.")],
+    retired:["🚫",text("Signing key retired","Klucz podpisu wycofany"),text("This signing key was retired. A matching signature does not make this message eligible for actions.","Ten klucz podpisu wycofano. Zgodny podpis nie daje uprawnienia do działań na podstawie tej wiadomości.")],
+    compromised:["🚨",text("Signing key compromised","Klucz podpisu przejęty"),text("This key was reported compromised. The message is blocked even when its signature matches the key.","Ten klucz zgłoszono jako przejęty. Wiadomość jest zablokowana nawet wtedy, gdy podpis zgadza się z kluczem.")]
+  };
+  if(Object.hasOwn(lifecycle,f.lifecycle))add("key-"+f.lifecycle,lifecycle[f.lifecycle],f.lifecycle!=="superseded");
+  if(f.eligibility==="excluded")add("blocked",["⛔",text("Blocked by signing rules","Zablokowana przez reguły podpisów"),text("Signing rules or key evidence prevent replies, forms and other coordination actions. Expand the details for the reason; a verified signature alone does not remove this block.","Reguły podpisów lub dane klucza blokują odpowiedzi, formularze i inne działania koordynacyjne. Rozwiń szczegóły, aby poznać przyczynę; sam poprawny podpis nie usuwa blokady.")],true);
+  if(f.eligibility==="pending-verification")add("pending",["⏳",text("Waiting for verification — inspection only","Oczekuje na weryfikację — tylko podgląd"),text("This message can be inspected, but it cannot drive actions until verification completes.","Można przeglądać tę wiadomość, ale nie może ona wywoływać działań do zakończenia weryfikacji.")]);
+  return rows;
+}
 function signingMessageSummary(m) {
-  const f=m.signing || {}, text=(en,pl)=>exText(en,pl);
-  const labels={valid:text("Signature verified","Podpis zweryfikowany"),unsigned:text("Unsigned message","Wiadomość bez podpisu"),invalid:text("Invalid signature","Nieprawidłowy podpis"),stripped:text("Signature removed","Usunięto podpis"),unavailable:text("Signature not verified yet","Podpis jeszcze niezweryfikowany")};
-  const parts=[labels[f.signature] || text("Signature not checked","Podpis niesprawdzony")];
-  if(f.signature==="valid") parts.push(f.trust==="trusted"?text("Signing key trusted by you","Ufasz kluczowi podpisu"):text("Signing key not approved by you","Nie zatwierdzono klucza podpisu"));
-  const lifecycle={superseded:text("Older signing key","Starszy klucz podpisu"),retired:text("Signing key retired","Klucz podpisu wycofany"),compromised:text("Signing key compromised","Klucz podpisu przejęty")};
-  if(lifecycle[f.lifecycle]) parts.push(lifecycle[f.lifecycle]);
-  if(f.eligibility==="excluded") parts.push(text("Blocked by signing rules","Zablokowana przez reguły podpisów"));
-  if(f.eligibility==="pending-verification") parts.push(text("Waiting for verification — inspection only","Oczekuje na weryfikację — tylko podgląd"));
-  return parts.join(" · ");
+  return signingMessageFacts(m).map(f=>f.label).join(" · ");
 }
 function signingParticipantSummary(id,model=B) {
   const f=model?.signingParticipants?.[id];
@@ -5328,8 +5352,10 @@ function signingParticipantSummary(id,model=B) {
   return f.changed?exText("Key changed — review needed","Klucz zmieniony — wymaga sprawdzenia"):exText("Current key not approved by you","Nie zatwierdzono bieżącego klucza");
 }
 function signingMessageHtml(m) {
-  const f=m.signing || {}, reason=f.reason && f.reason!=="verified" && f.reason!=="unsigned"?f.reason:"";
-  return `<details class="signing-facts"><summary>${esc(signingMessageSummary(m))}</summary><p>${esc(exText("A verified signature proves these message bytes match the signing key. Your local key approval is separate; neither proves the claims in the message are true.","Zweryfikowany podpis potwierdza zgodność bajtów wiadomości z kluczem podpisu. Twoje lokalne zatwierdzenie klucza jest osobne; żadne nie potwierdza prawdziwości treści."))}</p>${f.fingerprint?`<p>${esc(exText("Signing key fingerprint","Odcisk klucza podpisu"))}: <code>${esc(f.fingerprint)}</code></p>`:""}${reason?`<p>${esc(reason)}</p>`:""}<p>${esc(exText("Open Signing in Tools to review keys or verify older messages.","Otwórz Podpisy w Narzędziach, aby sprawdzić klucze lub zweryfikować starsze wiadomości."))}</p></details>`;
+  const f=m.signing || {}, facts=signingMessageFacts(m), reason=f.reason && f.reason!=="verified" && f.reason!=="unsigned"?f.reason:"";
+  const badges=facts.map(fact=>`<span class="signing-state${fact.warning?' signing-state-warning':''}" data-signing-state="${fact.id}" title="${esc(fact.label+': '+fact.explanation)}"><span aria-hidden="true">${fact.emoji}</span><span>${esc(fact.label)}</span></span>`).join("");
+  const explanations=facts.map(fact=>`<dt>${esc(fact.label)}</dt><dd>${esc(fact.explanation)}</dd>`).join("");
+  return `<details class="signing-facts"><summary aria-label="${esc(signingMessageSummary(m))}">${badges}<span class="signing-details-label">${esc(exText("Details","Szczegóły"))}</span></summary><dl class="signing-state-explanations">${explanations}</dl><p>${esc(exText("A verified signature proves these message bytes match the signing key. Your local key approval is separate; neither proves the claims in the message are true.","Zweryfikowany podpis potwierdza zgodność bajtów wiadomości z kluczem podpisu. Twoje lokalne zatwierdzenie klucza jest osobne; żadne nie potwierdza prawdziwości treści."))}</p>${f.fingerprint?`<p>${esc(exText("Signing key fingerprint","Odcisk klucza podpisu"))}: <code>${esc(f.fingerprint)}</code></p>`:""}${reason?`<p>${esc(reason)}</p>`:""}<p>${esc(exText("Open Signing in Tools to review keys or verify older messages.","Otwórz Podpisy w Narzędziach, aby sprawdzić klucze lub zweryfikować starsze wiadomości."))}</p></details>`;
 }
 function signingSender(fallback) {
   return signingMode === "signed" ? (SigningContract.require(signingAs, "Select an unlocked signing identity"), signingAs) : fallback;

@@ -18,6 +18,7 @@ async function main(){
     const article=page.locator(`article.msg[data-file="${h.path.basename(path)}"]`);
     await article.locator('.signing-facts summary').click();await article.scrollIntoViewIfNeeded();
     await article.screenshot({path:h.path.join(out,'signing-message.png'),animations:'disabled'});
+    if(process.argv.includes('--message-only')){console.log('Captured actual message emoji states and explanations.');return;}
     await signing.openSigning(page);
     await page.getByLabel('Trust participant',{exact:true}).selectOption(f.peer.participant);
     await page.locator('#signing-review').screenshot({path:h.path.join(out,'signing-review.png'),animations:'disabled'});

@@ -26,21 +26,22 @@ someone else’s public key does **not** unlock signing as that participant.
 
 ## 1. Check received messages
 
-Every message shows a signature status. Expand it to see the message’s signing
-fingerprint and explanation. Read the signature, your key approval and any
+Every message shows emoji-and-text status badges. Hover a badge for its meaning.
+Choose **Details** (click, tap, or Enter/Space when focused) for the same
+explanations and the exact signing fingerprint. Read the signature, your key approval and any
 blocking reason separately. This capture uses a fictional sample participant:
 
 ![Expanded message status: the signature is verified, but its signing key has not been approved locally.](../images/signing-message.png)
 
 | What you see | What it means | What to do next |
 | --- | --- | --- |
-| **Signature verified** with your key approval | The bytes match a key you approved | Read the content and make your own decision about its claims |
-| **Signature verified** without your key approval | The bytes match a key you have not approved locally | Compare its exact fingerprint if you need to establish trust; optional policy may still allow replies |
-| **Unsigned message** | There is no verified signature on this message | Ordinary unsigned boards may allow it; a scope requiring signing can block it |
-| **Signature not verified yet** | The viewer has not established a result | Check older messages if outside the verification window; otherwise inspect the reason and missing evidence |
-| **Invalid signature** or **Signature removed** | The expected signature integrity check failed | Keep it out of coordination; investigate with the sender instead of approving the key to bypass the failure |
-| **Older signing key**, **Signing key retired** or **Signing key compromised** | The key’s lifecycle affects how the message can be used | Inspect the exact message key and blocking reason; review a replacement key separately |
-| A blocked / pending state | Current evidence or signing requirements do not allow actions | Resolve the stated cause before replying, submitting a form or relying on it for coordination |
+| ✅ **Signature verified** + 🔑 your key approval | The bytes match a key you approved | Read the content and make your own decision about its claims |
+| ✅ **Signature verified** + ❓ no local key approval | The bytes match a key you have not approved locally | Compare its exact fingerprint if you need to establish trust; optional policy may still allow replies |
+| 📄 **Unsigned message** | There is no verified signature on this message | Ordinary unsigned boards may allow it; a scope requiring signing can block it |
+| ⏳ **Signature not verified yet** | The viewer has not established a result | Check older messages if outside the verification window; otherwise inspect the reason and missing evidence |
+| ❌ **Invalid signature** or **Signature removed** | The expected signature integrity check failed | Keep it out of coordination; investigate with the sender instead of approving the key to bypass the failure |
+| 🕰️ **Older signing key**, 🚫 **Signing key retired** or 🚨 **Signing key compromised** | The key’s lifecycle affects how the message can be used | Inspect the exact message key and blocking reason; review a replacement key separately |
+| ⛔ Blocked / ⏳ pending | Current evidence or signing requirements do not allow actions | Resolve the stated cause before replying, submitting a form or relying on it for coordination |
 
 **Example:** Sam reads “Deploy at 16:00” from Maya. **Signature verified** means
 the signed bytes match Maya’s displayed signing key. It does not establish that
