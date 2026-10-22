@@ -120,3 +120,41 @@ test('a paused key read cannot unlock or report success after switching to anoth
   await expect(page.locator('#signing-own')).toHaveText(before);
   assert.equal(await page.evaluate(()=>B.signingContext.boardId),boardId);assert.equal(await page.evaluate(()=>signingAs),'');
 });
+
+test('an idle signing dialog can review and approve a key after an ordinary same-board refresh',async t=>{
+  const {page,peer}=await boot(t);await native.openSigning(page);
+  await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
+  assert.equal(await page.evaluate(async()=>{const previous=B;await readFromHandle(true);return previous!==B;}),true,'the refresh replaces the model while retaining this board');
+  await act(page,'inspect-profile');await expect(page.locator('#signing-review')).toContainText(peer.fingerprint);
+  await expect(page.locator('#signing-review .signing-feedback')).not.toContainText('Reopen Signing');
+  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint);
+  await act(page,'trust');await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
+  assert.equal(await page.evaluate(id=>B.signingContext.state.pins[id],peer.participant),peer.fingerprint);
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'same-board refresh and key approval do not unlock private keys');
+  assert.equal(await page.evaluate(()=>signingAs),'');
+});
+
+test('closing the dialog during private key import cancels the pending unlock',async t=>{
+  const {page,owner}=await boot(t);await native.openSigning(page);
+  await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles(owner.key);
+  const mode=await page.evaluate(()=>signingMode);
+  await page.evaluate(()=>{
+    const original=crypto.subtle.importKey.bind(crypto.subtle);
+    crypto.subtle.importKey=async(...args)=>{
+      if(args[0]==='jwk'&&args[4]?.includes('sign')){
+        window.privateSigningImportPending=true;
+        await new Promise(resolve=>window.releasePrivateSigningImport=resolve);
+      }
+      return original(...args);
+    };
+  });
+  await control(page,'unlock').evaluate(button=>{
+    const click=button.onclick;button.onclick=async function(...args){try{return await click.apply(this,args);}finally{window.closedSigningOperationFinished=true;}};
+  });
+  await control(page,'unlock').click();await expect.poll(()=>page.evaluate(()=>window.privateSigningImportPending)).toBe(true);
+  await native.closeSigning(page);await page.evaluate(()=>releasePrivateSigningImport());
+  await expect.poll(()=>page.evaluate(()=>window.closedSigningOperationFinished)).toBe(true);
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);assert.equal(await page.evaluate(()=>signingAs),'');
+  assert.equal(await page.evaluate(()=>signingMode),mode,'a canceled unlock does not enable signed mode');
+  await native.openSigning(page);await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');
+});
