@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 2.12.1 — 2026-10-22
 
 - Show emoji-and-text message signing badges with per-state hover explanations
   and the same explanations in keyboard/touch-accessible details.
