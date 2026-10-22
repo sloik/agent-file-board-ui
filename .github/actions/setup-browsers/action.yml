@@ -1,0 +1,23 @@
+name: Bounded Playwright setup
+description: Install signed Ubuntu dependencies over HTTPS and both pinned browsers
+runs:
+  using: composite
+  steps:
+    - name: Configure HTTPS Ubuntu mirrors and bounded apt requests
+      shell: bash
+      run: |
+        set -euo pipefail
+        for source in /etc/apt/apt-mirrors.txt /etc/apt/apt-mirrors-security.txt /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
+          if [[ -f "$source" ]]; then
+            sudo sed -i -e 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' -e 's|http://archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' -e 's|http://security.ubuntu.com/ubuntu|https://security.ubuntu.com/ubuntu|g' "$source"
+          fi
+        done
+        printf '%s\n' 'Acquire::http::Timeout "15";' 'Acquire::https::Timeout "15";' 'Acquire::Retries "1";' | sudo tee /etc/apt/apt.conf.d/80board-ci-timeouts >/dev/null
+    - name: Install system browser dependencies
+      shell: bash
+      run: sudo env "PATH=$PATH" python3 "${{ github.action_path }}/../../../scripts/ci_retry.py" --seconds 180 -- node_modules/.bin/playwright install-deps chromium firefox
+    - name: Install pinned Chromium and Firefox
+      shell: bash
+      env:
+        PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '30000'
+      run: python3 "${{ github.action_path }}/../../../scripts/ci_retry.py" --seconds 180 -- node_modules/.bin/playwright install chromium firefox

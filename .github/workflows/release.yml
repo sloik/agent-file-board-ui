@@ -75,3 +75,10 @@ jobs:
     uses: ./.github/workflows/publish.yml
     with:
       tag: ${{ needs.target.outputs.tag }}
+
+  verify:
+    needs: [target, test, publish]
+    uses: ./.github/workflows/verify-release.yml
+    with:
+      tag: ${{ needs.target.outputs.tag }}
+      commit: ${{ needs.test.outputs.commit }}

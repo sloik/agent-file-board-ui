@@ -1,0 +1,103 @@
+name: Verify published viewer
+run-name: Verify published ${{ inputs.tag || github.event.release.tag_name }}
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published stable tag (v2.11.4 or newer)
+        type: string
+        required: true
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+      commit:
+        description: Exact commit tested before publication
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.event_name != 'release' || (!github.event.release.draft && !github.event.release.prerelease)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      # Current verifier supports historical package tags; package builders come from source.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Validate requested tag
+        id: target
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || exit 1
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ steps.target.outputs.tag }}
+          path: source
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Download published metadata and complete asset inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.target.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 scripts/ci_retry.py --seconds 60 -- git -C source/vendor/agent-file-board fetch --tags
+          gh api "repos/$GH_REPO/releases/tags/$RELEASE_TAG" > release.json
+          python3 scripts/ci_retry.py --seconds 120 -- gh release download "$RELEASE_TAG" --dir downloads --clobber
+      - name: Verify checksums, inventory and exact tagged payloads
+        id: assets
+        env:
+          RELEASE_TAG: ${{ steps.target.outputs.tag }}
+          TESTED_COMMIT: ${{ inputs.commit }}
+        run: python3 scripts/verify_published_release.py --source source --downloads downloads --metadata release.json --tag "$RELEASE_TAG" --commit "$TESTED_COMMIT" --viewer verified-viewer --output .release-status
+      - name: Install pinned browser tooling
+        run: python3 scripts/ci_retry.py --seconds 180 -- npm ci --ignore-scripts --fetch-retries=1 --fetch-timeout=30000
+      - uses: ./.github/actions/setup-browsers
+        timeout-minutes: 14
+      - name: Verify live checker from downloaded viewer in both browsers
+        id: live
+        timeout-minutes: 3
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          LATEST=$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name)
+          [[ "$LATEST" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || exit 1
+          node scripts/check_live_updates.js --root verified-viewer --expected-version "${LATEST#v}"
+      - name: Publish verification outcome
+        if: always()
+        env:
+          ASSETS: ${{ steps.assets.outcome }}
+          LIVE: ${{ steps.live.outcome }}
+        run: |
+          printf 'Tagged source and downloaded assets: **%s**\n\nLive Chromium/Firefox checker: **%s**\n' "$ASSETS" "$LIVE" >> "$GITHUB_STEP_SUMMARY"
+          printf '{"assets":"%s","liveBrowsers":"%s"}\n' "$ASSETS" "$LIVE" > verification-outcome.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: published-viewer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .release-status/assets.json
+            verification-outcome.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30

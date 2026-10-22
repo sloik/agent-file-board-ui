@@ -33,6 +33,7 @@ owns the wire format, CLI and portable contracts.
 - [Copyable OpenUI JSON](examples/openui/README.md) and [fictional draft backups](examples/drafts/README.md).
 - [Package update architecture](design/VIEWER-UPDATES.md): manual installation, daily notices and implementation gates; not a released feature.
 - [Formal signing model](../formal/README.md): bounded interleaving checks, negative controls and implementation limits.
+- [Required CI and published-package verification](reference/CI-RELEASE.md): protected-main check names, setup limits, download integrity and live browser checks.
 - [Development, tests and release workflow](../README.md#development-and-tests).
 
 The detailed guide for each feature owns its controls and limits; related guides
