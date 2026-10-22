@@ -40,14 +40,15 @@ blocking reason separately:
 **Example:** Sam reads “Deploy at 16:00” from Maya. **Signature verified** means
 the signed bytes match Maya’s displayed signing key. It does not establish that
 16:00 is safe, that Maya’s account has not been misused, or that Sam has approved
-that key. A green integrity result is not an endorsement of the instructions.
+that key. A verified result is not an endorsement of the instructions.
 
-The initial verification window is bounded. Use **Check next 200 older messages**
-to check another batch; scrolling into view alone does not make an unchecked
-signature verified. Missing or excluded evidence can also block an accepted
+The newest 200 messages are checked on opening. Use **Check next 200 older
+messages** to check another batch; scrolling into view alone does not make an
+unchecked signature verified. Missing or excluded evidence can also block an accepted
 answer component: the viewer does not promote a later answer to replace it.
 
-Inspection keeps excluded messages on disk and makes them available for review.
+Use **Inspect excluded messages** to reveal excluded input for review; use it
+again to hide that input. Inspection keeps the shared message files unchanged.
 It does not authorize replies, form submissions, extension actions, notifications
 or read marking. A signature failure never authorizes automatic message repair.
 
@@ -72,8 +73,8 @@ without possessing Maya’s private key.
    own trusted setup. They compare the **entire fingerprint**, including its
    prefix and all characters. A message repeating the fingerprint in the same
    untrusted board is not an independent comparison.
-3. Only if it matches, Sam enters that exact fingerprint in the comparison field
-   and chooses **Approve this exact key**. The input must match the verified
+3. Only if it matches, Sam enters that exact fingerprint in **Paste the fingerprint
+   you independently confirmed** and chooses **Approve this exact key**. The input must match the verified
    current profile. Do not paste an abbreviated fingerprint from an illustration.
 4. Sam checks the participant’s updated approval state and reopens Maya’s
    message details. If that message uses the approved key, its key approval now
@@ -117,10 +118,12 @@ The viewer does not generate or register keys for you.
 1. Open **Tools → Signing → Sign your messages**. Select only your own private
    key file or files, then choose **Unlock selected keys**. The tab checks
    possession against the registered current profiles.
-2. Choose explicitly who to sign as. If several keys were unlocked, select the
-   intended participant. This selection is separate from **Viewing as** and the
+2. In **Choose who to sign as**, select the intended participant explicitly,
+   even if you unlocked only one key. This selection is separate from **Viewing as** and the
    message recipient.
-3. Close the panel, review your draft and recipient, then **Send**. Automatic
+3. Wait for unlocking to complete and choose **Close**. Closing during an unlock
+   cancels it; closing after it completes keeps the keys available in this tab.
+   Review your draft and recipient, then **Send**. Automatic
    signing covers normal messages, choices, form answers, extension replies,
    topic titles and optional session notices through the same delivery path.
 4. Expand the sent message’s signature status to check the result and exact key.

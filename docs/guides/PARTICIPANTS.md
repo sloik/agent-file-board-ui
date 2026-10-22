@@ -37,7 +37,8 @@ registry snapshot; native folders update after refresh.
 
 The link provides no human consent, legal ownership, authentication, signing
 access, trust, permissions, session ownership or notification follows. Current
-sender selection remains an authorship convenience. Message signatures and local key approval are released: see the
+sender selection remains an authorship convenience. Message signatures and local
+key approval are released: see the
 [illustrated signing guide](signing.md) to check a message, review an exact key
 or unlock your own key. Avatars remain a [design proposal](../design/SIGNATURES-DESIGN.md).
 
