@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Show emoji-and-text message signing badges with per-state hover explanations
+  and the same explanations in keyboard/touch-accessible details.
+
 - Reorganize signing into guided message checks, participant key approval and
   explicit own-signer selection, with contextual feedback and advanced controls.
 - Add an offline worked example, illustrated guide and actual desktop/phone

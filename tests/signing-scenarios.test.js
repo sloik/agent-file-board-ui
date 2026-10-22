@@ -75,7 +75,8 @@ test('native browser streams: UI→CLI→UI replies, explicit trust/adoption and
   for (const path of [root,reply]) {const result=await decision(page,path);assert.equal(result.signature,'valid');assert.equal(result.trust,'trusted');assert.equal(result.eligibility,'eligible');}
   await page.locator(`.tcard[data-tk="room:architecture|${thread}"]`).click();
   const signedMessage=page.locator(`article.msg[data-file="${h.path.basename(reply)}"]`);
-  await expect(signedMessage.locator('.signing-facts summary')).toContainText('Signature verified · Signing key trusted by you');
+  await expect(signedMessage.locator('[data-signing-state=signature-valid]')).toContainText('Signature verified');
+  await expect(signedMessage.locator('[data-signing-state=key-trusted]')).toContainText('Signing key trusted by you');
   await signedMessage.locator('.signing-facts summary').click();
   await expect(signedMessage.locator('.signing-facts')).toContainText('neither proves the claims in the message are true');
   await page.locator(`article.msg[data-file="${h.path.basename(reply)}"] [data-reply]`).click();
@@ -124,7 +125,8 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   await openSigning(page);await action(page,'Inspect excluded messages');await closeSigning(page);
   await page.locator(`.tcard[data-tk="room:architecture|${thread}"]`).click();
   const article=page.locator(`article.msg[data-file="${h.path.basename(proof)}"]`);await expect(article).toContainText('Rotated key proof');
-  await expect(article.locator('.signing-facts summary')).toContainText('Signing key compromised · Blocked by signing rules');
+  await expect(article.locator('[data-signing-state=key-compromised]')).toContainText('Signing key compromised');
+  await expect(article.locator('[data-signing-state=blocked]')).toContainText('Blocked by signing rules');
   assert.equal(await article.locator('[data-reply]:enabled').count(),0);
   assert.equal(await page.evaluate(path=>unread(B.byPath.get(path)),proof.replace(/^\.agent-board\//,'')),false);
 });

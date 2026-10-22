@@ -26,3 +26,25 @@ test('message explanation includes exact signing fingerprint, limits and escaped
   assert.match(api(true).signingMessageSummary({signing:{signature:'unsigned'}}),/Wiadomość bez podpisu/);
   assert.match(api(true).signingMessageHtml({}),/Twoje lokalne zatwierdzenie/);
 });
+
+
+test('emoji states preserve independent integrity, approval and blocking explanations',()=>{
+  const a=api();
+  const facts=a.signingMessageFacts({signing:{signature:'valid',trust:'trusted',lifecycle:'compromised',eligibility:'excluded'}});
+  assert.deepEqual(Array.from(facts,f=>f.id),['signature-valid','key-trusted','key-compromised','blocked']);
+  assert.deepEqual(Array.from(facts,f=>f.emoji),['✅','🔑','🚨','⛔']);
+  assert.match(facts.find(f=>f.id==='blocked').explanation,/verified signature alone does not remove this block/);
+  const unfamiliar=a.signingMessageFacts({signing:{signature:'valid',trust:'unfamiliar',eligibility:'eligible'}});
+  assert.deepEqual(Array.from(unfamiliar,f=>f.id),['signature-valid','key-unfamiliar']);
+  assert.match(unfamiliar[1].explanation,/Optional board rules may still allow actions/);
+  for(const signature of ['unsigned','invalid','stripped','unavailable','unknown']){
+    const rows=a.signingMessageFacts({signing:{signature,trust:'trusted'}});
+    assert.equal(rows.some(f=>f.id==='key-trusted'),false,'approval must not imply a verified signature');
+    assert.equal(rows.some(f=>f.emoji==='✅'),false);
+    assert.ok(rows[0].explanation.length>30);
+  }
+  for(const lifecycle of ['superseded','retired','compromised'])assert.ok(a.signingMessageFacts({signing:{lifecycle}}).some(f=>f.id==='key-'+lifecycle));
+  const html=a.signingMessageHtml({signing:{signature:'unavailable',eligibility:'pending-verification'}});
+  assert.match(html,/title="Signature not verified yet:/);assert.match(html,/aria-hidden="true">⏳/);assert.match(html,/signing-state-explanations/);
+  assert.match(api(true).signingMessageFacts({signing:{signature:'valid'}})[0].explanation,/Bajty wiadomości/);
+});
