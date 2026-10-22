@@ -90,11 +90,11 @@ test('key-file errors stay with the signing task and leave the user in control',
   await expect(control(page,'unlock')).toBeEnabled();await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');
 });
 
-test('read-only boards explain that signed messages are downloaded rather than written into the shared board',async t=>{
+test('read-only boards explain that signing a new message needs a writable folder',async t=>{
   const f=await boot(t),{page}=f;
   await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();
   assert.equal(await page.evaluate(()=>baseHandle),null);
-  await native.openSigning(page);await expect(page.locator('#signing-own')).toContainText(/download|pobran/i);
+  await native.openSigning(page);await expect(page.locator('#signing-own')).toContainText(/writable|zapis/i);
   await fits(page);
 });
 
