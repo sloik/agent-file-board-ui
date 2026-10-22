@@ -5746,6 +5746,25 @@ async function signingDialog() {
       build({ background: true, preserveComposer: true });
     }
   };
+  const savePin = async (id, fingerprint) => {
+    const target = model, state = target.signingContext.state, pins = state.pins;
+    const hadPrevious = Object.hasOwn(pins, id), previous = pins[id];
+    if (fingerprint === undefined) delete pins[id];
+    else pins[id] = fingerprint;
+    try {
+      await signingSave(target);
+    } catch (error) {
+      // Restore only our attempted edit. Never replace a newer context/pin map
+      // or overwrite a different pin change made while persistence awaited.
+      const stillOurEdit = fingerprint === undefined ? !Object.hasOwn(pins, id) :
+        Object.hasOwn(pins, id) && pins[id] === fingerprint;
+      if (target.signingContext?.state === state && state.pins === pins && stillOurEdit) {
+        if (hadPrevious) pins[id] = previous;
+        else delete pins[id];
+      }
+      throw error;
+    }
+  };
   add(reviewActions, text("Approve this exact key", "Zatwierdź ten konkretny klucz"), "trust", reviewOut, async () => {
     const id = participant.value, typed = fingerprint.value, r = await model.signingContext.resolve(id);
     active();
@@ -5755,16 +5774,14 @@ async function signingDialog() {
     await signingFresh(model, base, model.signingContext, model.signingExpected);
     active();
     C.require(id === participant.value && typed === fingerprint.value, "Key review changed; review again");
-    model.signingContext.state.pins[id] = typed;
-    await signingSave(model);
+    await savePin(id, typed);
     active();
     await reload(id);
     return text("Exact key approved locally. This does not approve message content or share your decision with others.", "Konkretny klucz zatwierdzono lokalnie. Nie oznacza to zatwierdzenia treści ani udostępnienia tej decyzji innym.");
   }, () => !!model.signingContext && !!model.signingParticipants?.[participant.value]?.fingerprint && !model.signingParticipants[participant.value].revoked);
   add(reviewActions, text("Remove my approval", "Usuń moje zatwierdzenie"), "remove-trust", reviewOut, async () => {
     const id = participant.value;
-    delete model.signingContext.state.pins[id];
-    await signingSave(model);
+    await savePin(id, undefined);
     active();
     await reload(id);
     return text("Local approval removed. No shared files were deleted. Stricter rules may now block affected messages.", "Usunięto lokalne zatwierdzenie. Nie usunięto wspólnych plików. Ostrzejsze reguły mogą teraz blokować te wiadomości.");
