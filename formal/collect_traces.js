@@ -35,8 +35,22 @@ function traces(mutant=false){
  const daily=collect('same-day contenders, overdue reopening and manual check',['auto','auto','tick','auto','manual']);assert.equal(daily.states.at(-1).checks,3);
  const optout=collect('opt-out preserves explicit manual check',['enable','auto','manual']);assert.equal(optout.states.at(-1).checks,1);
  const reload=collect('dirty and pending reloads refuse until cleared',['edit','reload','edit','write','reload','write','reload']);assert.equal(reload.states.at(-1).reloaded,true);assert.equal(reload.states.at(-1).badReload,false);
- return [daily,optout,reload];
+ return [daily,optout,reload,...generated()];
 }
+function schedules(){
+ // Three binary choices enumerate eight bounded schedules reproducibly.
+ return Array.from({length:8},(_,seed)=>{
+  const checks=seed&1?['manual','auto']:['auto','manual'];
+  const blockers=seed&2?['write','edit']:['edit','write'];
+  return {seed,actions:[...(seed&4?['enable']:[]),...checks,'tick','auto','auto',
+   ...(seed&4?['enable','auto']:[]),...blockers,'reload',blockers[0],'reload',blockers[1],'reload']};
+ });
+}
+function generated(){return schedules().map(({seed,actions})=>{
+ const trace=collect('generated viewer schedule '+seed,actions),last=trace.states.at(-1);
+ assert(last.reloaded&&!last.badReload,'generated schedule must reach an actually permitted reload');
+ assert(last.checks>=1&&last.manualUsed,'manual check must remain usable in every schedule');return trace;
+});}
 async function allTraces(mutant=false){return [...traces(mutant),...await require('./collect_signer').traces(mutant)];}
 if(require.main===module)allTraces(process.argv.includes('--mutant')).then(t=>process.stdout.write(JSON.stringify(t))).catch(e=>{console.error(e);process.exitCode=1;});
-module.exports={traces};
+module.exports={traces,schedules};

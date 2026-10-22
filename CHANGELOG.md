@@ -1,6 +1,6 @@
 # Release notes
 
-## 2.11.4 — 2026-10-21
+## 2.11.4 — 2026-10-22
 
 - Package the complete viewer, optional helpers, update guide and licenses in a
   deterministic application-only ZIP with a SHA-256 file inventory and release
@@ -14,6 +14,10 @@
   before sending through the existing signing flow.
 - Add executable formal models for viewer state transitions and continuous formal
   checks, plus unit and Chromium/Firefox regression coverage for package updates.
+- Pin canonical Board 2.11.1 with serialized private saves; include real runtime
+  action traces, implementation mutation controls and reproducible generated
+  schedules. Add weekly reports and a separate daily overdue-verification watchdog,
+  with explicit real-versus-double coverage boundaries.
 
 ## 2.11.3 — 2026-10-21
 

@@ -57,7 +57,15 @@
       "positive": [
         "same-day contenders, overdue reopening and manual check",
         "opt-out preserves explicit manual check",
-        "dirty and pending reloads refuse until cleared"
+        "dirty and pending reloads refuse until cleared",
+        "generated viewer schedule 0",
+        "generated viewer schedule 1",
+        "generated viewer schedule 2",
+        "generated viewer schedule 3",
+        "generated viewer schedule 4",
+        "generated viewer schedule 5",
+        "generated viewer schedule 6",
+        "generated viewer schedule 7"
       ],
       "mutants": [
         "implementation mutant: duplicate daily claim",
