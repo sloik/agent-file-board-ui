@@ -1,5 +1,14 @@
 # Release notes
 
+## Unreleased
+
+- Reorganize signing into guided message checks, participant key approval and
+  explicit own-signer selection, with contextual feedback and advanced controls.
+- Add an offline worked example, illustrated guide and actual desktop/phone
+  screenshots; include the guide illustrations in the demo package.
+- Refresh key evidence without approving replacements; reverify read-only
+  message trust after local approval changes and cancel stale unlock operations.
+
 ## 2.12.0 — 2026-10-22
 
 - Explain signature verification separately from local key approval on messages

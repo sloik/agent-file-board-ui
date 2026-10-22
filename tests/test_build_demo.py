@@ -39,8 +39,8 @@ class DemoTests(unittest.TestCase):
                 signing = archive.read(PREFIX + '/docs/SIGNING.md').decode('utf-8')
                 expected_signing = (ROOT / 'docs/guides/signing.md').read_text().replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md')
                 self.assertEqual(signing, expected_signing)
-                illustrated = re.findall(r'!\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', signing)
-                self.assertGreaterEqual(len(illustrated), 2, 'the signing guide has actual offline illustrations')
+                illustrated = re.findall(r'\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', signing)
+                self.assertEqual(set(illustrated), {'signing-three-tasks.svg', 'signing-key-comparison.svg', 'signing-message.png', 'signing-review.png', 'signing-review-approved.png', 'signing-own.png', 'signing-phone.png'})
                 for image in illustrated:
                     self.assertEqual(archive.read(PREFIX + '/images/' + image), (ROOT / 'docs/images' / image).read_bytes())
 

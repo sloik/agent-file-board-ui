@@ -9,6 +9,9 @@ outgoing messages. These are three separate tasks.
 
 ## Start with the task you need
 
+The dialog keeps **Check messages**, **Review a key** and **Sign as me** shortcuts
+at the top. Jump directly to your task without scrolling through the others.
+
 | I want to… | Where to go | What I need |
 | --- | --- | --- |
 | Understand a message’s status | Expand its signature status in the conversation | The message and its available public signing evidence; no private key |

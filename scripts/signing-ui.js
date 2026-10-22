@@ -218,6 +218,18 @@ async function signingDialog() {
   node("h2", text("Message signing", "Podpisywanie wiadomości"), head);
   const close = node("button", text("Close", "Zamknij"), head, "btn");
   close.dataset.action = "close";
+  const taskNav = node("nav", "", head, "signing-nav");
+  taskNav.setAttribute("aria-label", text("Signing tasks", "Zadania podpisów"));
+  for (const [task, label] of [["check", text("Check messages", "Sprawdź wiadomości")], ["review", text("Review a key", "Sprawdź klucz")], ["own", text("Sign as me", "Podpisuj jako ja")]]) {
+    const jump = node("button", label, taskNav, "btn");
+    jump.dataset.signingTask = task;
+    jump.onclick = () => {
+      const target = dialog.querySelector("#signing-" + task);
+      target.scrollIntoView({ block: "start" });
+      dialog.scrollTop = Math.max(0, dialog.scrollTop - head.getBoundingClientRect().height - 12);
+      target.querySelector("h3").focus({ preventScroll: true });
+    };
+  }
   const cancelUnlock = () => {
     if (unlocking) {
       signingProvider.lock();
@@ -256,6 +268,7 @@ async function signingDialog() {
     s.id = id;
     const h = node("h3", title, s);
     h.id = id + "-title";
+    h.tabIndex = -1;
     s.setAttribute("aria-labelledby", h.id);
     node("p", help, s, "signing-help");
     return s;

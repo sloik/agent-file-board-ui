@@ -208,7 +208,7 @@ def build_demo(root: Path, destination: Path):
         guide = guide.replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md')
         # Preserve the maintained illustrated guide in the offline demo. Copy
         # only its explicit local image references, never a recursive docs tree.
-        for image in sorted(set(re.findall(r'!\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', guide))):
+        for image in sorted(set(re.findall(r'\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', guide))):
             target = destination / 'images' / image
             target.parent.mkdir(exist_ok=True)
             shutil.copyfile(root / 'docs/images' / image, target)

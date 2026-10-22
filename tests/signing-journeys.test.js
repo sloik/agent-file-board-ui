@@ -38,6 +38,12 @@ test('signing is presented as distinct human tasks with visible form labels on d
       }
       const labels=await page.locator('#signingDialog input,#signingDialog select').evaluateAll(fields=>fields.map(field=>({id:field.id,labels:[...field.labels||[]].map(label=>label.textContent.trim())})));
       assert.ok(labels.length>=4);for(const field of labels)assert.ok(field.labels.some(Boolean),`visible label for ${field.id}`);
+      for(const task of ['review','own','check']) {
+        await page.locator(`[data-signing-task="${task}"]`).click();
+        const geometry=await page.locator(`#signing-${task} h3`).evaluate(heading=>({top:heading.getBoundingClientRect().top,header:document.querySelector('#signingDialog .signing-head').getBoundingClientRect().bottom,bottom:document.querySelector('#signingDialog').getBoundingClientRect().bottom,focused:document.activeElement===heading}));
+        assert.ok(geometry.top>=geometry.header && geometry.top<geometry.bottom,'task shortcut reveals heading below pinned navigation');
+        assert.equal(geometry.focused,true);
+      }
       await fits(page);await native.closeSigning(page);
     }
   }
@@ -173,7 +179,8 @@ test('read-only exact-key approval and removal immediately reverify message elig
   config.message_signing={version:1,minimum:'trusted'};h.fs.writeFileSync(configPath,JSON.stringify(config));
   f.cli('signing','trust','--participant',peer.participant,'--profile',peer.profile,'--fingerprint',peer.fingerprint);
   const path=f.cli('post','--from',peer.participant,'--to','all','--scope','room','--room','architecture','--thread','T001','--slug','readonly-approved-key','--body','Read-only exact-key approval example','--signing-key-file',peer.key).replace(/^\.agent-board\//,'');
-  await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();
+  await page.reload();await page.setInputFiles('#fallback',f.proj);
+  await page.waitForFunction(path=>B?.byPath.has(path),path);
   assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.signature,path),'valid');
   assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'excluded');
   await native.openSigning(page);await native.trust(page,peer);
@@ -186,4 +193,36 @@ test('read-only exact-key approval and removal immediately reverify message elig
   assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'excluded');
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'approval and re-verification never unlock a private key');
   assert.equal(await page.evaluate(()=>B.signingKey),null,'uploaded approvals are session-only');
+});
+
+test('Refresh key details reads a changed native profile while preserving the comparison draft and prior approval',async t=>{
+  const f=await boot(t),{page,owner}=f;await native.openSigning(page);await native.trust(page,owner);
+  const input=page.getByLabel('Independently verified fingerprint',{exact:true});await input.fill(owner.fingerprint);
+  const rotated=f.rotate();await native.importBoard(page,f.proj);
+  // No model refresh here: the visible action must read the new physical files.
+  assert.equal(await page.evaluate(id=>B.signingParticipants[id].fingerprint,owner.participant),owner.fingerprint);
+  await act(page,'inspect-profile');
+  await expect(page.locator('#signing-review')).toContainText(rotated.fingerprint);
+  await expect(page.locator('#signing-review')).toContainText('Key changed — review needed');
+  await expect(input).toHaveValue(owner.fingerprint);
+  assert.equal(await page.evaluate(id=>B.signingContext.state.pins[id],owner.participant),owner.fingerprint,'refreshing evidence does not approve the replacement key');
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);
+});
+
+test('failed approval persistence preserves the previous key status for both approve and remove',async t=>{
+  const {page,peer}=await boot(t);await native.openSigning(page);
+  await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
+  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint);
+  await page.evaluate(()=>{window.workingSigningSave=signingSave;signingSave=async()=>{throw Error('Approval storage failure');};});
+  await act(page,'trust');await expect(page.locator('#signing-review .signing-feedback')).toHaveText('Approval storage failure');
+  await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key not approved by you');
+  assert.equal(await page.evaluate(id=>B.signingContext.state.pins[id],peer.participant),undefined);
+  assert.equal(await page.evaluate(async id=>(await signingGet(B.signingKey)).pins[id],peer.participant),undefined);
+  await page.evaluate(()=>signingSave=window.workingSigningSave);await act(page,'trust');
+  await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
+  await page.evaluate(()=>{signingSave=async()=>{throw Error('Approval storage failure');};});
+  await act(page,'remove-trust');await expect(page.locator('#signing-review .signing-feedback')).toHaveText('Approval storage failure');
+  await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
+  assert.equal(await page.evaluate(id=>B.signingContext.state.pins[id],peer.participant),peer.fingerprint);
+  assert.equal(await page.evaluate(async id=>(await signingGet(B.signingKey)).pins[id],peer.participant),peer.fingerprint);
 });
