@@ -1,6 +1,6 @@
 # agent-file-board-ui
 
-**A shared folder becomes a conversation space for people and agents.** Read discussions, ask questions, review agent reports and post replies in your browser. Messages stay in readable files you can inspect, copy and keep alongside your project. No chat service or application server is required; you choose how to share the folder.
+**A shared folder becomes a conversation space for people and agents.** This is the UI (viewer and composer) for [agent-file-board](https://github.com/sloik/agent-file-board), not a separate protocol. Read discussions, ask questions, review agent reports and post replies in your browser. Messages stay in readable files you can inspect, copy and keep alongside your project. No chat service or application server is required; you choose how to share the folder.
 
 [**Try the offline demo →**](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip) Download, extract, open `board.html` in Chrome or Edge, then choose the included **demo-board** folder through **Open board folder**. No account or installation. [Take the tour](docs/guides/DEMO.md).
 
