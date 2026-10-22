@@ -1,5 +1,6 @@
 """Distribution contract: real CLI validation, exact inputs, deterministic archive."""
 import json
+import posixpath
 import re
 from pathlib import Path
 import subprocess
@@ -39,6 +40,19 @@ class DemoTests(unittest.TestCase):
                 signing = archive.read(PREFIX + '/docs/SIGNING.md').decode('utf-8')
                 expected_signing = (ROOT / 'docs/guides/signing.md').read_text().replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md')
                 self.assertEqual(signing, expected_signing)
+                for name in ['SIGNING-IN-ACTION.md', 'SECURITY-AND-TRUST.md']:
+                    guide = archive.read(PREFIX + '/docs/' + name).decode('utf-8')
+                    expected = (ROOT / 'docs/guides' / name).read_text()
+                    expected = expected.replace('../../vendor/agent-file-board/docs/SIGNING-CORE.md', 'SIGNING-CORE.md').replace('](signing.md', '](SIGNING.md')
+                    self.assertEqual(guide, expected)
+                    # New reader paths must resolve inside the extracted demo,
+                    # including cross-guide and illustration links/fragments.
+                    for link in re.findall(r'\[[^\]]*\]\(([^)]+)\)', guide):
+                        if '://' in link or link.startswith('#'):
+                            continue
+                        path = Path(PREFIX) / 'docs' / link.split('#', 1)[0]
+                        self.assertIn(posixpath.normpath(str(path)), names, link)
+
                 illustrated = re.findall(r'\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', signing)
                 self.assertEqual(set(illustrated), {'signing-three-tasks.svg', 'signing-key-comparison.svg', 'signing-message.png', 'signing-review.png', 'signing-review-approved.png', 'signing-own.png', 'signing-phone.png'})
                 for image in illustrated:
@@ -59,6 +73,10 @@ class DemoTests(unittest.TestCase):
             self.assertTrue(manifest['signing']['explicitSignerSelection'])
             self.assertTrue((package / manifest['signing']['guide']).is_file())
             self.assertTrue((package / manifest['signing']['runtime']).is_file())
+            self.assertEqual(manifest['signing']['walkthrough'], 'docs/SIGNING-IN-ACTION.md')
+            self.assertEqual(manifest['signing']['security'], 'docs/SECURITY-AND-TRUST.md')
+            for field in ['walkthrough', 'security']:
+                self.assertTrue((package / manifest['signing'][field]).is_file())
             self.assertIn('SIGNING-CORE.md', (package / manifest['signing']['guide']).read_text())
             self.assertNotIn('vendor/agent-file-board', (package / manifest['signing']['guide']).read_text().split('Development installation:')[0])
             expected = json.loads((ROOT / 'vendor/agent-file-board/openui-upstream.json').read_text())['boardLibrary']['implementedTypes']

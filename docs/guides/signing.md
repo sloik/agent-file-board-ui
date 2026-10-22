@@ -7,6 +7,12 @@ outgoing messages. These are three separate tasks.
 
 ![Three independent tasks: check received message bytes, approve someone’s exact public key after a separate comparison, and unlock your own private key to sign outgoing messages.](../images/signing-three-tasks.svg)
 
+Want to see the protection work? [Try the signing and tamper-detection
+rehearsal](SIGNING-IN-ACTION.md), or read the [security questions and
+limits](SECURITY-AND-TRUST.md). Signing can stay optional while your team learns;
+approved signing can then be required for a board, physical room/direct-chat
+scope or individual thread.
+
 ## Start with the task you need
 
 The dialog keeps **Check messages**, **Review a key** and **Sign as me** shortcuts

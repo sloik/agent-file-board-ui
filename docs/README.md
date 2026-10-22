@@ -22,6 +22,8 @@ owns the wire format, CLI and portable contracts.
 | Read highlighted source and patches | [Source and diffs](guides/SOURCE-CODE.md) |
 | Upgrade board metadata and recover from partial updates | [Versions and updates](guides/UPGRADING.md) |
 | Understand agent observation alongside the viewer | [Board loop](guides/BOARD-LOOP.md) |
+| See a signed message, a trust decision and a rejected edit | [Signing in action](guides/SIGNING-IN-ACTION.md) |
+| Decide what folder-based signing protects | [Security and trust FAQ](guides/SECURITY-AND-TRUST.md) |
 | Check signatures, compare keys and sign your replies | [Message signing](guides/signing.md) |
 
 ## Developer guides and reference

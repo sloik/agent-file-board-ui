@@ -59,20 +59,25 @@ states the maintained abstraction and the remaining correspondence boundary.
 | --- | --- | --- |
 | UI / Signer | Unlock generations, authorization, guarded writes and draft preservation | Ten production action traces, four implementation mutants, six TLC configs |
 | UI / ViewerUpdate | Two daily windows, manual checks, opt-out and aggregate reload blockers | Three fixed + eight generated runtime traces, two implementation mutants, four TLC configs |
+| UI / AnswerAcceptance | Recorded first answers, offline conflicts, owner resolution and eligibility blocking | Nine production resolver traces, four implementation mutants, six TLC configs |
 | Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Four fixed + eight generated two-writer traces, two implementation mutants, two TLC configs |
 | Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Eight actual prepare/guard/commit traces, two implementation mutants, four TLC configs |
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
+| Canonical / AnswerAcceptance | Recorded first answers, offline conflicts, owner resolution and eligibility blocking | Nine production resolver traces, four implementation mutants, six TLC configs |
 
-Across the two projects there are five models and twenty TLC configurations,
-including faithful safety checks, deliberate model faults and positive
-reachability controls. These are exhaustive finite models within their configured
-bounds. Forty-eight sampled production traces and twelve implementation mutation
-controls additionally test correspondence for all five models; neither technique proves all implementation executions refine TLA+.
+The UI and canonical repositories check AnswerAcceptance independently. Each
+repository's `suite.json` and `trace_contracts.json` maintain its exact configuration,
+positive-trace and implementation-mutation inventories; generated reports bind
+those inputs to the checked commit. These are exhaustive finite models within
+their configured bounds, with sampled production traces and independent broken
+implementation controls. Neither technique proves that all implementation
+executions refine TLA+.
+
 See [README.md](README.md) for each model's precise bounds and invariant semantics.
 
 ## Remaining gaps and maintenance priorities
 
-1. Expand sampled scenarios when modeled behavior changes; all five models now
+1. Expand sampled scenarios when modeled behavior changes; all maintained models now
    have runtime action bridges. The finite sample does not cover every execution
    or establish universal refinement. `trace_contracts.json` inventories required
    positives and mutants, with all original multi-variable model fields and safety

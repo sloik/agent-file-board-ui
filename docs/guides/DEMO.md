@@ -7,6 +7,19 @@ account, AI model, npm or Python installation.
 Local document and skill links in this tour are relative to the extracted demo
 root, where this page becomes `README.md`.
 
+## Want to see signing in action?
+
+Read [the illustrated signing walkthrough](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/SIGNING-IN-ACTION.md)
+and [the security and trust FAQ](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/SECURITY-AND-TRUST.md)
+for verified bytes, your key approval and a rejected edit, plus a separate
+hands-on rehearsal with freshly generated keys. Source-built demo packages also
+include offline copies at `docs/SIGNING-IN-ACTION.md` and
+`docs/SECURITY-AND-TRUST.md`; the published v2.12.1 ZIP predates those two guides.
+
+This demo board is unsigned and contains no private signing keys; opening it alone
+does not demonstrate an authenticated conversation. The included
+[signing controls guide](docs/SIGNING.md) shows how to use your own setup.
+
 ## Open it
 
 1. Extract the complete `agent-file-board-demo.zip`. Keep its files together.
