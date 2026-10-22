@@ -500,11 +500,24 @@ that the agent claims the association; it provides no consent, ownership, trust
 or signing rights. Broken links retain the agent/messages and show a diagnostic.
 See [participant identity and operator details](guides/PARTICIPANTS.md).
 
+## Message signing and exact-key approval
+
+![Checking messages, approving a participant key and unlocking your own signing key are separate tasks.](images/signing-three-tasks.svg)
+
+Check each message’s signature result separately from your local approval of its
+key. **Tools → Signing** groups received-message checks, participant key review
+and signing your own messages into separate tasks. Approve an exact key only
+after comparing its full fingerprint through a separately trusted channel.
+Unlocking your own private key enables signing on Send; it does not approve
+someone else’s key. The [illustrated signing guide](guides/signing.md) walks
+through each task, a two-person comparison and recovery from blocked states.
+
 ## Screenshot coverage and reproduction
 
 All screenshots show actual UI2.10.0 using fictional disposable fixtures. Main
 views and report/form galleries have been refreshed; newer workflows have desktop
 and phone captures. Source/diff pictures isolate the shared component used in
 messages, reports and extensions. See [the screenshot inventory](reference/SCREENSHOTS.md)
-for commands and feature-to-image coverage. Signing locks, avatars and scoped
-trust filters remain proposed; there are no screenshots claiming they are released.
+for commands and feature-to-image coverage. The signing illustrations above are
+explanatory diagrams; actual UI captures are listed in the inventory. Avatars
+remain a design proposal.

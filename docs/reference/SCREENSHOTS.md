@@ -48,6 +48,8 @@ scenarios; the shared-information fixture also freezes the CLI producer clock.
 | Adaptive agent observation | [Interval table and operational guide](../guides/BOARD-LOOP.md) | CLI/skill capability, no viewer screen | No invented UI screenshot |
 
 The source/diff illustrations isolate the shared renderer and remain applicable;
-all full-board gallery captures above were refreshed with UI 2.10.0. The gallery
-does not yet illustrate the released signing controls; see the [signing guide](../guides/signing.md)
-for their behavior. Avatars remain a design proposal.
+all full-board gallery captures above were refreshed with UI 2.10.0. The [signing guide](../guides/signing.md) includes two maintained source SVG
+illustrations: [three independent tasks](../images/signing-three-tasks.svg) and
+[an independent fingerprint comparison](../images/signing-key-comparison.svg).
+They are explanatory diagrams, not captures of UI controls. Avatars remain a
+design proposal.
