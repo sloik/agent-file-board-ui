@@ -304,7 +304,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "9aa7991faeb547548ef60de35b6145573ae228acc7c2f729e57839be2cbd18de"
+      "sha256": "1b4e719ac59f6822aebc0611d85b2f819c006a7ad3ab881ada840d98bb1d37ae"
     },
     "formal/ViewerUpdate.tla": {
       "path": "formal/ViewerUpdate.tla",
@@ -388,7 +388,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4adf56d2b50a43bcbde72bfc50256a80090c812be505263677c13a057cf02e41"
+      "sha256": "a936923b7b4abe495cee411f281081991d20fdcbf55e33f86f93f2a234b6104d"
     },
     "formal/watchdog.py": {
       "path": "formal/watchdog.py",
@@ -608,21 +608,21 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "0e63510f69898b12b0dd846dbed5149fdea218e9d07e35e286498f952c0c7628"
+      "sha256": "08b5347f175870782da85948d100ffdee5c8b7deb691314f15d93ce2d550c925"
     },
     "tests/i18n.test.js": {
       "path": "tests/i18n.test.js",
       "selector": {
         "kind": "file"
       },
-      "sha256": "86ec9fe3bd9aa2a4f139250bd6c9332ee98bafb43a627eda6ad02c58a7a49ef1"
+      "sha256": "7f99ed793b5c5f70a2f059065b87ab8879d94cc05dd310355793c7224da533f7"
     },
     "tests/render.test.js": {
       "path": "tests/render.test.js",
       "selector": {
         "kind": "file"
       },
-      "sha256": "83d441a61eb6896c70a7f30179ea94cc5524a5d3c436d5d8c57410d2536b4f4d"
+      "sha256": "40a51edab896f4273fd77e0c82a6b8722a4faf740e98200278a5f5e652512539"
     },
     "tests/upgrades.test.js": {
       "path": "tests/upgrades.test.js",
@@ -1126,7 +1126,7 @@
     },
     {
       "module": "ViewerUpdate.tla",
-      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory.",
+      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Release 2.12.1 review: only viewer version expectations and future-update fixture 2.12.2 advance; mismatch, missing package, unsafe metadata, browser and read-only assertions are retained. No model or updater behavior changes.",
       "states": {
         "state": {
           "anchors": [
