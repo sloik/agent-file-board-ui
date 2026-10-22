@@ -46,3 +46,7 @@ per project pass. Canonical2.11.1 is published and verified; this viewer pins it
 immutable tag and embeds matching upgrade data. Fresh2.11.4 package preparation
 verifies complete inventory, source HTML and release checksums. Publication uses
 the existing exact-tested-tag release workflow and private post-download evidence.
+
+Release validation updates exact English/Polish version assertions to the released
+2.11.1 pin and includes 2.10.0/2.11.0 source boards in the existing upgrade
+preservation/backups/no-network regression. All refusal and byte assertions remain.
