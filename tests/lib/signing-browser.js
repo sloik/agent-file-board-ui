@@ -5,8 +5,8 @@ const h=require('./helpers');
 const {fixture}=require('./signing-fixture');
 // Only picker selection is substituted. All directory/file handles, Files,
 // writable streams, commit semantics and IndexedDB records are Chromium-native.
-async function importBoard(page, proj) {
-  await page.evaluate(async tree => {
+async function importBoard(page, proj, directoryName = null) {
+  await page.evaluate(async ({tree,directoryName}) => {
     async function sync(dir,node) {
       for await (const [name] of dir.entries()) if (!Object.hasOwn(node.children,name)) await dir.removeEntry(name,{recursive:true});
       for (const [name,child] of Object.entries(node.children)) {
@@ -15,8 +15,9 @@ async function importBoard(page, proj) {
       }
     }
     const root=await navigator.storage.getDirectory();
-    await sync(root,tree);
-  },h.readTree(proj));
+    const target=directoryName?await root.getDirectoryHandle(directoryName,{create:true}):root;
+    await sync(target,tree);
+  },{tree:h.readTree(proj),directoryName});
 }
 async function exportBoard(page, proj) {
   const tree = await page.evaluate(async () => {

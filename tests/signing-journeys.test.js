@@ -111,23 +111,31 @@ test('a paused key read cannot unlock or report success after switching to anoth
   });
   await control(page,'unlock').click();await expect(control(page,'unlock')).toBeDisabled();
   await expect.poll(()=>page.evaluate(()=>window.signingReadStarted)).toBe(true);
-  await native.closeSigning(page);await native.importBoard(page,other.proj);await h.openBoardViaUi(page);
+  await native.closeSigning(page);await native.importBoard(page,other.proj,'other-board');
+  await page.evaluate(()=>{window.showDirectoryPicker=async()=>{const root=await navigator.storage.getDirectory();return root.getDirectoryHandle('other-board');};});
+  await h.openBoardViaUi(page);
   await native.openSigning(page);
   const before=await page.locator('#signing-own').innerText(),boardId=await page.evaluate(()=>B.signingContext.boardId);
+  assert.equal(boardId,JSON.parse(h.fs.readFileSync(h.path.join(other.proj,'.agent-board/config.json'))).identity.boardId,'the picker opened the distinct second board');
   await page.evaluate(()=>releaseSigningRead());
   await expect.poll(()=>page.evaluate(()=>window.oldSigningOperationFinished)).toBe(true);
   await expect.poll(()=>page.evaluate(()=>signingProvider.catalog().length)).toBe(0);
-  await expect(page.locator('#signing-own')).toHaveText(before);
+  await expect.poll(()=>page.locator('#signing-own').innerText()).toBe(before);
   assert.equal(await page.evaluate(()=>B.signingContext.boardId),boardId);assert.equal(await page.evaluate(()=>signingAs),'');
 });
 
 test('an idle signing dialog can review and approve a key after an ordinary same-board refresh',async t=>{
   const {page,peer}=await boot(t);await native.openSigning(page);
   await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
+  const fingerprint=page.getByLabel('Independently verified fingerprint',{exact:true}),input=await fingerprint.elementHandle(),participant=await page.locator('#signingParticipant').elementHandle();
+  await fingerprint.fill(peer.fingerprint);await fingerprint.focus();
   assert.equal(await page.evaluate(async()=>{const previous=B;await readFromHandle(true);return previous!==B;}),true,'the refresh replaces the model while retaining this board');
+  await expect(fingerprint).toHaveValue(peer.fingerprint);await expect(fingerprint).toBeFocused();
+  assert.equal(await input.evaluate(el=>el===document.querySelector('#signingFingerprint')),true);
+  assert.equal(await participant.evaluate(el=>el===document.querySelector('#signingParticipant')),true);
   await act(page,'inspect-profile');await expect(page.locator('#signing-review')).toContainText(peer.fingerprint);
   await expect(page.locator('#signing-review .signing-feedback')).not.toContainText('Reopen Signing');
-  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint);
+  await expect(fingerprint).toHaveValue(peer.fingerprint);
   await act(page,'trust');await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
   assert.equal(await page.evaluate(id=>B.signingContext.state.pins[id],peer.participant),peer.fingerprint);
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'same-board refresh and key approval do not unlock private keys');

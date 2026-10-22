@@ -62,7 +62,7 @@ test('native browser streams: UI→CLI→UI replies, explicit trust/adoption and
   requireSigning(f);cliTrust(f,f.owner);cliTrust(f,f.peer);f.cli('signing','adopt');
   const reply=f.cli('post','--from',f.peer.participant,'--to',f.owner.participant,'--scope','room','--room','architecture','--thread',thread,'--reply-to',h.path.basename(root),'--slug','cli-signed-reply','--body','CLI signed reply','--signing-key-file',f.peer.key);
   await refresh(f);assert.equal((await decision(page,reply)).signature,'valid');assert.equal((await decision(page,reply)).eligibility,'excluded');
-  await openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(f.peer.participant);
+  await openSigning(page);await page.locator('#signingParticipant').selectOption(f.peer.participant);
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(f.peer.fingerprint+'wrong');await action(page,'Trust exact fingerprint');
   await expect(page.locator('#signing-review .signing-feedback')).toHaveText('Fingerprint does not match verified current profile');
   assert.equal((await decision(page,reply)).trust,'unfamiliar');
@@ -98,7 +98,7 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   const rotated=f.rotate();assert.notEqual(rotated.fingerprint,f.owner.fingerprint);await refresh(f);
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);
   const old=await decision(page,root);assert.equal(old.lifecycle,'superseded');assert.equal(old.eligibility,'excluded');
-  await openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(f.owner.participant);await expect(page.locator(`[data-signing-participant="${f.owner.participant}"]`)).toContainText('Key changed — review needed');await closeSigning(page);
+  await openSigning(page);await page.locator('#signingParticipant').selectOption(f.owner.participant);await expect(page.locator(`[data-signing-participant="${f.owner.participant}"]`)).toContainText('Key changed — review needed');await closeSigning(page);
   const thread=h.fs.readFileSync(h.path.join(f.proj,root),'utf8').match(/^THREAD: (T\d+)/m)[1];
   await page.selectOption('#cThread',`room:architecture|${thread}`);
   await page.fill('#cBody','Old capability cannot publish');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await expect(page.locator('#toast')).toHaveText('Write error: Trust the verified current fingerprint before posting');await assertNotPublished(page,'Old capability cannot publish');
@@ -151,7 +151,7 @@ test('first acceptance is inside the signed native answer; exclusion blocks it w
  const acceptance=JSON.parse(f.cli('answers','inspect','--question',q.replace(/^\.agent-board\//,'')));assert.equal(acceptance.status,'accepted');assert.equal(acceptance.winner.file,answerName);
  const history=h.path.join(f.tmp,'history-answer.json');h.fs.writeFileSync(history,'{"question":"decision","selected":["hold"]}');f.cli('post','--from',f.peer.participant,'--to',f.owner.participant,'--scope','room','--room','architecture','--thread','T080','--slug','history','--reply-to',h.path.basename(q),'--answer-file',history,'--body','Later history.','--signing-key-file',f.peer.key);
  await refresh(f);await expect(article.locator('.canonical-answer')).toContainText('Ship');
- await openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(f.owner.participant);await action(page,'Remove trust');await closeSigning(page);
+ await openSigning(page);await page.locator('#signingParticipant').selectOption(f.owner.participant);await action(page,'Remove trust');await closeSigning(page);
  await expect(article.locator('[data-answer-status=blocked]')).toBeVisible();assert.equal(await article.locator('[data-answer-status=accepted]').count(),0);
 });
 
@@ -174,14 +174,14 @@ test('unsigned messages and current-key approval are readable on a phone in both
   await page.setViewportSize({width:390,height:844});
   await expect(page.locator('.signing-facts summary').filter({hasText:'Unsigned message'}).first()).toBeVisible();
   await openSigning(page);
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(owner.participant);
+  await page.locator('#signingParticipant').selectOption(owner.participant);
   await expect(page.locator(`[data-signing-participant="${owner.participant}"]`)).toContainText('Current key not approved by you');
   assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true,'fingerprints and explanation fit the dialog');
   await closeSigning(page);
   await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#sClose');
   await expect(page.locator('.signing-facts summary').filter({hasText:'Wiadomość bez podpisu'}).first()).toBeVisible();
   await openSigning(page);
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(owner.participant);
+  await page.locator('#signingParticipant').selectOption(owner.participant);
   await expect(page.locator(`[data-signing-participant="${owner.participant}"]`)).toContainText('Nie zatwierdzono bieżącego klucza');
   assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true);
 });
