@@ -81,6 +81,8 @@ def verify(source, downloads, tag, metadata, commit=None, build=prepare):
             checksums[match[2]] = match[1]
         if set(checksums) != names - {'SHA256SUMS'} or any(hashes[name] != digest for name, digest in checksums.items()):
             raise ValueError('release checksums do not match complete downloaded inventory')
+        if git('rev-parse', 'HEAD') != head or git('rev-parse', f'refs/tags/{tag}^{{}}') != head or git('status', '--porcelain', '--untracked-files=no'):
+            raise ValueError('tagged source changed during verification')
         return {'scope': 'published assets and tagged source; live browser result is separate',
                 'result': 'passed', 'tag': tag, 'commit': head, 'assets': hashes}
 

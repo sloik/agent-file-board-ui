@@ -60,6 +60,13 @@ class PublishedReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'modified'):
             self.verify()
 
+    def test_source_change_during_rebuild_refuses(self):
+        def moving_source(source, tag, output):
+            self.build(source, tag, output)
+            (source / 'board.html').write_text('changed during verification')
+        with self.assertRaisesRegex(ValueError, 'changed during verification'):
+            verify(self.source, self.downloads, 'v2.11.4', self.metadata, build=moving_source)
+
     def test_unpublished_wrong_tag_and_prerelease_metadata_refuse(self):
         for key, value in [('tag_name', 'v2.11.3'), ('draft', True), ('prerelease', True), ('draft', None)]:
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
