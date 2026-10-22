@@ -112,3 +112,8 @@ clock jumps, tab storage partition rules or all individual draft representations
 Those retain explicit unit/browser tests and mapped source anchors. No automatic
 application-file installer exists. Aggregate draft/pending predicates correspond
 to the real reload guard; its individual categories have independent unit checks.
+
+## Verification status and weekly checks
+
+See [status, coverage and remaining gaps](STATUS.md) for the live Actions summary,
+commit/input freshness inspection, local full-lane command and weekly schedule.

@@ -428,3 +428,5 @@ including Firefox. Source checkouts should use a separate extracted viewer.
 Finish or discard unfinished work before copying application files and reloading;
 the app's reload button guards drafts and active operations. Open tabs retain their
 running version until reloaded. Signing keys must be unlocked again after reload.
+
+Formal verification: [coverage, current-run status and weekly checks](formal/STATUS.md).

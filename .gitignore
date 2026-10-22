@@ -7,3 +7,6 @@ test-results/
 agent-file-board-demo.zip
 # Session reports and receipts belong outside public documentation.
 /docs/validation/
+
+# Generated formal status is a CI artifact, never source documentation.
+/.formal-status/

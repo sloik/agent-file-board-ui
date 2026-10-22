@@ -56,21 +56,21 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "191e89ea72a800b9fec3af029ef9f9f1a5403186a635c32bc806322e59127ea9"
+      "sha256": "6697451e4ebeb09d117883ea37d36fe3750bb9bf5b408ff05fbaef18a1c0d8fc"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "c68d3b8246748ca4de21d2bd5d9a6d78b56e8c4bfd35e54590bfc469963df439"
+      "sha256": "48b8c6351851061232a5bcc970501861548d5e1ded01a22405491eefa430c798"
     },
     ".github/workflows/formal.yml": {
       "path": ".github/workflows/formal.yml",
       "selector": {
         "kind": "file"
       },
-      "sha256": "48ac965042ec9e412108cccf9e303f9b9c8d333f1b89643d8b8c41b74a575622"
+      "sha256": "1c099d80f91008fdd83fff748d9f60a8f7d24d4a8dfac4d29990096a3dbc52d6"
     },
     "scripts/signing-contract.js": {
       "path": "scripts/signing-contract.js",
@@ -340,12 +340,40 @@
         "kind": "file"
       },
       "sha256": "c2be8b75f08b76967368d00bf51a84475f9edb134a8334db9c07a9bd64fe4bb4"
+    },
+    "formal/status.py": {
+      "path": "formal/status.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1d32232494d1d75748657fd3067448741eb634373ec9cee88cef4d391cdb306c"
+    },
+    "formal/test_status.py": {
+      "path": "formal/test_status.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "7680d0c2aed426e97b484853a3543acab1777cfe0302351851019ace1cdf1c52"
+    },
+    "formal/verification.json": {
+      "path": "formal/verification.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "8ac530bbee8fcd71c73f76ac7a71344971e2e7947d981d33ddfc562114f8a7a1"
+    },
+    "formal/STATUS.md": {
+      "path": "formal/STATUS.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ea6817e6612f2fe57d219a86910b65124523f432abe1e081a82807fe5585a016"
     }
   },
   "models": [
     {
       "module": "Signer.tla",
-      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations.",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
       "states": {
         "catalog": {
           "anchors": [
@@ -725,7 +753,11 @@
         "formal/SignerBadEpoch.cfg",
         "formal/SignerBadGuard.cfg",
         "formal/SignerBadDraft.cfg",
-        "formal/SignerReachable.cfg"
+        "formal/SignerReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md"
       ],
       "conformance": [
         "tests/signing-provider.test.js",
@@ -740,7 +772,7 @@
     },
     {
       "module": "ViewerUpdate.tla",
-      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes.",
+      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
       "states": {
         "state": {
           "anchors": [
@@ -1048,7 +1080,11 @@
         "formal/ViewerUpdate.cfg",
         "formal/ViewerUpdateBadDaily.cfg",
         "formal/ViewerUpdateBadReload.cfg",
-        "formal/ViewerUpdateReachable.cfg"
+        "formal/ViewerUpdateReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md"
       ],
       "conformance": [
         "tests/viewer-updates-unit.test.js",
