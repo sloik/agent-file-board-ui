@@ -7,7 +7,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "ba22d49e0c1560921156dbe356659ce6be50109b9de81d0e9f7ec77eccab2297"
+      "sha256": "f550888a62911e609c47ba0de9c95e9f84193e2cba10cb5e81820ba302e48147"
     },
     "formal/check_alignment.py": {
       "path": "formal/check_alignment.py",
@@ -21,14 +21,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "eb025b40c777bb17e4ec33ae5d1131fd68364490ac440f38b3e5b708fbe35978"
+      "sha256": "74a7056438d5018bac695979c71ae9fe84b3815c667b08237e49dbbd8755bc95"
     },
     "formal/test_check.py": {
       "path": "formal/test_check.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "406691768fb23c91bae9c88dec6720a14ff7194082bc2f561d41be091abf6801"
+      "sha256": "83d5b4bf2cd54769739b4c255a7548574b89bf720bef3d592356fa44ab45ed18"
     },
     "formal/test_alignment.py": {
       "path": "formal/test_alignment.py",
@@ -42,7 +42,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4c085551fe5d96a9fe891aad21282ef36ce441570440c405ed5a2f5f081ef5be"
+      "sha256": "86f6ddf1c73fd2a61a5f6f8d0cb85af894de2e8fc006e554e5a3a8676c125c74"
     },
     "formal/suite.json": {
       "path": "formal/suite.json",
@@ -56,14 +56,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "6697451e4ebeb09d117883ea37d36fe3750bb9bf5b408ff05fbaef18a1c0d8fc"
+      "sha256": "18cb5c65a340a930c06623864add64965f12a35c972d50147e910e3b02328373"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "48b8c6351851061232a5bcc970501861548d5e1ded01a22405491eefa430c798"
+      "sha256": "c25fc1295d0da15053ba9df438437e95f3f7eda5b32994cf7fa7a447decdb2ec"
     },
     ".github/workflows/formal.yml": {
       "path": ".github/workflows/formal.yml",
@@ -290,7 +290,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4f3f8f330fcc98b37404c07b4f5ebc6b194eaa1d3fef9b15e5ae11178e8d82b8"
+      "sha256": "b24ce1134188e81da17e60149c084ffbe44b3857055fb458ee66a4d25ecf1d06"
     },
     "tests/viewer-updates-unit.test.js": {
       "path": "tests/viewer-updates-unit.test.js",
@@ -353,88 +353,118 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "7680d0c2aed426e97b484853a3543acab1777cfe0302351851019ace1cdf1c52"
+      "sha256": "2f4b8838cdfd7b00c8113e93ed9486df4d17c3961d6c4d7267f3cfa9efa51697"
     },
     "formal/verification.json": {
       "path": "formal/verification.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "8ac530bbee8fcd71c73f76ac7a71344971e2e7947d981d33ddfc562114f8a7a1"
+      "sha256": "0f68e7e0d6cb51020b3308852d6505a716e91cde18305d51217108b975d15e31"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "ea6817e6612f2fe57d219a86910b65124523f432abe1e081a82807fe5585a016"
+      "sha256": "34c3d11b1fe7620aeccfef36c76619358a11b80a8da7cf7fd13240383ffb1930"
+    },
+    "formal/trace_contracts.json": {
+      "path": "formal/trace_contracts.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a8a395a6cc9fa306c6c93391bac04931688e5a35eb326a9234dff735f1b3207f"
+    },
+    "formal/collect_signer.js": {
+      "path": "formal/collect_signer.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "de5cb00b0749b28c52db06b5f883183c44a49f4df50db056f7f0d97fd5c7f859"
+    },
+    "package-lock.json": {
+      "path": "package-lock.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "fa6f7c0224f69b2946420682bad4ae4b8eb24d35696e5c6f9efa713067abf2c9"
     }
   },
   "models": [
     {
       "module": "Signer.tla",
-      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged.",
       "states": {
         "catalog": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "invalidations": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "unlockEpoch": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "unlockPc": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "proved": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "signEpoch": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "signPc": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "returned": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
         "badReturn": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
         },
@@ -443,7 +473,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
         },
@@ -452,7 +483,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
         },
@@ -461,7 +493,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
         },
@@ -470,7 +503,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
         },
@@ -479,7 +513,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
         },
@@ -488,7 +523,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
         },
@@ -496,7 +532,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Board/key snapshots and reconciliation invalidations."
         },
@@ -504,7 +541,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Board/key snapshots and reconciliation invalidations."
         },
@@ -512,7 +550,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Board/key snapshots and reconciliation invalidations."
         },
@@ -520,7 +559,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Board/key snapshots and reconciliation invalidations."
         },
@@ -528,7 +568,8 @@
           "anchors": [
             "host-composer",
             "scripts/signing-ui.js",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Submitted draft stamp versus newer composer content."
         },
@@ -536,7 +577,8 @@
           "anchors": [
             "host-composer",
             "scripts/signing-ui.js",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Submitted draft stamp versus newer composer content."
         }
@@ -545,42 +587,48 @@
         "Bindings": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Finite binding/invalidation bounds, not runtime limits."
         },
         "Reasons": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Finite binding/invalidation bounds, not runtime limits."
         },
         "Epoch": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Finite binding/invalidation bounds, not runtime limits."
         },
         "Unlock": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
         },
         "UnlockFailure": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
         },
         "AtomicUnlock": {
           "anchors": [
             "scripts/signing-contract.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
         },
@@ -588,7 +636,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
         },
@@ -596,7 +645,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
         },
@@ -604,7 +654,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
         },
@@ -612,7 +663,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
         },
@@ -620,7 +672,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
         },
@@ -628,7 +681,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
         },
@@ -637,7 +691,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
         },
@@ -646,7 +701,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
         },
@@ -655,7 +711,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
         },
@@ -664,7 +721,8 @@
             "scripts/signing-ui.js",
             "host-writer",
             "host-delivery",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
         },
@@ -672,7 +730,8 @@
           "anchors": [
             "host-composer",
             "scripts/signing-ui.js",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Older send completion must preserve newer draft edits."
         },
@@ -680,7 +739,8 @@
           "anchors": [
             "host-composer",
             "scripts/signing-ui.js",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Older send completion must preserve newer draft edits."
         },
@@ -688,7 +748,8 @@
           "anchors": [
             "host-composer",
             "scripts/signing-ui.js",
-            "tests/signing-ui.test.js"
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Older send completion must preserve newer draft edits."
         },
@@ -696,7 +757,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
         },
@@ -704,7 +766,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
         },
@@ -712,7 +775,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
         },
@@ -728,7 +792,8 @@
           "anchors": [
             "scripts/signing-contract.js",
             "scripts/signing-ui.js",
-            "tests/signing-provider.test.js"
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
           ],
           "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
         }
@@ -757,7 +822,11 @@
         "formal/status.py",
         "formal/test_status.py",
         "formal/verification.json",
-        "formal/STATUS.md"
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_signer.js",
+        "package-lock.json",
+        "formal/collect_traces.js"
       ],
       "conformance": [
         "tests/signing-provider.test.js",
@@ -766,13 +835,14 @@
         "tests/signing-negative.test.js",
         "tests/signing-budgets.test.js",
         "tests/signing-ui.test.js",
-        "tests/lib/signing-unit.js"
+        "tests/lib/signing-unit.js",
+        "formal/collect_traces.js"
       ],
-      "limits": "Mapped runtime regressions, not full per-action trace refinement. Crypto arithmetic, parsing, native filesystem guarantees and unlimited failures are excluded."
+      "limits": "Bounded production Provider/delivery/writer/composer observations with Node WebCrypto and DOM/stream doubles. No universal refinement, real browser I/O, crypto arithmetic or native filesystem guarantee."
     },
     {
       "module": "ViewerUpdate.tla",
-      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
+      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -1084,7 +1154,10 @@
         "formal/status.py",
         "formal/test_status.py",
         "formal/verification.json",
-        "formal/STATUS.md"
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_traces.js",
+        "package-lock.json"
       ],
       "conformance": [
         "tests/viewer-updates-unit.test.js",

@@ -37,5 +37,6 @@ function traces(mutant=false){
  const reload=collect('dirty and pending reloads refuse until cleared',['edit','reload','edit','write','reload','write','reload']);assert.equal(reload.states.at(-1).reloaded,true);assert.equal(reload.states.at(-1).badReload,false);
  return [daily,optout,reload];
 }
-if(require.main===module)process.stdout.write(JSON.stringify(traces(process.argv.includes('--mutant'))));
+async function allTraces(mutant=false){return [...traces(mutant),...await require('./collect_signer').traces(mutant)];}
+if(require.main===module)allTraces(process.argv.includes('--mutant')).then(t=>process.stdout.write(JSON.stringify(t))).catch(e=>{console.error(e);process.exitCode=1;});
 module.exports={traces};

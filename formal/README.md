@@ -117,3 +117,22 @@ to the real reload guard; its individual categories have independent unit checks
 
 See [status, coverage and remaining gaps](STATUS.md) for the live Actions summary,
 commit/input freshness inspection, local full-lane command and weekly schedule.
+
+## Signer runtime action traces
+
+`collect_signer.js` loads production Provider/signingDelivery code in a disposable
+Node VM, with real Node WebCrypto and explicit observation hooks at import,
+profile resolution, each completed possession proof, signature verification and
+return. It executes the production host writer and composer completion functions
+against DOM/writable-stream doubles. TLA+ checks every projected variable and
+transition against the unchanged Signer Init/Next and all four safety invariants.
+The collector does not reimplement the transition relation.
+
+Ten positive scenarios witness successful publication/completion, atomic failed
+multi-binding unlock, lock during import/second proof, lock/expiry during signing, board/key invalidation before
+final close, newer-draft preservation and crypto failure. Four source mutations
+in that disposable VM introduce partial installation, stale signature return,
+skipped delivery checks and erased newer drafts; each must produce the named TLC
+conformance counterexample. Production files and behavior are unchanged. These
+observed boundaries do not prove all browser scheduling, native filesystem or
+cryptographic behavior; real-browser unit/Playwright obligations remain separate.

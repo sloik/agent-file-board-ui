@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "models": {
+    "Signer": {
+      "mode": "action",
+      "positive": [
+        "signer: successful publish and completion",
+        "signer: atomic failed second binding",
+        "signer: lock during import",
+        "signer: lock during second proof",
+        "signer: lock during signing",
+        "signer: expiry during signing",
+        "signer: board change before guard",
+        "signer: key change before guard",
+        "signer: newer draft during close",
+        "signer: crypto failure"
+      ],
+      "mutants": [
+        "signer mutant: partial unlock",
+        "signer mutant: stale signature",
+        "signer mutant: skipped delivery guard",
+        "signer mutant: erased newer draft"
+      ],
+      "variables": [
+        "catalog",
+        "invalidations",
+        "unlockEpoch",
+        "unlockPc",
+        "proved",
+        "signEpoch",
+        "signPc",
+        "returned",
+        "badReturn",
+        "publishPc",
+        "deliveryEpoch",
+        "authorized",
+        "badAuthorization",
+        "published",
+        "completed",
+        "board",
+        "head",
+        "reviewedBoard",
+        "reviewedHead",
+        "draft",
+        "buffer"
+      ],
+      "invariants": [
+        "AtomicUnlock",
+        "NoStaleReturn",
+        "ValidAuthorization",
+        "KeepNewDraft"
+      ],
+      "collector": "formal/collect_signer.js"
+    },
+    "ViewerUpdate": {
+      "mode": "record",
+      "positive": [
+        "same-day contenders, overdue reopening and manual check",
+        "opt-out preserves explicit manual check",
+        "dirty and pending reloads refuse until cleared"
+      ],
+      "mutants": [
+        "implementation mutant: duplicate daily claim",
+        "implementation mutant: reload erases unfinished draft"
+      ],
+      "collector": "formal/collect_traces.js"
+    }
+  }
+}
