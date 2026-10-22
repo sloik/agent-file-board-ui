@@ -36,7 +36,7 @@ function wireViewerUpdates(){
   async function check(manual=false){
     if(busy)return;busy=true;render();let attempt=Date.now(),claimed=false;
     try{
-      state=await viewerUpdateState(s=>{if(!manual&&(s.auto===false||!ViewerUpdates.due(s.lastAttempt,attempt)))return s;claimed=true;return {...s,lastAttempt:attempt};});
+      state=await viewerUpdateState(s=>{const claim=ViewerUpdates.claim(s,attempt,manual);claimed=claim.claimed;return claim.state;});
     }catch{storage=false;if(!manual){busy=false;status=exText('Automatic checks unavailable; use Check now.','Automatyczne sprawdzanie niedostępne; użyj Sprawdź teraz.');render();return;}claimed=true;}
     if(!claimed){busy=false;render();return;}
     status=exText('Checking public release metadata…','Sprawdzanie publicznych informacji o wydaniu…');render();

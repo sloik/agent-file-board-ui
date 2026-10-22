@@ -1,0 +1,1061 @@
+{
+  "schemaVersion": 1,
+  "maintenance": "The maintainer changing modeled code owns semantic alignment review. See formal/ALIGNMENT.md; no automatic refresh.",
+  "anchors": {
+    "formal/check.py": {
+      "path": "formal/check.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ba22d49e0c1560921156dbe356659ce6be50109b9de81d0e9f7ec77eccab2297"
+    },
+    "formal/check_alignment.py": {
+      "path": "formal/check_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c94835bae7238abe9fdfae183458a2f3d32cee48d7fb8d6caeced8e442161f4f"
+    },
+    "formal/check_traces.py": {
+      "path": "formal/check_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "eb025b40c777bb17e4ec33ae5d1131fd68364490ac440f38b3e5b708fbe35978"
+    },
+    "formal/test_check.py": {
+      "path": "formal/test_check.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "406691768fb23c91bae9c88dec6720a14ff7194082bc2f561d41be091abf6801"
+    },
+    "formal/test_alignment.py": {
+      "path": "formal/test_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "b6beb29e543f62c2da70fb70a6422692cf6fbad6f881324649bf48eaf4d517af"
+    },
+    "formal/test_traces.py": {
+      "path": "formal/test_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4c085551fe5d96a9fe891aad21282ef36ce441570440c405ed5a2f5f081ef5be"
+    },
+    "formal/suite.json": {
+      "path": "formal/suite.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "6f81c22b60e03ce3665f1f840333da13ad83468cb1dbf94155e8533112ddcc94"
+    },
+    "formal/README.md": {
+      "path": "formal/README.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "191e89ea72a800b9fec3af029ef9f9f1a5403186a635c32bc806322e59127ea9"
+    },
+    "formal/ALIGNMENT.md": {
+      "path": "formal/ALIGNMENT.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c68d3b8246748ca4de21d2bd5d9a6d78b56e8c4bfd35e54590bfc469963df439"
+    },
+    ".github/workflows/formal.yml": {
+      "path": ".github/workflows/formal.yml",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "48ac965042ec9e412108cccf9e303f9b9c8d333f1b89643d8b8c41b74a575622"
+    },
+    "scripts/signing-contract.js": {
+      "path": "scripts/signing-contract.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "8140266ef11257becfbc868e891023722831f13db423abe26d9ebbbea75f6011"
+    },
+    "scripts/signing-ui.js": {
+      "path": "scripts/signing-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "efbce44f5fc62a8b3420656bd38b9f90190c491a4cb0b4caf8a5b4a94afcb893"
+    },
+    "host-writer": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "let viewerActiveWrites=0;",
+        "end": "/* ===== reading ===== */"
+      },
+      "sha256": "a19fc31e0025ec3cae113fbef7a7ec0184421d6ed0ecda9b7e8b462147694b17"
+    },
+    "host-delivery": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "let viewerActiveDeliveries=0;",
+        "end": "async function setTopicTitle(){"
+      },
+      "sha256": "edb5fb6612c4c14778787b1e059be206b67d696127d91a440e92068c75b09e21"
+    },
+    "host-composer": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "let viewerActiveSends=0;",
+        "end": "let viewerActiveDeliveries=0;"
+      },
+      "sha256": "a3ef15b810c823c91fb9b906207ade8b0352ea85235c2c2c83c30bc2372da2b7"
+    },
+    "scripts/embed_tools.js": {
+      "path": "scripts/embed_tools.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "3178a4c74c14b227918690b84c79dff25d65038c1e38fad9f5db2672ecd53d70"
+    },
+    "scripts/embed_signing.js": {
+      "path": "scripts/embed_signing.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "b0d81d21147ab2af5cda85ac07170931856500c2b5089a655cf3397547e4704c"
+    },
+    "normal-test-command": {
+      "path": "package.json",
+      "selector": {
+        "kind": "section",
+        "start": "\"test\": \"",
+        "end": "\",\n    \"test:node\""
+      },
+      "sha256": "ed18dd2ff1723136f25f161e11e7d25a9a6543abdbd90fed67707c68eecafdca"
+    },
+    "tests/signing-provider.test.js": {
+      "path": "tests/signing-provider.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1de79f3fa9d9db52ca507f04820d297f7c5ab088174d7c799084b51a5b268719"
+    },
+    "tests/signing-policy.test.js": {
+      "path": "tests/signing-policy.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1eff983f331835a1f0c0326d07acb2e1978cadd7b623b1a6d67e6e302aa933db"
+    },
+    "tests/signing-contract.test.js": {
+      "path": "tests/signing-contract.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "7360b4b1d4346409f1b6fd64af18499184724f0fb47f02dff09cf0ef2e6ea2b6"
+    },
+    "tests/signing-negative.test.js": {
+      "path": "tests/signing-negative.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ebf7e91bc84b4f16cfa3e4665eca4c1531853d8dbdf6a79623bb05a532f5060d"
+    },
+    "tests/signing-budgets.test.js": {
+      "path": "tests/signing-budgets.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "33430abf59884a92c8d62c346389e7c199e71dc757999cb5b419481e016dfe28"
+    },
+    "tests/signing-ui.test.js": {
+      "path": "tests/signing-ui.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a5f808ccce372ecc113039812bc27c6e2249335dc84b88e2c98700cf8f66d819"
+    },
+    "tests/lib/signing-unit.js": {
+      "path": "tests/lib/signing-unit.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a00a2bfb27c79ca5c8b74936bf7ff2a67c20989bf64f7a07bb5900d4b13daa15"
+    },
+    "formal/Signer.tla": {
+      "path": "formal/Signer.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e1e045c3f3d1cc501086b1643852ed6b4a665f8c2fcf9416fb84e66818cb3acb"
+    },
+    "formal/Signer.cfg": {
+      "path": "formal/Signer.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0614ed2d32be881094ce1d0d95e6dadd5951f1d9e8accf5c6e63cc0b1cafad51"
+    },
+    "formal/SignerBadUnlock.cfg": {
+      "path": "formal/SignerBadUnlock.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "99d1236678f9a5def08265db164db5c6a8783754d9b93f36ae0aa53035648673"
+    },
+    "formal/SignerBadEpoch.cfg": {
+      "path": "formal/SignerBadEpoch.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "3bfa37e21a4acd3dd04da820fe974ab58ec5a9dcb2c68a7912977511f5e5cd67"
+    },
+    "formal/SignerBadGuard.cfg": {
+      "path": "formal/SignerBadGuard.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ff9d3451b97e480e0bacccd70d33b91c12e59a92a22724fbc65618429bea42e6"
+    },
+    "formal/SignerBadDraft.cfg": {
+      "path": "formal/SignerBadDraft.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "023977be49cb56f1cdaff2d6849a3c6353418b1a8f6fab2f1d5426c7cf710921"
+    },
+    "formal/SignerReachable.cfg": {
+      "path": "formal/SignerReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "aa85b4df35c36de0d892d0490d7863fabc86ddda05fc83f118a842112e230a4f"
+    },
+    "scripts/viewer-updates.js": {
+      "path": "scripts/viewer-updates.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "01f8416d064a97e5fdd9ca2502762549ea63641a7e8bc8c0fbbca3c4aec14105"
+    },
+    "scripts/viewer-updates-ui.js": {
+      "path": "scripts/viewer-updates-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "88e5948d424581f5960c7be9c9e0c85d5aef98a20bdff70851785aac8b9f46e5"
+    },
+    "update-idb": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function idb(){",
+        "end": "async function idbSet(k,v){"
+      },
+      "sha256": "df80dacc69b06223c14b3c6f589d74481d2ee78f9bef3daf7300ec0c74584241"
+    },
+    "scripts/form-board.js": {
+      "path": "scripts/form-board.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "3dc26c5673b9b01f900652fdc24fc5721ab3e0517102fea985ec63c245d2284e"
+    },
+    "scripts/extension-ui.js": {
+      "path": "scripts/extension-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "642b659a90aba15169ade9227996ed8bb9cd387fce005f405c2a91377b4e1c90"
+    },
+    "scripts/voice-ui.js": {
+      "path": "scripts/voice-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a15875ed678143bd7907070329368ec5003a2e451843ffe45fc546614c33d42e"
+    },
+    "scripts/authoring-drafts.js": {
+      "path": "scripts/authoring-drafts.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "710cf31dbc4763ba41065a593179ed877ee826c6f4d8a7d930c68f7adeaa7f9a"
+    },
+    "formal/collect_traces.js": {
+      "path": "formal/collect_traces.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4f3f8f330fcc98b37404c07b4f5ebc6b194eaa1d3fef9b15e5ae11178e8d82b8"
+    },
+    "tests/viewer-updates-unit.test.js": {
+      "path": "tests/viewer-updates-unit.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "fc1ebca6b26deb7c36ffd604341f8ee1d19920a863270a25c909490e3f96e870"
+    },
+    "tests/viewer-updates.test.js": {
+      "path": "tests/viewer-updates.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0a3478179f8c9ac07e24e2626922026467642a610b7506adab7178efc5d85261"
+    },
+    "formal/ViewerUpdate.tla": {
+      "path": "formal/ViewerUpdate.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a89a399bf4af669b38e1ad6a25bedc051e9b1796f243a27d2935a7f2c48610e6"
+    },
+    "formal/ViewerUpdate.cfg": {
+      "path": "formal/ViewerUpdate.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c5f5c5c0d1ecb925177e7b82db0f2e1f64856c8959b4ed0bbab3f65841321584"
+    },
+    "formal/ViewerUpdateBadDaily.cfg": {
+      "path": "formal/ViewerUpdateBadDaily.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "08fd8dfbf04cc9da3f9ff620a7262d1638a7cb53f6ffd4747d16424643a2dde3"
+    },
+    "formal/ViewerUpdateBadReload.cfg": {
+      "path": "formal/ViewerUpdateBadReload.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "324ade55fcceb0d65ae302e17157e06b01d0bfa1865b99082f450cba6a9ec654"
+    },
+    "formal/ViewerUpdateReachable.cfg": {
+      "path": "formal/ViewerUpdateReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c2be8b75f08b76967368d00bf51a84475f9edb134a8334db9c07a9bd64fe4bb4"
+    }
+  },
+  "models": [
+    {
+      "module": "Signer.tla",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations.",
+      "states": {
+        "catalog": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "invalidations": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "unlockEpoch": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "unlockPc": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "proved": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "signEpoch": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "signPc": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "returned": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "badReturn": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "publishPc": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "deliveryEpoch": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "authorized": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "badAuthorization": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "published": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "completed": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "board": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "head": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "reviewedBoard": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "reviewedHead": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "draft": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Submitted draft stamp versus newer composer content."
+        },
+        "buffer": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Submitted draft stamp versus newer composer content."
+        }
+      },
+      "operators": {
+        "Bindings": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Finite binding/invalidation bounds, not runtime limits."
+        },
+        "Reasons": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Finite binding/invalidation bounds, not runtime limits."
+        },
+        "Epoch": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Finite binding/invalidation bounds, not runtime limits."
+        },
+        "Unlock": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
+        },
+        "UnlockFailure": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
+        },
+        "AtomicUnlock": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
+        },
+        "Invalidate": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "StartSign": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "SignStep": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "FinishSign": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "CryptoFailure": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "NoStaleReturn": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "WriteStep": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "Guard": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "Close": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "ValidAuthorization": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "Complete": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Older send completion must preserve newer draft edits."
+        },
+        "Edit": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Older send completion must preserve newer draft edits."
+        },
+        "KeepNewDraft": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js"
+          ],
+          "reason": "Older send completion must preserve newer draft edits."
+        },
+        "vars": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "Init": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "Next": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "Spec": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "NeverCompletes": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "scripts/embed_tools.js",
+        "scripts/embed_signing.js",
+        "normal-test-command",
+        "formal/Signer.tla",
+        "formal/Signer.cfg",
+        "formal/SignerBadUnlock.cfg",
+        "formal/SignerBadEpoch.cfg",
+        "formal/SignerBadGuard.cfg",
+        "formal/SignerBadDraft.cfg",
+        "formal/SignerReachable.cfg"
+      ],
+      "conformance": [
+        "tests/signing-provider.test.js",
+        "tests/signing-policy.test.js",
+        "tests/signing-contract.test.js",
+        "tests/signing-negative.test.js",
+        "tests/signing-budgets.test.js",
+        "tests/signing-ui.test.js",
+        "tests/lib/signing-unit.js"
+      ],
+      "limits": "Mapped runtime regressions, not full per-action trace refinement. Crypto arithmetic, parsing, native filesystem guarantees and unlimited failures are excluded."
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes.",
+      "states": {
+        "state": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Observable claim/reload projection; each record field is mapped below."
+        },
+        "state.day": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.stamp": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.claims": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.enabled": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.checks": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.manualUsed": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.draft": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        },
+        "state.pending": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        },
+        "state.reloaded": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        },
+        "state.badReload": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        }
+      },
+      "operators": {
+        "AutoClaim": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production synchronous claim callback; explicit manual checks bypass cadence/opt-out and advance the attempt."
+        },
+        "ManualClaim": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production synchronous claim callback; explicit manual checks bypass cadence/opt-out and advance the attempt."
+        },
+        "OneAutomaticClaim": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production synchronous claim callback; explicit manual checks bypass cadence/opt-out and advance the attempt."
+        },
+        "Reload": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production reload rechecks current blockers; the unsafe flag records the invocation-time decision."
+        },
+        "SafeReload": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production reload rechecks current blockers; the unsafe flag records the invocation-time decision."
+        },
+        "Tick": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "Enable": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "Edit": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "Write": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "vars": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Initial": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Init": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Next": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Spec": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Step": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Safe": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "TypeOK": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "NeverReloads": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "scripts/embed_tools.js",
+        "scripts/embed_signing.js",
+        "normal-test-command",
+        "formal/ViewerUpdate.tla",
+        "formal/ViewerUpdate.cfg",
+        "formal/ViewerUpdateBadDaily.cfg",
+        "formal/ViewerUpdateBadReload.cfg",
+        "formal/ViewerUpdateReachable.cfg"
+      ],
+      "conformance": [
+        "tests/viewer-updates-unit.test.js",
+        "tests/viewer-updates.test.js",
+        "formal/collect_traces.js"
+      ],
+      "limits": "Two windows, one manual check, aggregate draft/write flags. HTTP authenticity, API/storage partition rules and clock rollback remain unit/browser tests. No installer or general refinement proof."
+    }
+  ]
+}

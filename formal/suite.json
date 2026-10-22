@@ -33,6 +33,25 @@
       "module": "Signer.tla",
       "config": "SignerReachable.cfg",
       "counterexample": "NeverCompletes"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdate.cfg"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdateBadDaily.cfg",
+      "counterexample": "OneAutomaticClaim"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdateBadReload.cfg",
+      "counterexample": "SafeReload"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdateReachable.cfg",
+      "counterexample": "NeverReloads"
     }
   ]
 }

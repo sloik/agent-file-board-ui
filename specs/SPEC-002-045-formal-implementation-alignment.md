@@ -10,7 +10,7 @@ nfrs: []
 
 ## Scope
 
-Add a bounded update-check/reload coordination model and runtime conformance for signing and update transitions.
+Add a bounded update-check/reload coordination model and runtime trace conformance for update transitions while retaining mapped signing regression obligations.
 Adopt the useful parts of Nightshift's formal/runtime source registry and trace
 conformance checks without claiming that source hashes prove refinement. Changes
 to modeled implementation, models, configs or their executable tests must trigger

@@ -81,3 +81,34 @@ assumptions across repositories.
 References: [official TLA+ tools](https://github.com/tlaplus/tlaplus),
 [TLC CLI](https://docs.tlapl.us/using:tlc:start),
 [modeling above code](https://lamport.azurewebsites.net/tla/high-level-view.html).
+
+## ViewerUpdate and maintained alignment
+
+[Alignment maintenance and CI gates](ALIGNMENT.md) describe the source mappings,
+review trigger and executable trace bridge. Both the normal test command and
+formal lane refuse stale mappings. The lane also runs mapped signing regression
+tests, observed update/reload traces, implementation-only mutants and TLC.
+
+`ViewerUpdate` models two consecutive daily-check windows, one explicit manual
+check, an opt-out toggle, aggregate unfinished-work and active-write flags, and an
+explicit guarded reload. The claim is atomic at the private IndexedDB transaction
+boundary: its synchronous callback uses `ViewerUpdates.claim`, the same production
+function called by the runtime trace collector. Two callers in one browser storage
+context share the persisted attempt; cooperating-tab serialization is additionally
+covered by the actual-browser update test. Manual checks bypass daily/opt-out
+cadence; they still advance the persisted attempt. A failed metadata request also
+consumes that attempt, without claiming an installation or a successful check.
+
+`OneAutomaticClaim` forbids two automatic claims in one window. `SafeReload` records
+whether unfinished work or a pending operation existed when reload was invoked;
+work created after an authorized reload does not retroactively invalidate it.
+The two model mutants remove daily/reload guards and must fail those invariants.
+A reachability control finds a successful reload. Runtime trace controls separately
+mutate the actual claim and reload implementation and must be rejected by TLC.
+
+The finite model does not include HTTP, origin/source/channel validation, download
+installation, filesystem replacement, browser crash/draft recovery, arbitrary
+clock jumps, tab storage partition rules or all individual draft representations.
+Those retain explicit unit/browser tests and mapped source anchors. No automatic
+application-file installer exists. Aggregate draft/pending predicates correspond
+to the real reload guard; its individual categories have independent unit checks.

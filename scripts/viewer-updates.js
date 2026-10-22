@@ -13,6 +13,10 @@ const ViewerUpdates=(()=>{
     if(m.status==='error')return keys==='channel,protocol,status';
     return keys==='channel,packageAvailable,protocol,releaseId,status,version'&&m.status==='ok'&&!!version(m.version)&&Number.isSafeInteger(m.releaseId)&&m.releaseId>0&&typeof m.packageAvailable==='boolean';
   }
+  function claim(s,now,manual=false){
+    if(!manual&&(s.auto===false||!due(s.lastAttempt,now)))return {state:s,claimed:false};
+    return {state:{...s,lastAttempt:now},claimed:true};
+  }
   function stored(raw){
     const s=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{},out={};
     if(typeof s.auto==='boolean')out.auto=s.auto;
@@ -37,6 +41,6 @@ const ViewerUpdates=(()=>{
     });
     return {promise,cancel};
   }
-  return {endpoint,releases,day,version,newer,due,valid,stored,links,request};
+  return {endpoint,releases,day,version,newer,due,valid,claim,stored,links,request};
 })();
 if(typeof module!=='undefined')module.exports=ViewerUpdates;
