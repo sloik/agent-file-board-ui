@@ -1,4 +1,4 @@
-# Message signing — 2.11.0
+# Message signing
 
 Open a writable native board with a board UUID and registered public profiles.
 Choose **Tools → Signing**, select an explicit private Ed25519 JWK outside the
@@ -15,6 +15,20 @@ to an extension worker. Failed/expired/stale signing preserves the draft and
 refuses publication; it never falls back to unsigned. Use **Use unsigned mode**
 explicitly when allowed. Read-only uploads verify evidence but cannot publish
 signed messages; open the writable board folder for that operation.
+
+Every message shows its signature result; expand it for the exact signing-key
+fingerprint, diagnostic and explanation. **Signature verified** means the bytes
+match the signing key. **Signing key trusted by you** means you deliberately
+approved that exact key locally. Neither proves a person's identity or the truth
+of a message. A valid but unfamiliar signature can remain usable where policy
+allows it; required trust, retired or compromised keys and unavailable evidence
+can block interaction independently of signature integrity.
+
+**Tools → Signing** lists every participant's current key, its fingerprint and
+whether you approved it. **Participants** also shows current-key approval.
+An older message can use a different key from the participant's current key;
+inspect the message fingerprint when comparing them. Unsigned messages say so,
+and unverified messages never show as verified.
 
 Signature validity, local trust and lifecycle are separate labels. For a required
 scope, verify the fingerprint independently, enter it exactly and use **Trust
@@ -40,7 +54,7 @@ Development installation: `npm ci --ignore-scripts`; install the pinned
 `vendor/agent-file-board/requirements-signing.txt` into the test Python environment.
 Set `AFB_SIGNING_PYTHON` if it differs from `python3`, install the test browser
 with `npx playwright install chromium`, then run `npm test`. Runtime
-crypto is bundled offline. The viewer pins the exact canonical2.11.0 release tag
+crypto is bundled offline. The viewer pins an exact canonical release tag
 and passes the strict release checker. Existing older release assets stay frozen.
 
 The implementation covers message signatures. Avatars, artifact signatures and

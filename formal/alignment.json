@@ -49,14 +49,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "6f81c22b60e03ce3665f1f840333da13ad83468cb1dbf94155e8533112ddcc94"
+      "sha256": "a523be6b1d5203b7177fc7fc7cdf901b8c79ff2169850b0d6eae053efba31dce"
     },
     "formal/README.md": {
       "path": "formal/README.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "18cb5c65a340a930c06623864add64965f12a35c972d50147e910e3b02328373"
+      "sha256": "1db3951ff33c003ae9cbc60fcd473e9130bade15e91f7861de702e4f77ff2f0d"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
@@ -84,7 +84,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "efbce44f5fc62a8b3420656bd38b9f90190c491a4cb0b4caf8a5b4a94afcb893"
+      "sha256": "1e7e9ebaf678c712fb38f8bc32bae64806523e4287d742053d94fddda11c3b71"
     },
     "host-writer": {
       "path": "board.html",
@@ -102,7 +102,7 @@
         "start": "let viewerActiveDeliveries=0;",
         "end": "async function setTopicTitle(){"
       },
-      "sha256": "edb5fb6612c4c14778787b1e059be206b67d696127d91a440e92068c75b09e21"
+      "sha256": "2af29550691c01f04f1c73504779e394ac03a0474563732acbf0144cee99aaa9"
     },
     "host-composer": {
       "path": "board.html",
@@ -262,7 +262,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "3dc26c5673b9b01f900652fdc24fc5721ab3e0517102fea985ec63c245d2284e"
+      "sha256": "5b23b78df5919fb39e694fdeb0f43d668145cd323bd9b75385b6e99414b776f2"
     },
     "scripts/extension-ui.js": {
       "path": "scripts/extension-ui.js",
@@ -290,7 +290,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "f73eba9fd91e06022a02928734cdf4a8364ed3ceee9f78d1fff6a6895bad7270"
+      "sha256": "19bbcfa5c1dd2dfeeb39c2b644c317d249b5b7fcb709c092debe6f7d46209a92"
     },
     "tests/viewer-updates-unit.test.js": {
       "path": "tests/viewer-updates-unit.test.js",
@@ -304,7 +304,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "0a3478179f8c9ac07e24e2626922026467642a610b7506adab7178efc5d85261"
+      "sha256": "9aa7991faeb547548ef60de35b6145573ae228acc7c2f729e57839be2cbd18de"
     },
     "formal/ViewerUpdate.tla": {
       "path": "formal/ViewerUpdate.tla",
@@ -360,7 +360,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "43f69e7e0e56808fdcc9f1e629b47f745c7c77bedc220e86aa005fc53d651e87"
+      "sha256": "e3e502d7e67b6c266dde76c9f00e7f8fb5096cd70cea8601317017112aa2cd71"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
@@ -374,7 +374,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "1e4d542498a7a6f989d8cd6176f6a3a9dfc061373357c0771541c6b6687e7414"
+      "sha256": "9f2c3b80b1f941aa208cef529bae09b31af215f422ef10b6e05c1ff9378ec5af"
     },
     "formal/collect_signer.js": {
       "path": "formal/collect_signer.js",
@@ -388,7 +388,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "fa6f7c0224f69b2946420682bad4ae4b8eb24d35696e5c6f9efa713067abf2c9"
+      "sha256": "4adf56d2b50a43bcbde72bfc50256a80090c812be505263677c13a057cf02e41"
     },
     "formal/watchdog.py": {
       "path": "formal/watchdog.py",
@@ -438,12 +438,211 @@
         "kind": "file"
       },
       "sha256": "080d1e9dfccbdedaaa605f723af8142e3cdd269e22956a3ddec9117d7a18aba6"
+    },
+    "formal/AnswerAcceptance.tla": {
+      "path": "formal/AnswerAcceptance.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "805fb0e34930b93d37ec48b61c84cda8ca12be52c22fbf1cbe9f11c0b95cb122"
+    },
+    "formal/AnswerAcceptance.cfg": {
+      "path": "formal/AnswerAcceptance.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9d9d1f79d2bad46f1d21af3013e3927cb22479561830d94e5fddc2468bbdd418"
+    },
+    "formal/AnswerAcceptanceBadConflict.cfg": {
+      "path": "formal/AnswerAcceptanceBadConflict.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "eb95687e8c6c3514e6462951d0eb85302963946be667cbd147799acb0336d562"
+    },
+    "formal/AnswerAcceptanceBadFirst.cfg": {
+      "path": "formal/AnswerAcceptanceBadFirst.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0d46e908c1fcf84d2f167ab41963ec52e3da0b8dde1b086cfac7983bb5d0a0ff"
+    },
+    "formal/AnswerAcceptanceBadTrust.cfg": {
+      "path": "formal/AnswerAcceptanceBadTrust.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "df0473a4b09237618d0ecec5b040d3f94c6748dcf613ea4400b4536cbef68c55"
+    },
+    "formal/AnswerAcceptanceReachable.cfg": {
+      "path": "formal/AnswerAcceptanceReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "084804151494255d8bf00e55d06b4898e4615f363357586ad59a3bfeb7bf35fb"
+    },
+    "scripts/answer-state.js": {
+      "path": "scripts/answer-state.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e76504ddcf31d55053ce420e8267d85e110680e5a079552f9ed58078ee41b2f3"
+    },
+    "scripts/embed_forms.js": {
+      "path": "scripts/embed_forms.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "59863bedee88e9ec96929020d0a8ed4cbb9a73e6bea2b2ac579c2d30b1e712ce"
+    },
+    "tests/answer-state-unit.test.js": {
+      "path": "tests/answer-state-unit.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "77cb4f05316a728f82bfe12e62778710e1437ecfc593491269058e04b58b2977"
+    },
+    "tests/answer-state.test.js": {
+      "path": "tests/answer-state.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "334b83a2d1d9b54471fe39b2e05098cf471f4a524c4fe0bcb233c2989e105b7c"
+    },
+    "tests/forms.test.js": {
+      "path": "tests/forms.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1117a99d633a29167c9d7819de6eb56efd79117c0aa734d7a051feaad0d38af0"
+    },
+    "formal/collect_answers.js": {
+      "path": "formal/collect_answers.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "520418381423039f251be670a7158b6f061eacf81a38eeedef9a2e9c8c374347"
+    },
+    "formal/AnswerAcceptanceBadAuthority.cfg": {
+      "path": "formal/AnswerAcceptanceBadAuthority.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9e5e56ab99153dfd35d70a807b1ecbc067c4177b8341781d2774506c84bde69d"
+    },
+    "tests/signing-scenarios.test.js": {
+      "path": "tests/signing-scenarios.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "f4bc986f3fe7104bd45e03e24173fac27c8284b1becaa1c82572dd8d36cb331b"
+    },
+    "host-answer-index": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function buildModel(files, dirs, meta){",
+        "end": "function postingTime(value){"
+      },
+      "sha256": "10e780be0eb241f8410d2a0959d866130fa74f0788800652291a60079122c7e5"
+    },
+    "host-answer-read": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "async function readFromHandle(preserve = true){",
+        "end": "function loadBoard(model, background = false){"
+      },
+      "sha256": "91c6a342d296483bcacd9ee7dd66f7078ca05207ef5d10ef860874ef91ad68ee"
+    },
+    "host-answer-metadata": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function messageMetadata(h, source){",
+        "end": "function richBody(text, q, contentType){"
+      },
+      "sha256": "2b47e0b7753e85a5c6ffed89448d6eeeae2cf9e789ea40e1d4bcb52d23eabcc1"
+    },
+    "host-answer-controls": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function choiceHtml(m){",
+        "end": "function dayLabel(d){"
+      },
+      "sha256": "783f6edb8364eb368a0490332aac49e2ac00d86f7b3396f0ea72fcbf116b5cd7"
+    },
+    "host-answer-compose": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function composeMessage(o){",
+        "end": "/* ===== append-only message write path ===== */"
+      },
+      "sha256": "5bf2e5a5c836b1a6d6972825c729cf3ff32370ab715c447664cb1feae907c454"
+    },
+    "tests/rich.test.js": {
+      "path": "tests/rich.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "8b211c3d4a425e85a8b7c7d076b411dde766dae51d108fef188f16d9de1ff65b"
+    },
+    "tests/offline-tools.test.js": {
+      "path": "tests/offline-tools.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4fa3558b213473f108df85961c17b520ca09eebaf28c382906a883a7e732c0a6"
+    },
+    "tests/demo.test.js": {
+      "path": "tests/demo.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a2fa9d7f3d80c6cf5f4b8ae60496cf848b03cb05a58689e81ba87db7aaf2e9b5"
+    },
+    "tests/viewer-package.test.js": {
+      "path": "tests/viewer-package.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0e63510f69898b12b0dd846dbed5149fdea218e9d07e35e286498f952c0c7628"
+    },
+    "tests/i18n.test.js": {
+      "path": "tests/i18n.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "86ec9fe3bd9aa2a4f139250bd6c9332ee98bafb43a627eda6ad02c58a7a49ef1"
+    },
+    "tests/render.test.js": {
+      "path": "tests/render.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "83d441a61eb6896c70a7f30179ea94cc5524a5d3c436d5d8c57410d2536b4f4d"
+    },
+    "tests/upgrades.test.js": {
+      "path": "tests/upgrades.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "502e2727f24fdfe52dcdc953537ed6c6e72fb1455605914be47ce728fda19388"
+    },
+    "tests/signing-clarity.test.js": {
+      "path": "tests/signing-clarity.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "367a2e80b5de15c97ac98097c1fe4a1d2a115279b105809c866b96853921aa5a"
     }
   },
   "models": [
     {
       "module": "Signer.tla",
-      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory.",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions.",
       "states": {
         "catalog": {
           "anchors": [
@@ -882,7 +1081,8 @@
         ".github/workflows/formal-watchdog.yml",
         "scripts/ci_retry.py",
         "tests/test_ci_retry.py",
-        ".github/workflows/test.yml"
+        ".github/workflows/test.yml",
+        "tests/signing-clarity.test.js"
       ],
       "conformance": [
         "tests/signing-provider.test.js",
@@ -1228,6 +1428,298 @@
         "formal/collect_traces.js"
       ],
       "limits": "Two windows, one manual check, aggregate draft/write flags. HTTP authenticity, API/storage partition rules and clock rollback remain unit/browser tests. No installer or general refinement proof."
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit; browser delivery checks it against reviewed source bytes. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. Reviewed demo/history comparisons and stale-submit regressions for read-only accepted questions, and exact 2.12 release/version/update fixtures; escape, immutable-history and duplicate-refusal assertions remain explicit. Verify older messages explicitly reprojects acceptance after eligibility changes, with current-board guards around the asynchronous refresh and a native 201-message-window regression. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions.",
+      "states": {
+        "state": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Shared immutable snapshot and actual resolver result; no viewer-local winner cache."
+        },
+        "state.denied": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Eligibility exclusion of first claim; production resolver must block rather than promote history."
+        },
+        "state.status": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-index",
+            "host-answer-read",
+            "host-answer-controls"
+          ],
+          "reason": "Observed none/legacy/accepted/conflict/blocked projection of shared records."
+        },
+        "state.visible": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-index",
+            "host-answer-read",
+            "host-answer-controls"
+          ],
+          "reason": "Named normalized messages/claims/resolutions supplied to the production resolver in all orders."
+        },
+        "state.winner": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-index",
+            "host-answer-read",
+            "host-answer-controls"
+          ],
+          "reason": "Observed exact referenced answer, abstracted to a bounded message symbol."
+        }
+      },
+      "operators": {
+        "Claims": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "History is excluded from acceptance heads and cannot displace an accepted answer."
+        },
+        "FirstWins": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Safety checks later history cannot overwrite a recorded winner and offline forks remain visible."
+        },
+        "Heads": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "A state record supersedes only its explicitly referenced parents; unrelated offline claims survive."
+        },
+        "Init": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Faithful initial shared-snapshot projection."
+        },
+        "Initial": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "No evidence, no recorded acceptance; legacy replies alone do not invent a historical winner."
+        },
+        "Missing": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Missing referenced parent/winner evidence blocks acceptance, with no timestamp fallback."
+        },
+        "NeverResolved": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Reachability control requires an accepted choice after explicit merge of concurrent resolutions."
+        },
+        "Next": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "The same arrival/trust transition relation is used by TLC and actual observed trace checks."
+        },
+        "Nodes": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Three roots, one history reply and its explicit owner anchor, two concurrent owner resolutions, one merge and unauthorized evidence."
+        },
+        "Observe": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Arrival/reload schedule adds one immutable record; timestamp and arrival order do not arbitrate."
+        },
+        "Parents": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Exact-byte parent references validated and traversed by the resolver; missing evidence blocks."
+        },
+        "Projection": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-metadata",
+            "host-answer-compose"
+          ],
+          "reason": "Independent bounded specification of the production DAG projection and eligibility rules."
+        },
+        "Safe": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Actual status/winner must equal the faithful projection, including blocked and conflict states."
+        },
+        "Spec": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Bounded safety over shared-snapshot transitions; no claim of distributed online linearizability."
+        },
+        "Step": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "One observed arrival or trust change; repeated snapshots are permitted stuttering in trace checks."
+        },
+        "Trust": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Changed local eligibility reruns projection; it cannot promote later ordinary history."
+        },
+        "TypeOK": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Finite message identities, trust flag, statuses and winner symbols constrain the explored abstraction."
+        },
+        "Winner": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Root self claims and author resolutions inherit an eligible claimed answer."
+        },
+        "Winners": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Distinct inherited head answers expose conflict; identical concurrent choices converge."
+        },
+        "vars": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "All modeled shared projection fields are observed by runtime trace collectors."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "scripts/embed_tools.js",
+        "scripts/embed_signing.js",
+        "normal-test-command",
+        "formal/Signer.tla",
+        "formal/Signer.cfg",
+        "formal/SignerBadUnlock.cfg",
+        "formal/SignerBadEpoch.cfg",
+        "formal/SignerBadGuard.cfg",
+        "formal/SignerBadDraft.cfg",
+        "formal/SignerReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_signer.js",
+        "package-lock.json",
+        "formal/collect_traces.js",
+        "formal/watchdog.py",
+        "formal/test_watchdog.py",
+        "formal/test_generation.py",
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml",
+        "formal/AnswerAcceptance.tla",
+        "formal/AnswerAcceptance.cfg",
+        "formal/AnswerAcceptanceBadConflict.cfg",
+        "formal/AnswerAcceptanceBadFirst.cfg",
+        "formal/AnswerAcceptanceBadTrust.cfg",
+        "formal/AnswerAcceptanceReachable.cfg",
+        "scripts/answer-state.js",
+        "scripts/form-board.js",
+        "scripts/embed_forms.js",
+        "tests/answer-state-unit.test.js",
+        "tests/answer-state.test.js",
+        "tests/forms.test.js",
+        "formal/collect_answers.js",
+        "formal/AnswerAcceptanceBadAuthority.cfg",
+        "tests/signing-scenarios.test.js",
+        "scripts/signing-ui.js",
+        "host-answer-index",
+        "host-answer-read",
+        "host-answer-metadata",
+        "host-answer-controls",
+        "host-answer-compose",
+        "tests/rich.test.js",
+        "tests/offline-tools.test.js",
+        "tests/demo.test.js",
+        "tests/viewer-package.test.js",
+        "tests/i18n.test.js",
+        "tests/render.test.js",
+        "tests/upgrades.test.js",
+        "tests/signing-clarity.test.js"
+      ],
+      "conformance": [
+        "tests/answer-state-unit.test.js",
+        "tests/answer-state.test.js",
+        "formal/collect_traces.js",
+        "tests/signing-scenarios.test.js"
+      ],
+      "limits": "Nine named immutable records, three root answers, one ordinary history message, one explicit legacy anchor, two concurrent resolutions and one merge; one reversible eligibility flag. Crypto, parsing/hash/source binding, UI/storage writes, arbitrary graph depth and general implementation refinement remain executable tests. Equal complete snapshots plus eligibility converge; disconnected first acceptance has explicit forks, never a global lock."
     }
   ]
 }

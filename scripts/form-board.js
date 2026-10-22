@@ -23,10 +23,11 @@ function formPlaceholder(m){if(!m.bodyLoaded)return '';if(!m.body.trim())return 
 function reuseFormNodes(next,move){for(const node of next.querySelectorAll('[data-form-path]')){const saved=formRoots.get(node.dataset.formPath),m=B?.byPath.get(node.dataset.formPath);if(saved&&saved.element.isConnected&&saved.signature===formKey(m))node.replaceWith(move?saved.element:saved.element.cloneNode(true));}}
 function disposeForms(){for(const saved of formRoots.values())saved.dispose();formRoots.clear();}
 function mountForms(){
+ bindAnswerChoices();
  for(const[path,saved]of formRoots)if(!saved.element.isConnected){saved.dispose();formRoots.delete(path);}
  for(const element of $('#feed').querySelectorAll('[data-form-path]')){
   const m=B?.byPath.get(element.dataset.formPath);if(!m?.question||m.metadataError)continue;
-  const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:signingEligible(m)&&!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
+  const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:answerSubmissionOpen(m)&&signingEligible(m)&&!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
   const saved=formRoots.get(m.path);if(saved?.element===element&&saved.loading===loading){saved.dispose.update(options);continue;}if(saved?.element===element)saved.dispose();
   const fail=()=>{element.querySelector('.form-error').hidden=false;element.querySelector('.form-mount').hidden=true;};let dispose=()=>{};
   try{if(!window.BoardFormRenderer)throw Error('Renderer unavailable');dispose=window.BoardFormRenderer.mount(element.querySelector('.form-mount'),m.question,options,fail);}catch(e){fail();}
@@ -36,7 +37,7 @@ function mountForms(){
 function formAnswerBody(q,answer){const lines=[q.prompt,''];for(const f of q.fields){const value=answer.values[f.id];if(value===null){lines.push(f.label+': null');continue;}if(f.type==='editable-table'){if(f.rowOperations){lines.push(f.label+': '+JSON.stringify(value));continue;}lines.push(f.label+': '+value.changes.length+' '+t("form_changed_cells"));for(const c of value.changes)lines.push('  '+c.row+' / '+f.columns.find(col=>col.id===c.column).label+': '+JSON.stringify(c.value));}else lines.push(f.label+': '+JSON.stringify(value));}return lines.join('\n');}
 async function sendFormAnswer(path,definition,sender,answer){
  const m=B?.byPath.get(path),origin=dirHandle,identity=boardStorageId;
- if(!m||!signingEligible(m)||m.metadataError||![2,3].includes(m.question?.version)||m.h.QUESTION!==definition||currentUser()!==sender)throw Error(t("form_stale"));
+ if(!m||!answerSubmissionOpen(m)||!signingEligible(m)||m.metadataError||![2,3].includes(m.question?.version)||m.h.QUESTION!==definition||currentUser()!==sender)throw Error(t("form_stale"));
  const key=formKey(m);if(submittingForms.has(key))return null;
  BoardFormContract.answer(answer,m.question);if(new TextEncoder().encode(JSON.stringify(answer)).length>65536)throw Error(t("form_too_large"));
  if(B.msgs.some(x=>x.dkey===m.dkey&&x.replyTo===m.file&&x.author===sender&&x.answer?.version===m.question.version&&JSON.stringify(x.answer.values)===JSON.stringify(answer.values)))return t("choice_already");
@@ -52,4 +53,64 @@ async function sendFormAnswer(path,definition,sender,answer){
   const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,confirmedAgent:confirmed});
   await deliverMessage(msg);saveFormDraft(key,m.question,BoardFormContract.initial(m.question),true);await formStorageWrites;return t(canWrite()?"choice_sent":"form_downloaded");
  }finally{submittingForms.delete(key);if(B)build({background:true,preserveComposer:true});}
+}
+
+/* Acceptance is derived solely from shared immutable message bytes. */
+async function prepareAnswerStates(model){
+ const relevant=model.msgs.filter(m=>m.question||m.h.ANSWER!==undefined||m.h['ANSWER-STATE']!==undefined);
+ await readInBatches(relevant,async m=>{try{
+  const bytes=m.source?.file?await rawBytes(m.source.file):new TextEncoder().encode(m.rawText||'');
+  if(bytes.length>4194304)throw Error('Acceptance message exceeds 4 MiB');
+  m.answerDigest=await shaBytes(bytes);
+  const parsed=parseHeaders(new TextDecoder('utf-8',{fatal:true}).decode(bytes)).native;
+  if(parsed.duplicates.length||!parsed.hasSeparator||([2,3].includes(m.question?.version)&&!parsed.body.trim()))throw Error('Invalid readable acceptance evidence');
+  m.answerEvidence=true;
+ }catch(e){m.answerEvidence=false;m.answerEvidenceError=e.message;}});
+ for(const q of relevant.filter(m=>m.question)){
+  if(q.metadataError||q.quarantined||!q.answerEvidence||!signingEligible(q)){q.acceptance={status:'blocked',reason:'Question evidence is unavailable or signing-excluded',history:[],choices:[],heads:[]};continue;}
+  const records=[];
+  for(const m of relevant){
+   if(m.dkey!==q.dkey||m.replyTo!==q.file||m.tid!==q.tid||(m.metadataError&&!m.quarantined))continue;
+   try{messageMetadata(m.h,q.h);if(!m.answerDigest)throw Error('Missing bytes');records.push({file:m.file,sha256:m.answerDigest,author:m.author,answer:!!m.answer,state:AnswerState.metadata(m.h,q.h,jsonObject),eligible:!!m.answerEvidence&&!m.quarantined&&signingEligible(m)});}catch{}
+  }
+  q.acceptance=AnswerState.resolve(q.answerDigest,records,q.author);
+ }
+}
+function acceptedAnswerHtml(m){
+ const a=m.acceptance;if(!a||a.status==='none')return '';
+ const text=(en,pl)=>esc(exText(en,pl));let html=`<section class="canonical-answer choice-form" data-answer-status="${esc(a.status)}"><h4>${text('Accepted answer','Przyjęta odpowiedź')}</h4>`;
+ if(a.status==='accepted'){
+  const answer=B.messageIndex.get(m.dkey+'|'+a.winner.file);
+  if(!answer||answer.answerDigest!==a.winner.sha256)return html+`<p>${text('Accepted evidence unavailable.','Przyjęta odpowiedź jest niedostępna.')}</p></section>`;
+  html+=`<p>${esc(personOf(answer.author,answer.authorName).name)} · <code>${esc(answer.file)}</code></p>`;
+  if([2,3].includes(answer.answer?.version))html+=answerReview({...answer,bodyLoaded:true});
+  else html+=`<p>${esc(m.question.options.filter(o=>answer.answer.selected.includes(o.id)).map(o=>o.label).join('; '))}</p>${answer.answer.text?`<p style="white-space:pre-wrap">${esc(answer.answer.text)}</p>`:''}`;
+ }else{
+  html+=`<p role="status">${a.status==='conflict'?text('Conflicting offline acceptances. The question author must choose.','Sprzeczne przyjęcia offline. Autor pytania musi wybrać.'):a.status==='legacy'?text('Earlier replies have no recorded acceptance. The question author can record a choice.','Wcześniejsze odpowiedzi nie mają zapisanego przyjęcia. Autor pytania może wybrać.'):text('Acceptance blocked: ','Przyjęcie zablokowane: ')+esc(a.reason||'')}</p>`;
+  const choices=a.status==='legacy'?a.history:a.choices;
+  if(a.status!=='blocked')for(const ref of choices){const answer=B.messageIndex.get(m.dkey+'|'+ref.file);if(!answer)continue;html+=`<div><code>${esc(ref.file)}</code>${answer.answer?.text?`<p>${esc(answer.answer.text)}</p>`:''}${[2,3].includes(answer.answer?.version)?answerReview({...answer,bodyLoaded:true}):`<p>${esc(m.question.options?.filter(o=>answer.answer.selected.includes(o.id)).map(o=>o.label).join('; ')||'')}</p>`}${currentUser()===m.author?`<button class="btn" ${submittingForms.has(formKey(m))?'disabled':''} data-accept-question="${esc(m.path)}" data-accept-file="${esc(ref.file)}">${text('Accept this answer','Przyjmij tę odpowiedź')}</button>`:''}</div>`;}
+ }
+ return html+`<p class="hint">${text('Later submissions remain in message history.','Późniejsze odpowiedzi pozostają w historii wiadomości.')}</p></section>`;
+}
+function bindAnswerChoices(){for(const button of $('#feed').querySelectorAll('[data-accept-question]'))button.onclick=async()=>{
+ const q=B?.byPath.get(button.dataset.acceptQuestion),snapshot=q?.acceptance,origin=B,root=dirHandle,identity=boardStorageId;
+ if(!q||currentUser()!==q.author||!['legacy','conflict'].includes(snapshot?.status))return;
+ const winner=(snapshot.status==='legacy'?snapshot.history:snapshot.choices).find(r=>r.file===button.dataset.acceptFile);if(!winner)return;
+ const pending=formKey(q);if(submittingForms.has(pending))return;submittingForms.add(pending);
+ for(const control of $('#feed').querySelectorAll('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
+ try{
+  const sender=signingSender(currentUser());if(sender!==q.author)throw Error('Select the question author identity');
+  const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return;
+  if(B!==origin||dirHandle!==root||boardStorageId!==identity)throw Error(t('form_stale'));
+  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},confirmedAgent:confirmed});
+  await deliverMessage(msg);
+ }catch(e){toast(e.message);}finally{submittingForms.delete(pending);if(B)build({background:true,preserveComposer:true});}
+};}
+function answerSubmissionOpen(q){return !q.acceptance||q.acceptance.status==='none';}
+function withFirstAnswerClaim(msg){
+ const h=parseHeaders(msg.text).native.h;if(!h.ANSWER||h['ANSWER-STATE'])return msg;
+ const q=B?.msgs.find(m=>m.dkey===((h.SCOPE==='DIRECT'?'direct:':'room:')+(h.SCOPE==='DIRECT'?h['DIRECT-PARTICIPANTS'].split(',').map(x=>x.trim()).join('--'):h.ROOM))&&m.file===h['REPLY-TO']);
+ if(!q?.answerDigest||q.acceptance?.status!=='none')return msg;
+ const state={version:1,questionDigest:q.answerDigest,parents:[],winner:null};
+ return {...msg,text:msg.text.replace('\n---\n','\nANSWER-STATE: '+JSON.stringify(state)+'\n---\n')};
 }

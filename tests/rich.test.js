@@ -66,7 +66,7 @@ test("single choice is exclusive and sends an immutable structured reply without
   await page.fill("#cBody","Keep my unfinished message");
   await form(page).locator("input[value=stage]").check(); await form(page).locator("input[value=prod]").check();
   assert.equal(await form(page).locator("input:checked").count(),1);
-  await form(page).locator("[type=submit]").click();
+  const stale=await form(page).elementHandle();await form(page).locator("[type=submit]").click();
   const answer=await postedAnswer(page),headers=Object.fromEntries(answer.text.split("\n---\n")[0].split("\n").map(line=>{const at=line.indexOf(": ");return [line.slice(0,at),line.slice(at+2)];}));
   assert.deepEqual(JSON.parse(headers.ANSWER),{question:"release",selected:["prod"]});
   assert.equal(headers["REPLY-TO"],QFILE);assert.equal(headers.FROM,"human-owner-01");assert.equal(headers.TO,"implementation-agent-01");
@@ -74,7 +74,7 @@ test("single choice is exclusive and sends an immutable structured reply without
   assert.match(answer.text,/Selected: Production/);
   assert.equal(await page.evaluate(path=>window.__fakefs.read(path),questionPath),original);
   assert.equal(await page.inputValue("#cBody"),"Keep my unfinished message");
-  await form(page).locator("[type=submit]").click(); assert.match(await page.textContent("#toast"),/already been posted/);
+  await page.waitForSelector("[data-answer-status=accepted]");await page.evaluate(old=>sendChoice(old),stale);assert.equal(await page.locator(".choice-form [type=submit]").count(),0);
   assert.equal((await page.evaluate(()=>window.__fakefs.dump())).filter(f=>f.path.endsWith(".txt")&&f.text.includes("\nANSWER: ")).length,1);
   await ctx.close();
 });
@@ -194,34 +194,21 @@ test("long code lines and nested tables scroll within message bounds on desktop 
 });
 
 
-test("questions accept notes with choices and text-only replies, deduplicating the full answer",async()=>{
-  const {ctx,page}=await boot();
-  await form(page).locator("textarea").fill("  ");
-  assert.equal(await form(page).locator("[type=submit]").isDisabled(),true);
-  await form(page).locator("input[value=stage]").check();
-  const text="Please verify first.\n<table>custom 🦊</table>";
-  await form(page).locator("textarea").fill(text);
-  await form(page).locator("[type=submit]").click();
-  const first=await postedAnswer(page);
-  assert.deepEqual(JSON.parse(first.text.match(/^ANSWER: (.*)$/m)[1]),{question:"release",selected:["stage"],text});
-  assert.ok(first.text.includes("\n\n"+text));
-  await page.waitForFunction(()=>window.__boardTest.stats.builds>0 && document.querySelectorAll("article").length>1);
-  await form(page).locator("[data-clear-choices]").click();
-  assert.equal(await form(page).locator("input:checked").count(),0);
-  await form(page).locator("[type=submit]").click();
-  await page.waitForFunction(()=>window.__fakefs.dump().filter(f=>f.path.endsWith(".txt")&&f.text?.includes("\nANSWER: ")).length===2);
-  const second=await postedAnswer(page);
-  assert.deepEqual(JSON.parse(second.text.match(/^ANSWER: (.*)$/m)[1]),{question:"release",selected:[],text});
-  await page.waitForFunction(()=>document.querySelectorAll("article").length>2);
-  assert.equal(await page.locator(".body table").count(),0);
-  await form(page).locator("[type=submit]").click();
-  assert.match(await page.textContent("#toast"),/already been posted/);
-  await form(page).locator("textarea").fill("A different reply");
-  await form(page).locator("[type=submit]").click();
-  await page.waitForFunction(()=>window.__fakefs.dump().filter(f=>f.path.endsWith(".txt")&&f.text?.includes("\nANSWER: ")).length===3);
-  const out=h.path.join(h.tmpDir(),"posted");h.fs.mkdirSync(out);await h.dumpFakeFs(page,out);
-  const validation=h.boardctl(["validate","--path",out]);assert.equal(validation.code,0,validation.err);
-  await ctx.close();
+test("questions preserve choice notes and text-only replies; accepted results refuse stale repeated submissions",async()=>{
+  const note="Please verify first.\n<table>custom 🦊</table>";
+  for(const [selected,text] of [[["stage"],note],[[],note],[[],"A different reply"]]){
+    const {ctx,page}=await boot();try{
+      await form(page).locator("textarea").fill("  ");assert.equal(await form(page).locator("[type=submit]").isDisabled(),true);
+      await form(page).locator("input[value=stage]").check();
+      if(!selected.length){await form(page).locator("[data-clear-choices]").click();assert.equal(await form(page).locator("input:checked").count(),0);}
+      await form(page).locator("textarea").fill(text);const stale=await form(page).elementHandle();await form(page).locator("[type=submit]").click();
+      const first=await postedAnswer(page);assert.deepEqual(JSON.parse(first.text.match(/^ANSWER: (.*)$/m)[1]),{question:"release",selected,text});assert.ok(first.text.includes("\n\n"+text));
+      await page.waitForSelector("[data-answer-status=accepted]");await page.evaluate(old=>sendChoice(old),stale);
+      assert.equal((await page.evaluate(()=>window.__fakefs.dump())).filter(f=>f.path.endsWith(".txt")&&f.text?.includes("\nANSWER: ")).length,1);
+      assert.equal(await page.locator(".body table,.canonical-answer table").count(),0);assert.match(await page.locator(".canonical-answer").innerText(),new RegExp(text.includes('custom')?'custom':'A different reply'));
+      const out=h.path.join(h.tmpDir(),"posted");h.fs.mkdirSync(out);await h.dumpFakeFs(page,out);const validation=h.boardctl(["validate","--path",out]);assert.equal(validation.code,0,validation.err);
+    }finally{await ctx.close();}
+  }
 });
 
 test("custom text, selection and caret survive refresh and identity changes",async()=>{
