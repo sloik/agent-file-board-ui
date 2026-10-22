@@ -49,7 +49,8 @@ async function action(page,label) {
     const details=button.locator('xpath=ancestor::details[1]');
     if(await details.count())await details.locator(':scope > summary').click();
   }
-  await button.click();await expect(button).toBeEnabled();
+  await button.click();
+  await expect(page.locator('#signingDialog .signing-feedback').filter({hasText:/^(Working…|Pracuję…)$/})).toHaveCount(0);
 }
 async function closeSigning(page) {
   await page.locator('#signingDialog [data-action="close"]').click();

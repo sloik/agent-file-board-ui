@@ -15,7 +15,7 @@ before(async()=>{
 after(async()=>{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));});
 const boot=t=>native.boot(t,browser,url);
 const control=(page,action)=>page.locator(`#signingDialog [data-action="${action}"]`);
-async function act(page,action){const button=control(page,action);await button.click();await expect(button).toBeEnabled();}
+const act=(page,action)=>native.action(page,action);
 async function language(page,value){await page.click('#gear');await page.selectOption('#sLang',value);await page.click('#sClose');}
 async function fits(page){
   const overflow=await page.locator('#signingDialog').evaluate(dialog=>{
