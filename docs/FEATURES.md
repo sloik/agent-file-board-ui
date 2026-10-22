@@ -514,9 +514,9 @@ through each task, a two-person comparison and recovery from blocked states.
 
 ## Screenshot coverage and reproduction
 
-All screenshots show actual UI2.10.0 using fictional disposable fixtures. Main
-views and report/form galleries have been refreshed; newer workflows have desktop
-and phone captures. Source/diff pictures isolate the shared component used in
+Signing captures show the task-based signing layout; the other galleries show
+actual UI2.10.0. All use fictional disposable fixtures, with desktop and phone
+captures for the newer workflows. Source/diff pictures isolate the shared component used in
 messages, reports and extensions. See [the screenshot inventory](reference/SCREENSHOTS.md)
 for commands and feature-to-image coverage. The signing illustrations above are
 explanatory diagrams; actual UI captures are listed in the inventory. Avatars

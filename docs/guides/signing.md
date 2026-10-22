@@ -13,7 +13,7 @@ outgoing messages. These are three separate tasks.
 | --- | --- | --- |
 | Understand a message’s status | Expand its signature status in the conversation | The message and its available public signing evidence; no private key |
 | Check who I currently trust | **Tools → Signing → Review a participant key**, or **Participants** | Your local approvals in this browser for this board location |
-| Approve someone’s key | **Review current key**, compare the fingerprint separately, then **Approve this exact key** | An independent trusted way to compare the full fingerprint |
+| Approve someone’s key | Select a participant, compare the displayed fingerprint separately, then **Approve this exact key** | An independent trusted way to compare the full fingerprint |
 | Sign my replies | **Tools → Signing → Sign your messages** | A writable board and my own registered private key file |
 | Check older messages | **Check next 200 older messages** | The older messages and their public evidence |
 | Investigate blocked input | The received-message section and its inspection control | Public evidence; inspection does not enable reply/form actions |
@@ -25,7 +25,9 @@ someone else’s public key does **not** unlock signing as that participant.
 
 Every message shows a signature status. Expand it to see the message’s signing
 fingerprint and explanation. Read the signature, your key approval and any
-blocking reason separately:
+blocking reason separately. This capture uses a fictional sample participant:
+
+![Expanded message status: the signature is verified, but its signing key has not been approved locally.](../images/signing-message.png)
 
 | What you see | What it means | What to do next |
 | --- | --- | --- |
@@ -65,9 +67,9 @@ without possessing Maya’s private key.
 
 ![Maya shares a public signing key on the board. Sam independently compares its full fingerprint with Maya, then approves that exact key locally. Maya’s private key never leaves Maya.](../images/signing-key-comparison.svg)
 
-1. Sam opens **Tools → Signing → Review a participant key**, selects Maya and
-   chooses **Review current key**. The viewer shows the current public key’s
-   full fingerprint and approval state.
+1. Sam opens **Tools → Signing → Review a participant key** and selects Maya.
+   The viewer automatically shows the current public key’s full fingerprint and
+   approval state.
 2. Sam contacts Maya through a separately trusted route, such as an established
    phone call or an in-person conversation. Maya reads the fingerprint from her
    own trusted setup. They compare the **entire fingerprint**, including its
@@ -84,6 +86,21 @@ without possessing Maya’s private key.
 **If they do not match, stop before approving.** Ask Maya to investigate the
 profile, board location and key change. Do not change signing requirements to
 make the warning disappear.
+
+If you expect a profile or key change that has not appeared, use **Refresh key details** to reload the board’s current public evidence, then compare again.
+Refreshing does not approve a key.
+
+<details>
+<summary>See the real controls before and after approval</summary>
+
+These captures use the fictional sample participant `research-agent-01`,
+separate from the Maya and Sam example above.
+
+![Before approval: the selected participant’s full current fingerprint is visible above the comparison field and explicit approval action.](../images/signing-review.png)
+
+![After approval: the selected participant’s current key is marked approved by you.](../images/signing-review-approved.png)
+
+</details>
 
 ### Where that approval applies
 
@@ -128,6 +145,16 @@ The viewer does not generate or register keys for you.
    topic titles and optional session notices through the same delivery path.
 4. Expand the sent message’s signature status to check the result and exact key.
    Your own local key approval is still a separate decision.
+
+<details>
+<summary>See the unlocked signing setup</summary>
+
+![Signing new messages as the explicitly selected sample participant human-owner-01; key locking and unsigned mode are separate actions.](../images/signing-own.png)
+
+The [phone capture](../images/signing-phone.png) shows the same task-based panel
+at a narrow width.
+
+</details>
 
 Private keys become non-extractable WebCrypto handles in this tab. They are not
 saved to browser storage, exported, logged or passed to extension workers.

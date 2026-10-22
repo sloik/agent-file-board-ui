@@ -1,4 +1,4 @@
-# Screenshot inventory — UI 2.10.0
+# Screenshot inventory
 
 Images show the real local `board.html`, rendered in Chromium with disposable,
 fictional boards and a folder-picker test adapter. No user boards are opened.
@@ -13,12 +13,19 @@ npm ci --ignore-scripts
 npx playwright install chromium
 npm run screenshots:all       # stop if any capture/assertion fails
 npm run screenshots:features  # only the newer workflows below
+node scripts/screenshot_signing.js  # signing tasks with real disposable keys
 ```
 
 Images are written to `docs/images/`. Install dependencies from the locked tree
 and keep the pinned canonical submodule initialized. Different OS fonts/emoji can
 change pixels. Viewer clocks and message observation times are fixed for most
 scenarios; the shared-information fixture also freezes the CLI producer clock.
+
+The signing capture also needs the pinned canonical signing dependencies in the
+Python interpreter used by the fixture. Install
+`vendor/agent-file-board/requirements-signing.txt` there; set `AFB_SIGNING_PYTHON`
+if it differs from `python3`. It creates disposable keys outside the board,
+exercises real signing and approval, and deletes those keys during cleanup.
 
 ## Feature coverage
 
@@ -27,6 +34,7 @@ scenarios; the shared-information fixture also freezes the CLI producer clock.
 | Conversation, unique identity colors, presence, guidance, Markdown/HTML, choices, repairs | [Overview](../images/board-overview.png), [identity](../images/board-identity.png), [presence](../images/board-presence.png), [guidance](../images/board-guidance.png), [choices](../images/board-choices.png), [HTML](../images/board-html.png), [repairs](../images/board-message-repairs.png) | Narrow layouts covered by specialized guides below | `screenshots.js` |
 | Compact composer | [Collapsed](../images/board-composer-compact.png), [expanded](../images/board-composer-options.png) | [Collapsed](../images/board-composer-compact-phone.png) | `screenshot_features.js` |
 | Local file actions | [Open file / containing folder](../images/board-file-actions.png) | Uses the optional desktop opener | `screenshot_features.js` |
+| Message signatures and exact-key approval | [Message details](../images/signing-message.png), [before approval](../images/signing-review.png), [after approval](../images/signing-review-approved.png), [own signing](../images/signing-own.png) | [Task layout](../images/signing-phone.png) | `screenshot_signing.js` |
 | Human operator claim | [Participant details](../images/board-operators.png) | Same responsive participant dialog; native/upload phone regression coverage | `screenshot_features.js` |
 | Notification follows and quick reply | [Center](../images/board-notifications.png), [sidebar menu](../images/board-sidebar-follow.png), [prepared reply](../images/board-notification-reply.png) | [Polish alert](../images/board-notifications-phone.png) | `screenshot_features.js` |
 | Extensions and code approval | [Declarative component](../images/board-extensions-component.png), [manager](../images/board-extensions-manager.png), [approval needed](../images/board-extension-review.png) | [Worker component](../images/board-extension-refresh-phone.png) | `screenshot_features.js` |
@@ -48,7 +56,8 @@ scenarios; the shared-information fixture also freezes the CLI producer clock.
 | Adaptive agent observation | [Interval table and operational guide](../guides/BOARD-LOOP.md) | CLI/skill capability, no viewer screen | No invented UI screenshot |
 
 The source/diff illustrations isolate the shared renderer and remain applicable;
-all full-board gallery captures above were refreshed with UI 2.10.0. The
+signing captures show the task-based signing layout, while the other full-board
+gallery captures above were refreshed with UI 2.10.0. The
 [signing guide](../guides/signing.md) includes two maintained source SVG
 illustrations: [three independent tasks](../images/signing-three-tasks.svg) and
 [an independent fingerprint comparison](../images/signing-key-comparison.svg).

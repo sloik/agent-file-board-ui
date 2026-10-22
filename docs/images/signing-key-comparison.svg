@@ -14,7 +14,7 @@
   <rect x="24" y="252" width="752" height="112" rx="12" fill="white" stroke="#bbcce0"/>
   <text x="44" y="284" class="label">Sam checks the message and current key</text>
   <text x="44" y="316" class="body">“Signature verified” checks the bytes. The key is still unapproved.</text>
-  <text x="44" y="344" class="small">Review current key → read its entire fingerprint.</text>
+  <text x="44" y="344" class="small">Select Maya → read the displayed full fingerprint.</text>
   <path d="M400 370 V397" class="arrow"/>
   <rect x="24" y="406" width="752" height="132" rx="12" fill="#e9f3ff" stroke="#6a9cd0"/>
   <text x="44" y="438" class="label">Sam compares it with Maya independently</text>
