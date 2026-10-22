@@ -98,7 +98,7 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   const rotated=f.rotate();assert.notEqual(rotated.fingerprint,f.owner.fingerprint);await refresh(f);
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);
   const old=await decision(page,root);assert.equal(old.lifecycle,'superseded');assert.equal(old.eligibility,'excluded');
-  await openSigning(page);await expect(page.locator(`[data-signing-participant="${f.owner.participant}"]`)).toContainText('Key changed — review needed');await closeSigning(page);
+  await openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(f.owner.participant);await expect(page.locator(`[data-signing-participant="${f.owner.participant}"]`)).toContainText('Key changed — review needed');await closeSigning(page);
   const thread=h.fs.readFileSync(h.path.join(f.proj,root),'utf8').match(/^THREAD: (T\d+)/m)[1];
   await page.selectOption('#cThread',`room:architecture|${thread}`);
   await page.fill('#cBody','Old capability cannot publish');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await expect(page.locator('#toast')).toHaveText('Write error: Trust the verified current fingerprint before posting');await assertNotPublished(page,'Old capability cannot publish');
@@ -174,12 +174,14 @@ test('unsigned messages and current-key approval are readable on a phone in both
   await page.setViewportSize({width:390,height:844});
   await expect(page.locator('.signing-facts summary').filter({hasText:'Unsigned message'}).first()).toBeVisible();
   await openSigning(page);
+  await page.getByLabel('Trust participant',{exact:true}).selectOption(owner.participant);
   await expect(page.locator(`[data-signing-participant="${owner.participant}"]`)).toContainText('Current key not approved by you');
   assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true,'fingerprints and explanation fit the dialog');
   await closeSigning(page);
   await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#sClose');
   await expect(page.locator('.signing-facts summary').filter({hasText:'Wiadomość bez podpisu'}).first()).toBeVisible();
   await openSigning(page);
+  await page.getByLabel('Trust participant',{exact:true}).selectOption(owner.participant);
   await expect(page.locator(`[data-signing-participant="${owner.participant}"]`)).toContainText('Nie zatwierdzono bieżącego klucza');
   assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true);
 });

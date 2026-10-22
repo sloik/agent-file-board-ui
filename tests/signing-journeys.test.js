@@ -33,7 +33,8 @@ test('signing is presented as distinct human tasks with visible form labels on d
       await page.setViewportSize({width,height:844});await native.openSigning(page);
       for(const id of ['check','review','own','advanced']){
         const section=page.locator(`#signing-${id}`);await expect(section).toBeVisible();
-        await expect(section.getByRole('heading')).not.toBeEmpty();
+        if(id==='advanced')await expect(section.locator(':scope > summary')).not.toBeEmpty();
+        else await expect(section.getByRole('heading')).not.toBeEmpty();
       }
       const labels=await page.locator('#signingDialog input,#signingDialog select').evaluateAll(fields=>fields.map(field=>({id:field.id,labels:[...field.labels||[]].map(label=>label.textContent.trim())})));
       assert.ok(labels.length>=4);for(const field of labels)assert.ok(field.labels.some(Boolean),`visible label for ${field.id}`);
