@@ -589,3 +589,10 @@ current releases. Viewers from 2.3 onward render all of them.
 See [folder selection and recent locations](guides/LOCATIONS.md), [color themes](guides/THEMES.md)
 and [dialogs, Settings and toolbar layout](guides/PANELS.md). These are local viewer
 features; they require no board metadata migration.
+
+
+Questions with a recorded first answer display that accepted response instead of
+an editable form. Later submissions stay in history. Conflicting offline claims
+require an explicit choice by the question author; missing or signing-excluded
+evidence blocks acceptance. Earlier unrecorded replies require an explicit owner
+choice rather than a timestamp-based migration. See [answer acceptance](reference/ANSWER-ACCEPTANCE.md).

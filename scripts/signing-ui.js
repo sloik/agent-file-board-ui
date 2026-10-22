@@ -1,6 +1,30 @@
 const signingProvider = new SigningContract.Provider();
 let signingLocation = null, signingMode = "unsigned", signingAs = "", signingInspect = false;
 const signingEligible = (m) => !m?.signing || m.signing.eligibility === "eligible";
+// Signature integrity, local key approval and policy eligibility are independent facts.
+function signingMessageSummary(m) {
+  const f=m.signing || {}, text=(en,pl)=>exText(en,pl);
+  const labels={valid:text("Signature verified","Podpis zweryfikowany"),unsigned:text("Unsigned message","Wiadomość bez podpisu"),invalid:text("Invalid signature","Nieprawidłowy podpis"),stripped:text("Signature removed","Usunięto podpis"),unavailable:text("Signature not verified yet","Podpis jeszcze niezweryfikowany")};
+  const parts=[labels[f.signature] || text("Signature not checked","Podpis niesprawdzony")];
+  if(f.signature==="valid") parts.push(f.trust==="trusted"?text("Signing key trusted by you","Ufasz kluczowi podpisu"):text("Signing key not approved by you","Nie zatwierdzono klucza podpisu"));
+  const lifecycle={superseded:text("Older signing key","Starszy klucz podpisu"),retired:text("Signing key retired","Klucz podpisu wycofany"),compromised:text("Signing key compromised","Klucz podpisu przejęty")};
+  if(lifecycle[f.lifecycle]) parts.push(lifecycle[f.lifecycle]);
+  if(f.eligibility==="excluded") parts.push(text("Blocked by signing rules","Zablokowana przez reguły podpisów"));
+  if(f.eligibility==="pending-verification") parts.push(text("Waiting for verification — inspection only","Oczekuje na weryfikację — tylko podgląd"));
+  return parts.join(" · ");
+}
+function signingParticipantSummary(id,model=B) {
+  const f=model?.signingParticipants?.[id];
+  if(f?.unregistered) return exText("No signing key registered","Brak zarejestrowanego klucza podpisu");
+  if(!f?.fingerprint) return exText("Current key unavailable","Bieżący klucz niedostępny");
+  if(f.revoked) return exText("Current key revoked — do not use","Bieżący klucz unieważniony — nie używaj");
+  if(f.trusted) return exText("Current key trusted by you","Ufasz bieżącemu kluczowi");
+  return f.changed?exText("Key changed — review needed","Klucz zmieniony — wymaga sprawdzenia"):exText("Current key not approved by you","Nie zatwierdzono bieżącego klucza");
+}
+function signingMessageHtml(m) {
+  const f=m.signing || {}, reason=f.reason && f.reason!=="verified" && f.reason!=="unsigned"?f.reason:"";
+  return `<details class="signing-facts"><summary>${esc(signingMessageSummary(m))}</summary><p>${esc(exText("A verified signature proves these message bytes match the signing key. Your local key approval is separate; neither proves the claims in the message are true.","Zweryfikowany podpis potwierdza zgodność bajtów wiadomości z kluczem podpisu. Twoje lokalne zatwierdzenie klucza jest osobne; żadne nie potwierdza prawdziwości treści."))}</p>${f.fingerprint?`<p>${esc(exText("Signing key fingerprint","Odcisk klucza podpisu"))}: <code>${esc(f.fingerprint)}</code></p>`:""}${reason?`<p>${esc(reason)}</p>`:""}<p>${esc(exText("Open Signing in Tools to review keys or verify older messages.","Otwórz Podpisy w Narzędziach, aby sprawdzić klucze lub zweryfikować starsze wiadomości."))}</p></details>`;
+}
 function signingSender(fallback) {
   return signingMode === "signed" ? (SigningContract.require(signingAs, "Select an unlocked signing identity"), signingAs) : fallback;
 }
@@ -110,6 +134,14 @@ async function prepareSigning(model, files, base = null) {
       const raw = m.source?.file ? await rawBytes(m.source.file) : C.bytes(source[m.path]?.text || "");
       m.signing = await context.evaluate(m.path, m.h, raw);
     }
+    model.signingParticipants = {};
+    for(const p of registry.participants || []) {
+      if(!p.identity){model.signingParticipants[p.id]={unregistered:true};continue;}
+      try {
+        const r=await context.resolve(p.id), fingerprint=r.head.fingerprint, pin=context.state.pins[p.id];
+        model.signingParticipants[p.id]={fingerprint,trusted:pin===fingerprint,changed:!!pin && pin!==fingerprint,revoked:r.revoked[fingerprint] || null};
+      } catch(e) { model.signingParticipants[p.id]={error:e.message}; }
+    }
     await signingProvider.reconcile(context);
     await signingSave(model);
   } catch (e) {
@@ -131,6 +163,7 @@ async function signingDelivery(msg, options = {}) {
   C.require(!source || signingEligible(source), "Reply source excluded by signing requirements");
   if (source && base) C.require(source.source?.file && source.source.file.size <= 4194304, "Reviewed reply source unavailable or too large");
   const sourceDigest = source && base ? await C.hash(await rawBytes(source.source.file)) : null;
+  if(h['ANSWER-STATE']&&sourceDigest)C.require(AnswerState.metadata(h,source?.h,jsonObject).questionDigest===sourceDigest,"ANSWER-STATE question bytes changed");
   const minimum = context.minimum(msg.relPath, (h.THREAD || "").split("-")[0]);
   if (signingMode !== "signed") {
     C.require(minimum === "optional", "Trusted signing required; unlock and trust a signing identity");
@@ -174,7 +207,17 @@ async function signingDialog() {
   const status = document.createElement("p");
   status.role = "status";
   dialog.append(status);
+  const explanation=document.createElement("p");
+  explanation.textContent=exText("Trust is your approval of an exact participant key, stored only in this browser for this board location. Compare its fingerprint through a separate trusted channel before approving. A new key needs a new review. Signature verification checks message integrity; it does not prove a person's identity or the truth of their message.","Zaufanie oznacza Twoje zatwierdzenie konkretnego klucza uczestnika, zapisane tylko w tej przeglądarce dla tej lokalizacji tablicy. Przed zatwierdzeniem porównaj odcisk przez osobny zaufany kanał. Nowy klucz wymaga ponownego sprawdzenia. Weryfikacja podpisu sprawdza integralność wiadomości; nie dowodzi tożsamości osoby ani prawdziwości treści.");
+  dialog.append(explanation);
+  const people=document.createElement("div");people.className="signing-participants";dialog.append(people);
   const refresh = () => {
+    people.replaceChildren();
+    for(const p of Object.values(B.people)) {
+      const row=document.createElement("p"), name=document.createElement("strong"), key=document.createElement("code");
+      row.dataset.signingParticipant=p.id;name.textContent=`${p.name} (${p.id}): `;key.textContent=B.signingParticipants?.[p.id]?.fingerprint || "";
+      row.append(name,signingParticipantSummary(p.id),document.createElement("br"),key);people.append(row);
+    }
     status.textContent = B.signingError || `${signingMode === "signed" ? "Automatic signing after unlock" : "Unsigned mode"} · Signing as: ${signingAs || "none"} · Unlocked identities: ${signingProvider.catalog().map((p) => p.participant).join(", ") || "none"} · Excluded/pending: ${B.msgs.filter((m) => !signingEligible(m)).length}`;
     const facts = dialog.querySelector("pre");
     if (facts) facts.textContent = B.msgs.filter((m) => !signingEligible(m) || m.h.SIGNATURE).map((m) => m.path + "\n" + JSON.stringify(m.signing)).join("\n");
@@ -288,12 +331,17 @@ async function signingDialog() {
       m.signing = await c.evaluate(m.path, m.h, raw);
     }
     await signingSave(model);
-    build({ background: true, preserveComposer: true });
+    if(B===model){
+      await prepareAnswerStates(model);
+      if(B===model)build({ background: true, preserveComposer: true });
+    }
   });
   const list = document.createElement("pre");
   list.style = "white-space:pre-wrap;max-height:30vh;overflow:auto";
   list.textContent = B.msgs.filter((m) => !signingEligible(m) || m.h.SIGNATURE).map((m) => m.path + "\n" + JSON.stringify(m.signing)).join("\n");
-  dialog.append(list);
+  const technical=document.createElement("details"), technicalTitle=document.createElement("summary");
+  technicalTitle.textContent=exText("Technical message evidence","Techniczne dane wiadomości");
+  technical.append(technicalTitle,list);dialog.append(technical);
   add("Close", () => dialog.close());
   document.body.append(dialog);
   refresh();

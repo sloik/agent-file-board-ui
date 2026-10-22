@@ -1,5 +1,15 @@
 # Release notes
 
+## 2.12.0 — 2026-10-22
+
+- Explain signature verification separately from local key approval on messages
+  and participant lists, with exact fingerprints and readable blocked states.
+
+- Record first accepted answers in shared immutable messages; retain later replies
+  as history, expose offline conflicts and explicit question-author resolution.
+- Verify acceptance with unit/browser regressions, bounded TLA+ exploration, real
+  resolver trace conformance and implementation mutation controls in formal CI.
+
 ## 2.11.4 — 2026-10-22
 
 - Package the complete viewer, optional helpers, update guide and licenses in a

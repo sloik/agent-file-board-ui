@@ -196,3 +196,10 @@ The separate [extension gallery](https://github.com/sloik/agent-file-board-ui/bl
 uses disposable fictional packages and observations; those screenshot-only records
 are not claimed to be preinstalled in this ZIP. Optional operator links are agent
 claims, and cryptographic signing/trust remains proposed.
+
+
+Questions with a recorded first answer display that accepted response instead of
+an editable form. Later submissions stay in history. Conflicting offline claims
+require an explicit choice by the question author; missing or signing-excluded
+evidence blocks acceptance. Earlier unrecorded replies require an explicit owner
+choice rather than a timestamp-based migration. See [answer acceptance](../reference/ANSWER-ACCEPTANCE.md).
