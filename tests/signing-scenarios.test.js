@@ -4,7 +4,6 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const {expect} = require('playwright/test');
 const h = require('./lib/helpers');
-const {fixture} = require('./lib/signing-fixture');
 let browser, server, url;
 before(async () => {
   browser = await h.launch();
@@ -21,58 +20,9 @@ after(async () => {
   if (server) await new Promise(resolve => server.close(resolve));
 });
 
-// Only picker selection is substituted. All directory/file handles, Files,
-// writable streams, commit semantics and IndexedDB records are Chromium-native.
-async function importBoard(page, proj) {
-  await page.evaluate(async tree => {
-    async function sync(dir,node) {
-      for await (const [name] of dir.entries()) if (!Object.hasOwn(node.children,name)) await dir.removeEntry(name,{recursive:true});
-      for (const [name,child] of Object.entries(node.children)) {
-        if (child.kind === 'directory') await sync(await dir.getDirectoryHandle(name,{create:true}),child);
-        else { const file=await dir.getFileHandle(name,{create:true}),writer=await file.createWritable(); await writer.write(child.text); await writer.close(); }
-      }
-    }
-    const root=await navigator.storage.getDirectory();
-    await sync(root,tree);
-  },h.readTree(proj));
-}
-async function exportBoard(page, proj) {
-  const tree = await page.evaluate(async () => {
-    async function read(dir) {
-      const children={};
-      for await (const [name,handle] of dir.entries()) children[name]=handle.kind==='directory' ? await read(handle) : {kind:'file',text:await (await handle.getFile()).text()};
-      return {kind:'directory',children};
-    }
-    return read(await navigator.storage.getDirectory());
-  });
-  // This is the owned disposable fixture, never a user-selected real directory.
-  h.fs.rmSync(h.path.join(proj,'.agent-board'),{recursive:true,force:true});
-  h.writeTree(tree,proj);
-}
-async function boot(t) {
-  const f=fixture(); t.after(f.clean);
-  const ctx=await browser.newContext(),page=await ctx.newPage();t.after(()=>ctx.close());
-  const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.addInitScript(()=>{window.showDirectoryPicker=()=>navigator.storage.getDirectory();});
-  await page.goto(url);await importBoard(page,f.proj);await h.openBoardViaUi(page);await h.expandComposer(page);
-  assert.deepEqual(await page.evaluate(async()=>{const root=await navigator.storage.getDirectory(),board=await root.getDirectoryHandle('.agent-board'),file=await (await board.getFileHandle('config.json')).getFile();return [root instanceof FileSystemDirectoryHandle,file instanceof File,window.__fakefs===undefined];}),[true,true,true]);
-  t.after(()=>assert.deepEqual(errors,[]));
-  return {...f,ctx,page};
-}
-async function openSigning(page) { await h.openToolbarTool(page,'signingTools');await expect(page.locator('#signingDialog')).toBeVisible(); }
-async function action(page,label) {const button=page.getByRole('button',{name:label,exact:true});await button.click();await expect(button).toBeEnabled();}
-async function closeSigning(page) {await page.getByRole('button',{name:'Close',exact:true}).click();await expect(page.locator('#signingDialog')).not.toBeVisible();}
-async function unlock(page,identity) {
-  await openSigning(page);await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles(identity.key);
-  await action(page,'Unlock selected keys');await expect(page.locator('#signingDialog [role=status]')).toContainText('Automatic signing after unlock');
-  await expect(page.locator('#signingDialog [role=status]')).toContainText('Signing as: '+identity.participant);
-  await closeSigning(page);
-}
-async function trust(page,identity) {
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(identity.participant);
-  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(identity.fingerprint);
-  await action(page,'Trust exact fingerprint');await expect(page.locator('#signingDialog [role=status]')).not.toContainText('Fingerprint does not match');
-}
+const native=require('./lib/signing-browser');
+const {importBoard,exportBoard,openSigning,action,closeSigning,unlock,trust}=native;
+const boot=t=>native.boot(t,browser,url);
 async function decision(page,path) {return page.evaluate(path=>B.byPath.get(path)?.signing,path.replace(/^\.agent-board\//,''));}
 async function assertNotPublished(page,body) {
   const found=await page.evaluate(async body=>{
@@ -114,9 +64,9 @@ test('native browser streams: UI→CLI→UI replies, explicit trust/adoption and
   await refresh(f);assert.equal((await decision(page,reply)).signature,'valid');assert.equal((await decision(page,reply)).eligibility,'excluded');
   await openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(f.peer.participant);
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(f.peer.fingerprint+'wrong');await action(page,'Trust exact fingerprint');
-  await expect(page.locator('#signingDialog [role=status]')).toHaveText('Fingerprint does not match verified current profile');
+  await expect(page.locator('#signing-review .signing-feedback')).toHaveText('Fingerprint does not match verified current profile');
   assert.equal((await decision(page,reply)).trust,'unfamiliar');
-  await action(page,'Inspect current profile');assert.equal(JSON.parse(await page.locator('#signingDialog [role=status]').innerText()).fingerprint,f.peer.fingerprint);
+  await action(page,'Inspect current profile');await expect(page.locator('#signing-review')).toContainText(f.peer.fingerprint);
   await expect(page.locator(`[data-signing-participant="${f.peer.participant}"]`)).toContainText('Current key not approved by you');
   await trust(page,f.owner);await trust(page,f.peer);
   await expect(page.locator(`[data-signing-participant="${f.peer.participant}"]`)).toContainText('Current key trusted by you');
@@ -137,7 +87,7 @@ test('native browser streams: UI→CLI→UI replies, explicit trust/adoption and
   await page.reload();await h.openBoardViaUi(page);
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);
   assert.equal((await decision(page,reply)).eligibility,'eligible');
-  await openSigning(page);await expect(page.locator('#signingDialog [role=status]')).toContainText('Unlocked identities: none');await closeSigning(page);
+  await openSigning(page);await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);await closeSigning(page);
 });
 
 test('native lifecycle: dual rotation, new-key trust, compromise and persisted anti-stripping decisions',async t=>{
