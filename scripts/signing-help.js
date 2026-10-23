@@ -111,56 +111,65 @@ function signingDiagnose(s) {
 }
 // Composer signing status (SPEC-002-061). The signer is always the persona selected in "I am",
 // so this answers one question before sending: what happens to the message in the composer now?
-// state: {error, hasContext, writable, required, mode, persona, name, catalog:[ids], known:{id:fp},
+// state: {error, hasContext, writable, required, mode, persona, name, names:{id:display name}, catalog:[ids], known:{id:fp},
 // participants:{id:{fingerprint,revoked,unregistered}}, pins:{id:fp}}. The order mirrors what
 // send and delivery check; "unlock" comes before "approve" because people act in that order.
-const SIGNING_COMPOSER_ORDER = ["unavailable", "read-only", "not-registered", "key-revoked", "key-rotated", "needs-unlock", "needs-approval", "signed", "unsigned"];
+const SIGNING_COMPOSER_ORDER = ["unavailable", "no-persona", "read-only", "not-registered", "key-revoked", "key-rotated", "needs-unlock", "key-changed", "needs-approval", "signed", "unsigned"];
 function signingComposerStatus(s, text = exText) {
   if (!s.error && !s.hasContext) return null;
-  const who = s.persona || "", name = s.name || who, p = (s.participants || {})[who] || {}, catalog = s.catalog || [], known = s.known || {}, pins = s.pins || {};
+  const who = s.persona || "", names = s.names || {}, name = s.name || names[who] || who, p = (s.participants || {})[who] || {}, catalog = s.catalog || [], known = s.known || {}, pins = s.pins || {};
   const make = (id, emoji, tone, label, detail, action = null, alt = null) => ({ id, emoji, tone, label, detail, action, alt });
   const unsignedAlt = !s.required && s.mode === "signed" ? { kind: "unsigned", label: text("Post unsigned instead", "Wyślij bez podpisu") } : null;
   if (s.error) {
     const d = signingDiagnose({ error: s.error }), b = signingBlockInfo(d.id, d.vars, text);
-    return make("unavailable", "⚠️", "warn", text("Signing unavailable", "Podpisy niedostępne"), b.message, { kind: "open", task: b.task, anchor: b.anchor, label: b.label });
+    return make("unavailable", "❗", "warn", text("Signing unavailable", "Podpisy niedostępne"), b.message, { kind: "open", task: b.task, anchor: b.anchor, label: b.label });
   }
   if (s.mode !== "signed" && !s.required) {
     const can = s.writable && !!p.fingerprint && !p.revoked;
+    if (can && catalog.includes(who)) return make("unsigned", "📝", "info", text("Will post unsigned", "Zostanie wysłana bez podpisu"), text(`${name}'s key is unlocked, but signing is off. This destination does not require signatures.`, `Klucz: ${name} – odblokowany, ale podpisywanie jest wyłączone. Ten cel nie wymaga podpisów.`),
+      { kind: "sign", label: text("Turn signing on", "Włącz podpisywanie") });
     return make("unsigned", "📝", "info", text("Will post unsigned", "Zostanie wysłana bez podpisu"), text("This destination does not require signatures.", "Ten cel nie wymaga podpisów."),
-      can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz (${name}), aby podpisać`) } : null);
+      can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz: ${name}, aby podpisać`) } : null);
   }
+  if (!who) return make("no-persona", "👤", "warn", text("Choose who you are", "Wybierz, kim jesteś"), text("Choose your persona in “I am”, then unlock its key. Messages are signed as the selected persona.", "Wybierz swoją personę w polu „Jestem”, a potem odblokuj jej klucz. Wiadomości są podpisywane jako wybrana persona."), { kind: "persona", label: text("Choose persona", "Wybierz personę") }, unsignedAlt);
   if (!s.writable) {
     const b = signingBlockInfo("read-only", { required: !!s.required }, text);
-    return make("read-only", "🔒", "warn", text("Cannot sign: read-only folder", "Nie można podpisać: folder tylko do odczytu"), b.message, { kind: "open-folder", label: b.label }, unsignedAlt);
+    return make("read-only", "⛔", "warn", text("Cannot sign: read-only folder", "Nie można podpisać: folder tylko do odczytu"), b.message, { kind: "open-folder", label: b.label }, unsignedAlt);
   }
-  if (!who || p.unregistered || (!p.fingerprint && !catalog.includes(who) && !p.error)) {
+  const otherPersona = { kind: "persona", label: text("Not yours? Choose another persona", "Nie Twoja? Wybierz inną personę") };
+  if (p.unregistered || (!p.fingerprint && !catalog.includes(who) && !p.error)) {
     const b = signingBlockInfo("not-registered", { s: name }, text);
-    return make("not-registered", "🔒", "warn", text(`${name || "This persona"} has no signing key`, `${name || "Ta persona"} nie ma klucza podpisu`), b.message, { kind: "howto", anchor: "keys", label: b.label }, unsignedAlt);
+    return make("not-registered", "❔", "warn", text(`${name} has no signing key`, `${name} nie ma klucza podpisu`), b.message, { kind: "howto", anchor: "keys", label: b.label }, unsignedAlt || otherPersona);
   }
   if (p.revoked) {
     const b = signingBlockInfo("key-revoked", { s: name }, text);
-    return make("key-revoked", "🚫", "warn", text(`${name}'s key is revoked`, `Klucz (${name}) jest unieważniony`), b.message, { kind: "approve", participant: who, label: b.label }, unsignedAlt);
+    return make("key-revoked", "🚫", "warn", text(`${name}'s key is revoked`, `Klucz: ${name} – unieważniony`), b.message, { kind: "howto", anchor: "keys", label: text("What to do about a revoked key", "Co zrobić z unieważnionym kluczem") }, unsignedAlt || otherPersona);
   }
   const unlock = { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key`, `Odblokuj klucz: ${name}`) };
   if (!catalog.includes(who)) {
     if (known[who] && p.fingerprint && p.fingerprint !== known[who]) {
       const b = signingBlockInfo("key-rotated", { s: name }, text);
-      return make("key-rotated", "🔒", "warn", text(`${name}'s key was replaced`, `Klucz (${name}) został wymieniony`), b.message, { ...unlock, label: b.label }, unsignedAlt);
+      return make("key-rotated", "🔄", "warn", text(`${name}'s key was replaced`, `Klucz: ${name} – wymieniony`), b.message, { ...unlock, label: b.label }, unsignedAlt);
     }
-    const others = catalog.filter((id) => id !== who);
-    const why = s.required ? text(`This destination requires trusted signatures, and ${name}'s key is locked in this tab.`, `Ten cel wymaga zaufanych podpisów, a klucz (${name}) jest zablokowany w tej karcie.`)
-      : text(`Signing is on, and ${name}'s key is locked in this tab. Nothing is posted unsigned unless you choose that.`, `Podpisywanie jest włączone, a klucz (${name}) jest zablokowany w tej karcie. Nic nie zostanie wysłane bez podpisu, chyba że to wybierzesz.`);
+    const others = catalog.filter((id) => id !== who).map((id) => names[id] || id);
+    const why = s.required ? text(`This destination requires trusted signatures, and ${name}'s key is locked in this tab.`, `Ten cel wymaga zaufanych podpisów, a klucz: ${name} jest zablokowany w tej karcie.`)
+      : text(`You turned signing on, and ${name}'s key is locked in this tab (keys lock after 15 minutes without signing, or when you lock them). Nothing is posted unsigned unless you choose that.`, `Podpisywanie jest włączone, a klucz: ${name} jest zablokowany w tej karcie (klucze blokują się po 15 minutach bez podpisywania lub po zablokowaniu). Nic nie zostanie wysłane bez podpisu, chyba że to wybierzesz.`);
     const also = others.length ? " " + text(`Unlocked here: ${others.join(", ")}. Messages are signed only as the selected persona.`, `Odblokowane tutaj: ${others.join(", ")}. Wiadomości są podpisywane tylko jako wybrana persona.`) : "";
-    return make("needs-unlock", "🔒", "warn", text(`Unlock ${name}'s key to post`, `Odblokuj klucz (${name}), aby wysłać`), why + also + " " + text("You need the private key file for this persona.", "Potrzebujesz pliku klucza prywatnego tej persony."), unlock, unsignedAlt);
+    return make("needs-unlock", "🔒", "warn", text(`Unlock ${name}'s key to post`, `Odblokuj klucz: ${name}, aby wysłać`), why + also + " " + text("You need the private key file for this persona (for an agent, the same file its command line uses).", "Potrzebujesz pliku klucza prywatnego tej persony (dla agenta: tego samego pliku, którego używa wiersz poleceń)."), unlock, unsignedAlt || otherPersona);
+  }
+  // Approval always opens the fingerprint review; the composer never approves in one click.
+  if (s.required && p.fingerprint && pins[who] && pins[who] !== p.fingerprint) {
+    const b = signingBlockInfo("key-changed", { s: name }, text);
+    return make("key-changed", "⚠️", "warn", text(`${name}'s key changed since you approved it`, `Klucz: ${name} – zmieniony od Twojego zatwierdzenia`), b.message, { kind: "approve", participant: who, label: text("Verify the new key", "Sprawdź nowy klucz") });
   }
   if (s.required && p.fingerprint && pins[who] !== p.fingerprint) {
-    const b = signingBlockInfo(pins[who] ? "key-changed" : "key-not-approved", { s: name }, text);
-    return make("needs-approval", "🔓", "warn", text(`Approve ${name}'s key to post here`, `Zatwierdź klucz (${name}), aby wysłać tutaj`), b.message, { kind: "approve", participant: who, label: b.label });
+    const b = signingBlockInfo("key-not-approved", { s: name }, text);
+    return make("needs-approval", "🔑", "warn", text(`Approve ${name}'s key once on this device`, `Zatwierdź raz klucz: ${name} na tym urządzeniu`), b.message, { kind: "approve", participant: who, label: text("Review and approve the key", "Sprawdź i zatwierdź klucz") });
   }
   return make("signed", "🔏", "ok", text(`Will be signed as ${name}`, `Zostanie podpisana jako ${name}`),
-    s.required ? text("Your key is unlocked and approved for this destination. It locks after 15 minutes without use.", "Twój klucz jest odblokowany i zatwierdzony dla tego celu. Zablokuje się po 15 minutach bez użycia.")
-      : text("Your key is unlocked in this tab. It locks after 15 minutes without use.", "Twój klucz jest odblokowany w tej karcie. Zablokuje się po 15 minutach bez użycia."),
-    { kind: "lock", label: text("Lock key", "Zablokuj klucz") });
+    s.required ? text(`${name}'s key is unlocked and approved for this destination. It locks after 15 minutes without signing.`, `Klucz: ${name} – odblokowany i zatwierdzony dla tego celu. Zablokuje się po 15 minutach bez podpisywania.`)
+      : text(`${name}'s key is unlocked in this tab. It locks after 15 minutes without signing.`, `Klucz: ${name} – odblokowany w tej karcie. Zablokuje się po 15 minutach bez podpisywania.`),
+    { kind: "lock", participant: who, label: text(`Lock ${name}'s key`, `Zablokuj klucz: ${name}`) });
 }
 // Reason a received message cannot drive actions, with the one step that helps.
 function signingMessageBlock(m, text = exText) {

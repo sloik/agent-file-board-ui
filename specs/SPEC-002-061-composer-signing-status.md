@@ -50,14 +50,22 @@ picker for the persona), `approve` (review this persona's key), `open-folder`, o
 
 | id | emoji | meaning |
 |----|-------|---------|
-| `unavailable` | ⚠️ | signing evidence or private state unavailable (board UUID, another tab, error) |
-| `read-only` | 🔒 | signing needed but the folder is read-only |
-| `not-registered` | 🔒 | the persona has no registered signing key; ask the owner to register it |
-| `key-revoked` / `key-rotated` | 🚫 | the persona's key was revoked or rotated since unlock |
+| `unavailable` | ❗ | signing evidence or private state unavailable (board UUID, another tab, error) |
+| `no-persona` | 👤 | no persona is chosen in "I am"; choose one first |
+| `read-only` | ⛔ | signing needed but the folder is read-only |
+| `not-registered` | ❔ | the persona has no registered signing key; ask the owner to register it |
+| `key-revoked` | 🚫 | the persona's key was revoked or retired |
+| `key-rotated` | 🔄 | the persona's key was replaced since it was unlocked; unlock the new key |
 | `needs-unlock` | 🔒 | signing needed (required here or signed mode on) and the persona's key is locked |
-| `needs-approval` | 🔓 | key unlocked, but this destination requires trusted signatures and you have not approved your own key (or it changed) |
+| `key-changed` | ⚠️ | required destination; you approved an earlier key and the board now lists another; verify before approving |
+| `needs-approval` | 🔑 | key unlocked, required destination, and you have not approved your own key on this device yet |
 | `signed` | 🔏 | the message will be signed as the persona |
-| `unsigned` | 📝 | the message will be posted unsigned and this destination allows it |
+| `unsigned` | 📝 | the message will be posted unsigned and this destination allows it (if the key is unlocked, "Turn signing on") |
+
+Action kinds: `unlock`, `approve` (always opens the fingerprint review, never approves in one click),
+`open-folder`, `howto`, `open` (a Signing task), `persona` (focus "I am"), `sign` (turn signing on),
+`lock`; `alt` offers `unsigned` ("Post unsigned instead", only where not required) or `persona`
+("Not yours? Choose another persona"). Each state has its own emoji (persona review, 2026-10-23).
 
 The composer renders the state next to Send, always visible (not only after a
 refused send), with text and emoji together. Its action button performs the step.
