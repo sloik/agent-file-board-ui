@@ -77,22 +77,10 @@ py() { "$lab/python/bin/python" "$@"; }
 b() { py vendor/agent-file-board/boardctl.py "$@"; }
 mkdir -m 700 "$lab/private"
 
-py - <<'PY'
-import base64, hashlib, json, os
-from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-root = Path(os.environ['LAB']) / 'private'
-key = Ed25519PrivateKey.generate()
-b64 = lambda value: base64.urlsafe_b64encode(value).rstrip(b'=').decode()
-public = {'crv': 'Ed25519', 'kty': 'OKP', 'x': b64(key.public_key().public_bytes_raw())}
-private = dict(public, d=b64(key.private_bytes_raw()))
-path = root / 'maya.jwk'
-path.write_text(json.dumps(private))
-path.chmod(0o600)
-canonical = json.dumps(public, sort_keys=True, separators=(',', ':')).encode()
-fingerprint = 'urn:ietf:params:oauth:jwk-thumbprint:sha-256:' + b64(hashlib.sha256(canonical).digest())
-(root / 'maya-own-fingerprint.txt').write_text(fingerprint + '\n')
-PY
+b signing keygen --path "$lab/board" --participant maya \
+  --output "$lab/private/maya.jwk" > "$lab/private/maya-keygen.json"
+py -c 'import json,sys; print(json.load(open(sys.argv[1]))["fingerprint"])' \
+  "$lab/private/maya-keygen.json" > "$lab/private/maya-own-fingerprint.txt"
 
 b init "$lab/board" --project-id signing-rehearsal --project-name 'Signing rehearsal'
 b join maya --path "$lab/board" --kind human

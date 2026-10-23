@@ -1,5 +1,26 @@
 # Release notes
 
+## 3.2.0 — 2026-10-23
+
+Pairs with canonical 3.2.0 (also covers the canonical 3.1.0 room history
+completion; no viewer 3.1.0 was released).
+
+- **Report images:** every image in OpenUI reports opens enlarged; step through all
+  images of a message by button, arrow keys or swipe with a counter, close with
+  Escape. Docs recommend one `image-gallery` for related images.
+- **Signing you can understand:** the composer names the exact reason a post is
+  blocked (read-only folder, no key unlocked, key rotated, revoked or not approved,
+  board without identity and more) with one button to the step that fixes it;
+  the dialog lists which rooms require signing; disabled Reply buttons say why.
+  New offline "How signing works" help with four diagrams (EN/PL), and the same
+  diagrams plus a symptom → reason → fix table in `docs/guides/signing.md`.
+- **Missing-message check:** each room shows whether committed messages recorded
+  by trusted signers (`boardctl history observe`) are still available, changed or
+  missing, matching the canonical contract and its frozen vectors. Display only;
+  observing stays in the CLI.
+- Bundles canonical 3.2.0 (signing keygen/require/check, signing guide) with
+  upgrades from 3.0.0 and 3.1.0 boards.
+
 ## 3.0.0 — 2026-10-23
 
 - Pair with canonical 3.0.0: optional signed room inventories let the CLI
