@@ -131,7 +131,7 @@ function signingComposerStatus(s, text = exText) {
       can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz: ${name}, aby podpisać`) }
         // No key to unlock yet (none registered, revoked, read-only folder or no persona): signing
         // can still be chosen, and the status then names the missing step (SPEC-002-065).
-        : { kind: "sign", label: text("Sign this message", "Podpisz tę wiadomość") });
+        : { kind: "sign", label: text("Sign this message", "Podpisz tę wiadomość"), short: text("Sign", "Podpisz") });
   }
   if (!who) return make("no-persona", "👤", "warn", text("Choose who you are", "Wybierz, kim jesteś"), text("Choose your persona in “I am”, then unlock its key. Messages are signed as the selected persona.", "Wybierz swoją personę w polu „Jestem”, a potem odblokuj jej klucz. Wiadomości są podpisywane jako wybrana persona."), { kind: "persona", label: text("Choose persona", "Wybierz personę") }, unsignedAlt);
   if (!s.writable) {

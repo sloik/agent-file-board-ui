@@ -57,6 +57,8 @@ function signingNoticeButton(button, action, link) {
   const label = action ? (emoji ? emoji + " " : "") + signingActionLabel(action) : "";
   if (button.textContent !== label) button.textContent = label;
   button.dataset.signingKind = action?.kind || "";
+  // A short label for the compact phone status line (SPEC-002-065); the full label stays the text.
+  if (action?.short) button.dataset.short = (emoji ? emoji + " " : "") + action.short; else delete button.dataset.short;
   button.classList.toggle("btn", !link);
   button.classList.toggle("signing-link", !!link);
 }

@@ -45,4 +45,5 @@ mode is on, and nothing new is signed without an unlocked persona key.
 - [x] AC3: The read-only note ("Unlocking a key is unavailable…") still shows next to the
   new action. No change to `ComposerSigning.tla`: `ChooseSigned` already allows signed mode
   from any unsigned state; the alignment pin is reviewed and repinned.
-- [x] AC4: Guide table and CHANGELOG updated; released as viewer 3.3.2.
+- [x] AC4: On phones the compact composer keeps the offer on the status line with a short label ("🔏 Sign" / "🔏 Podpisz"), so it stays within its 260px height in both languages and all themes (asserted in tests/compact-composer.test.js).
+- [x] AC5: Guide table and CHANGELOG updated; released as viewer 3.3.2.

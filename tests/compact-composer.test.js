@@ -64,7 +64,7 @@ test('compact and expanded composers fit phone layouts in both languages and all
   await page.setViewportSize({width:390,height:844});await page.fill('#cBody','Retained phone draft');
   for(const theme of ['light','dark','dracula'])for(const lang of ['en','pl']){
    await page.click('#gear');await page.selectOption('#sTheme',theme);await page.selectOption('#sLang',lang);await page.click('#settingsClose');
-   const closed=await page.locator('#composer').boundingBox();assert.ok(closed.height<=260,theme+'/'+lang+' compact height');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+   const closed=await page.locator('#composer').boundingBox();assert.ok(closed.height<=260,theme+'/'+lang+' compact height');assert.equal(await page.locator('#signingNotice .signing-notice-action').isVisible(),true,theme+'/'+lang+' the offer to sign stays on the compact status line (SPEC-002-065)');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    await page.screenshot({path:'/tmp/afb-composer-'+theme+'-'+lang+'-phone.png'});
    await page.locator('#feed').evaluate(el=>el.scrollTop=el.scrollHeight);await fold(page).click();assert.ok(await page.locator('#feed').evaluate(el=>el.scrollHeight-el.scrollTop-el.clientHeight<2),'expanding retains the live edge');const opened=await page.locator('#composer').boundingBox();assert.ok(opened.height>closed.height+30);assert.equal(await page.locator('#cBody').isVisible(),true);assert.equal(await page.locator('#send').isVisible(),true);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await fold(page).click();assert.equal(await page.inputValue('#cBody'),'Retained phone draft');
   }clean(log);
