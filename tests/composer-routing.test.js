@@ -182,6 +182,10 @@ test('phone 390px: one-line chip, bottom-sheet popover, Polish strings, no horiz
   assert.ok(box.height<=line,'one line chip: '+box.height);assert.ok(box.x>=0&&box.x+box.width<=390);
   assert.match(await chip(page),/^Wysyłasz do: # architecture › T004 .*Zmień$/);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  // Both chips stay inside the viewport and the recipient chip is never clipped.
+  for(const id of ['#composerTarget','#composerTo']){const b=await page.locator(id).boundingBox();assert.ok(b.x>=0&&b.x+b.width<=390&&b.y>=0&&b.y+b.height<=844,id+' within the viewport: '+JSON.stringify(b));}
+  await expect(page.locator('#composerTo')).toHaveText('do wszystkich');
+  assert.equal(await page.locator('#composerTo').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'recipient chip text is not clipped');
   await page.click('#composerTarget');const sheet=await page.locator('#composerTargetMenu').boundingBox();
   assert.ok(Math.abs(sheet.y+sheet.height-844)<=1&&sheet.x===0&&Math.abs(sheet.width-390)<=1,'bottom sheet '+JSON.stringify(sheet));assert.ok(sheet.height<=844*.7+1);
   const row=await page.locator('#composerTargetList button').first().boundingBox();assert.ok(row.height>=44,'44px rows');
