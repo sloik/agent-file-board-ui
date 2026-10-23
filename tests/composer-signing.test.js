@@ -264,6 +264,8 @@ test('phone width in Polish with a long persona name: emoji and short label, det
   await composerUnlock(page,peer.key);
   await expect(notice(page).locator('.signing-notice-note')).toContainText(`Ten klucz jest zarejestrowany dla: ${sam} (${peer.fingerprint}). Nie jest dla: ${maya}`);
   await expect(notice(page).locator('.signing-notice-switch')).toHaveText(`👤 Przełącz personę na: ${sam}`);
+  // The note gets its own row: the label keeps its width instead of being squeezed beside it.
+  assert.deepEqual(await page.evaluate(()=>{const n=document.querySelector('#signingNotice'),head=n.querySelector('.signing-notice-head').getBoundingClientRect(),note=n.querySelector('.signing-notice-note').getBoundingClientRect();return [head.width>=innerWidth/2,note.top>=head.bottom-1];}),[true,true]);
   // Every state, rendered with the longest Polish labels and a long persona name, fits the phone.
   const results=await page.evaluate(()=>{
     const long='Maksymilianna Konstantynopolitańczykiewiczówna-Szczebrzeszyńska',me=currentUser(),out=[];
@@ -275,7 +277,8 @@ test('phone width in Polish with a long persona name: emoji and short label, det
       const st=signingComposerStatus(s);updateSigningNotice(st);
       const n=document.querySelector('#signingNotice'),r=n.getBoundingClientRect(),send=document.querySelector('#send').getBoundingClientRect();
       const visible=[...n.querySelectorAll('button,.signing-notice-head,.signing-notice-note')].filter(el=>el.getClientRects().length);
-      out.push({id:st.id,overflow:document.documentElement.scrollWidth>innerWidth,inside:r.left>=0&&r.right<=innerWidth+1,
+      const head=n.querySelector('.signing-notice-head').getBoundingClientRect();
+      out.push({id:st.id,wide:head.width>=innerWidth/2,overflow:document.documentElement.scrollWidth>innerWidth,inside:r.left>=0&&r.right<=innerWidth+1,
         outside:visible.filter(el=>{const b=el.getBoundingClientRect();return b.left<r.left-1||b.right>r.right+1;}).map(el=>el.textContent),
         small:[...n.querySelectorAll('.signing-notice-actions button')].filter(el=>el.getClientRects().length&&el.getBoundingClientRect().height<44).map(el=>el.textContent),
         aboveSend:r.bottom<=send.top+1,label:n.querySelector('.signing-notice-label').textContent});
@@ -283,7 +286,7 @@ test('phone width in Polish with a long persona name: emoji and short label, det
     return out;
   });
   for(const r of results){
-    assert.deepEqual({overflow:r.overflow,inside:r.inside,outside:r.outside,small:r.small,aboveSend:r.aboveSend},{overflow:false,inside:true,outside:[],small:[],aboveSend:true},r.id+': '+r.label);
+    assert.deepEqual({overflow:r.overflow,inside:r.inside,outside:r.outside,small:r.small,aboveSend:r.aboveSend,wide:r.wide},{overflow:false,inside:true,outside:[],small:[],aboveSend:true,wide:true},r.id+': '+r.label);
   }
   assert.equal(results.length,11);
 });

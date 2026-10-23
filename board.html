@@ -237,11 +237,12 @@ body.resizing{cursor:col-resize;user-select:none}
 .signing-notice[hidden],.signing-notice [hidden]{display:none}.signing-notice-head{display:inline-flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere}.signing-notice-emoji{flex:0 0 auto;font-size:1.15em;line-height:1}
 .signing-link{background:none;border:0;padding:2px 0;color:var(--accent);text-decoration:underline;cursor:pointer;font:inherit;text-align:left;max-width:100%;overflow-wrap:anywhere}
 .signing-notice-more{display:none}.signing-notice-hint{font-size:.9em;color:var(--muted)}
-@media (max-width:600px){.signing-notice:not(.expanded) .signing-notice-text{display:none}.signing-notice-more{display:inline-flex;align-items:center;min-height:44px;margin-left:auto}.signing-notice-head{flex:1 1 0}
-.signing-notice:not(.expanded) .signing-notice-body:not(:has(.signing-notice-note:not([hidden]))){display:none}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}}
+
 .signing-notice-body{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}.signing-notice:not([data-tone=warn]) .signing-notice-text{color:var(--muted)}
 .signing-notice-note{display:block;margin-top:4px;font-weight:600}.signing-notice-actions,.signing-notice-switches{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;min-width:0}
 .signing-notice .btn{flex:0 1 auto;white-space:normal;max-width:100%}
+@media (max-width:600px){.signing-notice:not(.expanded) .signing-notice-text{display:none}.signing-notice-more{display:inline-flex;align-items:center;min-height:44px;margin-left:auto}.signing-notice-head{flex:1 1 0}.signing-notice-body{flex:1 1 100%}
+.signing-notice:not(.expanded) .signing-notice-body:not(:has(.signing-notice-note:not([hidden]))){display:none}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}}
 .signing-exclusion .btn{margin-left:6px;white-space:normal;max-width:100%}
 .signing-plain{display:grid;grid-template-columns:minmax(90px,max-content) minmax(0,1fr);gap:4px 12px;font-size:.88em;line-height:1.5;margin:8px 0 12px;color:var(--muted)}.signing-plain dt{font-weight:650;color:var(--ink)}.signing-plain dd{margin:0}
 #signing-howto summary{font-size:1.05em}.signing-figure{margin:16px 0;padding:0}.signing-figure h4,#signingDialog #signing-howto>h4{margin:14px 0 6px;font-size:1em}.signing-diagram-wrap{max-width:560px;margin:0 auto}
