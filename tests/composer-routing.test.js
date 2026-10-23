@@ -100,32 +100,33 @@ test('message a participant: existing pair opens it, a new pair writes direct/<s
   // Popover entry: the existing pair navigates to its conversation.
   await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'Message a participant…'}).click();
   await page.locator('#composerTargetList button',{hasText:'implementation-agent-01'}).click();
-  assert.deepEqual(await page.evaluate(()=>[sel.scope,sel.dir]),['direct',PAIR]);assert.equal((await target(page)).scope,'direct');
+  await expect.poll(()=>page.evaluate(()=>[sel.scope,sel.dir])).toEqual(['direct',PAIR]);await expect.poll(async()=>(await target(page)).scope).toBe('direct');
   // A persona outside the pair cannot send and is offered a switch.
   await page.selectOption('#me','human-owner-01');
   await expect(page.locator('#send')).toBeDisabled();await expect(page.locator('#composerTargetNote')).toContainText('You (human-owner-01) are not in this conversation');
   await page.locator('#composerTargetNote button',{hasText:'Switch to research-agent-01'}).click();
-  assert.equal(await page.inputValue('#me'),'research-agent-01');await expect(page.locator('#send')).toBeEnabled();
+  await expect(page.locator('#me')).toHaveValue('research-agent-01');await expect(page.locator('#send')).toBeEnabled();
   // Sidebar "+" entry: a new pair targets newdirect; nothing appears in the sidebar yet.
   await page.selectOption('#me','human-owner-01');await page.locator('.direct-new').click();await expect(page.locator('#composerTargetMenu')).toBeVisible();
   await page.locator('#composerTargetList button',{hasText:'research-agent-01'}).click();
-  const fresh=await target(page);assert.equal(fresh.scope,'newdirect');assert.equal(fresh.dir,'human-owner-01--research-agent-01');
+  await expect.poll(async()=>(await target(page)).scope).toBe('newdirect');const fresh=await target(page);assert.equal(fresh.dir,'human-owner-01--research-agent-01');
   await expect(page.locator('#composerTo')).toBeHidden();assert.match(await chip(page),/✉ research-agent-01 › New topic/);
   assert.equal(await page.locator('.fname[data-dir="human-owner-01--research-agent-01"]').count(),0,'no phantom sidebar entry');
   // A topic is required; it is pre-filled from the first line of the draft and stays editable.
   await page.fill('#cBody','Quick question about the schema\nmore detail');
-  assert.equal(await page.inputValue('#cNewThread'),'quick-question-about-the-schema');
+  await expect(page.locator('#cNewThread')).toHaveValue('quick-question-about-the-schema');
   await page.fill('#cNewThread','');await page.click('#send');await expect(page.locator('#toast')).toHaveText('Give the new thread a name');
   await page.fill('#cNewThread','Schema question');await page.click('#send');
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/')));
   const file=(await messages(page)).find(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/'));
   assert.match(file.text,/^FROM: human-owner-01$/m);assert.match(file.text,/^TO: research-agent-01$/m);assert.match(file.text,/^SCOPE: DIRECT$/m);assert.match(file.text,/^THREAD: T\d+-schema-question$/m);
   await expect(page.locator('.fname[data-dir="human-owner-01--research-agent-01"]')).toBeVisible();
-  assert.deepEqual(await page.evaluate(()=>[sel.scope,sel.dir]),['direct','human-owner-01--research-agent-01']);assert.equal((await target(page)).scope,'direct');
+  // The conversation opens after the send completes, which can lag behind the file appearing.
+  await expect.poll(()=>page.evaluate(()=>[sel.scope,sel.dir])).toEqual(['direct','human-owner-01--research-agent-01']);await expect.poll(async()=>(await target(page)).scope).toBe('direct');
   // Participants dialog entry, and the board validates.
   await h.openToolbarTool(page,'presenceOpen');await expect(page.locator('.presence-message[data-message-participant="human-owner-01"]')).toHaveCount(0);
   await page.locator('.presence-message[data-message-participant="implementation-agent-01"]').click();await expect(page.locator('#presenceDialog')).toBeHidden();
-  assert.equal((await target(page)).scope,'newdirect');assert.equal((await target(page)).to,'implementation-agent-01');
+  await expect.poll(async()=>{const t=await target(page);return [t.scope,t.to];}).toEqual(['newdirect','implementation-agent-01']);
   const out=h.tmpDir('afb-routing-dm-');await h.dumpFakeFs(page,out);const v=h.boardctl(['validate','--path',h.path.join(out)]);assert.equal(v.code,0,v.err+v.out);clean(log);
  }finally{await ctx.close();}
 });
