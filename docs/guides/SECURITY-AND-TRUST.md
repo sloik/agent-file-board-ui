@@ -83,8 +83,10 @@ Since 3.0.0, optional signed room inventories in the canonical CLI help afterwar
 `boardctl history observe` records "I observed these messages", and every client
 that trusts that key remembers them privately. `boardctl history status` then
 reports messages that became unavailable or changed, even if the shared evidence
-was removed too. This is detection only, it starts after the first observation,
-and the viewer does not display it yet. See
+was removed too. Since 3.1.0 the viewer shows the same results for each room as a
+"Missing-message check" (display only; it never writes inventories, so recording
+stays with the CLI). This is detection only, it starts after the first observation,
+and a fresh browser cannot detect anything removed before its first check. See
 [room history inventories](https://github.com/sloik/agent-file-board/blob/main/docs/SIGNED-ROOM-HISTORY.md).
 
 Use appropriate folder permissions, backups and version history for recovery.

@@ -29,7 +29,8 @@
     "screenshots:toolbar": "node scripts/screenshot_toolbar.js",
     "screenshots:features": "node scripts/screenshot_features.js",
     "screenshots:all": "node scripts/screenshots_all.js",
-    "embed:signing": "node scripts/embed_signing.js"
+    "embed:signing": "node scripts/embed_signing.js",
+    "embed:history": "node scripts/embed_history.js"
   },
   "devDependencies": {
     "@noble/curves": "2.4.0",
