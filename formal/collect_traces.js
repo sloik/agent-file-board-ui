@@ -51,6 +51,6 @@ function generated(){return schedules().map(({seed,actions})=>{
  assert(last.reloaded&&!last.badReload,'generated schedule must reach an actually permitted reload');
  assert(last.checks>=1&&last.manualUsed,'manual check must remain usable in every schedule');return trace;
 });}
-async function allTraces(mutant=false){return [...traces(mutant),...await require('./collect_signer').traces(mutant),...require('./collect_answers').traces(mutant)];}
+async function allTraces(mutant=false){return [...traces(mutant),...await require('./collect_signer').traces(mutant),...require('./collect_answers').traces(mutant),...require('./collect_composer').traces(mutant)];}
 if(require.main===module)allTraces(process.argv.includes('--mutant')).then(t=>process.stdout.write(JSON.stringify(t))).catch(e=>{console.error(e);process.exitCode=1;});
 module.exports={traces,schedules};

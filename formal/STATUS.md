@@ -60,6 +60,7 @@ states the maintained abstraction and the remaining correspondence boundary.
 | UI / Signer | Unlock generations, authorization, guarded writes and draft preservation | Ten production action traces, four implementation mutants, six TLC configs |
 | UI / ViewerUpdate | Two daily windows, manual checks, opt-out and aggregate reload blockers | Three fixed + eight generated runtime traces, two implementation mutants, four TLC configs |
 | UI / AnswerAcceptance | Recorded first answers, offline conflicts, owner resolution and eligibility blocking | Nine production resolver traces, four implementation mutants, six TLC configs |
+| UI / ComposerSigning | Signer is the selected persona, composer status precedence, expiry rechecked at send, unsigned only where allowed | Twelve fixed + eight generated production status traces, four implementation mutants, six TLC configs |
 | Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Four fixed + eight generated two-writer traces, two implementation mutants, two TLC configs |
 | Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Eight actual prepare/guard/commit traces, two implementation mutants, four TLC configs |
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
@@ -122,6 +123,8 @@ The original 32 fixed positive traces and all 12 implementation mutants remain
 mandatory. Sixteen additional generated schedules run on PR/main/manual/weekly
 formal CI. Their names are explicit in `trace_contracts.json`; removal or an
 unexpected scenario fails the lane. Model/config semantics remain unchanged.
+ComposerSigning adds twelve fixed traces, eight seeded schedules (seeds 0..7, at
+most 40 composer events each) and four implementation mutants.
 
 - ViewerUpdate enumerates seeds 0..7: automatic/manual order, draft/write blocker
   order, and opt-out/re-enable. Each schedule has one day tick, one manual check,
@@ -139,6 +142,7 @@ threaded compare/replace race. Generated wrappers and raw trace data stay tempor
 | Scope | Real evidence in formal traces | Doubles / sampled boundary |
 | --- | --- | --- |
 | Signer | Production Provider/delivery/writer/composer functions, Node WebCrypto and signature verification | VM observation hooks, controlled clock, DOM and writable-stream doubles; native browser I/O is covered separately by Chromium/Firefox tests |
+| ComposerSigning | Production `signingComposerStatus` for every composer event | Host inputs (catalog, fingerprints, approvals, destination) are set by the collector; its Send gates on the production status, not on the host send path |
 | ViewerUpdate | Production claim/reload functions and their observed effects | In-memory metadata and aggregate draft/write flags; actual IndexedDB tab serialization is a separate Playwright test |
 | PrivateState | Session.save, lock directories, expected-byte reads, fsync/replace, authenticated compromise evidence | Two clients and bounded calls in owned storage; six generated orders/two lock-held probes do not exhaust OS scheduling |
 | Publication | Real signed packets, guards, config/profile/private reads, os.link commits | Synthetic boards; model crash windows use injected OSError; two-client overlap is controlled nested execution |
