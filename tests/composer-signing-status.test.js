@@ -61,6 +61,7 @@ test('the signer is the selected persona: another unlocked key never makes the p
   assert.equal(r.id,'needs-unlock');
   assert.equal(r.action.kind,'unlock');assert.equal(r.action.participant,'maya');
   assert.match(r.detail,/Unlocked here: sam/);
+  assert.match(status({...s,names:{sam:'Sam Rivera'}}).detail,/Unlocked here: Sam Rivera\./,'display names, not ids');
   assert.equal(id(base({mode:'signed',catalog:['sam'],persona:'sam',name:'Sam'})),'signed');
 });
 
@@ -109,4 +110,12 @@ test('an unlocked key with signing off offers to turn signing on; a locked perso
   assert.equal(r.id,'unsigned');assert.equal(r.action.kind,'sign');assert.match(r.detail,/signing is off/);
   assert.equal(status(base({required:true})).alt.kind,'persona');
   assert.equal(status(base({required:true,persona:'',name:''})).action.kind,'persona');
+});
+
+test('a revoked key is never offered for approval; signed names the persona, not "your" key',()=>{
+  const r=status(base({required:true,catalog:['maya'],participants:{maya:{fingerprint:FP,revoked:{}}}}));
+  assert.equal(r.id,'key-revoked');assert.notEqual(r.action.kind,'approve');
+  const signed=status(base({mode:'signed',catalog:['maya']}));
+  assert.match(signed.detail,/^Maya's key/);assert.equal(signed.action.label,"Lock Maya's key");
+  assert.doesNotMatch(api(true).signingComposerStatus(base({required:true})).label,/\(Maya\)/,'Polish uses "klucz: Maya", not parentheses');
 });
