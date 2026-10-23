@@ -120,7 +120,8 @@ test('message a participant: existing pair opens it, a new pair writes direct/<s
   await expect(page.locator('#cNewThread')).toHaveValue('quick-question-about-the-schema');
   await page.fill('#cNewThread','');await page.click('#send');await expect(page.locator('#toast')).toHaveText('Give the new thread a name');
   await page.fill('#cNewThread','Schema question');await page.click('#send');
-  await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/')));
+  // The fake file appears on getFileHandle and gets its text on close, so wait for the written bytes.
+  await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/')&&f.text));
   const file=(await messages(page)).find(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/'));
   assert.match(file.text,/^FROM: human-owner-01$/m);assert.match(file.text,/^TO: research-agent-01$/m);assert.match(file.text,/^SCOPE: DIRECT$/m);assert.match(file.text,/^THREAD: T\d+-schema-question$/m);
   await expect(page.locator('.fname[data-dir="human-owner-01--research-agent-01"]')).toBeVisible();
