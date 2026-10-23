@@ -56,7 +56,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "3d68c0f3602bb9f84e7b91559cbd048600749c1b779dcfba7494e4c9502e4779"
+      "sha256": "1a9df4f4103eccdf53227c6b7d3f2d2da2e86826bd3585665e586874131debfe"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
@@ -367,14 +367,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "641adf6367effda15911d7d21eb8984cf7ce5db3e6571f94fd5932e621c4abeb"
+      "sha256": "8abf1ea131aea5510f821b0b119e082df26121da7adc0ca6f5f1a1d939c8d020"
     },
     "formal/trace_contracts.json": {
       "path": "formal/trace_contracts.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "2cfcfa453e7273d45853336a0e1255080a40a7e9f6f62bb7478b436df88868d5"
+      "sha256": "5febd737f529bcdfbd7426ae6e393b23dec8c2f77f588d45fc7dcf3e1da12e46"
     },
     "formal/collect_signer.js": {
       "path": "formal/collect_signer.js",
@@ -664,7 +664,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "b07739958bba07f3061893dd7ad7db38d91dc7bb2b5be2e561966caca50f24e5"
+      "sha256": "d8ce604fbeaa58110dfdd50c02c1718e78689db1ca86e9f445e859b9b7b1728e"
     },
     "formal/ComposerSigning.cfg": {
       "path": "formal/ComposerSigning.cfg",
@@ -713,14 +713,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "88f67df39f3f0795a2677f53215d31727d6eb78d5ab391b64c0fcdd350b8b3da"
+      "sha256": "9ad79c0f00b4bb61383f2ff0fb088003c7351111bb7075172c0f683bcb6d5914"
     },
     "tests/composer-signing-status.test.js": {
       "path": "tests/composer-signing-status.test.js",
       "selector": {
         "kind": "file"
       },
-      "sha256": "720829ef13bccef9af19bc443fe566dd106fa4511fa7f31b6ade55bfe70b76ce"
+      "sha256": "f286f8b27586349ef07b4efea534da90e9065c78caf83b0ed731e46d025d6cf2"
     },
     "signing-composer-status": {
       "path": "scripts/signing-help.js",
@@ -729,7 +729,7 @@
         "start": "// Composer signing status (SPEC-002-061).",
         "end": "// Reason a received message cannot drive actions"
       },
-      "sha256": "9deeea2b3a342d3ac06405cb08c15108f8b93e5c51325f4a04e4ba946453c549"
+      "sha256": "033251105986a563fadda1f51ae4d6ccd59a503e9ec0b5480fc57d6fd66e6189"
     }
   },
   "models": [
@@ -1825,7 +1825,7 @@
     },
     {
       "module": "ComposerSigning.tla",
-      "review": "2026-10-23 (SPEC-002-061 AC6): reviewed signingComposerStatus precedence (unavailable, unsigned when signed mode is off and the destination is optional, read-only, not-registered, key-revoked, key-rotated, needs-unlock, needs-approval for required destinations, signed) against the Status operator with real production traces. The unavailable id does not depend on the delegated signingDiagnose/signingBlockInfo text. Signer is the selected persona (owner decision); Send in the collector gates on the production status because the host send path is being rewritten under the same spec and is not yet anchored. Rotation and revocation are assumed to drop the key from the provider catalog, as in Signer key reconciliation.",
+      "review": "2026-10-23 (SPEC-002-061 AC6): reviewed signingComposerStatus precedence (unavailable, unsigned when signed mode is off and the destination is optional, read-only, not-registered, key-revoked, key-rotated, needs-unlock, needs-approval for required destinations, signed) against the Status operator with real production traces. The unavailable id does not depend on the delegated signingDiagnose/signingBlockInfo text. Signer is the selected persona (owner decision); Send in the collector gates on the production status because the host send path is being rewritten under the same spec and is not yet anchored. Rotation and revocation are assumed to drop the key from the provider catalog, as in Signer key reconciliation. Contract amendment review 2026-10-23 (54d2af0..d65b9e4): added no-persona (after unsigned, before read-only), key-changed (approval of an older fingerprint) before needs-approval, the composer sign action (TurnSigningOn) and explicit review-only approval; collector gained a changed-key mutant.",
       "states": {
         "state": {
           "anchors": [
@@ -1867,13 +1867,21 @@
           ],
           "reason": "Signed or unsigned sending mode."
         },
+        "state.oldPins": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js"
+          ],
+          "reason": "Own keys whose approval is for an older fingerprint (key-changed), as opposed to no approval (needs-approval)."
+        },
         "state.persona": {
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "The \"I am\" persona (#me) passed as persona; the signer is always this persona (owner decision)."
+          "reason": "The \"I am\" persona (#me) passed as persona, or none (no-persona); the signer is always this persona (owner decision)."
         },
         "state.pins": {
           "anchors": [
@@ -1881,7 +1889,7 @@
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "Own keys approved for their current fingerprint; an approval of an older fingerprint is not in the set."
+          "reason": "Own keys approved for their current fingerprint."
         },
         "state.post": {
           "anchors": [
@@ -1971,7 +1979,7 @@
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "Approving the persona own key for the current fingerprint."
+          "reason": "Explicit review approval of the persona own key for the current fingerprint; never implied by unlock."
         },
         "ChooseSigned": {
           "anchors": [
@@ -1979,7 +1987,7 @@
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "Turning signed mode on."
+          "reason": "Signing dialog turns signed mode on."
         },
         "ChooseUnsigned": {
           "anchors": [
@@ -2139,7 +2147,7 @@
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "Two registered personas and one without a registered key."
+          "reason": "Two registered personas, one without a registered key, and none selected."
         },
         "Plain": {
           "anchors": [
@@ -2179,7 +2187,7 @@
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "Board refresh shows a new key; provider drops the old one and the old approval no longer matches."
+          "reason": "Board refresh shows a new key; provider drops the old one and its approval becomes an approval of an older fingerprint."
         },
         "Safe": {
           "anchors": [
@@ -2301,6 +2309,14 @@
           ],
           "reason": "Periodic 30-second re-render."
         },
+        "TurnSigningOn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js"
+          ],
+          "reason": "Composer action kind sign: turns signing on when the persona key is unlocked in an optional destination."
+        },
         "TypeOK": {
           "anchors": [
             "signing-composer-status",
@@ -2315,7 +2331,7 @@
             "formal/collect_composer.js",
             "tests/composer-signing-status.test.js"
           ],
-          "reason": "Reachability order: SIGNING_COMPOSER_ORDER, then a signed post, unsigned status and an unsigned post."
+          "reason": "Feasible reachability order covering every SIGNING_COMPOSER_ORDER id plus a signed and an unsigned post."
         },
         "vars": {
           "anchors": [
@@ -2359,7 +2375,7 @@
         "tests/composer-signing-status.test.js",
         "formal/collect_traces.js"
       ],
-      "limits": "Three personas (two registered keys, one unregistered), two key files, two modes, one destination flag, folder access and signing-error toggles, approvals, revocation and rotation per key. Status ids only: labels, emoji, actions and Polish text are unit-tested. The collector drives the production status function with host-shaped inputs and gates Send on it; the host send path, signingDelivery guards, key-file parsing and composer rendering remain unit/browser tests. No liveness or timing claim: expiry is one event and the 30-second tick another."
+      "limits": "Three personas (two registered keys, one unregistered) plus no persona, two key files, two modes, one destination flag, folder access and signing-error toggles, approvals, revocation and rotation per key. Status ids only: labels, emoji, actions and Polish text are unit-tested. The collector drives the production status function with host-shaped inputs and gates Send on it; the host send path, signingDelivery guards, key-file parsing and composer rendering remain unit/browser tests. No liveness or timing claim: expiry is one event and the 30-second tick another."
     }
   ]
 }

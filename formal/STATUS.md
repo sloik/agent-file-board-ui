@@ -60,7 +60,7 @@ states the maintained abstraction and the remaining correspondence boundary.
 | UI / Signer | Unlock generations, authorization, guarded writes and draft preservation | Ten production action traces, four implementation mutants, six TLC configs |
 | UI / ViewerUpdate | Two daily windows, manual checks, opt-out and aggregate reload blockers | Three fixed + eight generated runtime traces, two implementation mutants, four TLC configs |
 | UI / AnswerAcceptance | Recorded first answers, offline conflicts, owner resolution and eligibility blocking | Nine production resolver traces, four implementation mutants, six TLC configs |
-| UI / ComposerSigning | Signer is the selected persona, composer status precedence, expiry rechecked at send, unsigned only where allowed | Twelve fixed + eight generated production status traces, four implementation mutants, six TLC configs |
+| UI / ComposerSigning | Signer is the selected persona, composer status precedence, expiry rechecked at send, unsigned only where allowed | Twelve fixed + eight generated production status traces, five implementation mutants, six TLC configs |
 | Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Four fixed + eight generated two-writer traces, two implementation mutants, two TLC configs |
 | Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Eight actual prepare/guard/commit traces, two implementation mutants, four TLC configs |
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
@@ -124,7 +124,7 @@ mandatory. Sixteen additional generated schedules run on PR/main/manual/weekly
 formal CI. Their names are explicit in `trace_contracts.json`; removal or an
 unexpected scenario fails the lane. Model/config semantics remain unchanged.
 ComposerSigning adds twelve fixed traces, eight seeded schedules (seeds 0..7, at
-most 40 composer events each) and four implementation mutants.
+most 40 composer events each) and five implementation mutants.
 
 - ViewerUpdate enumerates seeds 0..7: automatic/manual order, draft/write blocker
   order, and opt-out/re-enable. Each schedule has one day tick, one manual check,
