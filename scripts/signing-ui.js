@@ -18,6 +18,12 @@ function signingDestinationPath() {
   return { path: `${top}/${dir}/x.txt`, thread: newRoom ? "" : th?.tid || "" };
 }
 const signingPersonaName = (id) => B?.people?.[id]?.name || id;
+// The conventional folder for private keys (canonical SPEC-002-066): ~/private/afb/<project id>/.
+// Visible on purpose: file pickers hide dot-folders. Never the board, a repository or a synced folder.
+function signingKeyFolder() {
+  const id = B?.cfg?.project?.id;
+  return "~/private/afb/" + (typeof id === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(id) ? id : exText("<project>", "<projekt>")) + "/";
+}
 // The one send decision (SPEC-002-061): what signingComposerStatus says now for the persona in
 // "I am" and a destination. "signed" signs as that persona, "unsigned" posts unsigned, anything
 // else refuses with the status detail. The composer row and delivery both use it.
@@ -100,7 +106,9 @@ function updateSigningNotice(status = signingPostBlock()) {
   noteEl.textContent = note?.text || "";
   noteEl.hidden = !note;
   noteEl.classList.toggle("signing-error", note?.kind === "error");
-  el.querySelector(".signing-notice-hint").hidden = action?.kind !== "unlock";
+  const hint = el.querySelector(".signing-notice-hint");
+  hint.textContent = exText(`The key file must be on this device, usually in ${signingKeyFolder()}`, `Plik klucza musi być na tym urządzeniu, zwykle w ${signingKeyFolder()}`);
+  hint.hidden = action?.kind !== "unlock";
   // In an optional destination, signing is an offer, not the main step: it renders as a link.
   signingNoticeButton(el.querySelector(".signing-notice-action"), action, status?.id === "unsigned");
   signingNoticeButton(el.querySelector(".signing-notice-alt"), status?.alt || null, true);
@@ -549,8 +557,8 @@ async function signingDialog(request) {
   setupYou.tabIndex = -1;
   const youSteps = node("ol", "", howto, "signing-help");
   for (const step of [
-    text("Ask the board owner to help you make a key and register its public half on the board. The viewer cannot create or register keys.", "Poproś właściciela tablicy o pomoc w utworzeniu klucza i zarejestrowaniu jego części publicznej na tablicy. Przeglądarka nie tworzy ani nie rejestruje kluczy."),
-    text("Keep your private key file safe, outside the board folder.", "Przechowuj plik klucza prywatnego bezpiecznie, poza folderem tablicy."),
+    text(`Make a key with boardctl signing keygen --path <board> --participant <your id>. It saves the private key as ${signingKeyFolder()}<your id>.json and prints the next steps; ask the board owner to register its public half. The viewer cannot create or register keys.`, `Utwórz klucz poleceniem boardctl signing keygen --path <tablica> --participant <twój id>. Zapisze klucz prywatny jako ${signingKeyFolder()}<twój id>.json i wypisze kolejne kroki; poproś właściciela tablicy o zarejestrowanie części publicznej. Przeglądarka nie tworzy ani nie rejestruje kluczy.`),
+    text(`Keep the private key file in ${signingKeyFolder()} on this device: never in the board folder, a repository or a synced folder such as Dropbox or iCloud Drive. Each person and each agent holds only its own key.`, `Trzymaj plik klucza prywatnego w ${signingKeyFolder()} na tym urządzeniu: nigdy w folderze tablicy, repozytorium ani folderze synchronizowanym, takim jak Dropbox czy iCloud Drive. Każda osoba i każdy agent ma tylko własny klucz.`),
     text("Task 3, Sign as me: pick your persona, choose its private key file and press Unlock. The padlock button next to Send does the same for the persona in “I am”.", "Zadanie 3, Podpisuj jako ja: wybierz personę, wybierz jej plik klucza prywatnego i naciśnij Odblokuj. Przycisk z kłódką obok Wyślij robi to samo dla persony z „Jestem”."),
     text("Task 2, Review a key: approve your own fingerprint once, after comparing it with the one the owner confirmed to you.", "Zadanie 2, Sprawdź klucz: zatwierdź raz własny odcisk, po porównaniu z odciskiem potwierdzonym przez właściciela."),
     text("Write your message and press Post.", "Napisz wiadomość i naciśnij Wyślij.")
