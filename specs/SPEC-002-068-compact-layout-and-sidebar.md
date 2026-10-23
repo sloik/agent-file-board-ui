@@ -99,43 +99,67 @@ message field and Post are off-screen.
 
 ## Acceptance criteria (Playwright bounding boxes, not isVisible)
 
-- [ ] AC1: For viewports {1280x800, 1280x560, 1280x460, 900x500, 700x420, 640x800, 390x640, 390x560,
+- [x] AC1: For viewports {1280x800, 1280x560, 1280x460, 900x500, 700x420, 640x800, 390x640, 390x560,
   320x360} x {en, pl} x {light, dark, dracula} x {options collapsed, options+Advanced expanded}:
   #cBody top >= 0 and bottom <= innerHeight, #send bottom <= innerHeight, #cBody height >= 2 line
   heights, document scrollHeight <= innerHeight, scrollWidth <= innerWidth.
-- [ ] AC2: #signingNotice and (when shown) #composerTargetRow and #composerPin are inside the viewport
+- [x] AC2: #signingNotice and (when shown) #composerTargetRow and #composerPin are inside the viewport
   in every AC1 case.
-- [ ] AC3: #feed clientHeight >= 60 at 320x360 and the feed scrolls internally.
-- [ ] AC4: with persisted composer height 600, reload at 1280x800 then resize to 1280x460: AC1 holds.
-- [ ] AC5: worst case at 320x360 Polish: reply + draft pin + structured attachment + target note +
+- [x] AC3: #feed clientHeight >= 60 at 320x360 and the feed scrolls internally.
+- [x] AC4: with persisted composer height 600, reload at 1280x800 then resize to 1280x460: AC1 holds.
+- [x] AC5: worst case at 320x360 Polish: reply + draft pin + structured attachment + target note +
   signing + options expanded: AC1/AC2 hold.
-- [ ] AC6: in a topic view #cNewRoom is hidden with Advanced open; visible after New room... or with a
+- [x] AC6: in a topic view #cNewRoom is hidden with Advanced open; visible after New room... or with a
   typed value.
-- [ ] AC7: header is one row at >=601 wide (.top height <= 52); feed head <= 36.
-- [ ] AC8: keyboard: Tab from #cBody reaches #send; topic "..." and Tools menus open with Enter and
+- [x] AC7: header is one row at >=601 wide (.top height <= 52); feed head <= 36.
+- [x] AC8: keyboard: Tab from #cBody reaches #send; topic "..." and Tools menus open with Enter and
   their items are focusable.
-- [ ] AC9 (non-vacuity): a test-only mutation restoring `.composer{flex:none;min-height:160px}` /
+- [x] AC9 (non-vacuity): a test-only mutation restoring `.composer{flex:none;min-height:160px}` /
   removing the inner grid makes AC1 fail at 1280x460 and at 390x640 expanded.
-- [ ] AC10: topic view at 1280x800: #composerTargetRow hidden, #composerTarget present;
+- [x] AC10: topic view at 1280x800: #composerTargetRow hidden, #composerTarget present;
   #composerTargetChange opens #composerTargetMenu; picking another topic shows the chip row and the
   post lands there.
-- [ ] AC11: the chip row is visible in each case: draft pin, reply from All messages, New room,
+- [x] AC11: the chip row is visible in each case: draft pin, reply from All messages, New room,
   New topic, Message a participant, no destination (Post disabled with reason).
-- [ ] AC12: exactly one sidebar element has `.posting` and it matches the destination; #title contains
+- [x] AC12: exactly one sidebar element has `.posting` and it matches the destination; #title contains
   room and topic (or DM peer); both update after switching views.
-- [ ] AC13: at 1280x800 #menu hides the sidebar (.side width 0, feed left edge <= 8), aria-expanded
+- [x] AC13: at 1280x800 #menu hides the sidebar (.side width 0, feed left edge <= 8), aria-expanded
   flips, Tab from #menu never lands inside .side; reload keeps it hidden; with Storage get/set
   throwing the page loads without page errors and the toggle still works.
-- [ ] AC14: with empty storage the sidebar starts hidden at 900x500 and 1280x460 and shown at 1280x800.
-- [ ] AC15: at 390x640 the drawer starts closed; #menu opens it with its top at the header bottom
+- [x] AC14: with empty storage the sidebar starts hidden at 900x500 and 1280x460 and shown at 1280x800.
+- [x] AC15: at 390x640 the drawer starts closed; #menu opens it with its top at the header bottom
   (+-1); Escape closes it and focuses #menu; picking a topic closes it and shows that topic.
-- [ ] AC16: with the sidebar hidden, AC1/AC2 hold and #title shows the destination.
-- [ ] AC17 (non-vacuity): forcing #composerTargetRow visible fails AC10; removing `.posting` fails
+- [x] AC16: with the sidebar hidden, AC1/AC2 hold and #title shows the destination.
+- [x] AC17 (non-vacuity): forcing #composerTargetRow visible fails AC10; removing `.posting` fails
   AC12; removing the persistence write fails AC13's reload step.
-- [ ] AC18: existing tests that clicked the visible chip use a helper that clicks #composerTargetChange
+- [x] AC18: existing tests that clicked the visible chip use a helper that clicks #composerTargetChange
   (spec change, not a loosened test); no assertion is weakened. SPEC-002-064 gets an amendment note
   pointing here. English and Polish strings for every new label.
 - [ ] AC19: docs (docs/guides/COMPOSER.md and README where relevant) and CHANGELOG updated; released
   as viewer 3.3.4 (the viewer shares canonical MAJOR.MINOR).
 
 No VoiceOver/screen-reader checks (owner policy).
+
+## Implementation notes (2026-10-23)
+
+Tests: `tests/compact-layout.test.js` (AC1-AC17) with `h.layoutViolations`, plus the rewritten tests
+listed in the feature commit. Decisions and deviations:
+
+- **AC9 sizes.** With the compact header and topic bar, the old composer rules alone no longer
+  overflow 1280x460 or 390x640 (measured). The test shows the composer-only mutation failing at
+  320x360 and the old composer plus the old chrome (wrapping header, reserved status line, wrapping
+  topic bar) failing at 700x420 and 390x640.
+- **Composer cap at <=480 tall is 60dvh, not 55dvh.** The AC5 worst case at 320x360 needs ~206px for
+  the pinned zones; 55dvh is 198px. The feed still keeps >= 60px (AC3).
+- **#rstat** is visually hidden (kept in the DOM): its text is #reload's title, a dot on #reload shows
+  on/paused above 600x640, and Tools repeats it as a status line.
+- **Phones:** two header rows at <=600 wide; at <=600 wide and <=480 tall the header is one sideways
+  scrolling strip (nine controls do not fit 320px in one row).
+- **Recipients:** the popover gains "Send to..." for rooms, since #composerTo is hidden with the row.
+  Recipients other than `all` count as "differs from the view" and show the row.
+- **Resize re-clamp** (item 8) changes only the displayed `--composerh`; the saved height is kept.
+- **#title** reads `# room › T003 Title` (no "·"), `# room`, or `✉ Peer › T002 Title`.
+- **Topic "..." menu** stays open while a dialog opened from it runs, so focus returns to the item;
+  Escape or an outside click closes it.
+- Documentation screenshots in docs/images were not regenerated.
+

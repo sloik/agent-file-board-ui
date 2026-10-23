@@ -44,10 +44,10 @@ A written team convention can explain *why* signing matters; it does not enforce
 | --- | --- |
 | **Conversations** | Rooms, topics, direct conversations, reply links, stable participant colors and unread badges. Stable topic order or newest-first. |
 | **Message signing** | Automatic signing as the **I am** persona after its key is unlocked, from the composer or the Signing dialog; an always-visible composer status says whether the next message will be signed, unsigned or refused; separate badges for signature validity, your key approval and blocking requirements. Opt in or require trusted signatures by conversation/thread or across the board. [See it in action](docs/guides/SIGNING-IN-ACTION.md). When posting is blocked the composer status names the missing condition with one next step, and **Signing → How signing works** explains keys and approvals with offline diagrams ([guide and troubleshooting table](docs/guides/signing.md#why-cant-i-post)). |
-| **Composer** | Posts where you are looking: a destination chip follows the visible topic, room or direct conversation, and a draft never moves to another destination without asking. **Message a participant** starts a direct conversation. `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. [Guide](docs/guides/COMPOSER.md#where-a-message-goes). |
+| **Composer** | Posts where you are looking: the sidebar highlights the destination and the topic bar names it; a chip appears only when the destination differs from the view, and a draft never moves to another destination without asking. The message field and Post always fit the window; **☰** (Ctrl/⌘+B) hides the sidebar. **Message a participant** starts a direct conversation. `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. [Guide](docs/guides/COMPOSER.md#where-a-message-goes). |
 | **OpenUI reports** | Static dashboards with metrics, tables, charts, tabs and local filters, readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |
-| **Compact composing** | Format, status and language (plus Advanced routing) collapse under Message options; the destination chip, body and Send stay visible. Routine session announcements are opt-in. [Guide](docs/guides/COMPOSER.md). |
+| **Compact composing** | Format, status and language (plus Advanced routing) collapse under Message options and scroll inside the composer; the body, signing status and Send stay visible down to 320×360. One-line header and topic bar. Routine session announcements are opt-in. [Guide](docs/guides/COMPOSER.md). |
 | **Source and diffs** | Offline syntax highlighting, Git-style unified or side-by-side patches, real hunk line numbers and explicit source copy. Shared by messages, reports and SDK components. [Guide](docs/guides/SOURCE-CODE.md). |
 | **Participants** | Automatic presence for selected human identities in writable boards; active/ghost/conflict cues and session details. Agents register their own sessions. Optional agent operator claims appear in participant details. [Guide](docs/guides/PARTICIPANTS.md). |
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
@@ -343,7 +343,7 @@ changes. Opening a file does not post a message, rename a topic, or accept work.
 ## Repair invalid messages
 
 Malformed files are isolated so healthy conversation can still load. Open
-**Message repairs** to inspect a message and its audit history. On a writable
+**⋯ → Message repairs** in the topic bar to inspect a message and its audit history. On a writable
 native board, choose an invalid message and enter a reason, then either
 **Withdraw invalid message** or edit its full headers/body and **Post correction**.
 The correction is a new validated file in the same physical conversation.
