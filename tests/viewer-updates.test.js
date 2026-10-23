@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium,firefox}=require('playwright'),h=require('./lib/helpers'),U=require('../scripts/viewer-updates');
 const checker=h.fs.readFileSync(h.path.join(h.ROOT,'site/update-check.html'),'utf8'),api='https://api.github.com/repos/sloik/agent-file-board-ui/releases/latest';
-const release=()=>({id:123,draft:false,prerelease:false,tag_name:'v3.3.2',html_url:U.links('3.3.2').release,assets:[{name:'agent-file-board-viewer.zip',state:'uploaded',browser_download_url:U.links('3.3.2').package}]});
+const release=()=>({id:123,draft:false,prerelease:false,tag_name:'v3.3.3',html_url:U.links('3.3.3').release,assets:[{name:'agent-file-board-viewer.zip',state:'uploaded',browser_download_url:U.links('3.3.3').package}]});
 async function boot(browser,{metadata=release(),offline=false,storageFailure=false,html=h.BOARD_HTML,transport=checker,tree=null}={}){
  const ctx=await browser.newContext({viewport:{width:1280,height:800}}),page=await ctx.newPage(),requests=[],errors=[];let checks=0;
  if(tree)await ctx.addInitScript({content:h.fakeFsScript(tree,'project')});
@@ -18,7 +18,7 @@ for(const [name,engine]of Object.entries({chromium,firefox})){
  test(name+': isolated checker, manual package, daily reopen and opt-out',async()=>{
   const browser=await engine.launch({timeout:30000});try{const s=await boot(browser),p=s.page;try{
    await p.waitForSelector('#viewerUpdateNotice',{state:'visible'});await updates(p);await complete(p);
-   assert.match(await p.locator('#viewerUpdateStatus').textContent(),/3.3.2 available/);assert.equal(await p.locator('#viewerPackageDownload').getAttribute('href'),U.links('3.3.2').package);
+   assert.match(await p.locator('#viewerUpdateStatus').textContent(),/3.3.3 available/);assert.equal(await p.locator('#viewerPackageDownload').getAttribute('href'),U.links('3.3.3').package);
    assert.deepEqual(s.requests.filter(u=>/^https?:/.test(u)),[U.endpoint,api]);assert.equal(s.checks,1);
    const other=await s.ctx.newPage();await other.goto(h.pathToFileURL(h.BOARD_HTML).href);await other.evaluate(()=>window.__boardTest.ready);await updates(other);await complete(other);assert.equal(s.checks,1);await other.close();
    assert.ok((await p.evaluate(()=>window.__boardTest.viewerUpdateState())).lastSuccess>0);
@@ -30,7 +30,7 @@ for(const [name,engine]of Object.entries({chromium,firefox})){
   }finally{await s.ctx.close();}}finally{await browser.close();}
  });
  test(name+': offline, storage failure and malformed release metadata fail closed',async()=>{
-  const browser=await engine.launch({timeout:30000});try{for(const opts of [{offline:true},{storageFailure:true},{metadata:{...release(),prerelease:true}},{metadata:{...release(),html_url:'https://evil.test/'}},{metadata:{...release(),tag_name:'v3.3.2-rc'}}]){
+  const browser=await engine.launch({timeout:30000});try{for(const opts of [{offline:true},{storageFailure:true},{metadata:{...release(),prerelease:true}},{metadata:{...release(),html_url:'https://evil.test/'}},{metadata:{...release(),tag_name:'v3.3.3-rc'}}]){
    const s=await boot(browser,opts),p=s.page;try{await updates(p);await complete(p);
     if(opts.storageFailure){assert.equal(s.checks,0);assert.equal(await p.locator('#viewerUpdateAuto').isDisabled(),true);await p.locator('#viewerCheckNow').click();await complete(p);assert.equal(s.checks,1);}
     else{assert.match(await p.locator('#viewerUpdateStatus').textContent(),/unknown/);assert.equal(await p.locator('#viewerPackageDownload').isVisible(),false);assert.equal((await p.evaluate(()=>window.__boardTest.viewerUpdateState())).lastSuccess,undefined);}

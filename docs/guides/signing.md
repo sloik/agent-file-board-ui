@@ -242,7 +242,7 @@ the moment of sending, and a refused send shows the same explanation.
 | ⚠️ Maya's key changed since you approved it | This destination needs trusted signatures, and the board lists a different key than the one you approved | **🔑 Verify the new key** opens the fingerprint review |
 | 🔑 Approve Maya's key once on this device | The key is unlocked, but this destination needs trusted signatures and you have not approved Maya’s key on this device | **🔑 Review and approve the key** opens the fingerprint review; the composer never approves in one click |
 | 🔏 Will be signed as Maya | The message will be signed as Maya. The key locks after 15 minutes without signing | **🔒 Lock Maya's key** (when other keys are unlocked too, **Lock all keys in this tab**: keys are always locked together) |
-| 📝 Will post unsigned | This destination does not require signatures and signing is off | A small link: **🔒 Unlock Maya's key to sign**, or **🔏 Turn signing on** when the key is already unlocked |
+| 📝 Will post unsigned | This destination does not require signatures and signing is off | A small link: **🔒 Unlock Maya's key to sign**, **🔏 Turn signing on** when the key is already unlocked, or **🔏 Sign this message** when there is no key to unlock here yet. Choosing it turns signing on and the status names the missing step (register a key, choose a persona, open the folder with write access); **Post unsigned instead** goes back |
 
 **Send follows the status.** 🔏 signs as the persona, 📝 posts unsigned, and every
 other status refuses with its explanation and keeps your draft. A room that requires

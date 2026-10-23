@@ -1,5 +1,15 @@
 # Release notes
 
+## 3.3.2 — 2026-10-23
+
+- **Choose to sign anywhere (SPEC-002-065):** on a destination that does not require
+  signatures, "📝 Will post unsigned" now always offers a way to sign. Besides
+  **🔒 Unlock <name>'s key to sign** and **🔏 Turn signing on**, it shows
+  **🔏 Sign this message** when there is no key to unlock here yet (no registered key,
+  a revoked key, a read-only folder or no persona). Choosing it turns signing on and the
+  status names the missing step; **Post unsigned instead** goes back. Nothing is posted
+  unsigned while signing is on. English and Polish.
+
 ## 3.3.1 — 2026-10-23
 
 - **Composer routing follows the view (SPEC-002-064):** the Where/Thread/To toolbar is

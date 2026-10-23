@@ -57,6 +57,8 @@ function signingNoticeButton(button, action, link) {
   const label = action ? (emoji ? emoji + " " : "") + signingActionLabel(action) : "";
   if (button.textContent !== label) button.textContent = label;
   button.dataset.signingKind = action?.kind || "";
+  // A short label for the compact phone status line (SPEC-002-065); the full label stays the text.
+  if (action?.short) button.dataset.short = (emoji ? emoji + " " : "") + action.short; else delete button.dataset.short;
   button.classList.toggle("btn", !link);
   button.classList.toggle("signing-link", !!link);
 }
@@ -65,7 +67,7 @@ function signingNoticeButton(button, action, link) {
 function signingNoticeNote(status) {
   const persona = currentUser(), note = signingComposerNote;
   if (note && note.persona === persona && note.location === signingLocation) return note;
-  if (status?.id === "unsigned" && !status.action && !canWrite() && B?.signingParticipants?.[persona]?.fingerprint)
+  if (status?.id === "unsigned" && status.action?.kind !== "unlock" && !canWrite() && B?.signingParticipants?.[persona]?.fingerprint)
     return { kind: "read-only", text: exText("Unlocking a key is unavailable because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie klucza jest niedostępne, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać."), owners: [] };
   return null;
 }

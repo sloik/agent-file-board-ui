@@ -242,7 +242,10 @@ body.resizing{cursor:col-resize;user-select:none}
 .signing-notice-note{display:block;margin-top:4px;font-weight:600}.signing-notice-actions,.signing-notice-switches{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;min-width:0}
 .signing-notice .btn{flex:0 1 auto;white-space:normal;max-width:100%}
 @media (max-width:600px){.signing-notice:not(.expanded) .signing-notice-text{display:none}.signing-notice-more{display:inline-flex;align-items:center;min-height:44px;margin-left:auto}.signing-notice-head{flex:1 1 0}.signing-notice-body{flex:1 1 100%}
-.signing-notice:not(.expanded) :is(.signing-notice-body,.signing-notice-hint,.signing-notice-switches,.signing-notice-alt){display:none}.signing-notice.has-note:not(.expanded) .signing-notice-more::after{content:" •";font-weight:700}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}}
+.signing-notice:not(.expanded) :is(.signing-notice-body,.signing-notice-hint,.signing-notice-switches,.signing-notice-alt){display:none}.signing-notice.has-note:not(.expanded) .signing-notice-more::after{content:" •";font-weight:700}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}
+/* An optional offer to sign (SPEC-002-065) shares the status line, so the compact composer keeps its height. */
+.signing-notice[data-signing-status=unsigned]:not(.expanded) .signing-notice-actions{flex:0 1 auto;order:1}.signing-notice[data-signing-status=unsigned]:not(.expanded) .signing-notice-more{order:2;margin-left:0}
+.signing-notice:not(.expanded) .signing-notice-action[data-short]{font-size:0}.signing-notice:not(.expanded) .signing-notice-action[data-short]::after{content:attr(data-short);font-size:.9rem}}
 .signing-exclusion .btn{margin-left:6px;white-space:normal;max-width:100%}
 .signing-plain{display:grid;grid-template-columns:minmax(90px,max-content) minmax(0,1fr);gap:4px 12px;font-size:.88em;line-height:1.5;margin:8px 0 12px;color:var(--muted)}.signing-plain dt{font-weight:650;color:var(--ink)}.signing-plain dd{margin:0}
 #signing-howto summary{font-size:1.05em}.signing-figure{margin:16px 0;padding:0}.signing-figure h4,#signingDialog #signing-howto>h4{margin:14px 0 6px;font-size:1em}.signing-diagram-wrap{max-width:560px;margin:0 auto}
@@ -1374,7 +1377,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "3.3.1";
+const VIEWER_VERSION = "3.3.2";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -6608,7 +6611,10 @@ function signingComposerStatus(s, text = exText) {
     if (can && catalog.includes(who)) return make("unsigned", "📝", "info", text("Will post unsigned", "Zostanie wysłana bez podpisu"), text(`${name}'s key is unlocked, but signing is off. This destination does not require signatures.`, `Klucz: ${name} – odblokowany, ale podpisywanie jest wyłączone. Ten cel nie wymaga podpisów.`),
       { kind: "sign", label: text("Turn signing on", "Włącz podpisywanie") });
     return make("unsigned", "📝", "info", text("Will post unsigned", "Zostanie wysłana bez podpisu"), text("This destination does not require signatures.", "Ten cel nie wymaga podpisów."),
-      can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz: ${name}, aby podpisać`) } : null);
+      can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz: ${name}, aby podpisać`) }
+        // No key to unlock yet (none registered, revoked, read-only folder or no persona): signing
+        // can still be chosen, and the status then names the missing step (SPEC-002-065).
+        : { kind: "sign", label: text("Sign this message", "Podpisz tę wiadomość"), short: text("Sign", "Podpisz") });
   }
   if (!who) return make("no-persona", "👤", "warn", text("Choose who you are", "Wybierz, kim jesteś"), text("Choose your persona in “I am”, then unlock its key. Messages are signed as the selected persona.", "Wybierz swoją personę w polu „Jestem”, a potem odblokuj jej klucz. Wiadomości są podpisywane jako wybrana persona."), { kind: "persona", label: text("Choose persona", "Wybierz personę") }, unsignedAlt);
   if (!s.writable) {
@@ -6886,6 +6892,8 @@ function signingNoticeButton(button, action, link) {
   const label = action ? (emoji ? emoji + " " : "") + signingActionLabel(action) : "";
   if (button.textContent !== label) button.textContent = label;
   button.dataset.signingKind = action?.kind || "";
+  // A short label for the compact phone status line (SPEC-002-065); the full label stays the text.
+  if (action?.short) button.dataset.short = (emoji ? emoji + " " : "") + action.short; else delete button.dataset.short;
   button.classList.toggle("btn", !link);
   button.classList.toggle("signing-link", !!link);
 }
@@ -6894,7 +6902,7 @@ function signingNoticeButton(button, action, link) {
 function signingNoticeNote(status) {
   const persona = currentUser(), note = signingComposerNote;
   if (note && note.persona === persona && note.location === signingLocation) return note;
-  if (status?.id === "unsigned" && !status.action && !canWrite() && B?.signingParticipants?.[persona]?.fingerprint)
+  if (status?.id === "unsigned" && status.action?.kind !== "unlock" && !canWrite() && B?.signingParticipants?.[persona]?.fingerprint)
     return { kind: "read-only", text: exText("Unlocking a key is unavailable because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie klucza jest niedostępne, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać."), owners: [] };
   return null;
 }
