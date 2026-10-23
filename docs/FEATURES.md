@@ -216,7 +216,7 @@ themes. Sidebar status dots use the same status ink; bubbles keep sender colors.
 </picture>
 
 Reply from a message to retain its reply target, or start a topic with the next
-free ID. Use **Set title** above a selected topic to append its current title
+free ID. Use **⋯ → Rename…** in a selected topic's bar to append its current title
 without rewriting earlier messages. Drag the divider above the composer to
 resize the whole panel; arrow keys also work, and double-click/Home resets it.
 

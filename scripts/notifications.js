@@ -70,7 +70,7 @@ function notificationHasDraft(){return !!($("#cBody").value.length||$("#cNewThre
 function renderNotifications(){
  syncSidebarMenu();
  const button=$("#notificationsOpen");if(!button)return;const state=notificationState,active=state&&notificationCurrent(state),unread=active?state.entries.filter(x=>x.unread).length:0;
- button.textContent=t("notify_title")+(unread?" ("+unread+")":"");button.disabled=!B;
+ button.textContent=t("notify_title")+(unread?" ("+unread+")":"");button.title=button.textContent;button.dataset.count=unread||"";button.disabled=!B;
  if(!$("#notificationsDialog").open)return;
  $("#notificationsStorage").textContent=t(!active||!state.ready?"notify_loading":state.stored?"notify_saved":"notify_memory");
  let permission=typeof window.Notification!=="function"?"unavailable":Notification.permission==="denied"?"denied":notificationPermissionNote||(notificationOS?"granted":"off");

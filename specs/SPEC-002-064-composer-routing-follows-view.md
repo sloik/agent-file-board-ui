@@ -212,3 +212,16 @@ Binding constraints from the room-history author (forwarded 2026-10-23), with ho
 Tests: `room-history-recording.test.js` drives the new-room flow through the chip, the new-topic flow
 through the room view, and a new test asserts that the options appear for a room view, "New topic here"
 and "New room…", start unticked, and reset after a target change.
+
+## Amendment (2026-10-23, SPEC-002-068)
+
+[SPEC-002-068](SPEC-002-068-compact-layout-and-sidebar.md) changes two rules above:
+
+- **Chip no longer always shown.** When the destination equals the view (topic, room new topic or
+  direct conversation, recipients `all`), `#composerTargetRow` is hidden; `#composerTarget` stays in
+  the DOM with current text. The sidebar marks the destination (`.posting`) and the topic bar `#title`
+  names it. The row reappears for a draft pin, a reply from All messages or search, New room, New
+  topic, a new direct message, changed recipients or Advanced routing, and no destination. The
+  popover opens from `#composerTargetChange` next to Send; recipients from its **Send to…** action.
+- **Room name only in the New room flow.** `#cNewRoom` shows after **New room…** or while it has a
+  value; opening Advanced no longer reveals it.

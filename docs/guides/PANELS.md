@@ -34,10 +34,11 @@ Try the [fictional offline demo](DEMO.md). Reproduce captures with
 long-content fixtures for all dialog headers, hit-tested close clicks and
 pointer/keyboard resize with committed reload/reset checks.
 
-Refresh status uses a reserved line below toolbar actions (UI2.4.8). Countdown
+Refresh status no longer takes a toolbar line (SPEC-002-068): the refresh
+button's tooltip and a small dot carry it, and Tools repeats it. Countdown
 digit/unit changes, paused/off and read-only states keep button positions and
-header height stable. Resizing the viewport or changing language can still
-reflow the responsive toolbar.
+header height stable. From 601px wide the header is one line. The captures below
+predate that change.
 
 ![Stable toolbar with a running countdown](../images/board-toolbar-stable.png)
 

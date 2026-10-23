@@ -9,7 +9,9 @@ function updateComposerSummary(){
 /* Composer routing (SPEC-002-064): the visible view picks the destination. The Where/Thread/To
    selects stay as hidden backing state (draft stamp, voice, signing and history read them);
    setComposerTarget() is the only writer outside the Advanced fields. */
-let composerViewKey=null,composerPin=null,composerNewRoomMode=false,composerTopicAuto=true,composerMenu=null,composerNoteKey='';
+let composerViewKey=null,composerPin=null,composerNewRoomMode=false,composerTopicAuto=true,composerMenu=null,composerNoteKey='',composerInfoBase='',composerMarkKey='';
+// SPEC-002-068: options load collapsed in short windows without overwriting the saved preference.
+let composerOptionsHeld=innerHeight<=640;
 function composerTarget(){
  const where=$('#cWhere')?.value||'',newRoom=slugify($('#cNewRoom')?.value||''),to=$('#cTo')?.value||'all',newTopic=$('#cNewThread')?.value||'';
  if(where==='newdirect')return {scope:'newdirect',dir:[currentUser(),to].sort().join('--'),thread:'',newRoom:'',newTopic,to};
@@ -92,8 +94,8 @@ function composerTargetRender(){
  const full=[chip.querySelector('.composer-chip-lead').textContent,text.where,text.topic].filter(Boolean).join(' ');
  if(chip.title!==full)chip.title=full;chip.setAttribute('aria-label',full+' — '+exText('Change','Zmień'));
  const to=$('#composerTo');to.hidden=target.scope!=='room';set(to,composerToText(target.to));to.title=to.textContent;
- const advanced=$('#composerOptions')?.open&&$('#composerAdvanced')?.open;
- $('#cNewRoom').hidden=!B||target.scope==='direct'||target.scope==='newdirect'||!(composerNewRoomMode||$('#cNewRoom').value||advanced);
+ // The room name belongs to the New room flow only (SPEC-002-068 amends SPEC-002-064).
+ $('#cNewRoom').hidden=!B||target.scope==='direct'||target.scope==='newdirect'||!(composerNewRoomMode||$('#cNewRoom').value);
  $('#cNewThread').hidden=!B||!target.scope||!!target.thread;
  if(composerPin&&(!B||sameComposerTarget(composerPin,target)))composerPin=null;
  const pin=$('#composerPin');pin.hidden=!composerPin;composer.toggleAttribute('data-pinned',!!composerPin);
@@ -105,11 +107,35 @@ function composerTargetRender(){
   if(note){noteEl.dataset.tone=note.tone||'warn';set(noteEl.querySelector('.composer-target-note-text'),note.text);
    noteEl.querySelector('.composer-target-note-actions').replaceChildren(...note.actions.map(a=>{const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.composerAction=a.action;if(a.id)b.dataset.id=a.id;b.textContent=a.label;return b;}));}}
  $('#send').disabled=!!B&&(!target.scope||!!block);
+ // The chip row only appears when the destination differs from what the view shows (SPEC-002-068).
+ const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
+ if(row.hidden!==same){if(same&&composerMenu?.anchor===chip)composerMenuClose();row.hidden=same;}
+ const info=[B&&!target.scope?exText('Choose where to post: pick a room or topic in the sidebar, or use Change destination.','Wybierz, gdzie wysłać: wskaż pokój lub wątek w panelu bocznym albo użyj „Zmień cel”.'):'',composerInfoBase].filter(Boolean).join(' ');
+ if($('#cInfo').textContent!==info)$('#cInfo').textContent=info;
+ composerMarkSidebar(B?target:{scope:null});
 }
+// Exactly one sidebar entry carries .posting: the destination's topic card, or its room/conversation row.
+function composerMarkSidebar(target){
+ const tree=$('#tree');if(!tree)return;
+ const key=target.scope&&!target.newRoom&&target.scope!=='newdirect'?target.scope+':'+target.dir+'|'+(target.thread||''):'',current=tree.querySelector('.posting');
+ if(key===composerMarkKey&&(key?!!current:!current))return;
+ composerMarkKey=key;
+ for(const el of tree.querySelectorAll('.posting'))el.classList.remove('posting');for(const el of tree.querySelectorAll('.posting-mark'))el.remove();
+ if(!key)return;
+ const card=target.thread?tree.querySelector(`.tcard[data-tk="${CSS.escape(target.thread)}"]`):null;
+ const name=tree.querySelector(`.fname[data-nav="${CSS.escape(target.scope)}"][data-dir="${CSS.escape(target.dir)}"]`),el=card||name?.closest('.frow');
+ if(!el){composerMarkKey='';return;}
+ const mark=document.createElement('span');mark.className='posting-mark';
+ const where=target.scope==='room'?'#'+target.dir:composerDirLabel(target.scope,target.dir);
+ mark.textContent=target.thread?exText('posting here','tu wysyłasz'):exText('new topic in '+where,'nowy wątek w '+where);
+ el.classList.add('posting');if(card)card.querySelector('.row1').append(mark);else name.querySelector('.t').after(mark);
+}
+// The visible control that opens the destination popover: the chip when shown, else the change button.
+const composerAnchor=()=>$('#composerTargetRow').hidden?$('#composerTargetChange'):$('#composerTarget');
 // Send from the composer: refuses without a destination, then re-follows the view after a post.
 async function composerSend(){
  if(B){const target=composerTarget(),block=target.scope&&composerBlock(target);
-  if(!target.scope){toast(exText('Choose where to post first.','Najpierw wybierz, gdzie wysłać.'));composerMenuOpen('target',$('#composerTarget'));return;}
+  if(!target.scope){toast(exText('Choose where to post first.','Najpierw wybierz, gdzie wysłać.'));composerMenuOpen('target',composerAnchor());return;}
   if(block){toast(block.text);return;}}
  const before=B?composerTarget():null,me=currentUser(),body=$('#cBody').value;
  await send();
@@ -125,7 +151,7 @@ function messageParticipant(id){
  const me=currentUser();composerMenuClose();
  if(!B||B.layout.dialect!=='native'||!B.people[id]||!me||id===me)return;
  const pair=[me,id].sort().join('--');
- if(B.directs.includes(pair)){sel={scope:'direct',dir:pair,thread:null};rememberView();$('#side').classList.remove('open');build();setComposerTarget(composerViewTarget());$('#cBody').focus();return;}
+ if(B.directs.includes(pair)){sel={scope:'direct',dir:pair,thread:null};rememberView();closeSidebarDrawer(false);build();setComposerTarget(composerViewTarget());$('#cBody').focus();return;}
  setComposerTarget({scope:'newdirect',to:id});composerTopicFromBody();
  ($('#cBody').value.trim()?$('#cNewThread'):$('#cBody')).focus();
 }
@@ -153,7 +179,9 @@ function composerMenuItems(mode,q){
  if((cur.scope==='room'||cur.scope==='direct')&&!cur.newRoom&&cur.thread)actions.push({label:exText('New topic here…','Nowy wątek tutaj…'),pick:()=>{setComposerTarget({scope:cur.scope,dir:cur.dir,thread:''});$('#cNewThread').focus();}});
  actions.push({label:exText('New room…','Nowy pokój…'),pick:()=>{const base=cur.scope==='room'&&B.rooms.includes(cur.dir)?cur.dir:B.defaultRoom&&B.rooms.includes(B.defaultRoom)?B.defaultRoom:B.rooms[0];setComposerTarget({scope:'room',dir:base,thread:'',newRoom:true});updateComposerSummary();$('#cNewRoom').focus();}});
  if(native)actions.push({label:exText('Message a participant…','Napisz do uczestnika…'),stay:true,pick:()=>composerMenuOpen('participant',composerMenu.anchor)});
- actions.push({label:exText('Advanced…','Zaawansowane…'),pick:()=>{S.composerOptionsOpen=S.composerAdvancedOpen=true;saveSettings();updateComposerSummary();$('#cWhere').focus();}});
+ // Recipients stay reachable while the chip row is hidden (SPEC-002-068).
+ if(cur.scope==='room')actions.push({label:exText('Send to…','Odbiorcy…'),stay:true,pick:()=>composerMenuOpen('to',composerMenu.anchor)});
+ actions.push({label:exText('Advanced…','Zaawansowane…'),pick:()=>{composerOptionsHeld=false;S.composerOptionsOpen=S.composerAdvancedOpen=true;saveSettings();updateComposerSummary();$('#cWhere').focus();}});
  const shown=actions.filter(a=>match(a.label));if(shown.length){head(exText('Actions','Akcje'));items.push(...shown);}
  const rooms=B.rooms.filter(r=>match('# '+r));if(rooms.length){head(t('sg_rooms'));for(const r of rooms)items.push({label:'# '+r,pick:()=>{setComposerTarget({scope:'room',dir:r,thread:''});$('#cNewThread').focus();}});}
  const topics=Object.values(threadsOf()).filter(x=>(x.scope==='room'||native)&&match(composerDirLabel(x.scope,x.dir)+' '+x.tid+' '+threadTitle(x))).sort((a,b)=>b.last.localeCompare(a.last)).slice(0,q?40:12);
@@ -182,14 +210,14 @@ function composerMenuPlace(){
 }
 function composerMenuOpen(mode,anchor){
  if(!B)return;
- for(const b of [$('#composerTarget'),$('#composerTo')])b.setAttribute('aria-expanded',String(b===anchor));
+ for(const b of [$('#composerTarget'),$('#composerTo'),$('#composerTargetChange')])b.setAttribute('aria-expanded',String(b===anchor));
  composerMenu={mode,anchor,items:[],selected:-1};const menu=$('#composerTargetMenu'),search=$('#composerTargetSearch');
  search.value='';search.placeholder=mode==='target'?exText('Search rooms, topics, conversations','Szukaj pokoi, wątków, rozmów'):exText('Search participants','Szukaj uczestników');
  menu.hidden=false;composerMenuDraw();search.focus();
 }
 function composerMenuClose(focus=false){
  if(!composerMenu)return;const anchor=composerMenu.anchor;composerMenu=null;$('#composerTargetMenu').hidden=true;
- for(const b of [$('#composerTarget'),$('#composerTo')])b.setAttribute('aria-expanded','false');
+ for(const b of [$('#composerTarget'),$('#composerTo'),$('#composerTargetChange')])b.setAttribute('aria-expanded','false');
  if(focus)anchor.focus();
 }
 function composerMenuPick(i){
@@ -204,7 +232,7 @@ function wireComposerTarget(){
  menu.innerHTML='<h3 id="composerTargetMenuTitle"></h3><input id="composerTargetSearch" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="composerTargetList"><div class="composer-target-list" id="composerTargetList" role="listbox"></div>';
  document.body.append(menu);
  const toggle=(mode,el)=>()=>{if(composerMenu?.anchor===el&&composerMenu.mode===mode)composerMenuClose(true);else composerMenuOpen(mode,el);};
- $('#composerTarget').onclick=toggle('target',$('#composerTarget'));$('#composerTo').onclick=toggle('to',$('#composerTo'));
+ $('#composerTarget').onclick=toggle('target',$('#composerTarget'));$('#composerTo').onclick=toggle('to',$('#composerTo'));$('#composerTargetChange').onclick=toggle('target',$('#composerTargetChange'));
  const search=$('#composerTargetSearch');
  search.addEventListener('input',()=>{composerMenu.selected=-1;composerMenuDraw();});
  search.addEventListener('keydown',e=>{
@@ -224,7 +252,7 @@ function wireComposerTarget(){
   const b=e.target.closest('[data-composer-action]');if(!b)return;const cur=composerTarget();
   if(b.dataset.composerAction==='newtopic'){setComposerTarget({scope:cur.scope,dir:cur.dir,thread:''});$('#cNewThread').focus();}
   else if(b.dataset.composerAction==='persona'){$('#me').value=b.dataset.id;$('#me').dispatchEvent(new Event('change'));}
-  else if(b.dataset.composerAction==='participant')composerMenuOpen('participant',$('#composerTarget'));
+  else if(b.dataset.composerAction==='participant')composerMenuOpen('participant',composerAnchor());
  });
  $('#cNewThread').addEventListener('input',()=>{composerTopicAuto=false;composerTargetRender();});
  $('#cBody').addEventListener('input',composerTopicFromBody);
@@ -233,14 +261,19 @@ function wireComposerTarget(){
  let following=true;const feed=$('#feed');
  feed.addEventListener('scroll',()=>{following=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;},{passive:true});
  if(typeof ResizeObserver==='function')new ResizeObserver(()=>{if(following)feed.scrollTop=feed.scrollHeight;}).observe($('#composer'));
- $('#tree').addEventListener('click',e=>{if(e.target.closest('[data-message-participant]')){e.preventDefault();$('#side').classList.remove('open');composerMenuOpen('participant',$('#composerTarget'));}});
+ $('#tree').addEventListener('click',e=>{if(e.target.closest('[data-message-participant]')){e.preventDefault();closeSidebarDrawer(false);composerMenuOpen('participant',composerAnchor());}});
  $('#presenceList').addEventListener('click',e=>{const b=e.target.closest('[data-message-participant]');if(b){$('#presenceDialog').close();messageParticipant(b.dataset.messageParticipant);}});
  composerTargetRender();
 }
 function applyComposerOptions(){
- const el=$('#composerOptions');if(el.open!==!!S.composerOptionsOpen)el.open=!!S.composerOptionsOpen;
+ const el=$('#composerOptions'),open=!!S.composerOptionsOpen&&!composerOptionsHeld;if(el.open!==open)el.open=open;
  const advanced=$('#composerAdvanced');if(advanced&&advanced.open!==!!S.composerAdvancedOpen)advanced.open=!!S.composerAdvancedOpen;
- updateComposerSummary();
+ updateComposerSummary();queueMicrotask(composerHeightFit);
+}
+// A persisted composer height is re-clamped for the current window with the drag formula; the saved value is kept.
+function composerHeightFit(){
+ if(!S.composerH)return;const wrap=$('.feed-wrap');if(!wrap)return;
+ document.documentElement.style.setProperty('--composerh',Math.round(Math.max(160,Math.min(S.composerH,wrap.clientHeight-130,innerHeight*.65)))+'px');
 }
 function wireComposerOptions(){
  $('#composerOptions > summary').addEventListener('click',event=>{
@@ -248,13 +281,14 @@ function wireComposerOptions(){
   // restore the old state (also matters while the viewer's timer is paused).
   event.preventDefault();const el=$('#composerOptions'),feed=$('#feed');
   const follow=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;
-  S.composerOptionsOpen=!el.open;el.open=S.composerOptionsOpen;saveSettings();
+  composerOptionsHeld=false;S.composerOptionsOpen=!el.open;el.open=S.composerOptionsOpen;saveSettings();
   if(follow)feed.scrollTop=feed.scrollHeight;
  });
  $('#composerOptions').addEventListener('toggle',()=>{
-  const open=$('#composerOptions').open;
+  const open=$('#composerOptions').open;if(composerOptionsHeld&&!open)return;composerOptionsHeld=false;
   if(S.composerOptionsOpen!==open){S.composerOptionsOpen=open;saveSettings();}
  });
+ window.addEventListener('resize',composerHeightFit);
  // Advanced routing remembers its fold the same way (SPEC-002-064).
  $('#composerAdvanced > summary').addEventListener('click',event=>{
   event.preventDefault();S.composerAdvancedOpen=!$('#composerAdvanced').open;$('#composerAdvanced').open=S.composerAdvancedOpen;saveSettings();

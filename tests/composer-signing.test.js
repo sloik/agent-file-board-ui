@@ -98,7 +98,8 @@ test('the status is visible before sending and follows the destination and the p
   assert.equal(await page.evaluate(()=>document.querySelector('#signingNotice').nextElementSibling.contains(document.querySelector('#send'))),true);
   await notice(page).locator('.signing-notice-alt').click();
   assert.equal(await page.evaluate(()=>document.activeElement.id),'me','"Not yours?" leads to "I am"');
-  await page.fill('#cNewRoom','fresh-room');
+  // SPEC-002-068: the room name input belongs to the New room flow.
+  await h.startNewRoom(page);await page.fill('#cNewRoom','fresh-room');
   await status(page,'unsigned');
   await page.fill('#cNewRoom','');
   await status(page,'needs-unlock');

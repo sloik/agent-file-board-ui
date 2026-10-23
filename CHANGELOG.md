@@ -1,5 +1,30 @@
 # Release notes
 
+## 3.3.4 — 2026-10-23
+
+- **The message field and Post always fit the window (SPEC-002-068):** on short or narrow
+  windows (down to 320×360) only the conversation shrinks. The header is one line from 601px
+  wide (two short rows on phones, where search is a button that expands over the bar), the
+  topic bar is one line, and the composer is capped at about half the window: destination
+  banners stay on top, Message options scroll in the middle, and the signing status, the draft
+  and Post stay at the bottom. Windows 640px tall or less start with Message options folded
+  (your saved choice is kept) and show the one-line signing status.
+- **The sidebar shows where you post:** the destination's topic card is highlighted with
+  "posting here" (a room row says "new topic in #room"), and the topic bar names the full
+  destination, for example `# product › T003 Language policy`. The "Posting to" chip now
+  appears only when the destination differs from what you are viewing (pinned draft, reply
+  from All messages, New room, New topic, new direct message, changed recipients, or no
+  destination yet). **⇄ Change destination** next to Post opens the same picker, which now
+  also offers **Send to…** for recipients.
+- **Hide the sidebar:** **☰** (Ctrl+B, ⌘B on a Mac) hides or shows the sidebar at every width
+  and the choice is remembered in this browser; small windows start with it hidden. On phones
+  it is a drawer that closes with Escape, a tap outside, or after picking a conversation.
+- Less chrome: the refresh countdown moved to the refresh button's tooltip (with a dot) and
+  the Tools menu; the version line moves into Tools below 1100px wide; Structured message and
+  Notifications (and the update notice) become icons there; Rename, Message repairs, Guidance and the missing-message
+  check sit in the topic bar's **⋯** menu. The room name field appears only after **New
+  room…**. English and Polish.
+
 ## 3.3.3 — 2026-10-23
 
 - **Where to keep your key (SPEC-002-067, canonical SPEC-002-066):** the composer's

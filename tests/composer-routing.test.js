@@ -120,7 +120,8 @@ test('message a participant: existing pair opens it, a new pair writes direct/<s
   await expect(page.locator('#cNewThread')).toHaveValue('quick-question-about-the-schema');
   await page.fill('#cNewThread','');await page.click('#send');await expect(page.locator('#toast')).toHaveText('Give the new thread a name');
   await page.fill('#cNewThread','Schema question');await page.click('#send');
-  await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/')));
+  // The fake file appears on getFileHandle and gets its text on close, so wait for the written bytes.
+  await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/')&&f.text));
   const file=(await messages(page)).find(f=>f.path.startsWith('.agent-board/direct/human-owner-01--research-agent-01/'));
   assert.match(file.text,/^FROM: human-owner-01$/m);assert.match(file.text,/^TO: research-agent-01$/m);assert.match(file.text,/^SCOPE: DIRECT$/m);assert.match(file.text,/^THREAD: T\d+-schema-question$/m);
   await expect(page.locator('.fname[data-dir="human-owner-01--research-agent-01"]')).toBeVisible();
@@ -149,8 +150,9 @@ test('room TO defaults to all, accepts several participants, reply pre-fills and
  const {ctx,page,log}=await boot();try{
   await page.selectOption('#me','human-owner-01');await h.openView(page,'room:architecture|T004');
   await expect(page.locator('#composerTo')).toHaveText('to all');
-  await page.click('#composerTo');await page.locator('#composerTargetList button',{hasText:'research-agent-01'}).click();await page.locator('#composerTargetList button',{hasText:'implementation-agent-01'}).click();
-  await expect(page.locator('#composerTargetMenu')).toBeVisible();await page.keyboard.press('Escape');await expect(page.locator('#composerTo')).toBeFocused();
+  // SPEC-002-068: the topic view hides the chip row; recipients open from Change destination › Send to….
+  await h.openDestination(page);await page.locator('#composerTargetList button',{hasText:'Send to…'}).click();await page.locator('#composerTargetList button',{hasText:'research-agent-01'}).click();await page.locator('#composerTargetList button',{hasText:'implementation-agent-01'}).click();
+  await expect(page.locator('#composerTargetMenu')).toBeVisible();await page.keyboard.press('Escape');await expect(page.locator('#composerTargetChange')).toBeFocused();await expect(page.locator('#composerTo')).toBeVisible();
   assert.equal(await page.inputValue('#cTo'),'research-agent-01,implementation-agent-01');await expect(page.locator('#composerTo')).toHaveText('to research-agent-01, implementation-agent-01');
   await page.fill('#cBody','Two reviewers please');await page.click('#send');
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('Two reviewers please')));
@@ -180,7 +182,8 @@ test('phone 390px: one-line chip, bottom-sheet popover, Polish strings, no horiz
  const {ctx,page,log}=await boot();try{
   await page.setViewportSize({width:390,height:844});
   await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#settingsClose');
-  await page.evaluate(()=>{sel={scope:'room',dir:'architecture',thread:'room:architecture|T004'};rememberView();build();});
+  // SPEC-002-068: the chip row shows when the destination differs from the view (here All messages).
+  await page.evaluate(()=>{sel={scope:null,dir:null,thread:null};rememberView();build();setComposerTarget({scope:'room',dir:'architecture',thread:'room:architecture|T004'});});
   await page.evaluate(()=>{const th=threadsOf()['room:architecture|T004'];th.title='A very long topic title that must not wrap the destination chip onto a second line';updateComposerSummary();});
   const box=await page.locator('#composerTarget').boundingBox(),line=await page.locator('#composerTarget').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)*2.2);
   assert.ok(box.height<=line,'one line chip: '+box.height);assert.ok(box.x>=0&&box.x+box.width<=390);

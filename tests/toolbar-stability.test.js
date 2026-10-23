@@ -5,7 +5,8 @@ const geometry=page=>page.evaluate(()=>{
  const rect=el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height].map(n=>Math.round(n*100)/100);};
  return {controls:[...document.querySelectorAll('.top button,.top summary,.top .me,.top .search')].map(el=>[el.id||el.className,rect(el)]),top:rect(document.querySelector('.top')),feed:rect(document.querySelector('.feed-wrap'))};
 });
-async function readable(page){assert.equal(await page.locator('#rstat').evaluate(el=>el.scrollWidth<=el.clientWidth&&el.scrollHeight<=el.clientHeight),true,'full status text fits its reserved line');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
+// SPEC-002-068: the countdown no longer takes a toolbar line; #reload's title and the Tools status line carry its full text.
+async function readable(page){assert.deepEqual(await page.evaluate(()=>{const text=document.querySelector('#rstat').textContent;return [document.querySelector('#reload').title.endsWith(text),document.querySelector('#toolbarStatus').textContent===text];}),[true,true],'full status text in the reload title and the Tools status line');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
 for(const lang of ['en','pl'])test(`toolbar stays fixed through real countdown, refresh, pause and off in ${lang}`,async()=>{
  const project=h.layoutExample(h.tmpDir()),{ctx,page,log}=await h.openPage(browser,{tree:h.readTree(project),clock:new Date('2026-10-19T12:00:00Z')});try{
   await h.openBoardViaUi(page);await page.click('#gear');await page.selectOption('#sLang',lang);await page.click('#sClose');await page.fill('#cBody','Keep my unsent draft');const files=await page.evaluate(()=>window.__fakefs.dump());

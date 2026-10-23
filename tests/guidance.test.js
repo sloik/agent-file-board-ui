@@ -18,20 +18,20 @@ test('explicit full topic title survives later stale replies, refresh and reload
   const {ctx,page,proj,log}=await boot();
   await page.click(".tcard[data-tk='room:product|T003']");
   const title='API v2: keep IDs — do not rename';
-  await page.fill('#topicTitle',title);await page.click('#setTitle');
+  await h.renameTopic(page,title);
   await page.waitForFunction(title=>document.querySelector('#title').textContent.endsWith(title),title);
   const sent=(await page.evaluate(()=>window.__fakefs.dump())).find(f=>f.text.includes('TOPIC-TITLE: '+title));assert.ok(sent);
   const stale='.agent-board/rooms/product/2026-10-15_1231_research-agent-01_T003_stale.txt';
   await page.evaluate(({path,text})=>window.__fakefs.addFile(path,text),{path:stale,text:message('T003-obsolete-label')});
   await refresh(page);
-  assert.equal(await page.textContent('#title'),'T003 · '+title);
+  assert.equal(await page.textContent('#title'),'# product › T003 '+title);
   assert.equal(await page.textContent(".tcard[data-tk='room:product|T003'] .ttl"),title);
   assert.match(await page.textContent('#cThread option:checked'),/API v2: keep IDs/);
   await page.fill('#cBody','Continue without changing the purpose');await page.click('#send');
   await page.waitForFunction(()=>window.__boardTest.getModel().msgs.some(m=>m.body==='Continue without changing the purpose'));
-  assert.equal(await page.textContent('#title'),'T003 · '+title);
+  assert.equal(await page.textContent('#title'),'# product › T003 '+title);
   await h.reloadSettled(ctx,page,{lastDir:true});await page.waitForSelector('#feed article');await h.expandComposer(page);
-  assert.equal(await page.textContent('#title'),'T003 · '+title);
+  assert.equal(await page.textContent('#title'),'# product › T003 '+title);
   const out=h.path.join(proj,'validated');await h.dumpFakeFs(page,out);const check=h.boardctl(['validate','--path',out]);assert.equal(check.code,0,check.err);
   assert.deepEqual(log.pageErrors,[]);await ctx.close();
 });
@@ -40,7 +40,7 @@ test('older title-change files remain authoritative and ordinary message subject
     'rooms/product/2026-10-15_1230_research-agent-01_T003_topic-title-stable-guidance.txt':message('T003-stable-guidance').replace('10:31:00.000Z','10:30:00.000Z'),
     'rooms/product/2026-10-15_1231_research-agent-01_T003_stale.txt':message('T003-stale')
   });
-  await page.click(".tcard[data-tk='room:product|T003']");assert.equal(await page.textContent('#title'),'T003 · Stable guidance');
+  await page.click(".tcard[data-tk='room:product|T003']");assert.equal(await page.textContent('#title'),'# product › T003 Stable guidance');
   await ctx.close();
   const s=await boot({'rooms/product/2026-10-15_1231_research-agent-01_T003_stale.txt':message('T003-stale')});
   await s.page.click(".tcard[data-tk='room:product|T003']");assert.match(await s.page.textContent('#title'),/Language policy/);await s.ctx.close();
@@ -52,7 +52,7 @@ test('room and topic Markdown guidance render safely without renaming, and posti
     'rooms/architecture/GUIDANCE.md':'# Architecture only\n\nKeep schema review in this room.'
   });
   await page.click(".tcard[data-tk='room:product|T003']");const original=await page.textContent('#title');
-  await page.click('#guidanceOpen');
+  await h.topicAction(page,'guidanceOpen');
   await page.waitForSelector('#guidanceDocs h1');
   assert.equal(await page.locator('#guidanceDocs h1').count(),2);assert.equal(await page.locator('#guidanceDocs table tbody tr').count(),1);
   assert.match(await page.textContent('#guidanceDocs ul ul'),/Child guidance/);assert.equal(await page.locator('#guidanceDocs img').count(),0);
@@ -68,7 +68,7 @@ test('room and topic Markdown guidance render safely without renaming, and posti
 test('uploaded guidance detects invalid UTF8; missing files are optional and separate from read errors',async()=>{
   const proj=h.layoutExample(h.tmpDir()),path=h.path.join(proj,'.agent-board/rooms/product/GUIDANCE.md');h.fs.writeFileSync(path,Buffer.from([0xff,0xfe,0xff]));
   const {ctx,page}=await h.openPage(browser);await page.setInputFiles('#fallback',proj);await page.waitForSelector('#feed article');await h.expandComposer(page);
-  await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');
+  await page.click(".tcard[data-tk='room:product|T003']");await h.topicAction(page,'guidanceOpen');
   await page.waitForSelector('#guidanceDocs .metadata-error');
   assert.equal(await page.locator('#guidanceDocs .metadata-error').count(),1);assert.match(await page.textContent('#guidanceDocs'),/No optional guidance file here/);
   await ctx.close();
@@ -87,15 +87,15 @@ test('guidance bodies load on demand; wrong-kind files remain errors rather than
     proto.getFile=async function(){const result=await original.call(this);if(this.name==='GUIDANCE.md'){const text=result.text;result.text=async()=>{window.guideReads++;return text();};}return result;};
   });
   await h.openBoardViaUi(page);await h.expandComposer(page);assert.equal(await page.evaluate(()=>window.guideReads),0);
-  await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
+  await page.click(".tcard[data-tk='room:product|T003']");await h.topicAction(page,'guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
   assert.equal(await page.evaluate(()=>window.guideReads),1);
   assert.equal(await page.locator('#guidanceDocs .metadata-error').count(),1);
   assert.doesNotMatch(await page.textContent('#guidanceDocs'),/No optional guidance/);
-  await page.click('#guidanceClose');await page.click('#guidanceOpen');assert.equal(await page.evaluate(()=>window.guideReads),1);
+  await page.click('#guidanceClose');await h.topicAction(page,'guidanceOpen');assert.equal(await page.evaluate(()=>window.guideReads),1);
   await ctx.close();
   const other=h.layoutExample(h.tmpDir());h.fs.mkdirSync(h.path.join(other,'.agent-board/rooms/product/GUIDANCE.md'));
   const s=await h.openPage(browser,{tree:h.readTree(other)});await h.openBoardViaUi(s.page);await h.expandComposer(s.page);
-  await s.page.click(".tcard[data-tk='room:product|T003']");await s.page.click('#guidanceOpen');assert.equal(await s.page.locator('#guidanceDocs .metadata-error').count(),1);await s.ctx.close();
+  await s.page.click(".tcard[data-tk='room:product|T003']");await h.topicAction(s.page,'guidanceOpen');assert.equal(await s.page.locator('#guidanceDocs .metadata-error').count(),1);await s.ctx.close();
 });
 
 test('explicit title metadata wins even when body resembles a receipt; direct guidance requires a pair member',async()=>{
@@ -104,16 +104,16 @@ test('explicit title metadata wins even when body resembles a receipt; direct gu
     'rooms/product/2026-10-15_1231_research-agent-01_T003_title.txt':message('T003-purpose','TOPIC-TITLE: Stable purpose\n','Read receipt only: explicit title metadata still applies.'),
     [`direct/${pair}/GUIDANCE.md`]:'# Members only guidance\n\nReview pending schemas.'
   });
-  await page.click(".tcard[data-tk='room:product|T003']");assert.equal(await page.textContent('#title'),'T003 · Stable purpose');
-  await page.click(`.fname[data-nav='direct'][data-dir='${pair}']`);await page.click('#guidanceOpen');
+  await page.click(".tcard[data-tk='room:product|T003']");assert.equal(await page.textContent('#title'),'# product › T003 Stable purpose');
+  await page.click(`.fname[data-nav='direct'][data-dir='${pair}']`);await h.topicAction(page,'guidanceOpen');
   assert.equal(await page.locator('#guidanceDocs .metadata-error').count(),1);assert.doesNotMatch(await page.textContent('#guidanceDocs'),/Members only/);
-  await page.click('#guidanceClose');await page.selectOption('#me','implementation-agent-01');await page.click('#guidanceOpen');
+  await page.click('#guidanceClose');await page.selectOption('#me','implementation-agent-01');await h.topicAction(page,'guidanceOpen');
   await page.waitForSelector('#guidanceDocs h1');assert.match(await page.textContent('#guidanceDocs'),/Members only guidance/);await ctx.close();
 });
 
 test('guidance explains the convention and links original room/topic files to both editors',async()=>{
   const {ctx,page,log}=await boot({'rooms/product/GUIDANCE.md':'# Room rules','rooms/product/topics/T003.md':'# Topic rules'});
-  await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
+  await page.click(".tcard[data-tk='room:product|T003']");await h.topicAction(page,'guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
   assert.match(await page.textContent('#guidanceDialog'),/before posting or accepting work/);
   assert.match(await page.textContent('#guidanceDialog'),/boardctl guidance/);
   assert.match(await page.textContent('#guidanceDialog'),/do not override the board convention/);
@@ -125,7 +125,7 @@ test('guidance explains the convention and links original room/topic files to bo
     assert.equal(await section.getByRole('link',{name:'Open',exact:true}).getAttribute('href'),'agent-file-board://open'+encoded);
     assert.equal(await section.getByRole('link',{name:'Open in VS Code',exact:true}).getAttribute('href'),'vscode://file'+encoded);
   }
-  await page.click('#guidanceClose');await page.click('#guidanceOpen');assert.equal(await page.inputValue('#guidanceFolder'),root);
+  await page.click('#guidanceClose');await h.topicAction(page,'guidanceOpen');assert.equal(await page.inputValue('#guidanceFolder'),root);
   await page.fill('#guidanceFolder','../another-board');assert.equal(await page.locator('#guidanceDocs [href]').count(),0);
   await page.setViewportSize({width:375,height:812});assert.ok((await page.locator('#guidanceDialog').boundingBox()).width<=375);
   assert.deepEqual(log.pageErrors,[]);await ctx.close();
@@ -133,9 +133,9 @@ test('guidance explains the convention and links original room/topic files to bo
 
 test('editor links handle Windows paths, reject traversal and stay unavailable for missing files or other direct participants',async()=>{
   const {ctx,page}=await boot({'direct/implementation-agent-01--research-agent-01/GUIDANCE.md':'# Pair rules'});
-  await page.click(".fname[data-nav='direct'][data-dir='implementation-agent-01--research-agent-01']");await page.click('#guidanceOpen');
+  await page.click(".fname[data-nav='direct'][data-dir='implementation-agent-01--research-agent-01']");await h.topicAction(page,'guidanceOpen');
   await page.fill('#guidanceFolder','/Users/Someone/.agent-board');assert.equal(await page.locator('#guidanceDocs [href]').count(),0);
-  await page.click('#guidanceClose');await page.selectOption('#me','implementation-agent-01');await page.click('#guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
+  await page.click('#guidanceClose');await page.selectOption('#me','implementation-agent-01');await h.topicAction(page,'guidanceOpen');await page.waitForSelector('#guidanceDocs h1');
   assert.equal(await page.locator('#guidanceDocs [href]').count(),2);
   const result=await page.evaluate(()=>({
     windows:window.__boardTest.guidanceEditorUrls('C:\\Boards\\My board\\.agent-board','rooms/general/GUIDANCE.md'),
@@ -150,7 +150,7 @@ test('editor links handle Windows paths, reject traversal and stay unavailable f
 
 test('missing guidance offers create actions and switches to open after an empty file appears',async()=>{
   const {ctx,page,log}=await boot();
-  await page.click(".tcard[data-tk='room:product|T003']");await page.click('#guidanceOpen');await page.fill('#guidanceFolder','/Users/Someone/Board #1/.agent-board');
+  await page.click(".tcard[data-tk='room:product|T003']");await h.topicAction(page,'guidanceOpen');await page.fill('#guidanceFolder','/Users/Someone/Board #1/.agent-board');
   const root='/Users/Someone/Board%20%231/.agent-board/';
   for(const path of ['rooms/product/GUIDANCE.md','rooms/product/topics/T003.md']){
     const section=page.locator(`[data-guidance-path='${path}']`);
@@ -159,7 +159,7 @@ test('missing guidance offers create actions and switches to open after an empty
   }
   assert.match(await page.textContent('#guidanceDialog'),/templates\/room-guidance.md/);
   await page.evaluate(()=>window.__fakefs.addFile('.agent-board/rooms/product/GUIDANCE.md',''));
-  await page.click('#guidanceClose');await refresh(page);await page.click('#guidanceOpen');
+  await page.click('#guidanceClose');await refresh(page);await h.topicAction(page,'guidanceOpen');
   assert.equal(await page.locator("[data-guidance-path='rooms/product/GUIDANCE.md']").getByRole('link',{name:'Open',exact:true}).count(),1);
   assert.equal(await page.locator("[data-guidance-path='rooms/product/topics/T003.md']").getByRole('link',{name:'Create a file',exact:true}).count(),1);
   assert.deepEqual(log.pageErrors,[]);await ctx.close();

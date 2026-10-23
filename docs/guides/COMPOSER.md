@@ -1,6 +1,6 @@
 # Compact message creation and quiet presence
 
-![Desktop composing: the destination chip above the draft, with secondary options collapsed.](../images/board-composer-compact.png)
+![Desktop composing with secondary options collapsed (captured before 3.3.4, when the destination chip was always shown).](../images/board-composer-compact.png)
 
 ![Expanded options show content format, status, language and the Advanced routing fields.](../images/board-composer-options.png)
 
@@ -14,15 +14,52 @@
 These captures use fictional data in the current viewer. Reproduce with
 `npm run screenshots:features`.
 
-**Tools** (⋯ on phones) groups Board vocabulary, Participants, Extensions and Saved drafts in
-a compact keyboard-accessible menu. Structured message and Notifications stay
-directly available. Escape or a click outside closes Tools; dialogs return focus
-to its summary. This reduces toolbar rows on phones.
+**Tools** (⋯ below 1100px wide) groups Board vocabulary, Participants, Extensions and
+Saved drafts in a compact keyboard-accessible menu. Its last lines show the
+sidebar toggle with its shortcut, the refresh status and, on narrower or shorter
+windows, the version line. Structured message and Notifications stay directly
+available (as icons below 1100px wide or 640px tall; hover shows their names).
+Escape or a click outside closes Tools; dialogs return focus to its summary.
+
+## Layout on small windows
+
+The message field and **Post** never leave the window (SPEC-002-068). Only the
+conversation shrinks: the header is one line from 601px wide (two short rows on
+phones, where search is a button that expands over the bar), the topic bar is one
+line, and the composer is capped at about half the window. Inside the composer
+the destination banners stay at the top, Message options scroll in the middle, and
+the signing status, the draft and Post stay at the bottom. In windows 640px tall
+or less, Message options start folded (your saved choice is kept) and the signing
+status uses its one-line form. A composer height you dragged is kept but limited
+to the current window.
+
+The refresh countdown is no longer a toolbar line: hover the refresh button (a
+small dot shows that automatic refresh is on) or open Tools. The topic bar's **⋯**
+menu holds **Rename…**, **Message repairs**, **Guidance** and the
+missing-message check; its button turns amber when that check needs attention.
+
+### Sidebar
+
+The **☰** button at the left of the header hides or shows the sidebar at every
+width (**Ctrl+B**, **⌘B** on a Mac). Above 820px wide the sidebar column
+collapses and its width is kept for later; your choice is remembered in this
+browser. Until you choose, it starts shown on windows at least 1000×560 and
+hidden on smaller ones. At 820px and below the sidebar is a drawer under the
+header: Escape, a tap outside or picking a conversation closes it.
 
 ## Where a message goes
 
-The composer posts where you are looking. A chip above the draft always shows the
-destination, for example `Posting to: # architecture › T004 API v2 · to all`:
+The composer posts where you are looking, and the view itself shows where: the
+destination's topic card (or its room row, for a new topic) is highlighted in the
+sidebar with **posting here** / **new topic in #room**, and the topic bar names it,
+for example `# architecture › T004 API v2`. The topic bar is the reference when the
+sidebar is hidden.
+
+The chip above the draft (`Posting to: # architecture › T004 API v2 · to all`)
+appears only when the destination differs from the view: a pinned draft, a reply
+from All messages or search, New room, New topic, a new direct message, recipients
+or a route changed in Advanced, or no destination at all (amber, with Post
+disabled and the reason under the draft).
 
 | You are viewing | The composer posts to |
 |---|---|
@@ -31,13 +68,14 @@ destination, for example `Posting to: # architecture › T004 API v2 · to all`:
 | A direct conversation | Its most recent topic, or a new topic if it has none. The recipient is always the other member. |
 | All messages, search results or notifications | Nowhere yet: the chip says **Choose where to post** and Send is disabled until you pick a destination or reply to a message. |
 
-**Change** (or Enter/Space on the chip) opens a search over rooms, topics and
-direct conversations, plus **New topic here…**, **New room…**, **Message a
-participant…** and **Advanced…**. Arrow keys move, Enter picks, Escape closes
-and returns focus to the chip. On phones the list opens as a bottom sheet.
+**⇄ Change destination** next to Post (or the chip's **Change**, Enter/Space on
+the chip) opens a search over rooms, topics and direct conversations, plus **New
+topic here…**, **New room…**, **Message a participant…**, **Send to…** (rooms)
+and **Advanced…**. Arrow keys move, Enter picks, Escape closes and returns focus
+to the button that opened it. On phones the list opens as a bottom sheet.
 Picking a destination does not change what you are reading.
 
-In rooms, **to all** next to the chip opens a participant picker. Pick one or
+In rooms, **Send to…** (or **to all** next to the chip) opens a participant picker. Pick one or
 several people; the message gets `TO: all`, one ID, or a comma-separated set.
 Mentions in the body never change `TO`. Replying fills in the author; cancelling
 the reply goes back to all and keeps the destination.
@@ -74,6 +112,9 @@ the original Where, Thread and To fields for power users and keyboard fallback;
 choosing a room there keeps the older behavior of selecting its newest topic.
 The existing resize handle and saved height still work; an explicitly enlarged
 editor keeps its height.
+
+The room name field appears only after **New room…** (or while it holds a
+name); opening Advanced no longer shows it.
 
 When the destination is a new room (**New room…**) or a new topic, two more
 choices appear below the name fields, both off by default: **Require trusted

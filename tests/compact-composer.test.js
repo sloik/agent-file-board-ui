@@ -15,7 +15,7 @@ test('compact options preserve routing, draft, reply and attachment through keyb
   await page.click('#structuredOpen');await page.selectOption('#structuredExample','report-v1');await page.click('#structuredLoad');await page.click('#structuredValidate');await page.waitForSelector('#structuredPreview .report-content');await page.click('#structuredAttach');assert.equal(await page.locator('#structuredAttachment').isVisible(),true);
   await fold(page).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),true);assert.equal(await page.locator('#cWhere').isVisible(),false,'routing stays under Advanced');
   await page.locator('#composerAdvanced > summary').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#cWhere').isVisible(),true);
-  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cTo','human-owner-01');await page.selectOption('#cStatus','REQUEST');await page.selectOption('#cContentType','text/markdown');await page.selectOption('#cLang','pl');await page.fill('#cNewRoom','New Review Room');await page.selectOption('#cThread','');await page.fill('#cNewThread','A focused review');
+  await page.selectOption('#cWhere','room:architecture');await h.startNewRoom(page);await page.fill('#cNewRoom','New Review Room');await page.selectOption('#cTo','human-owner-01');await page.selectOption('#cStatus','REQUEST');await page.selectOption('#cContentType','text/markdown');await page.selectOption('#cLang','pl');await page.selectOption('#cThread','');await page.fill('#cNewThread','A focused review');
   await fold(page).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),false);
   const route=await page.locator('#composerTarget').textContent(),to=await page.locator('#composerTo').textContent(),options=await page.locator('#composerOptionsSummary').textContent();
   for(const text of ['new-review-room','A focused review'])assert.ok(route.includes(text),text);assert.ok(to.includes('human-owner-01'),to);for(const text of ['Markdown','pl'])assert.ok(options.includes(text),text);
@@ -98,7 +98,8 @@ test('expanded options use shorter bounded routing groups on desktop tablet and 
    assert.ok(bounds.height<oldHeight,width+' options are shorter than the previous layout: '+bounds.height+' vs '+oldHeight);assert.equal(bounds.overflow,false);
    for(const f of bounds.fields){assert.ok(f.width>20&&f.left>=-1&&f.right<=bounds.width+1,width+' bounded field '+f.id);}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await page.locator('#cBody').isVisible(),true);assert.equal(await page.locator('#send').isVisible(),true);
-   const chip=await page.locator('#composerTarget').boundingBox();assert.ok(chip.x>=0&&chip.x+chip.width<=width,width+' chip within bounds');
+   // SPEC-002-068: the topic view names the destination, so the chip row is hidden and Change sits next to Post.
+   assert.equal(await page.locator('#composerTargetRow').isHidden(),true);const change=await page.locator('#composerTargetChange').boundingBox();assert.ok(change.x>=0&&change.x+change.width<=width,width+' change destination within bounds');
    await page.screenshot({path:'/tmp/afb-dense-options-'+width+'.png'});
   }
   await page.selectOption('#cThread','');assert.equal(await page.locator('#cNewThread').isVisible(),true);assert.equal(await page.locator('#cNewThread').evaluate(el=>el.closest('#composerTargetFields')!==null),true,'the topic name sits with the destination, not in Advanced');await page.fill('#cNewThread','Compact new topic');
