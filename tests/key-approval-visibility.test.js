@@ -210,3 +210,70 @@ test('AC6/AC6b/AC7: the sidebar glyph and "Rooms", the « hide control, and the 
       if(width>600){const g=await header(page);assert.ok(g.height<=52,`${lang} ${width}x${height} header ${g.height}`);assert.equal(g.rows,false);}
     }}
 });
+
+// AC6c: the hidden sidebar peeks on hover. The example board needs no signing.
+async function layoutBoard(opts={}){
+  const project=h.layoutExample(h.tmpDir('afb-peek-')),s=await h.openPage(browser,{tree:h.readTree(project),dialog:'accept',...opts});
+  await h.openBoardViaUi(s.page);return s;
+}
+const peekGeometry=page=>page.evaluate(()=>({side:document.querySelector('#side').getBoundingClientRect().toJSON(),feed:document.querySelector('.feed-wrap').getBoundingClientRect().left,sidew:parseFloat(getComputedStyle(document.querySelector('.side')).width),peek:document.body.classList.contains('side-peek'),scroll:document.documentElement.scrollWidth<=innerWidth}));
+async function peeks(page){
+  await page.mouse.move(3,400);await page.waitForTimeout(200);
+  await expect.poll(async()=>(await peekGeometry(page)).side.width,{timeout:500}).toBeGreaterThan(100);
+}
+test('AC6c: the hidden sidebar peeks on hover over the left edge or #menu, stays while used, closes on leave, pins on request',async()=>{
+  const {ctx,page,log}=await layoutBoard();try{
+    await h.openView(page,'room:product|T003');
+    await page.click('#menu');await expect(page.locator('#menu')).toHaveAttribute('aria-expanded','false');
+    await page.mouse.move(800,400);await page.waitForTimeout(250);
+    const before=await peekGeometry(page);assert.equal(before.side.width,0,'hidden, and clicking #menu did not peek');assert.equal(before.peek,false);
+    await peeks(page);
+    const g=await peekGeometry(page);
+    assert.equal(g.peek,true);assert.ok(Math.abs(g.side.width-before.side.width-g.sidew)<=1&&g.side.x===0,'overlay at --sidew: '+JSON.stringify(g));assert.equal(g.feed,before.feed,'feed does not move');assert.equal(g.scroll,true,'no horizontal scroll');
+    assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('#side')).position),'fixed');
+    await expect(page.locator('#menu')).toHaveAttribute('aria-expanded','false');
+    await expect(page.locator('#tree .posting')).toHaveCount(1);await expect(page.locator('#tree .posting')).toBeVisible();
+    // Switch topics inside the peek; it stays open while the pointer is over it.
+    await page.locator('.fname[data-dir="architecture"]').click();await expect(page.locator('#title')).toHaveText(/architecture/);
+    await page.locator('.tcard[data-tk="room:product|T003"]').click();await expect(page.locator('#title')).toHaveText('# product › T003 Language policy');
+    await page.waitForTimeout(400);assert.equal((await peekGeometry(page)).peek,true,'still open after navigating');
+    await expect(page.locator('#sideHide')).toHaveAttribute('aria-label','Keep sidebar open');
+    // Leaving closes it within 600ms.
+    await page.mouse.move(800,400);await expect.poll(async()=>(await peekGeometry(page)).side.width,{timeout:600}).toBe(0);
+    assert.equal(await page.evaluate(()=>localStorage.getItem('afb.sidebar')),'hidden');await expect(page.locator('#menu')).toHaveAttribute('aria-expanded','false');
+    // #menu also peeks; Escape closes.
+    await page.locator('#menu').hover();await expect.poll(async()=>(await peekGeometry(page)).peek,{timeout:700}).toBe(true);
+    await page.keyboard.press('Escape');assert.equal((await peekGeometry(page)).peek,false);
+    // Keyboard never peeks.
+    await page.mouse.move(800,400);await page.focus('#menu');await page.waitForTimeout(300);assert.equal((await peekGeometry(page)).peek,false);
+    await h.reloadSettled(ctx,page,{local:['afb.sidebar','hidden'],lastDir:true});await page.waitForFunction(()=>window.__boardTest.getModel()!==null);
+    await expect(page.locator('#menu')).toHaveAttribute('aria-expanded','false');assert.equal((await peekGeometry(page)).side.width,0);
+    // Pin from inside the peek: shown normally and saved.
+    await page.mouse.move(800,400);await peeks(page);await page.mouse.move(100,300);await page.click('#sideHide');
+    await expect(page.locator('#menu')).toHaveAttribute('aria-expanded','true');
+    const pinned=await peekGeometry(page);assert.equal(pinned.peek,false);assert.ok(pinned.side.width>100&&pinned.feed>100,'in the layout: '+JSON.stringify(pinned));
+    assert.equal(await page.evaluate(()=>localStorage.getItem('afb.sidebar')),'shown');await expect(page.locator('#sideHide')).toHaveAttribute('aria-label','Hide sidebar');
+    assert.deepEqual(await h.layoutViolations(page),[]);
+    assert.deepEqual(log.pageErrors,[]);
+  }finally{await ctx.close();}
+});
+
+test('AC6c: no peek on touch devices or at 820px and below; non-vacuity: without the hover handler the first step fails',async()=>{
+  {const {ctx,page,log}=await layoutBoard({context:{hasTouch:true,isMobile:true}});try{
+    assert.equal(await page.evaluate(()=>matchMedia('(hover:hover) and (pointer:fine)').matches),false);
+    if(await page.locator('#menu').getAttribute('aria-expanded')==='true')await page.click('#menu');
+    await page.mouse.move(800,400);await page.mouse.move(3,400);await page.waitForTimeout(400);
+    assert.equal((await peekGeometry(page)).side.width,0);await page.locator('#menu').hover();await page.waitForTimeout(400);assert.equal((await peekGeometry(page)).side.width,0);
+    assert.deepEqual(log.pageErrors,[]);
+  }finally{await ctx.close();}}
+  {const {ctx,page,log}=await layoutBoard({viewport:{width:800,height:700}});try{
+    await page.mouse.move(3,400);await page.waitForTimeout(400);assert.equal(await page.locator('#side').isVisible(),false,'the drawer stays closed');
+    assert.deepEqual(log.pageErrors,[]);
+  }finally{await ctx.close();}}
+  {const {ctx,page,log}=await layoutBoard();try{
+    await page.click('#menu');await page.mouse.move(800,400);await peeks(page);await page.mouse.move(800,400);await expect.poll(async()=>(await peekGeometry(page)).peek,{timeout:600}).toBe(false);
+    await page.evaluate(()=>{window.sidebarPeekEnter=()=>{};});
+    await assert.rejects(peeks(page),'AC6c fails without the hover handler');
+    assert.deepEqual(log.pageErrors,[]);
+  }finally{await ctx.close();}}
+});
