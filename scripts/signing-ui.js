@@ -34,7 +34,8 @@ function signingPostBlock() {
   const c = B.signingContext, target = c ? signingDestinationPath() : null;
   let required = false;
   try { required = !!c && c.minimum(target.path, target.thread) === "trusted"; } catch { required = false; }
-  return signingSendDecision(B, required).status;
+  // A ticked "Require trusted signatures" for a room or topic being created counts at once (SPEC-002-063).
+  return signingSendDecision(B, required || (typeof historyCreationRequires === "function" && historyCreationRequires())).status;
 }
 function signingStatusError(status) {
   const error = new Error(status.detail);
@@ -71,6 +72,7 @@ function signingNoticeNote(status) {
 // One status row directly above Send, always visible on boards with signing. It is rebuilt only
 // when its content changes, so a refresh tick never steals focus or moves the cursor.
 function updateSigningNotice(status = signingPostBlock()) {
+  if (typeof historyComposerUpdate === "function") historyComposerUpdate();
   // The status row already says when a destination requires signatures; the older hint shows only without it.
   const req = $("#signingRequires");
   if (req) {
@@ -326,7 +328,9 @@ async function prepareSigning(model, files, base = null) {
   const source = Object.fromEntries(files.map((f) => [f.path, f]));
   try {
     const metadata = async (path) => base ? await signingRead(base, path) : source[path]?.metadataFile ? await rawBytes(source[path].metadataFile) : C.bytes(source[path]?.text || "{}");
-    const config = C.parse(await metadata("config.json")), registry = C.parse(await metadata("participants.json"));
+    const configRaw = await metadata("config.json"), config = C.parse(configRaw), registry = C.parse(await metadata("participants.json"));
+    // Room history reads its own setting from the same bytes (SPEC-002-063).
+    model.signingConfigRaw = configRaw;
     const key = base && !location.startsWith("session-") ? "signing-state:" + location : null, state = key ? await signingGet(key) : null;
     const read = async (path) => {
       if (base) return signingRead(base, path);

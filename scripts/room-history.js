@@ -1,8 +1,10 @@
 // Room history detection (browser twin of vendor/agent-file-board/room_history.py).
 // Pure verification and status rules: the host supplies every read, and nothing here
-// writes to the board. Design: vendor/agent-file-board/docs/SIGNED-ROOM-HISTORY.md.
+// writes to the board. The automatic recording setting (history_recording.py) is parsed
+// and edited here as pure values; the host reviews and writes the exact bytes.
+// Design: vendor/agent-file-board/docs/SIGNED-ROOM-HISTORY.md.
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { b64, bytes, checkHash, checkIdentity, decode64, fields, hash, integer, pae, parse, publicKey, require } from "./signing-contract.js";
+import { b64, bytes, checkHash, checkIdentity, decode64, fields, hash, integer, pae, parse, policy, publicKey, require, requirement, same } from "./signing-contract.js";
 
 export const INVENTORY_TYPE = "application/vnd.agent-file-board.inventory.ed25519.v1+json";
 export const MAX_ENTRIES = 1000, MAX_PAYLOAD = 512 * 1024, MAX_ENVELOPE = 768 * 1024, MAX_NODES = 16384, MAX_PREVIOUS = 16, MAX_MESSAGE = 4194304;
@@ -341,4 +343,177 @@ export async function evaluate(ctx, state, host, requested = null, now = new Dat
     };
   }
   return { boardId: ctx.boardId, bootstrap: "folder-only", bootstrapNote: FOLDER_ONLY, scopes: report };
+}
+
+
+// -- automatic recording setting (history_recording.py, SPEC-002-062) ---------------
+// config.json `room_history`, beside message_signing. The viewer cannot sign inventories,
+// so it never records; it reads the setting, shows it and edits it on explicit request.
+
+export const RECORD_KEY = "room_history", RECORD_SCOPES = 128, RECORD_THREADS = 1024;
+const isMap = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+const only = (value, names) => Object.keys(value).every((k) => names.includes(k));
+const digitsOf = (config) => isMap(config.board) && Object.hasOwn(config.board, "thread_digits") ? config.board.thread_digits : 3;
+const threadPattern = (config) => new RegExp("^T\\d{" + digitsOf(config) + "}$");
+const settingError = (reason) => Object.assign(new HistoryError("room_history setting unavailable: " + reason), { code: "unreadable" });
+const policyError = (code, message) => Object.assign(new HistoryError(message), { code });
+
+// Configs passed to the functions below must come from parseConfig: number kinds are tracked
+// per parser instance, and this bundle has its own.
+export const parseConfig = (raw) => parse(bytes(raw), 1048576);
+
+// Normalized {scope: {record, threads}}; throws HistoryError (code "unreadable") when malformed.
+export function setting(config) {
+  if (!Object.hasOwn(config, RECORD_KEY)) return {};
+  const value = config[RECORD_KEY];
+  if (!isMap(value) || !only(value, ["version", "scopes"]) || !integer(value, "version") || value.version !== 1) throw settingError("unsupported schema");
+  const scopes = Object.hasOwn(value, "scopes") ? value.scopes : {};
+  if (!isMap(scopes) || Object.keys(scopes).length > RECORD_SCOPES) throw settingError("scopes");
+  const pattern = threadPattern(config), result = {};
+  for (const [scope, rule] of Object.entries(scopes)) {
+    try { checkScope(scope, config); } catch (error) { throw settingError(error.message); }
+    if (!isMap(rule) || !only(rule, ["record", "threads"]) || Object.hasOwn(rule, "record") && rule.record !== "on-post") throw settingError("scope schema");
+    const threads = Object.hasOwn(rule, "threads") ? rule.threads : {};
+    if (!isMap(threads) || Object.keys(threads).length > RECORD_THREADS) throw settingError("thread budget/schema");
+    for (const [tid, child] of Object.entries(threads)) {
+      if (!pattern.test(tid) || !isMap(child) || Object.keys(child).join() !== "record" || child.record !== "on-post") throw settingError("thread schema");
+    }
+    result[scope] = { record: Object.hasOwn(rule, "record"), threads: Object.keys(threads).sort() };
+  }
+  return result;
+}
+
+export function records(config, scope, thread) {
+  const all = setting(config), rule = Object.hasOwn(all, scope) ? all[scope] : null;
+  return !!rule && (rule.record || rule.threads.includes(thread));
+}
+
+// The declared setting as `history status` reports it, or null when nothing is declared.
+export function describe(config, scope) {
+  let all;
+  try { all = setting(config); } catch (error) { return { unreadable: error.message }; }
+  if (!Object.hasOwn(all, scope)) return null;
+  const rule = all[scope];
+  return rule.record ? { record: "on-post" } : { threads: rule.threads, record: "on-post" };
+}
+
+const boardId = (config) => isMap(config.identity) && Object.hasOwn(config.identity, "boardId") ? config.identity.boardId : null;
+const copy = (value) => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+function target(config, scope, thread) {
+  checkScope(scope, config);
+  if (thread !== null && !threadPattern(config).test(thread)) throw policyError("thread", `--thread must look like T${"1".padStart(digitsOf(config), "0")}, got ${JSON.stringify(thread)}`);
+  return scope + (thread ? " thread " + thread : "");
+}
+
+// history_recording.declare as a pure edit: returns the next config without touching the input.
+export function declare(config, scope, thread, on, weaken = false) {
+  const name = target(config, scope, thread);
+  let old;
+  try { old = setting(config); } catch (error) {
+    throw policyError("unreadable", error.message + ". The room_history setting in config.json is invalid, so it cannot be edited safely. Next: correct it by hand (docs/SIGNED-ROOM-HISTORY.md, automatic recording), then rerun this command");
+  }
+  if (on && boardId(config) === null) throw policyError("board-id", "automatic room history needs a board UUID, and this board has none. Next: boardctl identity enable, then rerun this command");
+  const rule = Object.hasOwn(old, scope) ? old[scope] : { record: false, threads: [] }, was = rule.record || rule.threads.includes(thread);
+  const present = Object.hasOwn(config, RECORD_KEY) ? config[RECORD_KEY] : undefined;
+  const next = copy(present) || { version: 1, scopes: {} };
+  if (!Object.hasOwn(next, "scopes")) next.scopes = {};
+  const scopes = next.scopes;
+  if (on) {
+    if (!Object.hasOwn(scopes, scope)) scopes[scope] = {};
+    const entry = scopes[scope];
+    if (thread === null) entry.record = "on-post";
+    else {
+      if (!Object.hasOwn(entry, "threads")) entry.threads = {};
+      entry.threads[thread] = { record: "on-post" };
+    }
+  } else if (was) {
+    if (!weaken) throw policyError("weaken", `${name} currently records history on every signed post, and this would stop that. Existing records and private checkpoints stay; new messages are no longer covered automatically. Next: repeat the command with --weaken if you are sure`);
+    if (thread !== null && rule.record) throw policyError("room-records", `cannot stop recording for ${name}: the whole room ${scope} records, which includes every thread. Next: boardctl history policy --scope ${scope} --record off --weaken`);
+    const entry = scopes[scope];
+    if (thread === null) delete entry.record;
+    else {
+      delete entry.threads[thread];
+      if (!Object.keys(entry.threads).length) delete entry.threads;
+    }
+    if (!Object.keys(entry).length) delete scopes[scope];
+  }
+  const changed = present === undefined || !same(next, present);
+  const result = { ...config };
+  if (changed) {
+    result[RECORD_KEY] = next;
+    setting(result);
+  }
+  return { config: result, changed, target: name };
+}
+
+// signing_usability.require (`boardctl signing require`) as a pure edit, on the unchanged policy().
+export function requireSigning(config, scope, thread, level, weaken = false) {
+  const name = target(config, scope, thread);
+  if (Object.hasOwn(config, "message_signing") && config.message_signing === null) throw policyError("signing-unreadable", "signing policy unavailable: null declaration");
+  const raw = Object.hasOwn(config, "message_signing") ? config.message_signing : undefined;
+  let old;
+  try { old = policy(raw, config); } catch (error) {
+    throw policyError("signing-unreadable", error.message + ". The message_signing setting in config.json is already invalid, so it cannot be edited safely. Next: correct it by hand (see docs/SIGNING-CORE.md, choose where signing is required), then rerun this command");
+  }
+  if (level === "trusted" && boardId(config) === null) throw policyError("board-id", "signing policy requires a usable board UUID, and this board has none. Next: boardctl identity enable, then rerun this command");
+  const next = isMap(raw) ? copy(raw) : { version: 1, minimum: "optional", scopes: {} };
+  if (!Object.hasOwn(next, "scopes")) next.scopes = {};
+  if (!Object.hasOwn(next.scopes, scope)) next.scopes[scope] = {};
+  const rule = next.scopes[scope];
+  let before, exists;
+  if (thread === null) {
+    before = requirement(old, scope, ""); exists = Object.hasOwn(rule, "minimum"); rule.minimum = level;
+  } else {
+    before = requirement(old, scope, thread); exists = isMap(rule.threads) && Object.hasOwn(rule.threads, thread);
+    if (!Object.hasOwn(rule, "threads")) rule.threads = {};
+    rule.threads[thread] = { minimum: level };
+  }
+  let normalized;
+  try { normalized = policy(next, config); } catch (error) {
+    if (/weaken/.test(error.message) && level === "trusted") throw policyError("signing-conflict", `cannot require trusted for ${name}: entries underneath it explicitly allow optional signing. Requirements only tighten downward. Next: tighten them first, or remove them from config.json`);
+    if (/weaken/.test(error.message)) throw policyError("signing-parent", `cannot make ${name} optional: ${old.minimum === "trusted" ? "the whole board" : scope} already requires trusted, and a narrower scope cannot be weaker than its parent. Next: lower the parent instead, or leave ${name} as it is`);
+    throw error;
+  }
+  const weakening = before === "trusted" && level === "optional";
+  if (weakening && !weaken) throw policyError("weaken", `${name} currently requires trusted signatures, and this would lower that. Lowering a requirement lets unsigned messages in again. Next: repeat the command with --weaken if you are sure (clients that already ran signing adopt keep their own private copy of the requirement)`);
+  const changed = !(same(normalized, old) || level === "optional" && !weakening && !exists);
+  const result = { ...config };
+  if (changed) result.message_signing = next;
+  return { config: result, changed, target: name, weakening };
+}
+
+// Python json.dumps(indent=2, ensure_ascii=False) + "\n", which the CLI writes. JavaScript cannot
+// reproduce decimal numbers or the order of integer-like keys, so those configs are refused.
+// `original` is the parsed file the edit started from: only it still carries number kinds.
+export function encodeConfig(config, original = config) {
+  const check = (value) => {
+    if (Array.isArray(value)) { value.forEach((item, i) => { if (typeof item === "number" && !integer(value, String(i))) refuseEncoding(); check(item); }); return; }
+    if (!isMap(value)) return;
+    for (const [key, item] of Object.entries(value)) {
+      if (/^(?:0|[1-9]\d*)$/.test(key) || typeof item === "number" && !integer(value, key)) refuseEncoding();
+      check(item);
+    }
+  };
+  check(original);
+  check(config);
+  return JSON.stringify(config, null, 2) + "\n";
+}
+function refuseEncoding() { throw policyError("encoding", "config.json contains a decimal number or a numeric key that this viewer cannot rewrite exactly. Next: use boardctl signing require / boardctl history policy"); }
+
+// history_recording.annotate: who records each scope and whose key would make their records count.
+export function annotate(report, state, signing, config) {
+  for (const [scope, row] of Object.entries(report.scopes)) {
+    const recorders = {};
+    for (const source of Object.values(state.sources)) {
+      if (source.scope !== scope) continue;
+      const status = keyStatus(signing, source), known = Object.hasOwn(recorders, source.participant) ? recorders[source.participant] : null;
+      if (known === null || SOURCE.indexOf(status) < SOURCE.indexOf(known)) recorders[source.participant] = status;
+    }
+    row.recordedBy = Object.keys(recorders).sort().map((participant) => ({ participant, source: recorders[participant] }));
+    const declared = describe(config, scope);
+    if (declared !== null) row.recording = declared;
+    const unpinned = [...new Set(row.inventories["unpinned-signer"].map((c) => c.participant).filter(Boolean))].sort();
+    if (unpinned.length) row.trustHint = { participants: unpinned };
+  }
+  return report;
 }

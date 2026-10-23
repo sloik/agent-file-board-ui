@@ -116,7 +116,9 @@ async function scenario(kind,mutation=''){
  Object.assign(sandbox,{B:model,baseHandle:null,dirHandle:initialDir,composerStructured:null,document:{querySelectorAll:()=>Object.values(fields)},$:selector=>fields[selector.slice(1)],currentUser:()=>a.snapshot.id,guardRegistered:()=>({kind:'agent',name:'Synthetic'}),window:{confirm:()=>true},slugify:value=>value,threadsOf:()=>({thread:{tid:'T001',label:'trace'}}),structuredComposerPayload:()=>({}),replyTo:null,
   parseHeaders:text=>({native:{h:Object.fromEntries(text.split('\n').filter(l=>l.includes(': ')).map(l=>[l.slice(0,l.indexOf(': ')),l.slice(l.indexOf(': ')+2)]))}}),
   composeMessage:o=>({relPath:'rooms/general/2026-10-22_1200_alpha-agent_T001_trace.txt',text:`FROM: ${o.sender}\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-trace\nDATE: 2026-10-22 12:00\nREPLY-TO: -\nSTATUS: INFO\n---\n${o.body}\n`}),
-  canWrite:()=>true,guardWritePath:()=>{},guardNoOverwrite:async()=>{},boardErr:message=>Error(message),t:(k,v)=>v?.m||k,exText:x=>x,toast:()=>{},clearStructuredAttachment:()=>{},clearReply:()=>{},syncLang:()=>{}});
+  canWrite:()=>true,guardWritePath:()=>{},guardNoOverwrite:async()=>{},boardErr:message=>Error(message),t:(k,v)=>v?.m||k,exText:x=>x,toast:()=>{},clearStructuredAttachment:()=>{},clearReply:()=>{},syncLang:()=>{},
+  // SPEC-002-063 host hooks: no room/topic creation option is ticked in these traces.
+  historyCreationDeclare:async()=>null,historyCreationFailure:message=>message,historyCreationReset:()=>{},historyPostedNote:()=>{}});
  vm.runInContext(`signingMode='signed';`,sandbox);
  let html=fs.readFileSync(path.join(root,'board.html'),'utf8');
  const writer=html.slice(html.indexOf('async function writeNewFileImpl('),html.indexOf('/* ===== reading ===== */'));

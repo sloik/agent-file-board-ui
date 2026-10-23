@@ -45,7 +45,9 @@ async function panelRows(page){return normalized((await panelFacts(page)).entrie
 // Scope-level facts both clients must agree on (interoperability, design section 7).
 function scopeFacts(scope){
   const inventories=Object.fromEntries(Object.entries(scope.inventories).map(([k,v])=>[k,Array.isArray(v)?v.length:v]));
-  return {setUp:scope.setUp,bootstrap:scope.bootstrap,diagnostics:[...scope.diagnostics].sort(),needsAttention:scope.needsAttention,summary:scope.summary,coverage:scope.coverage,uncoveredPaths:scope.uncoveredPaths,windowComplete:scope.windowComplete,inventories};
+  // SPEC-002-063: who recorded, the declared recording setting and whose key would count.
+  const recording={recordedBy:scope.recordedBy,...(scope.recording?{recording:scope.recording}:{}),...(scope.trustHint?{trustHint:{participants:scope.trustHint.participants}}:{})};
+  return {setUp:scope.setUp,bootstrap:scope.bootstrap,diagnostics:[...scope.diagnostics].sort(),needsAttention:scope.needsAttention,summary:scope.summary,coverage:scope.coverage,uncoveredPaths:scope.uncoveredPaths,windowComplete:scope.windowComplete,inventories,...recording};
 }
 async function assertAgrees(page,f,label){
   const {entries,...facts}=await panelFacts(page),cli=cliStatus(f).scopes[SCOPE];
