@@ -24,7 +24,9 @@ const requireBoard=f=>policy(f,{version:1,minimum:'trusted'});
 const requireArchitecture=f=>policy(f,{version:1,minimum:'optional',scopes:{'rooms/architecture':{minimum:'trusted'}}});
 async function refresh(f){await importBoard(f.page,f.proj);await f.page.evaluate(()=>readFromHandle(true));}
 async function room(page,where='room:architecture',topic='Composer signing'){await page.selectOption('#cWhere',where);await page.selectOption('#cThread','');await page.fill('#cNewThread',topic);}
-async function otherRoom(page){const where=await page.evaluate(()=>[...document.querySelector('#cWhere').options].map(o=>o.value).find(v=>v.startsWith('room:')&&v!=='room:architecture'));assert.ok(where,'fixture has a second room');await room(page,where);}
+async function otherRoom(page){const find=()=>page.evaluate(()=>[...document.querySelector('#cWhere').options].map(o=>o.value).find(v=>v.startsWith('room:')&&v!=='room:architecture')||'');
+  // The room list fills asynchronously after an upload; wait for it instead of reading it once.
+  await expect.poll(find,{timeout:10000,message:'fixture has a second room'}).not.toBe('');await room(page,await find());}
 async function setting(page,id,value){await page.click('#gear');await page.selectOption(id,value);await page.click('#sClose');}
 const notice=page=>page.locator('#signingNotice');
 const name=(page,id)=>page.evaluate(id=>B.people[id].name,id);
