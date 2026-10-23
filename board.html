@@ -5886,8 +5886,10 @@ function signingDiagnose(s) {
 // Composer signing status (SPEC-002-061). The signer is always the persona selected in "I am",
 // so this answers one question before sending: what happens to the message in the composer now?
 // state: {error, hasContext, writable, required, mode, persona, name, names:{id:display name}, catalog:[ids], known:{id:fp},
-// participants:{id:{fingerprint,revoked,unregistered}}, pins:{id:fp}}. The order mirrors what
-// send and delivery check; "unlock" comes before "approve" because people act in that order.
+// participants:{id:{fingerprint,revoked,unregistered}}, pins:{id:fp}}. SIGNING_COMPOSER_ORDER lists
+// the ids; evaluation checks an optional destination with signing off ("unsigned") right after
+// errors, so a read-only folder there still shows unsigned. "unlock" comes before "approve"
+// because people act in that order. Send follows the status: signed, unsigned or refused.
 const SIGNING_COMPOSER_ORDER = ["unavailable", "no-persona", "read-only", "not-registered", "key-revoked", "key-rotated", "needs-unlock", "key-changed", "needs-approval", "signed", "unsigned"];
 function signingComposerStatus(s, text = exText) {
   if (!s.error && !s.hasContext) return null;
