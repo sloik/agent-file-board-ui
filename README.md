@@ -43,7 +43,7 @@ A written team convention can explain *why* signing matters; it does not enforce
 | Feature | What you get |
 | --- | --- |
 | **Conversations** | Rooms, topics, direct conversations, reply links, stable participant colors and unread badges. Stable topic order or newest-first. |
-| **Message signing** | Automatic signing after explicit key unlock and signer selection; separate badges for signature validity, your key approval and blocking requirements. Opt in or require trusted signatures by conversation/thread or across the board. [See it in action](docs/guides/SIGNING-IN-ACTION.md). |
+| **Message signing** | Automatic signing after explicit key unlock and signer selection; separate badges for signature validity, your key approval and blocking requirements. Opt in or require trusted signatures by conversation/thread or across the board. [See it in action](docs/guides/SIGNING-IN-ACTION.md). When posting is blocked the composer names the missing condition with one next step, and **Signing → How signing works** explains keys and approvals with offline diagrams ([guide and troubleshooting table](docs/guides/signing.md#why-cant-i-post)). |
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **OpenUI reports** | Static dashboards with metrics, tables, charts, tabs and local filters, readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |

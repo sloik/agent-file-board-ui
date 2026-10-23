@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "python3 formal/check_alignment.py && python3 scripts/build_update_checker.py --check && node scripts/embed_rich.js --check && node scripts/embed_openui.js --check && node scripts/embed_upgrade.js --check && node scripts/embed_forms.js --check && node scripts/embed_tools.js --check && node scripts/embed_signing.js --check && node --test tests/*.test.js && python3 -m unittest discover -s tests -p \"test_*.py\"",
+    "test": "python3 formal/check_alignment.py && python3 scripts/build_update_checker.py --check && node scripts/embed_rich.js --check && node scripts/embed_openui.js --check && node scripts/embed_upgrade.js --check && node scripts/embed_forms.js --check && node scripts/embed_tools.js --check && node scripts/embed_signing.js --check && node scripts/build_signing_diagrams.js --check && node --test tests/*.test.js && python3 -m unittest discover -s tests -p \"test_*.py\"",
     "test:node": "node --test tests/*.test.js",
     "release-check": "python3 scripts/release_check.py",
     "embed:rich": "node scripts/embed_rich.js",
@@ -29,7 +29,8 @@
     "screenshots:toolbar": "node scripts/screenshot_toolbar.js",
     "screenshots:features": "node scripts/screenshot_features.js",
     "screenshots:all": "node scripts/screenshots_all.js",
-    "embed:signing": "node scripts/embed_signing.js"
+    "embed:signing": "node scripts/embed_signing.js",
+    "diagrams:signing": "node scripts/build_signing_diagrams.js"
   },
   "devDependencies": {
     "@noble/curves": "2.4.0",
