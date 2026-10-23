@@ -1,50 +1,58 @@
 'use strict';
-/* Drive the production composer status function (signingComposerStatus in
-   scripts/signing-help.js) through host-shaped composer events. The collector only
-   changes host inputs and records the real function's answer; ComposerSigning.tla's
-   Initial/Step/Safe are the oracle (TLC), not a JavaScript copy of them. */
+/* Drive the production send decision (signingSendDecision in scripts/signing-ui.js, which
+   asks signingComposerStatus in scripts/signing-help.js) through host-shaped composer events.
+   The composer row and Send both use that one decision. The collector only changes host
+   inputs and records the real answers; ComposerSigning.tla's Initial/Step/Safe are the
+   oracle (TLC), not a JavaScript copy of them. */
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),set=values=>({$set:[...values].sort()});
 const ID={A:'alpha-agent',B:'bravo-agent',C:'charlie-agent',none:''},NAME={A:'Alpha',B:'Bravo',C:'Charlie',none:''},KEYS=['A','B'];
 const NO_POST={made:false,persona:'none',signer:'none',signed:false,required:false,mode:'none',status:'none',gate:'none'};
 const NO_UNLOCK={made:false,key:'none',before:'none',bound:false};
 function replace(source,before,after){assert.equal(source.split(before).length,2,'mutation anchor must be unique: '+before);return source.replace(before,after);}
-function production(mutation){
- let source=fs.readFileSync(path.join(root,'scripts/signing-help.js'),'utf8');
+function production(mutation,h){
+ let source=fs.readFileSync(path.join(root,'scripts/signing-help.js'),'utf8'),ui=fs.readFileSync(path.join(root,'scripts/signing-ui.js'),'utf8');
  if(mutation==='persona')source=replace(source,'if (!catalog.includes(who)) {','if (!catalog.length) {');
  if(mutation==='fallback')source=replace(source,'if (s.mode !== "signed" && !s.required) {','if (!s.required) {');
  if(mutation==='approval')source=replace(source,'if (s.required && p.fingerprint && pins[who] !== p.fingerprint) {','if (false) {');
  if(mutation==='changed')source=replace(source,'if (s.required && p.fingerprint && pins[who] && pins[who] !== p.fingerprint) {','if (false) {');
  if(mutation==='revoked')source=replace(source,'if (p.revoked) {','if (false) {');
- const context=vm.createContext({exText:(en)=>en});
- vm.runInContext(source+';this.api={signingComposerStatus,SIGNING_COMPOSER_ORDER};',context);
+ if(mutation==='send-mode')ui=replace(ui,'status.id === "signed" ? "signed" : "refused"','signingMode === "signed" ? "signed" : "refused"');
+ if(mutation==='send-fallback')ui=replace(ui,'status.id === "signed" ? "signed" : "refused"','status.id === "signed" ? "signed" : "unsigned"');
+ if(mutation==='send-persona')ui=replace(ui,'persona: currentUser(), names','persona: signingProvider.catalog()[0]?.participant || currentUser(), names');
+ // Stubs: the provider catalog, folder access and "I am" come from the host inputs.
+ class Provider{catalog(){return KEYS.filter(k=>h.catalog.has(k)).map(k=>({participant:ID[k],fingerprint:h.unlocked[k]}));}}
+ const context=vm.createContext({exText:(en)=>en,SigningContract:{Provider},canWrite:()=>h.writable,currentUser:()=>ID[h.persona],B:null});
+ vm.runInContext(source+'\n'+ui+';this.api={signingSendDecision,SIGNING_COMPOSER_ORDER,setMode:m=>{signingMode=m;},known:()=>signingKnown,user:()=>currentUser()};',context);
  return context.api;
 }
 // Host inputs: what the viewer passes to signingComposerStatus. Fingerprint generations
 // model rotation; approvals and unlock-time fingerprints keep the value they were made for.
 function host(init){
  return {persona:init.persona||'A',mode:init.mode||'unsigned',required:!!init.required,writable:init.writable!==false,error:init.error?'Private signing context changed in another tab':'',
-  catalog:new Set(),gen:{A:0,B:0},known:{},pins:{...(init.pins||{})},revoked:new Set()};
+  catalog:new Set(),gen:{A:0,B:0},unlocked:{},pins:{...(init.pins||{})},revoked:new Set()};
 }
 const fp=(h,k)=>'ed25519:'+k+h.gen[k];
-function input(h){
- const participants={},known={},pins={};
+// The board model signingSendDecision reads: signing context with approvals, participants and names.
+function board(h){
+ const participants={},pins={},people={};
  for(const k of KEYS)participants[ID[k]]={fingerprint:fp(h,k),...(h.revoked.has(k)?{revoked:{reason:'retired'}}:{})};
  participants[ID.C]={unregistered:true};
- for(const [k,v] of Object.entries(h.known))known[ID[k]]=v;
  for(const [k,v] of Object.entries(h.pins))pins[ID[k]]=v;
- return {error:h.error,hasContext:true,writable:h.writable,required:h.required,mode:h.mode,persona:ID[h.persona],name:NAME[h.persona],
-  catalog:KEYS.filter(k=>h.catalog.has(k)).map(k=>ID[k]),known,participants,pins};
+ for(const k of ['A','B','C'])people[ID[k]]={name:NAME[k]};
+ return {signingError:h.error,signingContext:{state:{pins}},people,signingParticipants:participants};
 }
 function trace(scenario,init,actions,mutation=''){
- const api=production(mutation),h=host(init);
+ const h=host(init),api=production(mutation,h),label=Object.fromEntries(KEYS.map(k=>[ID[k],k]));
  // Initial approvals were given for the current key.
  for(const k of Object.keys(h.pins))h.pins[k]=fp(h,k);
- const status=()=>{const r=api.signingComposerStatus(input(h));assert(r&&api.SIGNING_COMPOSER_ORDER.includes(r.id),'status must be one of SIGNING_COMPOSER_ORDER');return r.id;};
- let shown=status(),stale=false,post=NO_POST,unlock=NO_UNLOCK;
+ const decide=()=>{api.setMode(h.mode);const d=api.signingSendDecision(board(h),h.required);
+  assert(d.status&&api.SIGNING_COMPOSER_ORDER.includes(d.status.id)&&['signed','unsigned','refused'].includes(d.kind),'decision must name a composer status and a kind');return d;};
+ const known=()=>Object.fromEntries(Object.entries(api.known()).map(([id,v])=>[label[id],v]));
+ let shown=decide().status.id,stale=false,post=NO_POST,unlock=NO_UNLOCK;
  const observe=()=>({persona:h.persona,signer:h.persona,catalog:set(h.catalog),mode:h.mode,required:h.required,
-  pins:set(KEYS.filter(k=>h.pins[k]===fp(h,k))),oldPins:set(KEYS.filter(k=>k in h.pins&&h.pins[k]!==fp(h,k))),known:set(KEYS.filter(k=>k in h.known)),
-  rotated:set(KEYS.filter(k=>k in h.known&&h.known[k]!==fp(h,k))),revoked:set(h.revoked),writable:h.writable,error:!!h.error,
+  pins:set(KEYS.filter(k=>h.pins[k]===fp(h,k))),oldPins:set(KEYS.filter(k=>k in h.pins&&h.pins[k]!==fp(h,k))),known:set(KEYS.filter(k=>k in known())),
+  rotated:set(KEYS.filter(k=>k in known()&&known()[k]!==fp(h,k))),revoked:set(h.revoked),writable:h.writable,error:!!h.error,
   shown,stale,post,unlock,progress:0});
  const states=[observe()];
  for(const action of actions){
@@ -53,7 +61,7 @@ function trace(scenario,init,actions,mutation=''){
   else if(verb==='destination')h.required=!h.required;
   else if(verb==='unlock'){
    assert(!h.revoked.has(arg)&&!h.error,'a revoked key or missing signing context cannot unlock');
-   const bound=arg===h.persona;h.catalog.add(arg);h.known[arg]=fp(h,arg);if(bound)h.mode='signed';
+   const bound=arg===h.persona;h.catalog.add(arg);h.unlocked[arg]=fp(h,arg);if(bound)h.mode='signed';
    unlock={made:true,key:arg,before:h.persona,bound};
   }
   else if(verb==='lock'||verb==='expire'){assert(h.catalog.size,'nothing unlocked');h.catalog.clear();}
@@ -66,13 +74,13 @@ function trace(scenario,init,actions,mutation=''){
   else if(verb==='fault')h.error=h.error?'':'Private signing context changed in another tab';
   else if(verb==='reopen'){h.writable=!h.writable;h.catalog.clear();}
   else if(verb==='send'){
-   // Send recomputes the status now; it never trusts what the composer showed earlier.
-   const gate=status(),signed=gate==='signed';
-   if(gate==='signed'||gate==='unsigned')post={made:true,persona:h.persona,signer:signed?h.persona:'none',signed,required:h.required,mode:h.mode,status:gate,gate};
+   // The production send decision, taken now; delivery signs as currentUser() (h.FROM must equal it).
+   const d=decide(),signed=d.kind==='signed',gate=d.kind==='refused'?d.status.id:d.kind;
+   if(d.kind!=='refused')post={made:true,persona:h.persona,signer:signed?label[api.user()]:'none',signed,required:h.required,mode:h.mode,status:d.status.id,gate};
   }
   else if(verb!=='tick')throw Error('unknown composer action '+action);
   // Expiry happens on a timer; the composer learns about it on the next tick or event.
-  if(verb==='expire')stale=true;else{shown=status();stale=false;}
+  if(verb==='expire')stale=true;else{shown=decide().status.id;stale=false;}
   states.push(observe());
  }
  return {model:'ComposerSigning',scenario,states};
@@ -128,13 +136,16 @@ function traces(mutant=false){
   trace('composer mutant: signed mode falls back to unsigned',{},['signed','send'],'fallback'),
   trace('composer mutant: required destination skips approval',{required:true},['unlock A','send'],'approval'),
   trace('composer mutant: changed key treated as never approved',{required:true,pins:{A:true}},['unlock A','rotate A','unlock A','send'],'changed'),
+  trace('composer mutant: send decides signed from signing mode',{mode:'signed'},['send'],'send-mode'),
+  trace('composer mutant: refused send falls back to unsigned',{mode:'signed'},['send'],'send-fallback'),
+  trace('composer mutant: send decision ignores the selected persona',{mode:'signed'},['unlock B','send'],'send-persona'),
   trace('composer mutant: revoked key is ignored',{persona:'B',mode:'signed'},['unlock B','revoke B','send'],'revoked')
  ];
  const fixed=scenarios().map(([name,init,actions])=>trace(name,init,actions));
  const generated=schedules().map(({seed,init,actions})=>trace('composer generated schedule '+seed,init,actions));
  // Non-vacuity: the fixed witnesses show every production status and both kinds of post.
  const seen=new Set(fixed.flatMap(t=>t.states.map(s=>s.shown)));
- assert.deepEqual([...seen].sort(),[...production('').SIGNING_COMPOSER_ORDER].sort(),'every composer status must be observed');
+ assert.deepEqual([...seen].sort(),[...production('',host({})).SIGNING_COMPOSER_ORDER].sort(),'every composer status must be observed');
  const posts=fixed.flatMap(t=>t.states.map(s=>s.post).filter(p=>p.made));
  assert(posts.some(p=>p.signed)&&posts.some(p=>!p.signed),'signed and unsigned posts must both be observed');
  assert(fixed.some(t=>t.states.some((s,i)=>i&&s.stale&&t.states[i+1]&&!t.states[i+1].post.made)),'a send after expiry must be refused');

@@ -56,7 +56,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "1a9df4f4103eccdf53227c6b7d3f2d2da2e86826bd3585665e586874131debfe"
+      "sha256": "d8b7493c9f5383ea9ffcac19fbc8fdd2e031388568ca3ef518fee4aa52d6ebb5"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
@@ -367,14 +367,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "8abf1ea131aea5510f821b0b119e082df26121da7adc0ca6f5f1a1d939c8d020"
+      "sha256": "4eb4af89dbb82fd6f9d80f7132401ab16e32112b15b7206060086742af516ae6"
     },
     "formal/trace_contracts.json": {
       "path": "formal/trace_contracts.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "5febd737f529bcdfbd7426ae6e393b23dec8c2f77f588d45fc7dcf3e1da12e46"
+      "sha256": "93c8103b6a594005c20e340d89e5c0e3c7d132aa1f796264887ddbc8ef2768de"
     },
     "formal/collect_signer.js": {
       "path": "formal/collect_signer.js",
@@ -713,7 +713,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "9ad79c0f00b4bb61383f2ff0fb088003c7351111bb7075172c0f683bcb6d5914"
+      "sha256": "35f21f1b4f63298273c52ba5eb6c7d4355f267b5dd9ddf7de17f7445d64ffc63"
     },
     "tests/composer-signing-status.test.js": {
       "path": "tests/composer-signing-status.test.js",
@@ -730,12 +730,21 @@
         "end": "// Reason a received message cannot drive actions"
       },
       "sha256": "5d26151fa0afe5235ca116fbd0102cd2d21c0dfd85c637915b2d9e6cee4fe6a3"
+    },
+    "signing-send-decision": {
+      "path": "scripts/signing-ui.js",
+      "selector": {
+        "kind": "section",
+        "start": "// The one send decision (SPEC-002-061)",
+        "end": "// What happens to the message in the composer now, for the composer's destination."
+      },
+      "sha256": "318a8335a19a1b1a9dce18acd17d116c6da4ae43ee7b5fd5438a9c40e2870638"
     }
   },
   "models": [
     {
       "module": "Signer.tla",
-      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Signing journeys review 2026-10-22 (SPEC-002-051): task layout and explicit signer selection preserve Provider atomicity, generation invalidation, delivery guards and no unsigned fallback. Dialogue actions bind location/UUID and current model; awaited actions refuse changed models, while idle same-board refresh safely rebinds. Close during pending private-key import locks the Provider epoch; normal close retains a completed unlock. Exact-key approval now rechecks current disk/private-state evidence before mutation. Native browser regressions cover explicit signer choice, approval separate from possession, stale board operations, canceled import, focused edits and English/Polish geometry. These UI selection/dialogue states are executable-test coverage, outside the bounded Provider model; no universal refinement claim. Reviewed explicit evidence refresh: native reload and fixed-upload fresh Context validation do not approve a replacement; browser rotation regression retains the old approval and comparison draft. Pinned task navigation/focus/geometry is browser-tested presentation, outside the bounded model. Persistence-failure review: approval edits are rolled back only for the exact target state/pin mutation when private storage refuses saving; original errors are preserved and newer different pin changes are retained. Native fault-injection regression checks both approve/remove badges, memory pins and unchanged actual IndexedDB pins. This local UX transaction is executable-test coverage beyond the Provider finite model. SPEC-002-052 display review: one facts formatter supplies emoji/text badges, native title explanations and equivalent expanded descriptions. Signature integrity, local key approval, lifecycle and eligibility are independently projected; no provider, approval or publication decisions change. Native browser cases verify actual signed/unapproved/approved and compromised/blocked messages, keyboard disclosure, Polish/English phone wrapping and hover metadata. Native tooltip OS rendering is supplied by the browser; tests assert declared title content and matching non-hover explanations. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. Composer signing review 2026-10-23 (SPEC-002-061, owner decision signer = persona): the separate signingAs selection is removed. In signed mode signingSender returns the persona from currentUser() only when its key is in the Provider catalog; signingDelivery's author pre-check, post-sign check and both final guards compare h.FROM with currentUser() at each point, so a persona switch during sending refuses with the draft kept. Provider unlock/sign/expire/reconcile source is unchanged; epoch, board, draft-stamp, writer-guard and signingFresh checks and the no-unsigned-fallback branch are unchanged, and the guard-mutant anchor still matches exactly two checks. The composer status row, composer unlock (catalog diff; another participant's key is named, never adopted as signer), numbered dialog steps and the 30 s status tick are browser-tested UI (tests/composer-signing.test.js) outside this bounded model. Tests that encoded explicit signer selection were rewritten to the persona rule without loosening other assertions. node formal/collect_signer.js produced positive and mutant traces; TLC/check_traces were not run in the authoring worktree (no Java) and must pass in CI. Send decision review 2026-10-23 (SPEC-002-061 amendment): signingDelivery takes one decision from signingSendDecision (the production signingComposerStatus for the persona in I am and the message's actual minimum): signed signs as currentUser(), unsigned posts unsigned (still requiring an optional minimum), anything else refuses with the status detail. Every post-await check that compared signingMode now compares the re-derived decision with the one taken at the start; epoch, board, draft stamp, persona, writer guard and signingFresh checks are unchanged, and a required room whose persona key is unlocked and approved now signs instead of refusing what the composer showed as ready. collect_signer.js loads signing-help.js into the sandbox (the decision calls the real status function), supplies canWrite, and drops the unused signingAs assignment; positive and mutant trace JSON is byte-identical to the previous collector output. TLC (formal/check.py) and formal/check_traces.py pass with JDK 17. Composer display follow-up 2026-10-23: the older requirement hint is hidden while the status row shows, and the row marks when it has a note; display only, delivery unchanged. Signing registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed.",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Signing journeys review 2026-10-22 (SPEC-002-051): task layout and explicit signer selection preserve Provider atomicity, generation invalidation, delivery guards and no unsigned fallback. Dialogue actions bind location/UUID and current model; awaited actions refuse changed models, while idle same-board refresh safely rebinds. Close during pending private-key import locks the Provider epoch; normal close retains a completed unlock. Exact-key approval now rechecks current disk/private-state evidence before mutation. Native browser regressions cover explicit signer choice, approval separate from possession, stale board operations, canceled import, focused edits and English/Polish geometry. These UI selection/dialogue states are executable-test coverage, outside the bounded Provider model; no universal refinement claim. Reviewed explicit evidence refresh: native reload and fixed-upload fresh Context validation do not approve a replacement; browser rotation regression retains the old approval and comparison draft. Pinned task navigation/focus/geometry is browser-tested presentation, outside the bounded model. Persistence-failure review: approval edits are rolled back only for the exact target state/pin mutation when private storage refuses saving; original errors are preserved and newer different pin changes are retained. Native fault-injection regression checks both approve/remove badges, memory pins and unchanged actual IndexedDB pins. This local UX transaction is executable-test coverage beyond the Provider finite model. SPEC-002-052 display review: one facts formatter supplies emoji/text badges, native title explanations and equivalent expanded descriptions. Signature integrity, local key approval, lifecycle and eligibility are independently projected; no provider, approval or publication decisions change. Native browser cases verify actual signed/unapproved/approved and compromised/blocked messages, keyboard disclosure, Polish/English phone wrapping and hover metadata. Native tooltip OS rendering is supplied by the browser; tests assert declared title content and matching non-hover explanations. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. Composer signing review 2026-10-23 (SPEC-002-061, owner decision signer = persona): the separate signingAs selection is removed. In signed mode signingSender returns the persona from currentUser() only when its key is in the Provider catalog; signingDelivery's author pre-check, post-sign check and both final guards compare h.FROM with currentUser() at each point, so a persona switch during sending refuses with the draft kept. Provider unlock/sign/expire/reconcile source is unchanged; epoch, board, draft-stamp, writer-guard and signingFresh checks and the no-unsigned-fallback branch are unchanged, and the guard-mutant anchor still matches exactly two checks. The composer status row, composer unlock (catalog diff; another participant's key is named, never adopted as signer), numbered dialog steps and the 30 s status tick are browser-tested UI (tests/composer-signing.test.js) outside this bounded model. Tests that encoded explicit signer selection were rewritten to the persona rule without loosening other assertions. node formal/collect_signer.js produced positive and mutant traces; TLC/check_traces were not run in the authoring worktree (no Java) and must pass in CI. Send decision review 2026-10-23 (SPEC-002-061 amendment): signingDelivery takes one decision from signingSendDecision (the production signingComposerStatus for the persona in I am and the message's actual minimum): signed signs as currentUser(), unsigned posts unsigned (still requiring an optional minimum), anything else refuses with the status detail. Every post-await check that compared signingMode now compares the re-derived decision with the one taken at the start; epoch, board, draft stamp, persona, writer guard and signingFresh checks are unchanged, and a required room whose persona key is unlocked and approved now signs instead of refusing what the composer showed as ready. collect_signer.js loads signing-help.js into the sandbox (the decision calls the real status function), supplies canWrite, and drops the unused signingAs assignment; positive and mutant trace JSON is byte-identical to the previous collector output. TLC (formal/check.py) and formal/check_traces.py pass with JDK 17. Composer display follow-up 2026-10-23: the older requirement hint is hidden while the status row shows, and the row marks when it has a note; display only, delivery unchanged. Signing registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. ComposerSigning send-bridge review 2026-10-23: shared README, STATUS and trace contract gained the send-decision bridge and mutants only; this model and its collector are unchanged.",
       "states": {
         "catalog": {
           "anchors": [
@@ -1198,7 +1207,7 @@
     },
     {
       "module": "ViewerUpdate.tla",
-      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Release 2.12.1 review: only viewer version expectations and future-update fixture 2.12.2 advance; mismatch, missing package, unsafe metadata, browser and read-only assertions are retained. No model or updater behavior changes. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. SPEC-002-061 review 2026-10-23: the voice draft context stamp drops the removed signingAs (persona S.me and signingMode remain); signing-ui composer status changes leave viewer update semantics unchanged. ComposerSigning registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed.",
+      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Release 2.12.1 review: only viewer version expectations and future-update fixture 2.12.2 advance; mismatch, missing package, unsafe metadata, browser and read-only assertions are retained. No model or updater behavior changes. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. SPEC-002-061 review 2026-10-23: the voice draft context stamp drops the removed signingAs (persona S.me and signingMode remain); signing-ui composer status changes leave viewer update semantics unchanged. ComposerSigning registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. ComposerSigning send-bridge review 2026-10-23: shared README, STATUS and trace contract gained the send-decision bridge and mutants only; this model and its collector are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -1531,7 +1540,7 @@
     },
     {
       "module": "AnswerAcceptance.tla",
-      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit; browser delivery checks it against reviewed source bytes. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. Reviewed demo/history comparisons and stale-submit regressions for read-only accepted questions, and exact 2.12 release/version/update fixtures; escape, immutable-history and duplicate-refusal assertions remain explicit. Verify older messages explicitly reprojects acceptance after eligibility changes, with current-board guards around the asynchronous refresh and a native 201-message-window regression. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Read-only signing review 2026-10-22: session-local approval/removal re-evaluates already-verified affected messages using actual exact upload bytes and Context.evaluate; pending older evidence remains pending. Acceptance is reprojected from resulting eligibility without promoting history. Native test covers required-policy approval/removal; metadata/crypto/UI I/O remain outside this finite acceptance reducer model. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. SPEC-002-060 test review: the information native-submit test now asserts the opened review section stays open across reload instead of re-opening it. SPEC-002-061 review 2026-10-23: signing test helpers follow the signer = persona rule (unlock through the persona step; browser posts as the persona in I am). Acceptance reducer, eligibility and answer guards are unchanged. ComposerSigning registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed.",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit; browser delivery checks it against reviewed source bytes. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. Reviewed demo/history comparisons and stale-submit regressions for read-only accepted questions, and exact 2.12 release/version/update fixtures; escape, immutable-history and duplicate-refusal assertions remain explicit. Verify older messages explicitly reprojects acceptance after eligibility changes, with current-board guards around the asynchronous refresh and a native 201-message-window regression. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Read-only signing review 2026-10-22: session-local approval/removal re-evaluates already-verified affected messages using actual exact upload bytes and Context.evaluate; pending older evidence remains pending. Acceptance is reprojected from resulting eligibility without promoting history. Native test covers required-policy approval/removal; metadata/crypto/UI I/O remain outside this finite acceptance reducer model. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. SPEC-002-060 test review: the information native-submit test now asserts the opened review section stays open across reload instead of re-opening it. SPEC-002-061 review 2026-10-23: signing test helpers follow the signer = persona rule (unlock through the persona step; browser posts as the persona in I am). Acceptance reducer, eligibility and answer guards are unchanged. ComposerSigning registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. ComposerSigning send-bridge review 2026-10-23: shared README, STATUS and trace contract gained the send-decision bridge and mutants only; this model and its collector are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -1825,13 +1834,14 @@
     },
     {
       "module": "ComposerSigning.tla",
-      "review": "2026-10-23 (SPEC-002-061 AC6): reviewed signingComposerStatus precedence (unavailable, unsigned when signed mode is off and the destination is optional, read-only, not-registered, key-revoked, key-rotated, needs-unlock, needs-approval for required destinations, signed) against the Status operator with real production traces. The unavailable id does not depend on the delegated signingDiagnose/signingBlockInfo text. Signer is the selected persona (owner decision); Send in the collector gates on the production status because the host send path is being rewritten under the same spec and is not yet anchored. Rotation and revocation are assumed to drop the key from the provider catalog, as in Signer key reconciliation. Contract amendment review 2026-10-23 (54d2af0..d65b9e4): added no-persona (after unsigned, before read-only), key-changed (approval of an older fingerprint) before needs-approval, the composer sign action (TurnSigningOn) and explicit review-only approval; collector gained a changed-key mutant. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. 2026-10-23 integration review: the merged UI branch passes `required` to signingBlockInfo(\"not-registered\") so an optional room in signed mode reads \"You chose to sign\"; detail wording only, no status id, emoji, action, alt or precedence change; composer status unit tests and traces rerun.",
+      "review": "2026-10-23 (SPEC-002-061 AC6): reviewed signingComposerStatus precedence (unavailable, unsigned when signed mode is off and the destination is optional, read-only, not-registered, key-revoked, key-rotated, needs-unlock, needs-approval for required destinations, signed) against the Status operator with real production traces. The unavailable id does not depend on the delegated signingDiagnose/signingBlockInfo text. Signer is the selected persona (owner decision); Send in the collector gates on the production status because the host send path is being rewritten under the same spec and is not yet anchored. Rotation and revocation are assumed to drop the key from the provider catalog, as in Signer key reconciliation. Contract amendment review 2026-10-23 (54d2af0..d65b9e4): added no-persona (after unsigned, before read-only), key-changed (approval of an older fingerprint) before needs-approval, the composer sign action (TurnSigningOn) and explicit review-only approval; collector gained a changed-key mutant. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. 2026-10-23 integration review: the merged UI branch passes `required` to signingBlockInfo(\"not-registered\") so an optional room in signed mode reads \"You chose to sign\"; detail wording only, no status id, emoji, action, alt or precedence change; composer status unit tests and traces rerun. Send-bridge review 2026-10-23 (after integration e5a878f): collect_composer.js now loads signing-help.js and signing-ui.js and records the real signingSendDecision for the composer row and at Send (kind signed/unsigned/refused, signer currentUser()); stubs only for the provider catalog, canWrite and currentUser. Section anchor signing-send-decision added. Three send mutants (mode instead of status, refused falls back to unsigned, decision ignores persona) must be rejected. Model unchanged.",
       "states": {
         "state": {
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "One composer observation: host inputs passed to signingComposerStatus plus the status it returned."
         },
@@ -1839,7 +1849,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Participants whose keys are unlocked in the provider (catalog ids)."
         },
@@ -1847,7 +1858,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Signing evidence or private state unavailable (board UUID, another tab, error)."
         },
@@ -1855,7 +1867,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Participants with a fingerprint recorded at unlock time (known)."
         },
@@ -1863,7 +1876,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Signed or unsigned sending mode."
         },
@@ -1871,7 +1885,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Own keys whose approval is for an older fingerprint (key-changed), as opposed to no approval (needs-approval)."
         },
@@ -1879,7 +1894,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "The \"I am\" persona (#me) passed as persona, or none (no-persona); the signer is always this persona (owner decision)."
         },
@@ -1887,7 +1903,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Own keys approved for their current fingerprint."
         },
@@ -1895,15 +1912,17 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
-          "reason": "The post made by the last action, with persona, signer, mode, destination and the status Send consulted."
+          "reason": "The post made by the last action: persona, signer (currentUser at decision), mode, destination, the decision status and the verdict Send acted on."
         },
         "state.progress": {
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Reachability ghost; stays 0 outside the Reach control and in collected traces."
         },
@@ -1911,7 +1930,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Destination policy requires trusted signatures (room, topic, new room or recipient)."
         },
@@ -1919,7 +1939,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Board lists the participant key as revoked or retired."
         },
@@ -1927,7 +1948,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Known fingerprint differs from the board fingerprint (key-rotated input)."
         },
@@ -1935,23 +1957,26 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
-          "reason": "Status id shown in the composer, as returned by the production function."
+          "reason": "Status id from signingSendDecision (the composer row), as returned by production."
         },
         "state.signer": {
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
-          "reason": "Who Send signs as; faithful composer signs as the persona, so collectors record the persona. StickySigner control keeps the old one."
+          "reason": "Who Send signs as: currentUser() when signingSendDecision says signed (delivery requires the author to equal it). StickySigner control keeps an old one."
         },
         "state.stale": {
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Timer expiry happened and the composer has not re-rendered yet."
         },
@@ -1959,7 +1984,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "The composer unlock made by the last action: key, persona before, and whether it bound signed mode."
         },
@@ -1967,7 +1993,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Folder opened with write access."
         }
@@ -1977,7 +2004,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Explicit review approval of the persona own key for the current fingerprint; never implied by unlock."
         },
@@ -1985,7 +2013,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Signing dialog turns signed mode on."
         },
@@ -1993,7 +2022,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Post unsigned instead, offered only where the destination allows it."
         },
@@ -2001,7 +2031,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Composer key-file unlock; binds signed mode only for the persona own key; another key never switches persona."
         },
@@ -2009,7 +2040,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Changing room, topic, new room or recipient toggles whether trusted signatures are required."
         },
@@ -2017,7 +2049,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Inactivity expiry clears the catalog without a re-render (learned on the next tick)."
         },
@@ -2025,7 +2058,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Signing context becomes unavailable or is restored."
         },
@@ -2033,7 +2067,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Initial composer states."
         },
@@ -2041,7 +2076,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Fresh composer: nothing unlocked, any persona, mode, destination, folder access, error flag and earlier approvals."
         },
@@ -2049,7 +2085,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Personas with a registered signing key; only these key files unlock."
         },
@@ -2057,7 +2094,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Explicit lock clears the provider catalog."
         },
@@ -2065,7 +2103,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Signed and unsigned sending modes."
         },
@@ -2073,7 +2112,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Reachability control: every status and both post kinds occur in one behavior."
         },
@@ -2081,7 +2121,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "The same transition relation used by TLC and collected trace checks."
         },
@@ -2089,7 +2130,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "No post in this step."
         },
@@ -2097,7 +2139,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "No composer unlock in this step."
         },
@@ -2105,7 +2148,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Named invariant; UnsignedFallback control must violate it."
         },
@@ -2113,7 +2157,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "No unsigned post where signatures are required or signed mode is on."
         },
@@ -2121,7 +2166,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Every observed event re-renders the composer status."
         },
@@ -2129,7 +2175,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Named invariant; OtherKeyBinds control must violate it."
         },
@@ -2137,7 +2184,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Only the persona own key binds signed mode."
         },
@@ -2145,7 +2193,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Two registered personas, one without a registered key, and none selected."
         },
@@ -2153,7 +2202,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Per-step post and unlock records are cleared by other actions."
         },
@@ -2161,7 +2211,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Statuses that allow posting."
         },
@@ -2169,7 +2220,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Folder reopened read-only or writable; a board change locks the provider."
         },
@@ -2177,7 +2229,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Board refresh shows the key revoked; provider drops it."
         },
@@ -2185,7 +2238,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Board refresh shows a new key; provider drops the old one and its approval becomes an approval of an older fingerprint."
         },
@@ -2193,7 +2247,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Conjunction of the five composer safety predicates, checked on every collected record."
         },
@@ -2201,7 +2256,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Changing \"I am\" changes the signer and re-derives the status."
         },
@@ -2209,15 +2265,17 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
-          "reason": "Send recomputes the status and posts only when signed (as the persona) or unsigned."
+          "reason": "Production signingSendDecision taken at send time: signed signs as the persona (currentUser), unsigned posts unsigned, anything else refuses."
         },
         "SendRechecks": {
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Named invariant; StaleReady control must violate it."
         },
@@ -2225,7 +2283,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Send consults the recomputed status, not the shown one."
         },
@@ -2233,7 +2292,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Named invariant; production mutants that change ids are rejected by it in traces."
         },
@@ -2241,7 +2301,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Shown status equals Status except after an unobserved expiry."
         },
@@ -2249,7 +2310,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Named invariant; StickySigner control must violate it."
         },
@@ -2257,7 +2319,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "A signed post is signed as the persona selected at send time."
         },
@@ -2265,7 +2328,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Bounded safety over composer events; no liveness claim."
         },
@@ -2273,7 +2337,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Independent bounded mirror of signingComposerStatus precedence; collected production ids must equal it."
         },
@@ -2281,7 +2346,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "SIGNING_COMPOSER_ORDER."
         },
@@ -2289,7 +2355,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "One composer event; repeated snapshots are stuttering in trace checks."
         },
@@ -2297,7 +2364,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Reachability label of a state: a post kind or the shown status."
         },
@@ -2305,7 +2373,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Periodic 30-second re-render."
         },
@@ -2313,7 +2382,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Composer action kind sign: turns signing on when the persona key is unlocked in an optional destination."
         },
@@ -2321,7 +2391,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Finite personas, keys, modes and statuses."
         },
@@ -2329,7 +2400,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "Feasible reachability order covering every SIGNING_COMPOSER_ORDER id plus a signed and an unsigned post."
         },
@@ -2337,7 +2409,8 @@
           "anchors": [
             "signing-composer-status",
             "formal/collect_composer.js",
-            "tests/composer-signing-status.test.js"
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
           ],
           "reason": "All modelled fields are observed by the composer trace collector."
         }
@@ -2369,13 +2442,14 @@
         "formal/ComposerSigningReachable.cfg",
         "formal/collect_composer.js",
         "tests/composer-signing-status.test.js",
-        "signing-composer-status"
+        "signing-composer-status",
+        "signing-send-decision"
       ],
       "conformance": [
         "tests/composer-signing-status.test.js",
         "formal/collect_traces.js"
       ],
-      "limits": "Three personas (two registered keys, one unregistered) plus no persona, two key files, two modes, one destination flag, folder access and signing-error toggles, approvals, revocation and rotation per key. Status ids only: labels, emoji, actions and Polish text are unit-tested. The collector drives the production status function with host-shaped inputs and gates Send on it; the host send path, signingDelivery guards, key-file parsing and composer rendering remain unit/browser tests. No liveness or timing claim: expiry is one event and the 30-second tick another."
+      "limits": "Three personas (two registered keys, one unregistered) plus no persona, two key files, two modes, one destination flag, folder access and signing-error toggles, approvals, revocation and rotation per key. Status ids only: labels, emoji, actions and Polish text are unit-tested. The collector drives the production signingSendDecision (and through it signingComposerStatus) with host-shaped inputs and stubbed provider catalog, folder access and persona; cryptographic signing, the post-await signingDelivery guards, key-file parsing and composer rendering are Signer traces and unit/browser tests. No liveness or timing claim: expiry is one event and the 30-second tick another."
     }
   ]
 }

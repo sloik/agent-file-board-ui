@@ -198,13 +198,21 @@ binding silently. `NeverWitnessesAll` is a reachability control: one behavior sh
 every status of `SIGNING_COMPOSER_ORDER` plus a signed and an unsigned post, in the
 feasible order listed by `Witness` (revocation and approval are not undone).
 
-`collect_composer.js` loads the production `signing-help.js` in a VM, changes host
-inputs (persona, catalog, mode, destination, approvals, fingerprints, revocation,
-folder access, signing errors) as the composer events do, and records the real
-function's status after every event. TLC checks every record against `Initial`, `Step`
-and `Safe`. Twelve fixed scenarios witness every status and both post kinds; eight
-seeded schedules add random enabled events. Five source mutations (another unlocked
-key makes the persona ready, signed mode reports unsigned, approval is skipped, a
-changed key reads as never approved, revocation is ignored) must be rejected. The collector's Send uses the production
-status as its gate; the host send path, composer rendering and key-file parsing are
-covered by unit and browser tests, not by this trace bridge.
+`collect_composer.js` loads the production `signing-help.js` and `signing-ui.js` in a VM,
+with stubs only for the provider catalog, folder access and the "I am" persona. It changes
+host inputs (persona, catalog, mode, destination, approvals, fingerprints, revocation,
+folder access, signing errors) as the composer events do. After every event it records
+the status from the real `signingSendDecision`, the one decision that both the composer row
+and `signingDelivery` use. On Send it records that decision's kind (signed, unsigned or
+refused) and signs as `currentUser()`, which delivery requires to equal the message
+author. TLC checks every record against `Initial`, `Step` and `Safe`, so `SignerIsPersona`,
+`NoUnsignedWhereRequired` and `SendRechecks` are checked against the production decision.
+Twelve fixed scenarios witness every status and both post kinds; eight seeded schedules
+add random enabled events. Eight source mutations must be rejected: five in
+`signingComposerStatus` (another unlocked key makes the persona ready, signed mode reports
+unsigned, approval is skipped, a changed key reads as never approved, revocation is
+ignored) and three in `signingSendDecision` (signing decided from signing mode instead of
+the status, a refused send falls back to unsigned, the decision ignores the selected
+persona). The cryptographic signing, the guards `signingDelivery` re-checks after each await,
+key-file parsing and composer rendering are covered by `Signer` traces and by unit and
+browser tests.

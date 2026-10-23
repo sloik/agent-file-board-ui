@@ -124,6 +124,9 @@
         "composer mutant: signed mode falls back to unsigned",
         "composer mutant: required destination skips approval",
         "composer mutant: changed key treated as never approved",
+        "composer mutant: send decides signed from signing mode",
+        "composer mutant: refused send falls back to unsigned",
+        "composer mutant: send decision ignores the selected persona",
         "composer mutant: revoked key is ignored"
       ]
     }
