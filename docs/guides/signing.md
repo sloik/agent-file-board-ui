@@ -102,6 +102,23 @@ or read marking. A signature failure never authorizes automatic message repair.
 Approvals are exact-key decisions stored locally. A participant’s name, registry
 entry, operator claim or self-signed profile does not approve the key for you.
 
+### Keys waiting for approval
+
+A key **needs review** when the participant has a current, unrevoked registered key
+that you have not approved on this device, including a key that changed after you
+approved the old one. The viewer counts them for this board and this browser:
+**Signing** in **Tools** shows **🔑 N**, a dot on the closed **Tools** menu says the
+same in its tooltip, and when a board opens with keys waiting, one line under the
+header says “N participant keys are not approved on this device” with **Review
+keys** and **Not now**. **Not now** is remembered per board for exactly those keys;
+a newly registered or changed key shows the line again. **Review keys** in that line,
+or **🔑 Review keys (N)** in **Tools** (shown only while keys wait), opens task 2 on the
+first key needing review; **Signing** itself opens as usual; changed keys come
+first. Each participant in the list names its state: needs review, key changed,
+approved, no key, revoked or key unavailable. Nothing here approves anything:
+you still paste the fingerprint you confirmed through another channel. Revoked
+keys, participants without a key and unreadable profiles are not counted.
+
 ### Worked example: Sam checks Maya’s key
 
 Maya and Sam are fictional board participants. Maya has already registered a

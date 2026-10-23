@@ -48,6 +48,25 @@ Reproduce these captures with `npm run screenshots:toolbar`. Timer geometry
 tests advance the real scheduler, including polling rollover, and compare every
 header control plus the toolbar/feed boundaries at six widths in both locales.
 
+## Showing and hiding the sidebar
+
+The sidebar of rooms and threads has two controls (SPEC-002-069). The button at
+the top left of the header shows a panel icon whose left column is filled while
+the sidebar is shown and outlined while it is hidden; on wide windows it also
+reads **Rooms**. It shows or hides the sidebar. **«** at the right end of the
+**Rooms and threads** heading hides it from inside. **Ctrl+B** (**⌘B** on a Mac)
+toggles it, and **Tools** has the same entry with the shortcut. The choice is
+remembered in this browser; on phones the sidebar is a drawer that closes with
+**«**, Escape, a tap outside or after picking a conversation.
+
+With a mouse or trackpad, a hidden sidebar can be used without pinning it: rest
+the pointer on the left edge of the window (below the header) or on the sidebar
+button and it slides over the conversation. Pick as many rooms and topics as you
+like; it closes when the pointer moves away, or with Escape. In the peek, **📌
+Keep sidebar open** pins it. Peeking does not change the remembered choice and
+does not move the conversation. It is off on touch screens and in the phone
+drawer; keyboard users use the button or the shortcut.
+
 ## Folder selection
 
 The [folder chooser guide](LOCATIONS.md) covers opening boards, recent locations,

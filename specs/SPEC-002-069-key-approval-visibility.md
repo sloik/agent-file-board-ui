@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-069
 title: Key approval visibility - pending keys count, review list states, first-open notice, clearer sidebar toggle
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -102,30 +102,30 @@ file picker does not reveal paths).
 
 ## Acceptance criteria (Playwright)
 
-- [ ] AC1: board with three registered participants, none approved: `#signingTools` badge reads 3,
+- [x] AC1: board with three registered participants, none approved: `#signingTools` badge reads 3,
   the Tools toggle has the dot and a title naming 3; after approving one key through the existing
   review flow it reads 2; after approving all, badge and dot are absent. English and Polish,
   including Polish plurals for 1, 2 and 5.
-- [ ] AC2: revoked, unregistered and error participants are not counted; a changed key is counted
+- [x] AC2: revoked, unregistered and error participants are not counted; a changed key is counted
   and sorted first.
-- [ ] AC3: `#signingParticipant` options carry the state text; needs-review options come first; the
+- [x] AC3: `#signingParticipant` options carry the state text; needs-review options come first; the
   review task opened from the Tools item "Review keys (N)" (amended 2026-10-23, see below) preselects the
   first needing review; #signingTools opens the dialog as before; the summary line matches.
-- [ ] AC4: first-open notice appears with N > 0, "Review keys" opens the review task with the first
+- [x] AC4: first-open notice appears with N > 0, "Review keys" opens the review task with the first
   pending participant selected, "Not now" hides it and it stays hidden after reload; registering a
   new key (or changing one) shows it again; with Storage get/set throwing the page loads without
   page errors and the notice still dismisses.
-- [ ] AC5: with N = 0 there is no badge, dot or notice (non-vacuity: a test-only mutation that makes
+- [x] AC5: with N = 0 there is no badge, dot or notice (non-vacuity: a test-only mutation that makes
   `signingPendingReview` return [] fails AC1, and one that skips the dismissal write fails AC4's
   reload step).
-- [ ] AC6: `#menu` contains the sidebar SVG, not the hamburger character; aria-expanded and the
+- [x] AC6: `#menu` contains the sidebar SVG, not the hamburger character; aria-expanded and the
   glyph's filled/outlined state flip together; "Rooms" text visible at 1280x800 and the header
   stays one line (`.top` height <= 52, as SPEC-002-068 AC7); at 900x500 and 390x640 glyph only.
-- [ ] AC6b: `#sideHide` is visible (bounding box inside the sidebar heading row) whenever the sidebar
+- [x] AC6b: `#sideHide` is visible (bounding box inside the sidebar heading row) whenever the sidebar
   is shown at >820px and in the phone drawer; clicking it hides the sidebar, sets `#menu`
   aria-expanded=false, focuses `#menu`, and the hidden state survives reload; `#menu` shows it
   again.
-- [ ] AC6c: at 1280x800 with the sidebar hidden: hovering the left-edge zone for 200ms shows .side as
+- [x] AC6c: at 1280x800 with the sidebar hidden: hovering the left-edge zone for 200ms shows .side as
   an overlay (bounding box width ≈ --sidew, feed left edge unchanged, page scrollWidth <= innerWidth);
   moving into it and clicking another topic navigates and it stays open; moving the pointer to the
   feed center closes it within 600ms; reload: still hidden, localStorage unchanged, #menu
@@ -133,10 +133,10 @@ file picker does not reveal paths).
   emulated media) hovering does nothing; the pin button shows it persistently and saves "shown".
   Non-vacuity: disabling the peek handler (in-test mutation) fails the first step. SPEC-002-068
   layout tests stay green.
-- [ ] AC7: SPEC-002-068 layout tests (tests/compact-layout.test.js) still pass unchanged, with the
+- [x] AC7: SPEC-002-068 layout tests (tests/compact-layout.test.js) still pass unchanged, with the
   badge and the notice present at 320x360.
-- [ ] AC8: docs, CHANGELOG, released as viewer 3.3.5.
-- [ ] AC9 (added 2026-10-23, owner: the field and Post must stay visible at small sizes): on a signing
+- [x] AC8: docs, CHANGELOG, released as viewer 3.3.5.
+- [x] AC9 (added 2026-10-23, owner: the field and Post must stay visible at small sizes): on a signing
   board whose composer status offers to unlock a key ("Will post unsigned" + unlock link), the status
   row keeps the compact SPEC-002-065 form at <=600px wide or <=640px tall without squeezing the
   label: the label stays on one line (at least 8em, ellipsis), a short offer and Details share its
@@ -150,3 +150,49 @@ open task 2 on the first pending key. AC9 added: the owner wants the message fie
 small sizes, which the 3.3.4 composer status row broke on signing boards at 390px.
 
 No VoiceOver/screen-reader checks (owner policy).
+
+## Implementation notes (2026-10-23)
+
+Feature in scripts/signing-ui.js (count, labels, notice, badge), scripts/sidebar-menu.js (`#sideHide`)
+and board.html (markup, CSS, `sidebar_rooms`); tests in tests/key-approval-visibility.test.js; the
+signing fixture gains a `register(participant)` mode reusing its key and profile code. Decisions and
+deviations:
+
+- **Pending = current pin differs.** `signingPendingReview` reads approval from
+  `signingContext.state.pins` rather than the stored `trusted` flag, because an upload's approval
+  updates the pin without rebuilding `signingParticipants`. Changed = a pin exists for another key.
+- **Notice rule.** The notice shows when any pending (participant, fingerprint) pair is not in the
+  dismissed set, rather than whenever the set differs: otherwise approving one of two dismissed keys
+  would bring the notice back. A new or changed key still shows it. Dismissals live in
+  `localStorage` under `afb.keyReview.<board identity>` (the upload board's id when there is no folder
+  identity) plus a session copy used when storage throws.
+- **Sixth state.** A participant with a registry entry but an unreadable profile (`{error}`) is
+  labelled "key unavailable" / "klucz niedostępny"; it is not counted.
+- **Review entry (amended 2026-10-23).** `#signingTools` keeps the badge and always opens the dialog as
+  before, so "Sign as me" is reached the usual way. A separate Tools item `#reviewKeysTool`,
+  "🔑 Review keys (N)" / "Sprawdź klucze (N)", shown only when N > 0, and the notice's "Review keys"
+  open task 2 on the first pending key.
+- **Summary line** also covers a board without any registered key ("No participant has a registered
+  key yet").
+- **Notice placement.** It reuses the `.banner` area under the header and stays one line (the text
+  ellipsizes, full text in its tooltip).
+- **AC9, the 3.3.4 status-row overflow.** With the compact SPEC-002-065 form (<=600px wide or
+  <=640px tall) and an unsigned status, the label had `flex:1 1 0` beside the full unlock link, so it
+  was squeezed into a ~26px column and the row grew to ~235px at 390x640, pushing the message field
+  and Post out of the window. The label now keeps at least 8em on one line (ellipsis), so a long offer
+  wraps below it (about 77px in English, 127px in Polish at 390px) while short offers such as "Sign"
+  still share the line (the 320x360 worst case of SPEC-002-068 AC5 stays one line). Composer status
+  buttons now carry their label as their tooltip.
+- **"Rooms" from 1200px**, not 1100px (and only above 640px tall): at 1100x800 in Polish with the
+  update notice the label left the search field 19px above its minimum on macOS fonts, too little
+  for wider Linux fonts. The spec allows glyph only where the header would not stay one line.
+- **Hover peek (4b).** The peek is `body.side-peek`: `.side` becomes a fixed overlay and the resizer and
+  feed get explicit grid columns so nothing moves. Hover on the open row menu (rendered outside the
+  sidebar) also keeps it open. While Tools is open no peek starts. Clicking #menu cancels a pending
+  peek, so the click that hides the sidebar never reopens it as a peek; leave and re-enter to peek.
+  Closing a peek that holds focus blurs it. In the peek « shows a pin (📌) labelled "Keep sidebar
+  open". `tests/lib/helpers.js` `openPage` gained a `context` option for the touch test (hasTouch +
+  isMobile, which Chromium reports as no hover / coarse pointer).
+- Documentation screenshots in docs/images were not regenerated.
+- AC8: release 3.3.5 is prepared (version, CHANGELOG, fixtures, alignment pins); tagging and
+  publishing remain the owner's release step.
