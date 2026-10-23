@@ -1,5 +1,17 @@
 # Release notes
 
+## 3.0.0 — 2026-10-23
+
+- Pair with canonical 3.0.0: optional signed room inventories let the CLI
+  (`boardctl history`) report committed messages that later go missing or change.
+  The viewer does not display them yet and safely ignores `.agent-board/history/`.
+- Upgrade boards from 2.12.2 to 3.0.0 with the bundled managed manifest; a 3.0.0
+  board no longer shows a version-mismatch warning in this viewer.
+- Bundle canonical example extensions re-released for 3.x (`<4.0.0`); packages
+  limited to `<3.0.0` need a new version to post new messages on 3.0.0 boards.
+- Security FAQ and README explain the new CLI detection and its limits; formal
+  coverage lists the canonical RoomHistory model.
+
 ## 2.12.2 — 2026-10-22
 
 - Put the illustrated signing story and quick demo first; explain opt-in and scoped trusted signing with clear folder security boundaries.
