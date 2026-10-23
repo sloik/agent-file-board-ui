@@ -98,7 +98,10 @@ being promoted to trusted identity or authority.
 
 Separate Viewing as, Signing as, To, and Trust. The existing currentUser()/S.me
 callers must be classified by read/preferences versus actual authorship; do not
-reuse one selector state for both. Sender capability is tab-private. Recipient
+reuse one selector state for both.
+*Superseded 2026-10-23 by SPEC-002-061 (owner decision): the signer is the persona
+selected in “I am”. Signed sends sign as that persona at send time, refuse while its
+key is locked, and never fall back to unsigned or to another unlocked key.* Sender capability is tab-private. Recipient
 selection stays unchanged; nobody needs a recipient's private key. Viewing as is
 not authenticated login or filesystem confidentiality.
 

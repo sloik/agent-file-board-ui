@@ -1,5 +1,61 @@
 # Release notes
 
+## 3.3.0 — 2026-10-23
+
+Pairs with canonical 3.3.0 (pinned). Composer signing status and unlocking keys from the
+composer as the selected persona; viewer support for automatic room history declared per
+room or thread. Formal: new `ComposerSigning` model checked against the real status
+function and send decision.
+
+- **Automatic room history (SPEC-002-063, with canonical 3.3.0):** the
+  Missing-message check shows each room's declared setting ("Records automatically
+  on signed posts", or the topics that do), who has recorded it with each
+  recorder's key status ("Recorded by …"), and for recorders this device has not
+  approved: "Records by X count here only after you approve X's key", with a button
+  to the fingerprint review. The same facts as `boardctl history status`
+  (`recording`, `recordedBy`, `trustHint`). A malformed `room_history` is reported
+  in the panel and never breaks the board.
+- **Per-room signing and history at creation:** when the composer creates a new
+  room or topic it offers "Require trusted signatures" and "Record room history
+  automatically" (both off by default). Ticked options are written to
+  `config.json` with the CLI's semantics before the first message, after you
+  review the exact bytes; the first message must be signed with your own approved
+  key. Existing rooms are refused and pointed to the room menu. The composer
+  signing status shows "required" as soon as the box is ticked.
+- **Room menu → Room history and signing…:** changes recording and the trusted
+  requirement for an existing room or topic, mirroring `boardctl history policy`
+  and `boardctl signing require`: exact-bytes review, refusal when `config.json`
+  changed since review or a CLI writer holds `.identity-write-lock`, and an extra
+  confirmation to turn either off (`--weaken`).
+- **Honest about recording:** the browser cannot sign inventories yet, so it
+  never records. A post from the viewer into a recording room shows "Not recorded
+  by this viewer: record with `boardctl history observe` … or post from the CLI".
+
+- **Composer signing status (SPEC-002-061):** the composer always shows what will
+  happen to the message you are about to post: 🔏 signed as the persona, 📝 posted
+  unsigned, or a distinct emoji with the missing step (👤 choose persona, ⛔ read-only
+  folder, ❔ no registered key, 🚫 revoked, 🔄 rotated, 🔒 unlock, ⚠️ key changed,
+  🔑 approve once, ❗ signing unavailable). It sits directly above Send and updates on
+  persona, destination, unlock, lock, approval, refresh, returning to the tab and key
+  expiry. Send follows the status: signed, unsigned or refused with the same
+  explanation, keeping the draft.
+- **Signer = persona:** in signed mode messages are signed as the persona selected
+  in "I am" at send time. The separate "Choose who to sign as" step is gone; a
+  persona whose key is locked blocks signed posting (no unsigned fallback, never
+  another unlocked key).
+- **Unlock from the composer:** "🔒 Unlock <persona>'s key" opens the key-file
+  picker directly (any file type, several files) and binds the key to the persona in
+  one step. A key that belongs to another participant is named with its fingerprint,
+  with an explicit "Switch persona" button; a key of nobody on the board and invalid
+  files change nothing; read-only boards say why unlocking is unavailable. Approval
+  always goes through the fingerprint review. "Post unsigned instead" is a secondary
+  link with a confirmation. On phones the row shows emoji and short label, with
+  details on tap and 44px actions.
+- **Signing dialog:** "Sign as me" now has numbered steps (persona, key file,
+  unlock) and says that both are needed and the file stays in this tab; its lock
+  button says "Lock all keys" because keys are always locked together. The
+  "Why can't I post?" diagram and the signing guides follow the new rule.
+
 ## 3.2.1 — 2026-10-23
 
 - Fix: expanded parts of a message (signing details and hints, reviews,

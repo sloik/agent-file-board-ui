@@ -26,11 +26,15 @@ async function main(){
     await page.locator('#signing-review').screenshot({path:h.path.join(out,'signing-review-approved.png'),animations:'disabled'});
     await signing.closeSigning(page);await signing.unlock(page,f.owner);await signing.openSigning(page);
     await page.locator('#signing-own').screenshot({path:h.path.join(out,'signing-own.png'),animations:'disabled'});
+    await signing.closeSigning(page);
+    assert.equal(await page.locator('#signingNotice').getAttribute('data-signing-status'),'signed');
+    await page.locator('#composer').screenshot({path:h.path.join(out,'signing-composer.png'),animations:'disabled'});
+    await signing.openSigning(page);
     await page.setViewportSize({width:390,height:844});
     await page.locator('[data-signing-task=check]').click();
     assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true);
     await page.screenshot({path:h.path.join(out,'signing-phone.png'),animations:'disabled'});
-    console.log('Captured real message, participant review before/after approval, own signing and phone layout. Fixture keys remain private and are deleted.');
+    console.log('Captured real message, participant review before/after approval, own signing, composer status and phone layout. Fixture keys remain private and are deleted.');
   }finally{
     for(const cleanup of cleanups.reverse())await cleanup();
     await browser.close();await new Promise(resolve=>server.close(resolve));

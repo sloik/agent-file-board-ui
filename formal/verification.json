@@ -3,7 +3,8 @@
   "traceModels": [
     "Signer.tla",
     "ViewerUpdate.tla",
-    "AnswerAcceptance.tla"
+    "AnswerAcceptance.tla",
+    "ComposerSigning.tla"
   ],
   "phases": [
     {
@@ -72,6 +73,11 @@
           "node",
           "--test",
           "tests/answer-state-unit.test.js"
+        ],
+        [
+          "node",
+          "--test",
+          "tests/composer-signing-status.test.js"
         ]
       ],
       "timeout": 180
@@ -84,7 +90,7 @@
           "formal/check_traces.py"
         ]
       ],
-      "timeout": 180
+      "timeout": 360
     },
     {
       "name": "models",

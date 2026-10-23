@@ -31,6 +31,16 @@ secondary row. Columns adapt to the available width; long names cannot widen
 the page. New-topic input stays inside its thread group. The existing resize handle
 and saved height still work; an explicitly enlarged editor keeps its height.
 
+When the options create a new room (a name in the new-room field) or a new topic,
+two more choices appear, both off by default: **Require trusted signatures** and
+**Record room history automatically**. They apply to that room or topic only and
+are written to `.agent-board/config.json` before the first message, after a review
+of the exact new file; the message must then be signed with your own key approved
+on this device. A room that already has messages is refused: change it from the
+room menu (**Room history and signing…**) instead. The browser cannot record room
+history itself, so after posting into a recording room the composer notes that
+recording needs `boardctl history observe` or a post from the CLI.
+
 The summary reflects the actual chosen routing, including slugged new room names,
 new topics and recipient IDs. It does not post anything. A timer refresh,
 collapse, theme or interface-language change preserves draft/reply/attachment

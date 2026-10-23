@@ -81,6 +81,35 @@
       "module": "AnswerAcceptance.tla",
       "config": "AnswerAcceptanceBadAuthority.cfg",
       "counterexample": "FirstWins"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigning.cfg"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadSticky.cfg",
+      "counterexample": "SignerIsPersona"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadFallback.cfg",
+      "counterexample": "NoUnsignedWhereRequired"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadStale.cfg",
+      "counterexample": "SendRechecks"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadOtherKey.cfg",
+      "counterexample": "OtherKeyNeverBinds"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningReachable.cfg",
+      "counterexample": "NeverWitnessesAll"
     }
   ]
 }

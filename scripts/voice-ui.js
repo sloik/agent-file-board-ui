@@ -18,7 +18,7 @@ function wireVoiceInput(){
     const row=document.createElement('div');row.style='display:flex;flex-wrap:wrap;gap:8px';dialog.append(row);
     const add=(id,en,pl,fn)=>{const b=document.createElement('button');b.className='btn';b.id=id;b.textContent=exText(en,pl);b.onclick=fn;row.append(b);return b;};
     let stop=()=>{},selection;
-    const context=()=>JSON.stringify([boardStorageId,dirHandle!==null,S.me,signingMode,signingAs,signingDraftStamp(),replyTo]);
+    const context=()=>JSON.stringify([boardStorageId,dirHandle!==null,S.me,signingMode,signingDraftStamp(),replyTo]);
     const session=new VoiceInput.Session(context,s=>{
       voiceWorkPending=s.state==='listening'||s.state==='review';
       status.textContent=s.state==='listening'?exText('Listening… Stop to review.','Słucham… Zatrzymaj, aby sprawdzić.'):s.state==='review'?exText('Review, then insert into the draft.','Sprawdź i wstaw do szkicu.'):s.reason||exText('Ready','Gotowe');

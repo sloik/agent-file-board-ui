@@ -128,6 +128,16 @@ class TraceHarnessTests(unittest.TestCase):
         with patch.object(traces.subprocess, 'run', return_value=result), patch.object(traces, 'render', return_value='wrapper'):
             self.assertEqual(len(traces.collect()), len(positive))
 
+    def test_collector_output_above_the_trace_cap_refuses_and_inventory_fits(self):
+        inventory = traces.contracts()
+        for key in ('positive', 'mutants'):
+            self.assertLessEqual(sum(len(row[key]) for row in inventory.values()), traces.MAX_TRACES)
+        flood = [{'model': 'Signer', 'scenario': 'flood ' + str(n), 'states': [{}, {}]} for n in range(traces.MAX_TRACES + 1)]
+        result = subprocess.CompletedProcess([], 0, json.dumps(flood), '')
+        with patch.object(traces.subprocess, 'run', return_value=result), patch.object(traces, 'render', return_value='wrapper'), \
+                self.assertRaisesRegex(ValueError, 'oversized'):
+            traces.collect()
+
     def test_trace_java_standard_modules_are_isolated_per_invocation(self):
         directories = []
         def invoke(command, **kwargs):

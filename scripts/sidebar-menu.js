@@ -30,13 +30,14 @@ function syncSidebarMenu(){
  const trigger=sidebarTrigger(sidebarMenu.kind,sidebarMenu.key);trigger.setAttribute("aria-expanded","true");
  const following=sidebarMenu.state.follows.some(item=>item.kind===sidebarMenu.kind&&item.key===sidebarMenu.key);
  $("#sidebarNotificationToggle").textContent=t(following?"notify_unfollow":"notify_follow");$("#sidebarNotificationToggle").disabled=!sidebarMenu.state.ready;
- $("#sidebarNotificationSettings").textContent=t("notify_scope_settings");$("#sidebarNotificationMenu").setAttribute("aria-label",trigger.getAttribute("aria-label"));positionSidebarMenu();
+ $("#sidebarNotificationSettings").textContent=t("notify_scope_settings");
+ const history=$("#sidebarHistorySettings");history.hidden=B.layout.dialect!=="native";history.textContent=exText("Room history and signing…","Historia i podpisy pokoju…");$("#sidebarNotificationMenu").setAttribute("aria-label",trigger.getAttribute("aria-label"));positionSidebarMenu();
 }
 function openSidebarMenu(trigger,last=false){
  const kind=trigger.dataset.notificationMenu,key=trigger.dataset.notificationKey,state=notificationsContext();if(!state||!sidebarScopeAllowed(kind,key))return;
  if(sidebarMenu?.kind===kind&&sidebarMenu.key===key){closeSidebarMenu(true);return;}
  closeSidebarMenu(false);sidebarMenu={state,kind,key};$("#sidebarNotificationMenu").hidden=false;syncSidebarMenu();
- const items=[...$("#sidebarNotificationMenu").querySelectorAll("button:not(:disabled)")];(last?items.at(-1):items[0])?.focus({preventScroll:true});
+ const items=[...$("#sidebarNotificationMenu").querySelectorAll("button:not(:disabled):not([hidden])")];(last?items.at(-1):items[0])?.focus({preventScroll:true});
 }
 function openSidebarNotificationSettings(menu){
  if(!sidebarMenuCurrent(menu))return;
@@ -50,12 +51,13 @@ function wireSidebarMenu(){
  $("#tree").addEventListener("keydown",event=>{const trigger=event.target.closest("[data-notification-menu]");if(trigger&&["ArrowDown","ArrowUp"].includes(event.key)){event.preventDefault();event.stopImmediatePropagation();openSidebarMenu(trigger,event.key==="ArrowUp");}},true);
  $("#sidebarNotificationToggle").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}const following=menu.state.follows.some(item=>item.kind===menu.kind&&item.key===menu.key);changeNotificationFollow(menu.kind,menu.key,following);closeSidebarMenu(true);};
  $("#sidebarNotificationSettings").onclick=()=>openSidebarNotificationSettings(sidebarMenu);
+ $("#sidebarHistorySettings").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}closeSidebarMenu(false);historySettingsDialog(menu.kind,menu.key);};
  document.addEventListener("pointerdown",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);},true);
  document.addEventListener("focusin",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);});
  $("#sidebarNotificationMenu").addEventListener("keydown",event=>{
   if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeSidebarMenu(true);return;}
   if(event.key==="Tab"){closeSidebarMenu(true);return;}
-  const items=[...$("#sidebarNotificationMenu").querySelectorAll("button:not(:disabled)")],at=items.indexOf(document.activeElement);let next;
+  const items=[...$("#sidebarNotificationMenu").querySelectorAll("button:not(:disabled):not([hidden])")],at=items.indexOf(document.activeElement);let next;
   if(event.key==="ArrowDown")next=(at+1)%items.length;else if(event.key==="ArrowUp")next=(at-1+items.length)%items.length;else if(event.key==="Home")next=0;else if(event.key==="End")next=items.length-1;
   if(next!==undefined){event.preventDefault();items[next]?.focus();}
  });

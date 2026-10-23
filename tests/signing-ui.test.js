@@ -23,10 +23,14 @@ async function unlock(page,key){
  assert.equal(await page.evaluate(async()=>{try{await B.signingContext.resolve('human-owner-01');return 'ok';}catch(e){return e.stack;}}),'ok');
  await signingBrowser.unlock(page,{key,participant:'human-owner-01'});
  assert.equal(await page.evaluate(()=>signingProvider.catalog().length),1);
- assert.equal(await page.evaluate(()=>signingAs),'human-owner-01');
+ assert.equal(await page.inputValue('#me'),'human-owner-01');
+ assert.equal(await page.evaluate(()=>document.querySelector('#signingNotice').dataset.signingStatus),'signed');
 }
-test('actual file UI signs after explicit signer selection with distinct viewing identity; Python independently verifies exact published bytes',async()=>{
- const {page,ctx,tmp,key}=await boot();await unlock(page,key);await page.selectOption('#me','research-agent-01');await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Browser signed');await page.fill('#cBody','Exact browser bytes 🐈');await page.click('#send');
+test('actual file UI signs as the selected persona and refuses a persona without an unlocked key; Python independently verifies exact published bytes',async()=>{
+ const {page,ctx,tmp,key}=await boot();await unlock(page,key);await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Browser signed');
+ await page.selectOption('#me','research-agent-01');await page.fill('#cBody','Never under another persona');await page.click('#send');await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes("has no signing key"));
+ assert.equal(await page.inputValue('#cBody'),'Never under another persona');assert.equal(await page.evaluate(()=>window.__fakefs.dump().some(f=>f.text?.includes('Never under another persona'))),false);
+ await page.selectOption('#me','human-owner-01');await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Browser signed');await page.fill('#cBody','Exact browser bytes 🐈');await page.click('#send');
  await page.waitForFunction(()=>document.querySelector('#cBody').value==='',null,{timeout:5000}).catch(async e=>{throw Error(await page.locator('#toast').innerText());});const out=h.path.join(tmp,'written');h.fs.mkdirSync(out);const files=await h.dumpFakeFs(page,out),msg=files.find(f=>f.path.endsWith('_exact-browser-bytes.txt'));assert.match(msg.text,/FROM: human-owner-01/);assert.match(msg.text,/SIGNATURE: /);assert.equal(files.filter(f=>f.path.includes('/.signatures/')).length,1);
  const r=spawnSync(python,[h.path.join(canonical,'boardctl.py'),'signing','inspect','--path',out,'--message',msg.path.replace('.agent-board/','')],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(r.stdout).signature,'valid');assert.equal(JSON.parse(r.stdout).eligibility,'eligible');
  await page.evaluate(async msg=>{await window.__fakefs.addFile(msg.path,msg.text.replace('Exact browser bytes','Tampered browser bytes'));await readFromHandle(true);},msg);

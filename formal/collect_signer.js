@@ -64,7 +64,8 @@ async function scenario(kind,mutation=''){
   assert.equal([...deliverySource.matchAll(checks)].length,2,'mutate exactly the two signed delivery guard checks');
   deliverySource=deliverySource.replace(checks,'C.require(true, "Posting context changed; draft preserved");');
  }
- vm.runInContext(deliverySource+';globalThis.traceProvider=signingProvider;',sandbox);
+ // Delivery derives its send decision from the production composer status function.
+ vm.runInContext(fs.readFileSync(path.join(root,'scripts/signing-help.js'),'utf8')+'\n'+deliverySource+';globalThis.traceProvider=signingProvider;',sandbox);
  provider=sandbox.traceProvider;
  let context=g.context();await provider.unlock(C.canonical(existing.key.jwk),context);
  s={catalog:set(['existing']),invalidations:set([]),unlockEpoch:0,unlockPc:'start',proved:set([]),signEpoch:0,signPc:'start',returned:false,badReturn:false,publishPc:'start',deliveryEpoch:0,board:0,head:0,reviewedBoard:0,reviewedHead:0,draft:0,buffer:0,authorized:false,badAuthorization:false,published:false,completed:false};states=[clone(s)];recording=true;
@@ -115,8 +116,10 @@ async function scenario(kind,mutation=''){
  Object.assign(sandbox,{B:model,baseHandle:null,dirHandle:initialDir,composerStructured:null,document:{querySelectorAll:()=>Object.values(fields)},$:selector=>fields[selector.slice(1)],currentUser:()=>a.snapshot.id,guardRegistered:()=>({kind:'agent',name:'Synthetic'}),window:{confirm:()=>true},slugify:value=>value,threadsOf:()=>({thread:{tid:'T001',label:'trace'}}),structuredComposerPayload:()=>({}),replyTo:null,
   parseHeaders:text=>({native:{h:Object.fromEntries(text.split('\n').filter(l=>l.includes(': ')).map(l=>[l.slice(0,l.indexOf(': ')),l.slice(l.indexOf(': ')+2)]))}}),
   composeMessage:o=>({relPath:'rooms/general/2026-10-22_1200_alpha-agent_T001_trace.txt',text:`FROM: ${o.sender}\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-trace\nDATE: 2026-10-22 12:00\nREPLY-TO: -\nSTATUS: INFO\n---\n${o.body}\n`}),
-  guardWritePath:()=>{},guardNoOverwrite:async()=>{},boardErr:message=>Error(message),t:(k,v)=>v?.m||k,exText:x=>x,toast:()=>{},clearStructuredAttachment:()=>{},clearReply:()=>{},syncLang:()=>{}});
- vm.runInContext(`signingMode='signed';signingAs=${JSON.stringify(a.snapshot.id)};`,sandbox);
+  canWrite:()=>true,guardWritePath:()=>{},guardNoOverwrite:async()=>{},boardErr:message=>Error(message),t:(k,v)=>v?.m||k,exText:x=>x,toast:()=>{},clearStructuredAttachment:()=>{},clearReply:()=>{},syncLang:()=>{},
+  // SPEC-002-063 host hooks: no room/topic creation option is ticked in these traces.
+  historyCreationDeclare:async()=>null,historyCreationFailure:message=>message,historyCreationReset:()=>{},historyPostedNote:()=>{}});
+ vm.runInContext(`signingMode='signed';`,sandbox);
  let html=fs.readFileSync(path.join(root,'board.html'),'utf8');
  const writer=html.slice(html.indexOf('async function writeNewFileImpl('),html.indexOf('/* ===== reading ===== */'));
  let send=html.slice(html.indexOf('async function sendImpl(){'),html.indexOf('/* ===== search ===== */'));
