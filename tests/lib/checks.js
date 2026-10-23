@@ -105,6 +105,7 @@ async function checkAgentConfirmation(browser, html) {
   if (core !== "e_agent_unconfirmed") problems.push("agent sender not refused by the confirmation guard: " + core);
   // UI: choosing an agent and posting must raise a confirmation; dismissing must not write
   await a.page.selectOption("#me", "research-agent-01");
+  await h.openView(a.page, "room:product|T003");
   await a.page.fill("#cBody", "agent post attempt");
   const before = (await a.page.evaluate(() => window.__fakefs.dump())).length;
   await a.page.click("#send");

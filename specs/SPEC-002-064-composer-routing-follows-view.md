@@ -128,3 +128,40 @@ Grep `cWhere|cThread|cNewThread|cTo\b|cToSearch|cNewRoom|composerRouteSummary|ne
 Consumers to rewire to `composerTarget()`: `scripts/composer-options.js`, `scripts/signing-ui.js:11-18`, `scripts/room-history-ui.js:514-531`, `scripts/notifications.js:69`, `sendImpl`/`startReply`/`fillComposer`/`fillThreads` in board.html, plus the board.html copies.
 
 New tests: view→target matrix (AC1-4); draft pin with whitespace and voice; DM pair incl. persona outside it and legacy; multi-ID TO; 390px; AC16 mutation.
+
+## Implementation notes
+
+Implemented 2026-10-23 on `feat/composer-routing` (viewer 3.3.1 candidate).
+
+- **Where the code lives.** `composerTarget()`, `setComposerTarget()`, the view-follow
+  rule with the draft pin, the chip, the popover and "Message a participant" are in
+  `scripts/composer-options.js` (bundled by `embed_tools.js`). `fillComposer` now only
+  rebuilds options in place; `fillThreads` no longer falls back to the newest thread.
+  `startReply` goes through `setComposerTarget`.
+- **Consumers.** `room-history-ui.js` (`historyCreationMode`, `historyComposerScope`) read
+  through `composerTarget()`. Deviation: `signingDestinationPath()` in `signing-ui.js` and
+  the voice draft stamp in `voice-ui.js` still read the hidden selects directly. Both files
+  are whole-file formal anchors loaded by the signing collectors, and because only
+  `setComposerTarget()` and the Advanced fields write the selects, their readings are
+  unchanged. `notificationHasDraft()` reads draft fields, not the destination, and is unchanged.
+- **Send guard and re-follow** live in `composerSend()` (the Send button and Ctrl/⌘+Enter),
+  not in `sendImpl`, so the formally anchored `host-composer` section is unchanged.
+- **Deviation: All messages after a send.** The composer re-follows the view after a
+  successful send, except when the view has no implicit destination (All messages, search).
+  There it keeps the destination just used instead of resetting to "Choose where to post".
+  The same applies to the post-send history note from SPEC-002-063, which stays anchored.
+- **Deviation: first direct message.** After the first message to a new pair the board opens
+  that conversation (as "Message a participant" does for an existing pair), so the composer
+  follows its new topic.
+- **Deviation: no destination and a draft.** If the composer has no destination yet (All
+  messages) a draft does not pin "nowhere": navigating adopts the view's destination.
+- **Advanced routing.** Where/Thread/To sit in `#composerAdvanced` inside Message options and
+  remember their fold (`S.composerAdvancedOpen`), like Message options. An explicit Advanced
+  "Where" change keeps the old newest-topic default; AC2 applies to the room *view*.
+  `#cNewThread` and `#cNewRoom` moved out of the options panel to the inline name row under the
+  chip (same IDs); `#historyCreate` is appended to that row.
+- **Notification jumps** keep `preserveComposer: true`: they never retarget, with or without a
+  draft (unchanged from before).
+- **No destination and signing.** The signing status row stays visible without a destination
+  and reflects the board-level minimum, so unlocking from the composer still works there.
+- **TO comma sets** are written with the existing `composeMessage` separator (`a, b`).

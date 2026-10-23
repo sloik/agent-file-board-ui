@@ -204,6 +204,14 @@ async function openToolbarTool(page,id) {
 async function expandComposer(page) {
   if(await page.locator('#composerOptions').count() && !await page.locator('#composerOptions').evaluate(el=>el.open))
     await page.locator('#composerOptions > summary').click();
+  // SPEC-002-064: Where/Thread/To live under Options -> Advanced routing with unchanged IDs.
+  if(await page.locator('#composerAdvanced').count() && !await page.locator('#composerAdvanced').evaluate(el=>el.open))
+    await page.locator('#composerAdvanced > summary').click();
+}
+// Opens a view in the sidebar so the composer follows it (thread key, or room/direct folder name).
+async function openView(page, target) {
+  if(target.includes('|')) await page.locator(`.tcard[data-tk="${target}"]`).click();
+  else await page.locator(`.fname[data-dir="${target}"]`).click();
 }
 function boardctl(args) {
   // Isolated Python omits the script directory; admit only the pinned CLI's
@@ -254,4 +262,4 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
 }
 
 module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
-  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, expandComposer, openToolbarTool, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };
+  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, expandComposer, expandAdvanced: expandComposer, openView, openToolbarTool, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };

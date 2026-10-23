@@ -99,6 +99,7 @@ test("AC3: legacy dialect fixture opens read-only with mapping and time correcti
   // closed thread (ZAMKNIETY) is grouped
   assert.match(await page.textContent("#tree"), /closed \(1\)/i);
   // read-only: posting downloads a legacy-format file and never touches a folder
+  await h.openView(page, "room:00_ogolne|T001");
   await page.fill("#cBody", "Odpowiedź testowa");
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#send")]);
   const saved = h.path.join(h.tmpDir(), dl.suggestedFilename()); await dl.saveAs(saved);
@@ -115,6 +116,7 @@ test("AC3: writing to a legacy board uses the legacy dialect under pokoje/ and n
   await page.clock.pauseAt(new Date("2026-03-04T09:00:05Z"));
   await h.openBoardViaUi(page);await h.expandComposer(page);
   await page.selectOption("#me", "ada");
+  await h.openView(page, "room:00_ogolne|T001");
   await page.selectOption("#cStatus", "DECISION-NEEDED");
   await page.fill("#cBody", "Decyzja potrzebna w sprawie lata");
   await page.click("#send");

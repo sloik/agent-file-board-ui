@@ -87,6 +87,7 @@ test("AC12 MAJOR.MINOR mismatch warns but never blocks (reading and posting stil
   assert.equal(await page.isVisible("#verwarn"), true);
   assert.match(await page.textContent("#verwarn"), /v3\.3\.0.*v1\.3\.0/);
   assert.equal((await h.feedOrder(page)).length, 10);
+  await h.openView(page, "room:product|T003");
   await page.fill("#cBody", "Still can post");
   await page.click("#send");
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /Still-can-post|still-can-post/.test(f.path)));

@@ -513,9 +513,10 @@ const historyError = (message) => Object.assign(new Error(message), { name: "Boa
 // "room" for a new room, "thread" for a new topic, null otherwise; only where the options can be honored.
 function historyCreationMode() {
   if (!B || B.layout.dialect !== "native" || !canWrite() || !B.signingContext?.boardId) return null;
-  const where = $("#cWhere")?.value || "";
-  if (!where.startsWith("direct:") && where !== "newdirect" && slugify($("#cNewRoom")?.value || "")) return "room";
-  return $("#cThread") && !$("#cThread").value ? "thread" : null;
+  const target = composerTarget();
+  if (!target.scope) return null; // no destination chosen yet (SPEC-002-064)
+  if (target.scope === "room" && target.newRoom) return "room";
+  return target.thread ? null : "thread";
 }
 function historyCreationChoice() {
   const mode = historyCreationMode(), box = document.getElementById("historyCreate");
@@ -526,10 +527,8 @@ function historyCreationChoice() {
 // The composer signing status treats a ticked requirement as required at once (AC3).
 const historyCreationRequires = () => !!historyCreationChoice()?.require;
 function historyComposerScope() {
-  const where = $("#cWhere")?.value || "", L = B.layout, room = slugify($("#cNewRoom")?.value || "");
-  if (where === "newdirect") return L.directDir + "/" + [currentUser(), $("#cTo")?.value].sort().join("--");
-  if (where.startsWith("direct:")) return L.directDir + "/" + where.slice(7);
-  return L.roomsDir + "/" + (room || where.slice(5));
+  const target = composerTarget(), L = B.layout;
+  return (target.scope === "direct" || target.scope === "newdirect" ? L.directDir : L.roomsDir) + "/" + (target.dir || "");
 }
 let historyPosted = null;
 const historyComposerAnchor = () => { try { return historyComposerScope() + "|" + signingDestinationPath().thread; } catch { return ""; } };
@@ -732,7 +731,9 @@ function wireRoomHistory() {
   create.className = "history-create";
   create.hidden = true;
   create.innerHTML = '<strong class="history-create-title"></strong><label data-history-option="require"><input type="checkbox" id="cRequireTrusted"> <span></span></label><label data-history-option="record"><input type="checkbox" id="cRecordHistory"> <span></span></label><span class="history-create-note"></span>';
-  $("#cNewRoom").after(create);
+  // The options sit right below the inline room/topic name inputs (SPEC-002-064).
+  const fields = document.getElementById("composerTargetFields");
+  if (fields) fields.append(create); else $("#cNewRoom").after(create);
   for (const input of create.querySelectorAll("input")) input.addEventListener("change", () => updateSigningNotice());
   const note = document.createElement("div");
   note.id = "historyComposerNote";

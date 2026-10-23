@@ -34,7 +34,7 @@
 #historySettingsDialog [data-action="apply"]{margin-top:8px}
 .history-create{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0}
 .history-create[hidden],.history-create[hidden] input{display:none}
-#composerOptions .ctx .history-create label[data-history-option]{display:inline-flex;grid-template-columns:none;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0;max-width:100%}
+.history-create label[data-history-option]{display:inline-flex;grid-template-columns:none;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0;max-width:100%}
 .history-create-note{flex-basis:100%;color:var(--muted);font-size:.85em;overflow-wrap:anywhere}
 .history-composer-note{overflow-wrap:anywhere}
 .history-composer-note[hidden]{display:none}

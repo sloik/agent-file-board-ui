@@ -124,7 +124,9 @@ test('AC1: a malformed room_history never breaks the board and is reported in th
 test('AC3/AC4: a new room declared from the composer writes the CLI policy before the first signed message; existing rooms are refused',async t=>{
   const f=await boot(t),{page,owner}=f;
   await page.selectOption('#me',owner.participant);await approve(page,owner);
-  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Launch plan');await page.fill('#cNewRoom','launch');
+  // SPEC-002-064: the chip's "New room…" shows the room and topic name inputs with these options below them.
+  await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'New room…'}).click();
+  await expect(page.locator('#cNewRoom')).toBeFocused();await page.fill('#cNewRoom','launch');await page.fill('#cNewThread','Launch plan');
   const box=page.locator('#historyCreate');
   await expect(box).toBeVisible();await expect(box).toContainText('New room settings');
   await expect(page.locator('#cRequireTrusted')).not.toBeChecked();await expect(page.locator('#cRecordHistory')).not.toBeChecked();
@@ -292,8 +294,8 @@ test('AC3/AC5: Polish at phone width keeps the composer options and the room set
   await page.selectOption('#me',owner.participant);await approve(page,owner);
   await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#sClose');
   await page.setViewportSize({width:375,height:800});
-  await page.evaluate(()=>{document.querySelector('#composerOptions').open=true;});
-  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Start');await page.fill('#cNewRoom','start');
+  await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'Nowy pokój…'}).click();
+  await page.fill('#cNewRoom','start');await page.fill('#cNewThread','Start');
   const box=page.locator('#historyCreate');
   await expect(box).toContainText('Ustawienia nowego pokoju');
   await expect(box).toContainText('Wymagaj zaufanych podpisów');await expect(box).toContainText('Automatycznie zapisuj historię pokoju');

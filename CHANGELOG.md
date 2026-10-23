@@ -1,5 +1,24 @@
 # Release notes
 
+## Unreleased (target viewer 3.3.1)
+
+- **Composer routing follows the view (SPEC-002-064):** the Where/Thread/To toolbar is
+  replaced by a destination chip above the draft. A topic view posts to that topic, a
+  room view starts a new topic there (a topic name is required; the newest topic is no
+  longer picked silently), a direct conversation continues its most recent topic, and
+  All messages has no destination until you pick one or reply. **Change** searches
+  rooms, topics and conversations and offers New topic here, New room, Message a
+  participant and Advanced (the original fields, same IDs). A draft (including
+  whitespace, a topic or room name, a reply, an attachment or voice capture) keeps its
+  destination when you navigate; an amber banner offers Post here instead or Keep.
+- **Message a participant:** from the chip, the **+** on Direct conversations or
+  Tools → Participants. An existing pair opens; a new pair asks for a topic (pre-filled
+  from the draft) and appears in the sidebar after its first file is written. Native
+  boards only. Room recipients default to all and accept several participants.
+- Closed topics warn and offer a new topic; a persona outside the viewed direct
+  conversation cannot send and is offered a switch. Phone: one-line chip and a bottom
+  sheet. English and Polish.
+
 ## 3.3.0 — 2026-10-23
 
 Pairs with canonical 3.3.0 (pinned). Composer signing status and unlocking keys from the

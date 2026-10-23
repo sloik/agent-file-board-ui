@@ -125,6 +125,7 @@ test("AC4: unregistered sender is refused in the UI (empty registry) and nothing
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(proj) });
   await h.openBoardViaUi(page);await h.expandComposer(page);
   const before = (await page.evaluate(() => window.__fakefs.dump())).length;
+  await page.selectOption("#cWhere", "room:product");
   await page.fill("#cBody", "I am nobody");
   await page.click("#send");
   await page.waitForSelector(".toast.show");
@@ -168,7 +169,7 @@ test("AC4: a message that would collide gets a numeric slug suffix and is never 
   await ctx.close();
 });
 test('file creation is not write completion; commit waits and preserves edits made during close',async()=>{
- const {page,ctx}=await boot();await page.fill('#cBody','Delayed commit');
+ const {page,ctx}=await boot();await page.selectOption('#cWhere','room:product');await page.fill('#cBody','Delayed commit');
  await page.evaluate(async()=>{const proto=Object.getPrototypeOf(await baseHandle.getFileHandle('config.json')),original=proto.createWritable;proto.createWritable=async function(...args){const writer=await original.apply(this,args);if(this.name.endsWith('_delayed-commit.txt')){const close=writer.close;writer.close=async()=>{window.__commitWaiting=true;await new Promise(resolve=>window.__releaseCommit=resolve);await close();};}return writer;};});
  await page.click('#send');await page.waitForFunction(()=>window.__commitWaiting);
  assert.equal(await page.evaluate(()=>window.__fakefs.dump().find(f=>f.path.endsWith('_delayed-commit.txt')).text),'');
