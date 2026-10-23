@@ -165,3 +165,17 @@ Implemented 2026-10-23 on `feat/composer-routing` (viewer 3.3.1 candidate).
 - **No destination and signing.** The signing status row stays visible without a destination
   and reflects the board-level minimum, so unlocking from the composer still works there.
 - **TO comma sets** are written with the existing `composeMessage` separator (`a, b`).
+- **Test plan deviations.** The `improvements.test.js` search-completion tests still drive the
+  Advanced Where/Thread/To searches (unchanged IDs); the chip popover search is covered by the new
+  `tests/composer-routing.test.js` keyboard test. `mention-colors.test.js` keeps its `#cToSearch`
+  check and adds the same identity-color check for the chip's recipient picker. Pinned
+  `signing-scenarios`, `signing-journeys` and `signing-help` needed no edits: the shared
+  `expandComposer` helper now also opens Advanced routing.
+- **AC16 evidence (2026-10-23).** Removing the guard line
+  `if(composerHasDraft()&&now.scope){composerPin=want;return composerTargetRender();}` from
+  `composerFollowView` makes "a draft pins the destination…" fail with
+  `AssertionError: navigation with a draft keeps the destination`; restoring it passes.
+- `scripts/screenshot_features.js` now opens Message options with `#composerOptions > summary`
+  (the nested Advanced summary made the old selector ambiguous). Its later extensions step
+  times out with or without this change (checked against 3.3.0); only the three composer images
+  were regenerated.

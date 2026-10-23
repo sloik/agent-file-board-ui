@@ -92,7 +92,7 @@ function composerTargetRender(){
  const full=[chip.querySelector('.composer-chip-lead').textContent,text.where,text.topic].filter(Boolean).join(' ');
  if(chip.title!==full)chip.title=full;chip.setAttribute('aria-label',full+' — '+exText('Change','Zmień'));
  const to=$('#composerTo');to.hidden=target.scope!=='room';set(to,composerToText(target.to));to.title=to.textContent;
- const advanced=$('#composerAdvanced')?.open;
+ const advanced=$('#composerOptions')?.open&&$('#composerAdvanced')?.open;
  $('#cNewRoom').hidden=!B||target.scope==='direct'||target.scope==='newdirect'||!(composerNewRoomMode||$('#cNewRoom').value||advanced);
  $('#cNewThread').hidden=!B||!target.scope||!!target.thread;
  if(composerPin&&(!B||sameComposerTarget(composerPin,target)))composerPin=null;

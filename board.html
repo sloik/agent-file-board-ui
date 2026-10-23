@@ -329,6 +329,7 @@ mark{background:var(--mark);color:inherit;border-radius:3px}
 .composer-target-list button{display:flex;align-items:center;gap:6px;width:100%;min-height:32px;padding:4px 8px;text-align:left;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .composer-target-list button>span{overflow:hidden;text-overflow:ellipsis}
 .composer-target-list button.sel,.composer-target-list button:hover{background:var(--panel2)}
+.composer-target-list button[data-party]{color:var(--c)}
 .composer-target-list button[aria-selected="true"]::before{content:"\2713";color:var(--accent)}
 @media(max-width:600px){.composer-target-menu{left:0!important;right:0;bottom:0!important;top:auto!important;width:auto;max-height:70vh;border-radius:12px 12px 0 0;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}.composer-target-list button{min-height:44px}.composer-chip-to{max-width:34%}}
 .composer .inner{display:flex;flex-direction:column;gap:8px;height:100%}
@@ -6180,7 +6181,7 @@ function composerTargetRender(){
  const full=[chip.querySelector('.composer-chip-lead').textContent,text.where,text.topic].filter(Boolean).join(' ');
  if(chip.title!==full)chip.title=full;chip.setAttribute('aria-label',full+' — '+exText('Change','Zmień'));
  const to=$('#composerTo');to.hidden=target.scope!=='room';set(to,composerToText(target.to));to.title=to.textContent;
- const advanced=$('#composerAdvanced')?.open;
+ const advanced=$('#composerOptions')?.open&&$('#composerAdvanced')?.open;
  $('#cNewRoom').hidden=!B||target.scope==='direct'||target.scope==='newdirect'||!(composerNewRoomMode||$('#cNewRoom').value||advanced);
  $('#cNewThread').hidden=!B||!target.scope||!!target.thread;
  if(composerPin&&(!B||sameComposerTarget(composerPin,target)))composerPin=null;

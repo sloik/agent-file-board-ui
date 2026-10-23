@@ -190,9 +190,9 @@ automatically, and GitHub CLI is optional.
 
 ## Compact composer and quiet lifecycle (UI2.9)
 
-Secondary toolbar actions are under **Tools**. Message options starts collapsed: destination/status, body, reply/attachment and
-Send stay visible. Expand to change routing or format; collapse/refresh retains
-your choices and draft. Settings can show historical session notices or opt into
+Secondary toolbar actions are under **Tools**. Message options starts collapsed: the destination chip, status, body, reply/attachment and
+Send stay visible. The chip follows the topic or room you are viewing; use **Change** to post elsewhere. Expand options to change format
+or language; collapse/refresh retains your choices and draft. Settings can show historical session notices or opt into
 browser arrival/goodbye announcements. Presence leases still work independently.
 See the bundled `docs/COMPOSER.md`. The package also includes the canonical
 `skills/board-loop/` and `docs/BOARD-LOOP.md` for adaptive8h observation; it requires
