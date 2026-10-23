@@ -40,7 +40,18 @@ const messageDir=f=>h.path.join(f.proj,'.agent-board',SCOPE);
 const messages=f=>h.fs.readdirSync(messageDir(f)).filter(name=>name.endsWith('.txt')).sort();
 async function openPanel(page){await indicator(page).click();await expect(page.locator('#historyDialog')).toBeVisible();}
 async function closePanel(page){await page.locator('#historyDialog [data-action="close"]').click();await expect(page.locator('#historyDialog')).not.toBeVisible();}
-async function panelRows(page){return normalized(JSON.parse(await page.locator('#historyDialog [data-history-json]').textContent()));}
+async function panelFacts(page){return JSON.parse(await page.locator('#historyDialog [data-history-json]').textContent());}
+async function panelRows(page){return normalized((await panelFacts(page)).entries);}
+// Scope-level facts both clients must agree on (interoperability, design section 7).
+function scopeFacts(scope){
+  const inventories=Object.fromEntries(Object.entries(scope.inventories).map(([k,v])=>[k,Array.isArray(v)?v.length:v]));
+  return {setUp:scope.setUp,bootstrap:scope.bootstrap,diagnostics:[...scope.diagnostics].sort(),needsAttention:scope.needsAttention,summary:scope.summary,coverage:scope.coverage,uncoveredPaths:scope.uncoveredPaths,windowComplete:scope.windowComplete,inventories};
+}
+async function assertAgrees(page,f,label){
+  const {entries,...facts}=await panelFacts(page),cli=cliStatus(f).scopes[SCOPE];
+  assert.deepEqual(facts,scopeFacts(cli),label+': scope facts');
+  assert.deepEqual(normalized(entries),normalized(cli.entries),label+': entries');
+}
 async function panelText(page){return page.locator('#historyDialog').evaluate(el=>el.textContent);}
 async function approve(f,who=f.owner){await openSigning(f.page);await trust(f.page,who);await closeSigning(f.page);}
 async function kv(page){
@@ -66,6 +77,7 @@ test('AC3/AC4/AC5: untrusted recording creates nothing, approval learns, memory 
   await expect(page.locator('#historyDialog')).toContainText('Not set up: no observations yet');
   await expect(page.locator('#historyDialog [data-history-inventory="unpinned-signer"]')).toContainText('Recordings from signers you have not approved (not used): 1');
   await expect(page.locator('#historyDialog .history-command')).toContainText(`boardctl history observe --scope ${SCOPE} --from YOUR-PARTICIPANT-ID`);
+  await assertAgrees(page,f,'before approval (neither client trusts the signer)');
   await closePanel(page);
   await approve(f);
   await expect(indicator(page)).toContainText('4 of 4 available');
@@ -93,7 +105,7 @@ test('AC3/AC4/AC5: untrusted recording creates nothing, approval learns, memory 
   await expect(row).toContainText('Not found here since');await expect(row).toContainText('it may still be syncing');
   const text=await panelText(page);
   assert.doesNotMatch(text,/deleted|usunię|usunie|skasow|🔒|🔓/i,'wording never accuses and shows no padlock');
-  assert.deepEqual(await panelRows(page),normalized(cliStatus(f).scopes[SCOPE].entries),'browser and canonical CLI agree on every observed state, source and attention flag');
+  await assertAgrees(page,f,'after removal');
   await closePanel(page);
   // Display only: the viewer wrote nothing, asked nothing of the network and left eligibility alone.
   assert.deepEqual(await opfsPaths(page),treePaths(f),'the board folder is exactly what the CLI left');
@@ -114,7 +126,7 @@ test('AC4: a changed message is a short warning, conflicting records are not hid
   const row=page.locator('#historyDialog [data-history-observed="changed"]');
   await expect(row).toHaveAttribute('data-history-tier','warning');await expect(row).toContainText('Changed since it was recorded');
   assert.doesNotMatch(await panelText(page),/tamper|forged|deleted/i);
-  assert.deepEqual(await panelRows(page),normalized(cliStatus(f).scopes[SCOPE].entries));
+  await assertAgrees(page,f,'agreement with the canonical CLI');
   assert.equal(cliStatus(f).scopes[SCOPE].needsAttention,1);
   await closePanel(page);
 });
@@ -133,7 +145,7 @@ test('AC1/AC4: a compromise revocation keeps a missing message visible and needi
   const row=page.locator('#historyDialog [data-history-observed="message-unavailable"]');
   await expect(row).toHaveAttribute('data-history-source','revoked');
   await expect(row).toContainText('recorded by a signer you no longer trust');
-  assert.deepEqual(await panelRows(page),normalized(cliStatus(f).scopes[SCOPE].entries));
+  await assertAgrees(page,f,'agreement with the canonical CLI');
   await closePanel(page);
 });
 
@@ -171,9 +183,34 @@ test('AC3/AC5: a read-only upload keeps its memory for the session only and writ
   assert.equal(await page.evaluate(()=>B.signingKey),null);
   assert.deepEqual(Object.keys(await kv(page)).filter(key=>/history-state|signing-state/.test(key)),[],'nothing about this upload is persisted');
   await openPanel(page);await expect(page.locator('#historyDialog')).toContainText('Remembered only until this page is closed');await closePanel(page);
-  // The same folder opened again in this session keeps the session memory; a different board UUID would be refused.
-  await page.setInputFiles('#fallback',f.proj);await page.waitForFunction(()=>B?.history);
+  // The same board opened again in this session keeps the session memory even after its shared recording and another message are gone.
+  h.fs.rmSync(h.path.join(f.proj,'.agent-board/history'),{recursive:true});h.fs.rmSync(h.path.join(messageDir(f),messages(f)[0]));
+  await page.setInputFiles('#fallback',f.proj);await page.waitForFunction(scope=>B?.history?.report?.scopes?.[scope]?.coverage.expected===4,SCOPE);await room(page);
+  await expect(indicator(page)).toContainText('2 of 4 available · 2 not found here');
+  await openPanel(page);
+  await expect(page.locator('#historyDialog [data-history-observed="message-unavailable"]').first()).toHaveAttribute('data-history-source','unpinned');
+  await expect(page.locator('#historyDialog')).toContainText('recorded by a signer you no longer trust');
+  await closePanel(page);
+  assert.deepEqual(Object.keys(await kv(page)).filter(key=>/history-state|signing-state/.test(key)),[]);
   assert.deepEqual(requests.filter(u=>!u.startsWith(url)),[]);assert.deepEqual(errors,[]);
+});
+
+test('AC3/AC4: a flood of recordings leaves remembered coverage intact and reports observations not yet checked, like the CLI',async t=>{
+  const f=await boot(t),{page,owner}=f;
+  cliTrust(f,owner);observe(f);await refresh(f);await room(page);await approve(f);
+  await expect(indicator(page)).toContainText('4 of 4 available');
+  assert.equal(cliStatus(f).scopes[SCOPE].coverage.available,4);
+  const folder=h.path.join(f.proj,'.agent-board/history',SCOPE);
+  for(let i=0;i<205;i++){const raw=Buffer.from('junk '+i);h.fs.writeFileSync(h.path.join(folder,require('node:crypto').createHash('sha256').update(raw).digest('hex')+'.json'),raw);}
+  await refresh(f);
+  await expect(indicator(page)).toContainText('4 of 4 available · 5 observations not yet checked');
+  assert.equal(await indicator(page).getAttribute('data-tier'),'neutral');
+  await openPanel(page);
+  await expect(page.locator('#historyDialog')).toContainText('5 observations not yet checked');
+  await assertAgrees(page,f,'incomplete window');
+  await closePanel(page);
+  await refresh(f);await expect(indicator(page)).toContainText('4 of 4 available');
+  await expect(indicator(page)).not.toContainText('not yet checked');
 });
 
 test('AC4: Polish, phone width and every theme keep the panel readable with keyboard focus returning to the indicator',async t=>{

@@ -32,7 +32,7 @@ async function historyDigest(file, limit, key) {
 }
 const historyMessageName = /^[A-Za-z0-9_.-]+\.txt$/;
 
-function historyNativeHost(base, directDir, location) {
+function historyNativeHost(base, directDir, location, messagePaths) {
   const names = async (path) => {
     try {
       let dir = base;
@@ -58,7 +58,8 @@ function historyNativeHost(base, directDir, location) {
       const file = await historyOpenFile(base, "history/" + scope + "/" + name);
       return file && file.size <= limit ? rawBytes(file) : null;
     },
-    listMessages: async (scope) => ((await names(scope)) || []).filter(([name, kind]) => kind === "file" && historyMessageName.test(name)).map(([name]) => name),
+    // The reader already indexed every message file; do not list large folders again.
+    listMessages: async (scope) => [...messagePaths()].filter((path) => path.startsWith(scope + "/") && !path.slice(scope.length + 1).includes("/") && historyMessageName.test(path.slice(scope.length + 1))).map((path) => path.slice(scope.length + 1)),
     readCurrent: async (path) => {
       try {
         const file = await historyOpenFile(base, path);
@@ -145,8 +146,8 @@ async function prepareHistoryChecked(model, files, base) {
   const context = model.signingContext;
   if (!context?.boardId) return;
   const location = base ? boardStorageId : "upload-session", key = base && !location.startsWith("session-") ? "history-state:" + location : null;
-  const sessionKey = base ? "native:" + location : "upload:" + model.name;
-  const host = base ? historyNativeHost(base, model.layout.directDir, location) : historyUploadHost(files);
+  const sessionKey = base ? "native:" + location : "upload:" + model.name + ":" + context.boardId;
+  const host = base ? historyNativeHost(base, model.layout.directDir, location, () => messageFiles.keys()) : historyUploadHost(files);
   const run = () => historySerialize(async () => {
     const view = { status: "ready", reason: "", report: null, stamp: "", saveError: "", persistent: !!key };
     try {
@@ -347,7 +348,10 @@ function historyDialog() {
     const technical = node("details", "", body, "history-more");
     technical.id = "historyTechnical";
     node("summary", text("Technical details", "Szczegóły techniczne"), technical);
-    const pre = node("pre", JSON.stringify((report?.entries || []).map((r) => ({ path: r.path, observed: r.observed, source: r.source, needsAttention: r.needsAttention, neutral: r.neutral })), null, 1), technical);
+    const facts = report && { setUp: report.setUp, bootstrap: report.bootstrap, diagnostics: report.diagnostics, needsAttention: report.needsAttention, summary: report.summary, coverage: report.coverage,
+      uncoveredPaths: report.uncoveredPaths, windowComplete: report.windowComplete, inventories: Object.fromEntries(Object.entries(report.inventories).map(([k, v]) => [k, Array.isArray(v) ? v.length : v])),
+      entries: report.entries.map((r) => ({ path: r.path, observed: r.observed, source: r.source, needsAttention: r.needsAttention, neutral: r.neutral })) };
+    const pre = node("pre", JSON.stringify(facts ?? null, null, 1), technical);
     pre.dataset.historyJson = "";
     for (const id of open) { const d = body.querySelector("#" + id); if (d) d.open = true; }
     dialog.scrollTop = scroll;
