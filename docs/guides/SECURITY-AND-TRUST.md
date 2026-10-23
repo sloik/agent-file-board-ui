@@ -136,6 +136,11 @@ browser key handles reduce some accidental exposure; they do not defeat maliciou
 code running in a compromised device or viewer. Keep private key files outside
 shared boards and repositories, and protect backups and host access.
 
+The viewer signs only as the persona selected in **I am** at the moment of sending.
+Unlocking someone else’s key file does not make it your signer: the composer names
+whose key it is and waits for you to switch persona deliberately. Lock keys
+(**🔒 Lock key** next to **Send**) when you step away from a shared device.
+
 The runtime has explicit rotation and retirement/compromise records. Review
 affected decisions, preserve the relevant evidence, and independently approve a
 replacement key. Rotation needs the required transition evidence; losing a key does

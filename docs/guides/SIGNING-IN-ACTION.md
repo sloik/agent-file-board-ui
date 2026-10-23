@@ -25,9 +25,11 @@ That capture illustrates the controls using a fictional sample participant. It i
 not a claim that the downloadable demo contains signed Maya/Sam messages. The
 rehearsal below creates fresh signatures you can inspect yourself.
 
-In the viewer, open **Tools → Signing** to review a participant key or unlock your
-own key. Once you explicitly choose who to sign as, the normal **Send** action
-signs outgoing messages automatically in that tab. See the [illustrated signing
+In the viewer, open **Tools → Signing** to review a participant key, or unlock your
+own key with the 🔒 button next to **Send**. Messages are signed as the persona
+selected in **I am**; once that persona’s key is unlocked, the normal **Send**
+action signs outgoing messages automatically in that tab, and the composer shows
+🔏 before you send. See the [illustrated signing
 walkthrough](signing.md) for key setup prerequisites, approval, locking and the
 meaning of each badge.
 

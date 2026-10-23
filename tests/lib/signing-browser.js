@@ -57,12 +57,15 @@ async function closeSigning(page) {
   await page.locator('#signingDialog [data-action="close"]').click();
   await expect(page.locator('#signingDialog')).not.toBeVisible();
 }
+// The signer is the persona in "I am" (SPEC-002-061): step 1 chooses it, step 2 the key file, step 3 unlocks.
 async function unlock(page,identity) {
-  await openSigning(page);await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles(identity.key);
+  await openSigning(page);
+  await page.getByLabel('Persona to sign as',{exact:true}).selectOption(identity.participant);
+  await expect(page.locator('#me')).toHaveValue(identity.participant);
+  await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles(identity.key);
   await action(page,'Unlock selected keys');
-  await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');
-  await page.getByLabel('Signing identity',{exact:true}).selectOption(identity.participant);
-  await expect(page.locator('#signing-own')).toContainText(identity.participant);
+  await expect(page.locator('#signing-own .signing-feedback')).toContainText('Unlocked. New messages are signed as');
+  await expect(page.locator('#signingMode')).toContainText(`(${identity.participant})`);
   await closeSigning(page);
 }
 async function trust(page,identity) {

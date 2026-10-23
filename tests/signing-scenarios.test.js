@@ -45,7 +45,7 @@ function requireSigning(f) {
 }
 async function refresh(f) {await importBoard(f.page,f.proj);await f.page.evaluate(()=>readFromHandle(true));}
 async function postBrowser(f,body='Native browser exact bytes 🐈') {
-  await unlock(f.page,f.owner);await f.page.selectOption('#me',f.peer.participant);
+  await unlock(f.page,f.owner);await expect(f.page.locator('#me')).toHaveValue(f.owner.participant);
   await f.page.selectOption('#cWhere','room:architecture');await f.page.selectOption('#cTo',f.peer.participant);
   await f.page.selectOption('#cThread','');await f.page.fill('#cNewThread','Native signing lifecycle');await f.page.fill('#cBody',body);await f.page.click('#send');
   await expect(f.page.locator('#cBody')).toHaveValue('');await exportBoard(f.page,f.proj);
@@ -88,7 +88,7 @@ test('native browser streams: UI→CLI→UI replies, explicit trust/adoption and
   await page.reload();await h.openBoardViaUi(page);
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);
   assert.equal((await decision(page,reply)).eligibility,'eligible');
-  await openSigning(page);await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);await closeSigning(page);
+  await openSigning(page);await expect(page.locator('#signingMode')).toContainText('Unsigned mode');assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);await closeSigning(page);
 });
 
 test('native lifecycle: dual rotation, new-key trust, compromise and persisted anti-stripping decisions',async t=>{
@@ -102,7 +102,7 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   await openSigning(page);await page.locator('#signingParticipant').selectOption(f.owner.participant);await expect(page.locator(`[data-signing-participant="${f.owner.participant}"]`)).toContainText('Key changed — review needed');await closeSigning(page);
   const thread=h.fs.readFileSync(h.path.join(f.proj,root),'utf8').match(/^THREAD: (T\d+)/m)[1];
   await page.selectOption('#cThread',`room:architecture|${thread}`);
-  await page.fill('#cBody','Old capability cannot publish');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await expect(page.locator('#toast')).toHaveText("human-owner-01's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.");await assertNotPublished(page,'Old capability cannot publish');
+  await page.fill('#cBody','Old capability cannot publish');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await expect(page.locator('#toast')).toHaveText("Rotated owner's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.");await assertNotPublished(page,'Old capability cannot publish');
   const proofArgs=['post','--from',rotated.participant,'--to','all','--scope','room','--room','architecture','--thread',thread,'--slug','rotated-proof','--body','Rotated key proof','--signing-key-file',rotated.key];
   assert.match(f.reject(...proofArgs),/requires a deliberately trusted current signer/);cliTrust(f,rotated);
   const proof=f.cli(...proofArgs);
@@ -110,7 +110,7 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   await openSigning(page);await trust(page,rotated);await closeSigning(page);
   assert.equal((await decision(page,proof)).eligibility,'eligible');assert.equal(inspect(f,proof).eligibility,'eligible');
   // Trust and possession are separate gates: trusting the new key cannot unlock it.
-  await page.click('#send');await expect(page.locator('#toast')).toHaveText("human-owner-01's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.");
+  await page.click('#send');await expect(page.locator('#toast')).toHaveText("Rotated owner's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.");
   await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await assertNotPublished(page,'Old capability cannot publish');
   await unlock(page,rotated);
   f.cli('signing','revoke','--participant',rotated.participant,'--key-file',rotated.key,'--expect-profile',rotated.profile,'--status','compromised');await refresh(f);

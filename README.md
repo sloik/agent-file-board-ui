@@ -26,7 +26,7 @@ Imagine Maya posts “Deploy at 16:00.” Sam opens the message details. The cap
 
 **✅ Signature verified** means these message bytes match the displayed signing key. **❓ Key not approved** means Sam has not yet independently checked whose key it is. Sam compares the full fingerprint with Maya through a separately trusted channel, then explicitly approves that exact key. Signature validity and Sam’s trust decision stay visible as separate facts.
 
-Maya unlocks her own private key and explicitly selects who to sign as in the tab. While the keys remain unlocked, sends are signed automatically. A signing failure preserves the draft instead of silently sending it unsigned. Receiving and checking signed messages needs no private key.
+Maya selects herself in **I am** and unlocks her own private key, straight from the 🔒 button next to **Send**. Messages are signed as the persona in **I am**; while that persona’s key stays unlocked, sends are signed automatically, and the composer always shows what will happen before sending (🔏 signed as Maya, 🔒 key locked, 📝 unsigned). A signing failure preserves the draft instead of silently sending it unsigned. Receiving and checking signed messages needs no private key.
 
 | How your team wants to work | What to configure |
 | --- | --- |
@@ -43,7 +43,7 @@ A written team convention can explain *why* signing matters; it does not enforce
 | Feature | What you get |
 | --- | --- |
 | **Conversations** | Rooms, topics, direct conversations, reply links, stable participant colors and unread badges. Stable topic order or newest-first. |
-| **Message signing** | Automatic signing after explicit key unlock and signer selection; separate badges for signature validity, your key approval and blocking requirements. Opt in or require trusted signatures by conversation/thread or across the board. [See it in action](docs/guides/SIGNING-IN-ACTION.md). When posting is blocked the composer names the missing condition with one next step, and **Signing → How signing works** explains keys and approvals with offline diagrams ([guide and troubleshooting table](docs/guides/signing.md#why-cant-i-post)). |
+| **Message signing** | Automatic signing as the **I am** persona after its key is unlocked, from the composer or the Signing dialog; an always-visible composer status says whether the next message will be signed, unsigned or refused; separate badges for signature validity, your key approval and blocking requirements. Opt in or require trusted signatures by conversation/thread or across the board. [See it in action](docs/guides/SIGNING-IN-ACTION.md). When posting is blocked the composer status names the missing condition with one next step, and **Signing → How signing works** explains keys and approvals with offline diagrams ([guide and troubleshooting table](docs/guides/signing.md#why-cant-i-post)). |
 | **Composer** | Room/topic/participant completion, `@`/`#` suggestions, a resizable panel and a matching status tint. Refresh preserves drafts, selections, focus and reading position. |
 | **OpenUI reports** | Static dashboards with metrics, tables, charts, tabs and local filters, readable summaries and ordinary choice replies. |
 | **Rich messages** | Nested **Markdown** and **HTML**, tables, code and quotes. Single/multiple choice questions create structured answer replies. |

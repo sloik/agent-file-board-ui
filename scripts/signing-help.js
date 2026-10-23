@@ -1,7 +1,7 @@
 // Signing help: one table of "why you cannot post" reasons feeds the composer notice,
 // the in-app "How signing works" diagrams and the committed documentation diagrams.
 // Everything here is pure (state in, text or SVG out) so tests can run it in a vm.
-const SIGNING_BLOCK_ORDER = ["no-board-id", "board-id-changed", "state-conflict", "signing-unavailable", "read-only", "not-registered", "no-key", "key-rotated", "no-signer", "key-revoked", "key-changed", "key-not-approved"];
+const SIGNING_BLOCK_ORDER = ["no-board-id", "board-id-changed", "state-conflict", "signing-unavailable", "read-only", "not-registered", "no-key", "key-rotated", "key-revoked", "key-changed", "key-not-approved"];
 // task: which part of the Signing dialog fixes it. focus: the control to land on.
 function signingBlockInfo(id, vars = {}, text = exText) {
   const s = vars.s || "", who = s ? `${s}` : text("your key", "Twój klucz"), possessive = s ? text(`${s}'s`, `${s} –`) : text("your", "Twój");
@@ -34,7 +34,8 @@ function signingBlockInfo(id, vars = {}, text = exText) {
       label: text("Open the writable folder", "Otwórz folder z zapisem"), task: "folder"
     },
     "not-registered": {
-      message: text(`${rooms}, but ${who} has no signing key registered on this board. Ask the board owner to register your public key.`, `${rooms}, ale ${who} nie ma zarejestrowanego klucza podpisu na tej tablicy. Poproś właściciela tablicy o rejestrację Twojego klucza publicznego.`),
+      message: vars.required === false ? text(`You chose to sign, but ${who} has no signing key registered on this board. Ask the board owner to register your public key.`, `Wybrano podpisywanie, ale ${who} nie ma zarejestrowanego klucza podpisu na tej tablicy. Poproś właściciela tablicy o rejestrację Twojego klucza publicznego.`)
+        : text(`${rooms}, but ${who} has no signing key registered on this board. Ask the board owner to register your public key.`, `${rooms}, ale ${who} nie ma zarejestrowanego klucza podpisu na tej tablicy. Poproś właściciela tablicy o rejestrację Twojego klucza publicznego.`),
       short: text("You have no key registered", "Nie masz zarejestrowanego klucza"),
       label: text("How to get a key", "Jak zdobyć klucz"), task: "howto", anchor: "keys"
     },
@@ -47,11 +48,6 @@ function signingBlockInfo(id, vars = {}, text = exText) {
       message: text(`${possessive} signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.`, `Klucz podpisu ${who} został wymieniony (rotacja), więc klucz odblokowany w tej karcie nie pasuje już do tablicy. Odblokuj nowy klucz prywatny. Wiadomości podpisane starym kluczem pozostają zablokowane w pokojach z wymogiem.`),
       short: text("The key was rotated", "Klucz został wymieniony"),
       label: text("Unlock the new key", "Odblokuj nowy klucz"), task: "own", focus: "#signingKeyFiles"
-    },
-    "no-signer": {
-      message: text("Your keys are unlocked, but you have not chosen who to sign as.", "Klucze są odblokowane, ale nie wybrano, jako kto podpisujesz."),
-      short: text("No signer chosen", "Nie wybrano podpisującego"),
-      label: text("Choose who to sign as", "Wybierz podpisującego"), task: "own", focus: "#signingIdentity"
     },
     "key-revoked": {
       message: text(`${possessive} signing key is revoked or retired and cannot sign new messages. Ask the board owner about a replacement key.`, `Klucz podpisu ${who} jest unieważniony lub wycofany i nie może podpisywać nowych wiadomości. Zapytaj właściciela tablicy o klucz zastępczy.`),
@@ -75,6 +71,8 @@ function signingBlockInfo(id, vars = {}, text = exText) {
 }
 // state: {error, hasContext, writable, required, mode, signer, viewer, catalog:[ids], known:{id:fp},
 // lastSigner, participants:{id:{fingerprint,revoked,unregistered}}, pins:{id:fp}}.
+// The signer is the persona selected in "I am" (SPEC-002-061): `signer` defaults to `viewer`,
+// and another participant's unlocked key never stands in for it.
 // The order mirrors what send, delivery and Provider.sign actually check, except that
 // "unlock" comes before "approve" because that is the order people can act in.
 function signingDiagnose(s) {
@@ -94,9 +92,8 @@ function signingDiagnose(s) {
     if (known[id] && p?.fingerprint && p.fingerprint !== known[id]) return { id: "key-rotated", vars: { s: id } };
     return null;
   };
-  const who = signed ? s.signer : "";
+  const who = signed ? s.signer || s.viewer : "";
   if (!who) {
-    if (signed && catalog.length) return { id: "no-signer" };
     const candidate = s.lastSigner || s.viewer;
     const gone = candidate && lost(candidate);
     if (gone) return gone;
@@ -134,7 +131,7 @@ function signingComposerStatus(s, text = exText) {
     return make("read-only", "🔒", "warn", text("Cannot sign: read-only folder", "Nie można podpisać: folder tylko do odczytu"), b.message, { kind: "open-folder", label: b.label }, unsignedAlt);
   }
   if (!who || p.unregistered || (!p.fingerprint && !catalog.includes(who) && !p.error)) {
-    const b = signingBlockInfo("not-registered", { s: name }, text);
+    const b = signingBlockInfo("not-registered", { s: name, required: !!s.required }, text);
     return make("not-registered", "🔒", "warn", text(`${name || "This persona"} has no signing key`, `${name || "Ta persona"} nie ma klucza podpisu`), b.message, { kind: "howto", anchor: "keys", label: b.label }, unsignedAlt);
   }
   if (p.revoked) {
@@ -272,7 +269,7 @@ function signingDiagrams(text = exText) {
     rows: [
       { head: T("A. Your own key: used to sign", "A. Własny klucz: służy do podpisywania") },
       { text: T("You hold a private key file. It is a secret. Keep it outside the board folder.", "Masz plik klucza prywatnego. To sekret. Trzymaj go poza folderem tablicy."), cls: "sg-secret" },
-      { arrow: T("Unlock it in Signing, in this tab", "Odblokuj w Podpisach, w tej karcie") },
+      { arrow: T("Unlock it next to Send, in this tab", "Odblokuj obok Wyślij, w tej karcie") },
       { text: T("The key is ready in this tab's memory only. Nothing is saved or uploaded.", "Klucz jest gotowy tylko w pamięci tej karty. Nic nie jest zapisywane ani wysyłane.") },
       { arrow: T("You press Post", "Wysyłasz wiadomość") },
       { text: T("The viewer signs your message. Only the signature goes into the board.", "Przeglądarka podpisuje wiadomość. Do tablicy trafia tylko podpis."), cls: "sg-ok" },
@@ -317,8 +314,7 @@ function signingDiagrams(text = exText) {
   step(T("Can this board's signing be read, with an identity UUID?", "Czy podpisy tej tablicy można odczytać i ma identyfikator UUID?"), ["no-board-id"]);
   flow.push({ pair: [{ text: T("Does this room require trusted signatures?", "Czy ten pokój wymaga zaufanych podpisów?"), down: T("Yes", "Tak"), no: T("No", "Nie") }, { text: T("Post. Signing is optional here.", "Wyślij. Podpis jest tu opcjonalny."), cls: "sg-ok" }], leftWidth: 150 });
   step(T("Is the board folder writable?", "Czy folder tablicy jest zapisywalny?"), ["read-only"]);
-  step(T("Is a key unlocked and current?", "Czy klucz jest odblokowany i bieżący?"), ["no-key", "key-rotated"]);
-  step(T("Did you choose who to sign as?", "Czy wybrano, jako kto podpisujesz?"), ["no-signer"]);
+  step(T("Is the key of the persona in “I am” unlocked and current?", "Czy klucz persony z „Jestem” jest odblokowany i bieżący?"), ["no-key", "key-rotated"]);
   step(T("Is that key free of revocation?", "Czy ten klucz nie jest unieważniony?"), ["key-revoked"]);
   step(T("Have you approved that key on this device?", "Czy zatwierdzono ten klucz na tym urządzeniu?"), ["key-not-approved", "key-changed"]);
   flow.push({ text: T("You can post. The message is signed and accepted.", "Możesz wysłać wiadomość. Zostanie podpisana i zaakceptowana."), cls: "sg-ok", bold: true });
