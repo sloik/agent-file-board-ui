@@ -176,6 +176,16 @@ A public profile is not a private key. If the board is not provisioned, ask its
 maintainer to complete [canonical identity and profile setup](../../vendor/agent-file-board/docs/SIGNING-CORE.md#board-local-public-profile-registration).
 The viewer does not generate or register keys for you.
 
+**Where to keep your key.** By convention (canonical SPEC-002-066) each private key
+lives at `~/private/afb/<project-id>/<your-id>.json` on your own device, where
+`<project-id>` is `project.id` in the board's `config.json`. `boardctl signing keygen
+--path <board> --participant <your-id>` saves it there and prints the next steps
+(`AGENT_FILE_BOARD_KEY_DIR` replaces `~/private/afb`). The folder is visible on purpose:
+the browser's file picker hides folders whose names start with a dot. Never keep the key
+in the board folder, a repository, or a synced folder such as Dropbox or iCloud Drive,
+and never share it: each person and each agent holds only its own key. The composer's
+unlock hint names this folder for the open board.
+
 **You sign as the persona selected in “I am”.** There is no separate signer
 choice: in signed mode every message is signed as the persona selected at the
 moment you press **Send**. Switch persona and you switch signer; if that persona’s

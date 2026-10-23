@@ -90,7 +90,9 @@ test('the status is visible before sending and follows the destination and the p
   await room(page);
   await status(page,'needs-unlock',{emoji:'🔒',label:`Unlock ${maya}'s key to post`,detail:'This destination requires trusted signatures',action:`🔒 Unlock ${maya}'s key`,alt:'👤 Not yours? Choose another persona'});
   await expect(notice(page).locator('.signing-notice-action')).toHaveClass(/\bbtn\b/);
-  await expect(notice(page).locator('.signing-notice-hint')).toHaveText('The key file must be on this device.');
+  // The conventional key folder (canonical SPEC-002-066) is named with this board's project id.
+  const pid=await page.evaluate(()=>B.cfg.project.id);assert.ok(pid,'fixture has a project id');
+  await expect(notice(page).locator('.signing-notice-hint')).toHaveText(`The key file must be on this device, usually in ~/private/afb/${pid}/`);
   await expect(page.locator('#signingRequires')).toBeHidden('the status row already says the destination requires signatures');
   // The status sits directly above Send, so the persona that will sign is next to the button.
   assert.equal(await page.evaluate(()=>document.querySelector('#signingNotice').nextElementSibling.contains(document.querySelector('#send'))),true);
@@ -106,6 +108,8 @@ test('the status is visible before sending and follows the destination and the p
   await status(page,'not-registered',{emoji:'❔',action:'How to get a key'});
   await notice(page).locator('.signing-notice-action').click();
   assert.equal(await page.evaluate(()=>document.activeElement.id),'signing-setup-you');
+  await expect(page.locator('#signing-setup-you + ol')).toContainText(`boardctl signing keygen --path <board> --participant <your id>. It saves the private key as ~/private/afb/${pid}/<your id>.json`);
+  await expect(page.locator('#signing-setup-you + ol')).toContainText('never in the board folder, a repository or a synced folder such as Dropbox or iCloud Drive');
   await closeSigning(page);
   await otherRoom(page);
   // SPEC-002-065: signing can be chosen even without a key; signed mode then names the missing step.
