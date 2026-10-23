@@ -115,9 +115,10 @@ async function composerSend(){
  await send();
  if(!B||!body.trim()||$('#cBody').value||composerHasDraft())return;
  const pair=before?.scope==='newdirect'?[me,before.to].sort().join('--'):'';
- if(pair&&B.directs.includes(pair)){sel={scope:'direct',dir:pair,thread:null};rememberView();build();return;}
+ const carry=typeof historyPostedCarry==='function'?historyPostedCarry:f=>f();
+ if(pair&&B.directs.includes(pair)){carry(()=>{sel={scope:'direct',dir:pair,thread:null};rememberView();build();});return;}
  // A view without a destination (All messages, search) keeps the one just used instead of clearing it.
- if(composerViewTarget().scope){composerViewKey=null;composerFollowView(false);}else composerTargetRender();
+ if(composerViewTarget().scope)carry(()=>{composerViewKey=null;composerFollowView(false);});else composerTargetRender();
 }
 // "Message a participant" (native dialect): an existing pair opens its conversation, a new one targets newdirect.
 function messageParticipant(id){

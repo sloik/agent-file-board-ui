@@ -179,3 +179,36 @@ Implemented 2026-10-23 on `feat/composer-routing` (viewer 3.3.1 candidate).
   (the nested Advanced summary made the old selector ambiguous). Its later extensions step
   times out with or without this change (checked against 3.3.0); only the three composer images
   were regenerated.
+
+## Constraints from SPEC-002-063
+
+Binding constraints from the room-history author (forwarded 2026-10-23), with how each is met:
+
+1. `historyCreationMode()`/`historyComposerScope()` read `composerTarget()`: new room → "room", new topic
+   (including a `newdirect` topic) → "thread", otherwise null. For `newdirect` the scope is
+   `directDir/sort([me, other])` from the target, and the mode is null unless the target names exactly one
+   other registered participant, so a room's multi-ID TO can never form a pair.
+2. `#historyCreate` lives with the inline room/topic name fields (`#composerTargetFields`), not in Advanced;
+   its label CSS is `.history-create label[data-history-option]` and `.history-create[hidden] input{display:none}` stays.
+3. Both options start unchecked; ticks are cleared on any destination change (keyed by mode, Where, Thread
+   and the `newdirect` recipient; room A new topic → room B new topic clears them) and the signing row is
+   redrawn. The options are folded under a small "New topic settings"/"New room settings" disclosure.
+4. No retargeting during the creation write: `readFromHandle(true)` rebuilds with `preserveComposer`, which
+   never retargets, and the re-follow happens only in `composerSend()` after `sendImpl` returns.
+5. `signingDraftStamp()` is unchanged and still covers `#cRequireTrusted`, `#cRecordHistory` and the backing selects
+   (all inside `#composer`).
+6. After a send the re-follow runs inside `historyPostedCarry()`, which re-anchors the post-send note to the
+   re-followed destination (equivalent to re-following before `historyPostedNote(msg,false)`).
+   `#historyComposerNote` (pre-send hint and post-send note) sits directly under the chip, never in the popover.
+7. `setComposerTarget()` calls `updateSigningNotice()` (→ `historyComposerUpdate`; `signingPostBlock` ORs
+   `historyCreationRequires()`), including from "Post here instead".
+8. The room menu and its last item "Room history and signing…" are unchanged; "New room…" does not skip the
+   on-disk existing-room check.
+9. "New topic here" on a closed topic gives mode "thread" and shows the options.
+10. Read-only, legacy and no-UUID boards still hide the options (`historyCreationMode` guard unchanged).
+11. Topic title, form and answer posts through `deliverMessage` still show the note (unchanged).
+12. `#historyReviewDialog` and the config writer remain modal dialogs; the popover closes before any pick acts.
+
+Tests: `room-history-recording.test.js` drives the new-room flow through the chip, the new-topic flow
+through the room view, and a new test asserts that the options appear for a room view, "New topic here"
+and "New room…", start unticked, and reset after a target change.
