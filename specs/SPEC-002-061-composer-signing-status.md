@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-061
 title: Composer signing status and unlocking keys from the composer
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -72,37 +72,37 @@ refused send), with text and emoji together. Its action button performs the step
 
 ## Acceptance criteria
 
-- [ ] AC1 (status before sending): the composer shows the signing status of the
+- [x] AC1 (status before sending): the composer shows the signing status of the
   message about to be posted at all times on native boards with signing context,
   computed by `signingComposerStatus`, and recomputed when the persona, destination
   (room, topic, new room, recipient), unlock, lock, key expiry, board refresh or
   approval changes. It re-renders only when its content changes (focus is kept).
   Expiry after 15 minutes is reflected within the existing 30-second tick and is
   always rechecked at send time.
-- [ ] AC2 (unlock from the composer): when the state is `needs-unlock`, the action
+- [x] AC2 (unlock from the composer): when the state is `needs-unlock`, the action
   "🔒 Unlock <persona>'s key" opens a key-file picker directly. A key that matches
   the persona unlocks and binds the signer to the persona in one step (no second
   "choose who to sign as" step). A key for another participant reports whose key it
   is and offers "Switch persona to <name>"; it never changes the persona or signer
   silently. Invalid files report a clear error and change nothing. Read-only boards
   explain why the action is unavailable.
-- [ ] AC3 (signer = persona): in signed mode the message author and signer are the
+- [x] AC3 (signer = persona): in signed mode the message author and signer are the
   persona selected at send time. Switching persona re-derives the status; posting is
   refused (draft kept, no unsigned fallback) when the new persona's key is locked.
   Existing guards (draft stamp, epoch, board change, writer guard) stay.
-- [ ] AC4 (clear dialog): the Signing dialog's "Sign as me" task presents numbered
+- [x] AC4 (clear dialog): the Signing dialog's "Sign as me" task presents numbered
   steps: 1. choose the persona (defaults to the selected "I am" persona; changing it
   changes "I am"), 2. choose that persona's private key file, 3. unlock. It states
   the key file stays in this tab and that unlocking needs both. The old
   "Choose who to sign as" select and the "viewing identity is separate" copy are
   replaced.
-- [ ] AC5 (tests): unit tests cover every `signingComposerStatus` state and its
+- [x] AC5 (tests): unit tests cover every `signingComposerStatus` state and its
   precedence; browser tests cover composer unlock for the persona, wrong-persona key,
   invalid key, persona switch to a locked persona, expiry, lock, approval needed,
   read-only, both languages and phone width without horizontal overflow. Tests that
   encoded "viewing identity never chooses the signer" are rewritten on purpose to the
   new rule; no assertion is loosened.
-- [ ] AC6 (formal): a new TLA+ model `formal/ComposerSigning.tla` covers persona
+- [x] AC6 (formal): a new TLA+ model `formal/ComposerSigning.tla` covers persona
   selection, destination change, composer unlock (matching or other key), lock,
   expiry, approval and send, with invariants: a post is signed only as the persona
   selected at send time; no unsigned post where signing is required or signed mode
@@ -113,6 +113,6 @@ refused send), with text and emoji together. Its action button performs the step
   collector checks the real status function and send guard against the model with
   mutants that turn it red. Registered in suite, trace contracts, alignment,
   verification, STATUS and README; `Signer.tla` and the provider are unchanged.
-- [ ] AC7 (docs and release): user guides and the canonical signing guide describe
+- [x] AC7 (docs and release): user guides and the canonical signing guide describe
   the composer status and unlock flow; changelog; released as viewer 3.2.2 with the
   usual release pipeline verification.

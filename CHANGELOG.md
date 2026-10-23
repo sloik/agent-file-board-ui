@@ -1,6 +1,11 @@
 # Release notes
 
-## Unreleased
+## 3.3.0 — 2026-10-23
+
+Pairs with canonical 3.3.0 (pinned). Composer signing status and unlocking keys from the
+composer as the selected persona; viewer support for automatic room history declared per
+room or thread. Formal: new `ComposerSigning` model checked against the real status
+function and send decision.
 
 - **Automatic room history (SPEC-002-063, with canonical 3.3.0):** the
   Missing-message check shows each room's declared setting ("Records automatically

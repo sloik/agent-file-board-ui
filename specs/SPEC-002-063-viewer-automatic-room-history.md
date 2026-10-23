@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-063
 title: Viewer support for automatic room history and per-room signing at creation
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -31,29 +31,29 @@ viewer must understand, display and offer this.
 
 ## Acceptance criteria
 
-- [ ] AC1: A board whose config.json has `room_history` opens and verifies exactly
+- [x] AC1: A board whose config.json has `room_history` opens and verifies exactly
   as before (signing policy unaffected); malformed `room_history` is reported in
   the history panel, never breaks the board.
-- [ ] AC2: History panel per room shows the declared setting ("Records
+- [x] AC2: History panel per room shows the declared setting ("Records
   automatically on signed posts" for the room / named threads), who has recorded
   ("Recorded by Maya, Sam") with each recorder's key status, and for recorders
   whose key this device has not approved: "Records by X count here only after
   you approve X's key", with a button to the fingerprint review.
-- [ ] AC3: Composer, when creating a new room or new topic: options "Require
+- [x] AC3: Composer, when creating a new room or new topic: options "Require
   trusted signatures" and "Record room history automatically" (off by default).
   They are written to config.json with the CLI's semantics before the first
   message, only for a room/thread with no messages; existing rooms are refused
   and pointed to the explicit setting action. The composer signing status
   (SPEC-002-061) reflects "required" immediately.
-- [ ] AC4: A signed post from the viewer into a recording scope shows a clear
+- [x] AC4: A signed post from the viewer into a recording scope shows a clear
   "Not recorded by this viewer: record with `boardctl history observe` or post
   from the CLI" note (the browser cannot sign inventories yet), never a silent gap.
-- [ ] AC5: An explicit per-room/thread settings action (room menu) changes
+- [x] AC5: An explicit per-room/thread settings action (room menu) changes
   recording on/off and trusted requirement for existing rooms, with confirmation
   and an extra confirmation for weakening (turning off), mirroring
   `history policy --weaken` / `signing require`.
-- [ ] AC6: Tests: unit tests for parsing/writing `room_history` (shared fixtures
+- [x] AC6: Tests: unit tests for parsing/writing `room_history` (shared fixtures
   with canonical where possible), browser tests for AC1–AC5 incl. Polish and
   phone width, a CLI-recorded room showing "Recorded by" in the viewer, and a
   concurrent config change refused. Existing formal alignment stays current.
-- [ ] AC7: Docs (guides, CHANGELOG) and release as viewer 3.3.0 with canonical 3.3.0.
+- [x] AC7: Docs (guides, CHANGELOG) and release as viewer 3.3.0 with canonical 3.3.0.
