@@ -1,6 +1,9 @@
 'use strict';
 // SPEC-002-064: the composer posts where the reader is looking; a draft never silently retargets.
 const {test,before,after}=require('node:test'),assert=require('node:assert/strict'),{expect}=require('playwright/test'),h=require('./lib/helpers');
+// Screenshots only when AFB_ROUTING_SHOTS names a folder (local review); CI writes none.
+const SHOTS=process.env.AFB_ROUTING_SHOTS;
+async function shot(page,name){if(SHOTS){h.fs.mkdirSync(SHOTS,{recursive:true});await page.screenshot({path:h.path.join(SHOTS,name)});}}
 let browser;before(async()=>browser=await h.launch());after(async()=>browser?.close());
 const PAIR='implementation-agent-01--research-agent-01';
 // The example board plus one open architecture topic (T004); architecture T001 and the direct T002 are CLOSED.
@@ -192,7 +195,7 @@ test('phone 390px: one-line chip, bottom-sheet popover, Polish strings, no horiz
   const row=await page.locator('#composerTargetList button').first().boundingBox();assert.ok(row.height>=44,'44px rows');
   await expect(page.locator('#composerTargetList')).toContainText('Napisz do uczestnika…');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-  await page.screenshot({path:'/private/tmp/afb-ui-routing-shots/phone-pl-sheet.png'});
-  await page.keyboard.press('Escape');await page.screenshot({path:'/private/tmp/afb-ui-routing-shots/phone-pl-chip.png'});clean(log);
+  await shot(page,'phone-pl-sheet.png');
+  await page.keyboard.press('Escape');await shot(page,'phone-pl-chip.png');clean(log);
  }finally{await ctx.close();}
 });
