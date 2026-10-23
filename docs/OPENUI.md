@@ -261,6 +261,25 @@ static headings, paragraphs, lists, quotes, tables and code; active links,
 resources, styles, forms and scripts are removed. Icons use twelve fixed names
 listed in the schema. This remains an offline page with no backend or image fetches.
 
+**Enlarging images.** Every validated image shown by `image`, `image-gallery`,
+`image-text`, visual `card-grid` cards, `carousel` panels and `modal` content opens
+in an enlarged viewer on click, tap, Enter or Space. The viewer fits the window
+(small images are enlarged at most 2×), shows the component title, caption and alt
+text, and browses **all images of that report message in document order**:
+Previous/Next buttons (wrapping from last to first), Left/Right arrow keys, a
+horizontal swipe on touch screens, a `3 / 7` counter, a Close button, Escape or a
+click on the backdrop. Focus stays in the viewer and returns to the image that
+opened it; a message with one image shows no navigation. The viewer only reuses the
+embedded image already on the page; it adds no requests and changes no files.
+Images inside a modal join the same gallery, and Escape closes only the viewer.
+
+Authoring advice: because readers can enlarge and step through images, write a
+meaningful `title` and `alt` (and a `caption` where it helps) for every image, since
+those are what the viewer shows. Prefer one `image-gallery` for two or more related
+images instead of several separate `image` components; keep a single `image` for a
+lone picture. There is no visual builder for reports (the Tools dialog builds forms
+only), so this guidance is documentation rather than an automatic suggestion.
+
 `npm run screenshots:candidates` reproduces these four captures from CLI-validated
 temporary boards and verifies immutable files and zero network requests.
 
