@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+- **Automatic room history (SPEC-002-063, with canonical 3.3.0):** the
+  Missing-message check shows each room's declared setting ("Records automatically
+  on signed posts", or the topics that do), who has recorded it with each
+  recorder's key status ("Recorded by …"), and for recorders this device has not
+  approved: "Records by X count here only after you approve X's key", with a button
+  to the fingerprint review. The same facts as `boardctl history status`
+  (`recording`, `recordedBy`, `trustHint`). A malformed `room_history` is reported
+  in the panel and never breaks the board.
+- **Per-room signing and history at creation:** when the composer creates a new
+  room or topic it offers "Require trusted signatures" and "Record room history
+  automatically" (both off by default). Ticked options are written to
+  `config.json` with the CLI's semantics before the first message, after you
+  review the exact bytes; the first message must be signed with your own approved
+  key. Existing rooms are refused and pointed to the room menu. The composer
+  signing status shows "required" as soon as the box is ticked.
+- **Room menu → Room history and signing…:** changes recording and the trusted
+  requirement for an existing room or topic, mirroring `boardctl history policy`
+  and `boardctl signing require`: exact-bytes review, refusal when `config.json`
+  changed since review or a CLI writer holds `.identity-write-lock`, and an extra
+  confirmation to turn either off (`--weaken`).
+- **Honest about recording:** the browser cannot sign inventories yet, so it
+  never records. A post from the viewer into a recording room shows "Not recorded
+  by this viewer: record with `boardctl history observe` … or post from the CLI".
+
 - **Composer signing status (SPEC-002-061):** the composer always shows what will
   happen to the message you are about to post: 🔏 signed as the persona, 📝 posted
   unsigned, or a distinct emoji with the missing step (👤 choose persona, ⛔ read-only

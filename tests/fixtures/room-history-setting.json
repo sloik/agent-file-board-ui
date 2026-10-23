@@ -1,0 +1,29 @@
+{
+  "note": "SPEC-002-063: room_history values checked by both the viewer (scripts/room-history.js setting) and canonical history_recording.setting. Each case is raw JSON text so number kinds survive.",
+  "config": {"board": {"direct_directory": "direct", "thread_digits": 3}},
+  "cases": [
+    {"name": "absent", "raw": null, "valid": true},
+    {"name": "room and direct thread", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"record\": \"on-post\"}, \"direct/aaa--bbb\": {\"threads\": {\"T001\": {\"record\": \"on-post\"}}}}}", "valid": true},
+    {"name": "no scopes", "raw": "{\"version\": 1}", "valid": true},
+    {"name": "redundant thread under a recording room", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"record\": \"on-post\", \"threads\": {\"T002\": {\"record\": \"on-post\"}, \"T001\": {\"record\": \"on-post\"}}}}}", "valid": true},
+    {"name": "empty scope entry", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {}}}", "valid": true},
+    {"name": "null", "raw": "null", "valid": false},
+    {"name": "array", "raw": "[]", "valid": false},
+    {"name": "extra key", "raw": "{\"version\": 1, \"extra\": 1}", "valid": false},
+    {"name": "missing version", "raw": "{\"scopes\": {}}", "valid": false},
+    {"name": "version 2", "raw": "{\"version\": 2}", "valid": false},
+    {"name": "decimal version", "raw": "{\"version\": 1.0}", "valid": false},
+    {"name": "boolean version", "raw": "{\"version\": true}", "valid": false},
+    {"name": "uppercase room", "raw": "{\"version\": 1, \"scopes\": {\"rooms/A\": {}}}", "valid": false},
+    {"name": "not a physical scope", "raw": "{\"version\": 1, \"scopes\": {\"history/a\": {}}}", "valid": false},
+    {"name": "record off", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"record\": \"off\"}}}", "valid": false},
+    {"name": "record null", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"record\": null}}}", "valid": false},
+    {"name": "short thread id", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"threads\": {\"T1\": {\"record\": \"on-post\"}}}}}", "valid": false},
+    {"name": "thread extra key", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"threads\": {\"T001\": {\"record\": \"on-post\", \"x\": 1}}}}}", "valid": false},
+    {"name": "thread empty", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"threads\": {\"T001\": {}}}}}", "valid": false},
+    {"name": "threads null", "raw": "{\"version\": 1, \"scopes\": {\"rooms/a\": {\"threads\": null}}}", "valid": false},
+    {"name": "scopes array", "raw": "{\"version\": 1, \"scopes\": []}", "valid": false},
+    {"name": "129 scopes", "scopes": 129, "valid": false},
+    {"name": "128 scopes", "scopes": 128, "valid": true}
+  ]
+}

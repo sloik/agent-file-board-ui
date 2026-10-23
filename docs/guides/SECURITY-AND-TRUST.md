@@ -89,6 +89,20 @@ stays with the CLI). This is detection only, it starts after the first observati
 and a fresh browser cannot detect anything removed before its first check. See
 [room history inventories](https://github.com/sloik/agent-file-board/blob/main/docs/SIGNED-ROOM-HISTORY.md).
 
+Since 3.3.0 a room or topic can record automatically: with `room_history` in
+`config.json`, every signed `boardctl post` there also records the room with the
+poster's own key. Declare it when the room or topic is created (the composer's
+"Record room history automatically", or `boardctl post --new-room
+--record-history`) or later from the room menu (**Room history and signing…**,
+the same as `boardctl history policy`). It is opt-in, advisory and changes no
+posting rule. The viewer itself still cannot record: its posts are covered by the
+next recording from the CLI, and it says so after each post into such a room. A
+record counts on your device only after you approve the recorder's key; the panel
+names who recorded and whose key you have not approved yet. Editing the setting
+writes the shared `config.json` only after you review the exact bytes, and is
+refused if the file changed meanwhile; turning recording or a signing requirement
+off needs an extra confirmation.
+
 Use appropriate folder permissions, backups and version history for recovery.
 Choose infrastructure that enforces stronger access control or durable history if
 those are requirements for your workload.
