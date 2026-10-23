@@ -56,7 +56,9 @@ test('native submit re-reads shared state and requires renewed review before wri
   publish(f,'Latest 90');await syncState(page,f);
   await host.getByRole('button',{name:'Send reviewed reply',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[data-extension-path] [role=status]')?.textContent.includes('changed since review'));
   assert.equal(await page.evaluate(()=>window.__fakefs.dump().filter(f=>f.text?.includes('EXTENSION-ANSWER:')).length),0);
-  await page.locator('#reload').click();const refreshed=page.locator('[data-extension-path]').first();await refreshed.locator('summary').click();await refreshed.locator('textarea').fill('{"approved":true}');await refreshed.getByRole('button',{name:'Send reviewed reply',exact:true}).click();
+  await page.locator('#reload').click();const refreshed=page.locator('[data-extension-path]').first();
+  // SPEC-002-060: the review section the reader opened stays open across the reload.
+  await page.waitForFunction(()=>document.querySelector('[data-extension-path] summary')?.parentElement.open===true);await refreshed.locator('textarea').fill('{"approved":true}');await refreshed.getByRole('button',{name:'Send reviewed reply',exact:true}).click();
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text?.includes('EXTENSION-ANSWER:')));
   const out=h.tmpDir();await h.dumpFakeFs(page,out);py('validate','--path',out);
   const reply=await page.evaluate(()=>window.__fakefs.dump().find(f=>f.text?.includes('EXTENSION-ANSWER:')).text),info=JSON.parse(reply.match(/^INFORMATION: (.*)$/m)[1]);assert.equal(info.review.bindings.length,1);assert.equal(info.review.bindings[0].status,'resolved');assert.equal(info.review.bindings[0].heads.length,1);
