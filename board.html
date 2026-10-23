@@ -417,6 +417,18 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .side-scrim{display:none}
 @media (min-width:821px){body.side-hidden .app{grid-template-columns:0 0 minmax(0,1fr)}body.side-hidden :is(.side,.resizer){visibility:hidden;overflow:hidden;padding:0;border:0;min-width:0}}
 @media (max-width:820px){.app{grid-template-columns:1fr}.resizer{display:none}.side{display:none}.side.open{display:block;position:fixed;top:var(--top-h,56px);bottom:0;left:0;width:min(340px,88vw);z-index:6;box-shadow:0 10px 30px rgba(0,0,0,.25)}.side-scrim.show{display:block;position:fixed;inset:var(--top-h,56px) 0 0 0;background:rgba(0,0,0,.35);z-index:5}}
+/* Sidebar controls (SPEC-002-069): #menu shows a panel glyph whose left column is filled while the sidebar
+   is shown, plus "Rooms" when the header has room; #sideHide hides it from inside. */
+#menu{display:inline-flex;align-items:center;gap:6px}#menu .side-glyph{flex:none;margin:2px 0}.side-glyph-col{fill:none}#menu[aria-expanded="true"] .side-glyph-col{fill:currentColor}
+#menu .menu-text{display:none}@media(min-width:1100px) and (min-height:641px){#menu .menu-text{display:inline}}
+.side-head{display:flex;align-items:center;gap:6px;margin:14px 8px 6px}.side .side-head h3{margin:0;flex:1 1 auto;min-width:0}
+.side-hide{flex:none;width:28px;height:24px;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);font-size:16px;line-height:1}.side-hide:hover{background:var(--hover);color:var(--ink)}
+@media(max-width:820px){.side-hide{width:36px;height:32px}}
+/* Keys waiting for approval (SPEC-002-069): a badge on Signing, a dot on the closed Tools menu and one notice line. */
+#signingTools{display:flex;align-items:center;gap:6px}.key-badge{margin-left:auto;padding:0 7px;border-radius:9px;background:var(--warn-bg);color:var(--warn-ink);font-size:12px;font-weight:600;white-space:nowrap}.key-badge[hidden]{display:none}
+#toolbarToolsToggle{position:relative}#toolbarToolsToggle[data-pending-keys]::before{content:"";position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--warn-ink);box-shadow:0 0 0 1.5px var(--panel)}
+.key-notice{flex-wrap:nowrap;padding:5px 14px}.key-notice>*{flex:none}#keyNoticeText{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.key-notice .btn{padding:3px 10px}
+@media(max-width:600px),(max-height:640px){.key-notice{gap:6px;padding:3px 8px;font-size:12px}.key-notice .btn{padding:2px 8px;font-size:12px}}
 /* The destination is shown where it lives: one highlighted sidebar entry (SPEC-002-068). */
 .tcard.posting,.frow.posting{background:color-mix(in srgb,var(--accent) 12%,var(--panel));box-shadow:inset 4px 0 0 var(--accent),0 0 0 2px color-mix(in srgb,var(--accent) 60%,transparent)}.folder:has(.tcard.posting)>.frow{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .posting-mark{flex:none;margin-left:auto;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:10.5px;font-weight:600;line-height:16px;white-space:nowrap}.fname .posting-mark{margin-left:6px;max-width:55%;overflow:hidden;text-overflow:ellipsis}
@@ -609,7 +621,7 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 <h3 data-i18n="notify_follows"></h3><div id="notificationsScopes"></div><div id="notificationsFollows"></div>
 <h3 data-i18n="notify_recent"></h3><button class="btn" id="notificationsClear" data-i18n="notify_clear"></button><p id="notificationsResult" role="status"></p><div id="notificationsList"></div></dialog>
 <div class="top">
-  <button class="btn menu" id="menu" aria-controls="side" aria-expanded="true">&#9776;</button>
+  <button class="btn menu" id="menu" aria-controls="side" aria-expanded="true"><svg class="side-glyph" viewBox="0 0 18 16" width="18" height="16" aria-hidden="true" focusable="false"><rect x="1" y="1" width="16" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect class="side-glyph-col" x="2.6" y="2.6" width="4.4" height="10.8" rx="1" stroke="currentColor" stroke-width="1.2"/></svg><span class="menu-text" data-i18n="sidebar_rooms"></span></button>
   <div class="brand">Agent File Board<button type="button" id="folderName" aria-haspopup="dialog" aria-controls="locationsDialog" aria-expanded="false" data-i18n-title="folder_picker"></button></div>
   <div class="search"><input id="q" type="search" autocomplete="off" data-i18n-ph="search_ph"><div class="sugg" id="sugg"></div></div>
   <div class="spacer"></div>
@@ -630,6 +642,7 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 <div class="pbar off" id="pbar"><i></i></div>
 <div class="banner" id="banner"><span><span data-i18n="last_folder"></span> <b id="lastName"></b></span><button class="btn primary" id="reopen" data-i18n="reopen_last"></button><button class="btn" id="forget" data-i18n="forget"></button></div>
 <div class="banner warn" id="verwarn" role="status"><span id="verwarnText"></span><button class="btn" id="upgradeOpen" data-i18n="upgrade_title"></button></div>
+<div class="banner key-notice" id="keyNotice" role="status"><span aria-hidden="true">&#128273;</span><span id="keyNoticeText"></span><button class="btn primary" type="button" id="keyNoticeReview"></button><button class="btn" type="button" id="keyNoticeLater"></button></div>
 <div class="settings" id="settings">
   <div class="settings-head"><h3 data-i18n="settings_h"></h3><button class="btn" id="settingsClose" data-i18n="vocabulary_close"></button></div>
   <div id="settingsResize" role="separator" aria-orientation="vertical" aria-controls="settings" tabindex="0" data-i18n-aria="settings_resize" data-i18n-title="settings_resize"></div>
@@ -663,7 +676,7 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 <div class="side-scrim" id="sideScrim"></div>
 <div class="app">
   <aside class="side" id="side">
-    <h3 data-i18n="tree_h"></h3><div id="tree"></div>
+    <div class="side-head"><h3 data-i18n="tree_h"></h3><button type="button" class="side-hide" id="sideHide" aria-controls="side">&#171;</button></div><div id="tree"></div>
   </aside>
   <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
   <section class="feed-wrap">
@@ -1720,7 +1733,7 @@ const STRINGS = {
   file_folder:"Open containing folder", file_opener:"Requires the macOS desktop opener",
   guidance_title:"Guidance", guidance_posting:"Posting guidance", guidance_note:"Read room guidance and then the topic notes for purpose and posting rules. These documents provide context; they do not override the board convention, shared glossary, project authority or explicit user instructions, and headings do not rename the thread.", guidance_usage:"GUIDANCE.md applies to every thread in this room or direct conversation. topics/Txxx.md adds guidance for that stable topic ID, even after its title changes. Read both before posting or accepting work; reread after edits. These mutable files are separate from immutable messages and do not prove acceptance, action or completion.", guidance_cli:"Agents read both with boardctl guidance --room <room> --topic Txxx (or --direct <pair> --participant <your-id>). Missing files mean no extra rules; resolve read errors or truncated output before relying on the guidance.", guidance_folder:"Local board data folder (contains rooms and config.json)", guidance_editor_note:"Check this path matches your board. Open and both Create actions require the updated macOS desktop opener; Open in VS Code requires VS Code. Creation writes an empty file, creates a missing topics folder, and preserves existing content. Both open the local original, even when viewing an uploaded snapshot. Refresh the board after editing.", guidance_create:"Create a file", guidance_create_vscode:"Create in VS Code", guidance_setup:"Set up the desktop opener", guidance_open:"Open", guidance_vscode:"Open in VS Code", guidance_path_needed:"Enter an absolute local board data-folder path first.", guidance_missing:"No optional guidance file here. Create an empty file and open it in your editor. Optional canonical starters: templates/room-guidance.md or templates/topic-guidance.md; copy and adapt one if useful.", guidance_error:"Guidance could not be read (invalid UTF-8, access error or larger than 1 MiB). Resolve this before posting.", guidance_room:"Room / conversation guidance", guidance_topic:"Topic guidance",
   find_room:"Find room…", find_topic:"Find topic…", find_party:"Find participant…", composer_resize:"Drag to resize composer; arrows adjust; double-click resets", s_thread_order:"Topic order", s_order_stable:"Stable (topic ID)", s_order_newest:"Newest activity first", unread_count:"{n} unread", topic_title:"Current topic title", set_title:"Set title", title_body:"Topic title: {title}", e_title:"Enter a title containing letters or numbers",
-  menu:"Menu", sidebar_hide:"Hide sidebar", sidebar_show:"Show sidebar", topic_menu:"More actions", rename_topic:"Rename…", change_destination:"Change destination", signing_details:"Details", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
+  menu:"Menu", sidebar_hide:"Hide sidebar", sidebar_show:"Show sidebar", sidebar_rooms:"Rooms", topic_menu:"More actions", rename_topic:"Rename…", change_destination:"Change destination", signing_details:"Details", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
   refresh_now:"Refresh now", settings_title:"Appearance and refresh settings",
   open_folder:"Open board folder", change_folder:"Choose another folder…", last_folder:"Last opened folder:",
   reopen_last:"Open last folder", forget:"Forget", folder_none:"Choose board folder…", folder_is:"Folder: {name}",
@@ -2032,7 +2045,7 @@ const STRINGS = {
   file_folder:"Otwórz folder zawierający", file_opener:"Wymaga programu otwierającego dla macOS",
   guidance_title:"Wskazówki", guidance_posting:"Zasady publikowania", guidance_note:"Przeczytaj wskazówki pokoju, a potem notatki tematu, aby poznać cel i zasady publikowania. To kontekst; nie zastępuje konwencji tablicy, wspólnego słownika, uprawnień projektu ani jawnych instrukcji użytkownika, a nagłówki nie zmieniają tytułu wątku.", guidance_usage:"GUIDANCE.md dotyczy wszystkich wątków pokoju lub rozmowy. topics/Txxx.md uzupełnia zasady stałego identyfikatora tematu, nawet po zmianie tytułu. Przeczytaj oba pliki przed publikacją lub przyjęciem pracy i ponownie po zmianach. Te edytowalne pliki są oddzielne od niezmiennych wiadomości i nie potwierdzają przyjęcia, wykonania ani ukończenia zadania.", guidance_cli:"Agenci odczytują oba pliki: boardctl guidance --room <pokój> --topic Txxx (lub --direct <para> --participant <twój-id>). Brak plików oznacza brak dodatkowych zasad; wyjaśnij błędy odczytu lub uciętą treść przed użyciem wskazówek.", guidance_folder:"Lokalny folder danych tablicy (zawiera rooms i config.json)", guidance_editor_note:"Sprawdź, czy ścieżka wskazuje Twoją tablicę. Otwórz i obie akcje tworzenia wymagają aktualnego programu otwierającego dla macOS; Otwórz w VS Code wymaga VS Code. Tworzenie zapisuje pusty plik, tworzy brakujący folder topics i zachowuje istniejącą treść. Obie akcje otwierają lokalny oryginał, także dla wgranej kopii. Po edycji odśwież tablicę.", guidance_create:"Utwórz plik", guidance_create_vscode:"Utwórz w VS Code", guidance_setup:"Konfiguracja programu otwierającego", guidance_open:"Otwórz", guidance_vscode:"Otwórz w VS Code", guidance_path_needed:"Najpierw wpisz bezwzględną ścieżkę lokalnego folderu danych tablicy.", guidance_missing:"Brak opcjonalnego pliku wskazówek. Utwórz pusty plik i otwórz go w edytorze. Opcjonalne wzory kanoniczne: templates/room-guidance.md lub templates/topic-guidance.md; skopiuj i dostosuj wybrany wzór.", guidance_error:"Nie można odczytać wskazówek (błędny UTF-8, błąd dostępu lub rozmiar ponad 1 MiB). Wyjaśnij to przed publikacją.", guidance_room:"Wskazówki pokoju / rozmowy", guidance_topic:"Wskazówki tematu",
   find_room:"Znajdź pokój…", find_topic:"Znajdź wątek…", find_party:"Znajdź uczestnika…", composer_resize:"Przeciągnij, aby zmienić wysokość edytora; strzałki zmieniają; dwuklik resetuje", s_thread_order:"Kolejność wątków", s_order_stable:"Stała (ID wątku)", s_order_newest:"Najnowsza aktywność najpierw", unread_count:"{n} nieprzeczytanych", topic_title:"Aktualny tytuł wątku", set_title:"Ustaw tytuł", title_body:"Tytuł wątku: {title}", e_title:"Podaj tytuł zawierający litery lub cyfry",
-  menu:"Menu", sidebar_hide:"Ukryj panel boczny", sidebar_show:"Pokaż panel boczny", topic_menu:"Więcej akcji", rename_topic:"Zmień nazwę…", change_destination:"Zmień cel", signing_details:"Szczegóły", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
+  menu:"Menu", sidebar_hide:"Ukryj panel boczny", sidebar_show:"Pokaż panel boczny", sidebar_rooms:"Pokoje", topic_menu:"Więcej akcji", rename_topic:"Zmień nazwę…", change_destination:"Zmień cel", signing_details:"Szczegóły", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
   refresh_now:"Odśwież teraz", settings_title:"Ustawienia wyglądu i odświeżania",
   open_folder:"Otwórz folder tablicy", change_folder:"Wybierz inny folder…", last_folder:"Ostatnio otwierany folder:",
   reopen_last:"Otwórz ostatni folder", forget:"Nie pamiętaj", folder_none:"Wybierz folder tablicy…", folder_is:"Folder: {name}",
@@ -6173,6 +6186,8 @@ function syncSidebar(){
  const label=t(open?"sidebar_hide":"sidebar_show");button.setAttribute("aria-expanded",String(open));
  if(button.getAttribute("aria-label")!==label){button.setAttribute("aria-label",label);button.title=label+" ("+sidebarShortcut()+")";}
  const tool=$("#sidebarToggleTool");if(tool&&tool.firstChild.textContent!==label){tool.firstChild.textContent=label;tool.lastChild.textContent=sidebarShortcut();}
+ // The "«" inside the sidebar heading only ever hides it (SPEC-002-069).
+ const hide=$("#sideHide"),hideLabel=t("sidebar_hide");if(hide&&hide.getAttribute("aria-label")!==hideLabel){hide.setAttribute("aria-label",hideLabel);hide.title=hideLabel+" ("+sidebarShortcut()+")";}
 }
 function closeSidebarDrawer(focus){
  const side=$("#side");if(!side.classList.contains("open"))return;
@@ -6190,6 +6205,7 @@ function wireSidebarToggle(){
  const top=document.querySelector(".top"),measure=()=>document.documentElement.style.setProperty("--top-h",Math.round(top.getBoundingClientRect().bottom)+"px");
  measure();if(typeof ResizeObserver==="function")new ResizeObserver(measure).observe(top);
  $("#menu").onclick=toggleSidebar;$("#sideScrim").onclick=()=>closeSidebarDrawer(true);
+ $("#sideHide").onclick=()=>{toggleSidebar();$("#menu").focus({preventScroll:true});};
  document.addEventListener("keydown",event=>{
   if(event.defaultPrevented)return;
   if(event.key==="Escape"&&sidebarDrawer()&&$("#side").classList.contains("open")&&!document.querySelector("dialog[open]")){event.preventDefault();closeSidebarDrawer(true);}
@@ -7073,6 +7089,7 @@ function signingNoticeNote(status) {
 // when its content changes, so a refresh tick never steals focus or moves the cursor.
 function updateSigningNotice(status = signingPostBlock()) {
   if (typeof historyComposerUpdate === "function") historyComposerUpdate();
+  signingKeysSync();
   // The status row already says when a destination requires signatures; the older hint shows only without it.
   const req = $("#signingRequires");
   if (req) {
@@ -7236,6 +7253,93 @@ function signingParticipantSummary(id,model=B) {
   if(f.revoked) return exText("Current key revoked — do not use","Bieżący klucz unieważniony — nie używaj");
   if(f.trusted) return exText("Current key trusted by you","Ufasz bieżącemu kluczowi");
   return f.changed?exText("Key changed — review needed","Klucz zmieniony — wymaga sprawdzenia"):exText("Current key not approved by you","Nie zatwierdzono bieżącego klucza");
+}
+// Keys waiting for approval (SPEC-002-069): a current, unrevoked fingerprint that is not the one
+// approved on this device. Approval is read from the pins, which an upload's approval updates
+// without rebuilding signingParticipants. Changed keys first, then by display name.
+function signingNeedsReview(id, model = B) {
+  const f = model?.signingParticipants?.[id], pin = model?.signingContext?.state?.pins?.[id];
+  return !!f?.fingerprint && !f.revoked && pin !== f.fingerprint;
+}
+function signingPendingReview(model) {
+  const pins = model?.signingContext?.state?.pins || {}, name = (id) => model.people?.[id]?.name || id;
+  const changed = (id) => pins[id] ? 0 : 1;
+  return Object.keys(model?.signingParticipants || {}).filter((id) => signingNeedsReview(id, model))
+    .sort((a, b) => changed(a) - changed(b) || name(a).localeCompare(name(b)) || (a < b ? -1 : a > b ? 1 : 0));
+}
+// Polish counts take three forms: 1 klucz, 2-4 (not 12-14) klucze, otherwise kluczy.
+function signingCount(n, en1, en, one, few, many) {
+  if (S.lang !== "pl") return n === 1 ? en1 : en;
+  const form = new Intl.PluralRules("pl").select(n);
+  return form === "one" ? one : form === "few" ? few : many;
+}
+const signingKeysToReview = (n) => signingCount(n, `${n} key to review`, `${n} keys to review`, `${n} klucz do sprawdzenia`, `${n} klucze do sprawdzenia`, `${n} kluczy do sprawdzenia`);
+// The state after each name in the review list, from the same data as signingParticipantSummary.
+function signingParticipantState(id, model = B) {
+  const f = model?.signingParticipants?.[id];
+  if (f?.unregistered) return exText("no key", "brak klucza");
+  if (!f?.fingerprint) return exText("key unavailable", "klucz niedostępny");
+  if (f.revoked) return exText("revoked", "unieważniony");
+  if (!signingNeedsReview(id, model)) return exText("approved", "zatwierdzony");
+  return model.signingContext?.state?.pins?.[id] ? exText("key changed", "klucz zmieniony") : exText("needs review", "wymaga sprawdzenia");
+}
+const signingParticipantOption = (id, model = B) => `${model.people[id]?.name || id} (${id}) - ${signingParticipantState(id, model)}`;
+function signingPendingSummary(model = B) {
+  const n = signingPendingReview(model).length;
+  if (n) return signingCount(n, "1 key needs review", `${n} keys need review`, "1 klucz wymaga sprawdzenia", `${n} klucze wymagają sprawdzenia`, `${n} kluczy wymaga sprawdzenia`);
+  return Object.values(model?.signingParticipants || {}).some((f) => f?.fingerprint) ? exText("All registered keys are approved on this device", "Wszystkie zarejestrowane klucze są zatwierdzone na tym urządzeniu") : exText("No participant has a registered key yet", "Żaden uczestnik nie ma jeszcze zarejestrowanego klucza");
+}
+// The first-open notice is dismissed per board for the exact pending (participant, fingerprint)
+// pairs: a new or changed key shows it again. Storage may throw; the session copy still hides it.
+const signingKeyNoticeSession = {};
+function signingKeyNoticeId(model = B) {
+  return "afb.keyReview." + (boardStorageId || model?.signingContext?.boardId || signingLocation || "");
+}
+function signingKeyNoticePairs(model = B) {
+  return signingPendingReview(model).map((id) => id + "=" + model.signingParticipants[id].fingerprint).sort();
+}
+function signingKeyNoticeDismissed(id) {
+  let stored = null;
+  try { stored = JSON.parse(localStorage.getItem(id) || "null"); } catch { stored = null; }
+  return new Set([...(Array.isArray(stored) ? stored : []), ...(signingKeyNoticeSession[id] || [])]);
+}
+function signingKeyNoticeStore(id, pairs) {
+  try { localStorage.setItem(id, JSON.stringify(pairs)); } catch {}
+}
+function signingKeyNoticeDismiss() {
+  const id = signingKeyNoticeId(), pairs = signingKeyNoticePairs();
+  signingKeyNoticeSession[id] = pairs;
+  signingKeyNoticeStore(id, pairs);
+  signingKeysSync();
+}
+// One place for the count: the Signing badge in Tools, the dot on the closed Tools menu and the notice.
+// It runs on every composer status update, so it writes only what changed.
+function signingKeysSync() {
+  const model = B && B.signingContext && !B.signingError ? B : null, pending = model ? signingPendingReview(model) : [], n = pending.length;
+  const dismissed = model ? signingKeyNoticeDismissed(signingKeyNoticeId(model)) : new Set();
+  const notice = n > 0 && signingKeyNoticePairs(model).some((pair) => !dismissed.has(pair)), label = n ? signingKeysToReview(n) : "";
+  const set = (el, key, value) => { if (el && el[key] !== value) el[key] = value; };
+  const tools = $("#signingTools"), toggle = $("#toolbarToolsToggle"), box = $("#keyNotice");
+  if (tools) {
+    set(tools.querySelector(".signing-tools-label"), "textContent", exText("Signing", "Podpisy"));
+    const badge = tools.querySelector(".key-badge");
+    set(badge, "hidden", !n);
+    set(badge.querySelector(".key-badge-count"), "textContent", n ? String(n) : "");
+    set(badge, "title", label);
+    set(tools, "title", n ? exText("Signing", "Podpisy") + ": " + label : "");
+  }
+  if (toggle) {
+    if (n) { if (toggle.dataset.pendingKeys !== String(n)) toggle.dataset.pendingKeys = String(n); } else delete toggle.dataset.pendingKeys;
+    set(toggle, "title", n ? t("toolbar_tools") + " - " + label : t("toolbar_tools"));
+  }
+  if (box) {
+    if (box.classList.contains("show") !== notice) box.classList.toggle("show", notice);
+    const text = notice ? signingCount(n, "1 participant key is not approved on this device.", `${n} participant keys are not approved on this device.`, "1 klucz uczestnika nie jest zatwierdzony na tym urządzeniu.", `${n} klucze uczestników nie są zatwierdzone na tym urządzeniu.`, `${n} kluczy uczestników nie jest zatwierdzonych na tym urządzeniu.`) : "";
+    set($("#keyNoticeText"), "textContent", text);
+    set($("#keyNoticeText"), "title", text);
+    set($("#keyNoticeReview"), "textContent", exText("Review keys", "Sprawdź klucze"));
+    set($("#keyNoticeLater"), "textContent", exText("Not now", "Nie teraz"));
+  }
 }
 function signingMessageHtml(m) {
   const f=m.signing || {}, facts=signingMessageFacts(m), reason=f.reason && f.reason!=="verified" && f.reason!=="unsigned"?f.reason:"";
@@ -7674,10 +7778,14 @@ async function signingDialog(request) {
   node("p", text("The newest 200 messages are checked on opening. Checking older messages does not approve keys or modify shared message files.", "Po otwarciu sprawdzanych jest 200 najnowszych wiadomości. Sprawdzanie starszych nie zatwierdza kluczy ani nie zmienia wspólnych plików wiadomości."), check, "signing-help");
   const review = section("signing-review", text("2. Review a participant key", "2. Sprawdź klucz uczestnika"), text("Compare the full fingerprint with the participant through a separate channel you already trust, such as an in-person conversation. A message on this board alone is not enough.", "Porównaj cały odcisk z uczestnikiem przez osobny zaufany kanał, np. podczas osobistej rozmowy. Sama wiadomość na tej tablicy nie wystarcza."));
   plain(review, text("a signature only says “this key signed it”. Your approval tells this device which key really belongs to which person.", "podpis mówi tylko „ten klucz to podpisał”. Twoje zatwierdzenie mówi temu urządzeniu, który klucz naprawdę należy do której osoby."), text("your approval stays in this browser, for this board folder only. It is not written to the board and not sent to anyone.", "zatwierdzenie zostaje w tej przeglądarce, tylko dla tego folderu tablicy. Nie jest zapisywane na tablicy ani nikomu wysyłane."), text("a fingerprint. Never share a private key.", "odcisk klucza. Nigdy nie udostępniaj klucza prywatnego."));
+  // Keys that need review come first, each option names its state (SPEC-002-069).
+  const pendingSummary = node("p", "", review, "signing-pending-summary");
+  pendingSummary.id = "signingPendingSummary";
   const participant = field(review, text("Participant to review", "Uczestnik do sprawdzenia"), "select", "signingParticipant", "Trust participant");
-  for (const p of model.signingContext?.registry.participants || []) {
-    const o = node("option", `${model.people[p.id]?.name || p.id} (${p.id})`, participant);
-    o.value = p.id;
+  const pendingIds = signingPendingReview(model), registered = (model.signingContext?.registry.participants || []).map((p) => p.id);
+  for (const id of [...pendingIds, ...registered.filter((id) => !pendingIds.includes(id))]) {
+    const o = node("option", signingParticipantOption(id, model), participant);
+    o.value = id;
   }
   const keyCard = node("div", "", review, "signing-key-card"), keyName = node("strong", "", keyCard), keyState = node("p", "", keyCard), key = node("code", "", keyCard), keyHelp = node("p", "", keyCard, "signing-help");
   const inspectActions = node("div", "", review, "signing-actions");
@@ -7880,6 +7988,8 @@ async function signingDialog(request) {
     unlockNote.textContent = base ? "" : text("Unlock is off because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie jest wyłączone, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać.");
     requires.textContent = model.signingContext ? signingRequirementText(signingRequirementList([model.signingContext.shared, model.signingContext.floor])) : "";
     counts.textContent = [text("Verified", "Zweryfikowane") + ": " + model.msgs.filter((m) => m.signing?.signature === "valid").length, text("Unsigned", "Bez podpisu") + ": " + model.msgs.filter((m) => m.signing?.signature === "unsigned").length, text("Pending / blocked", "Oczekujące / zablokowane") + ": " + model.msgs.filter((m) => !signingEligible(m)).length].join(" · ");
+    pendingSummary.textContent = signingPendingSummary(model);
+    for (const o of participant.options) { const label = signingParticipantOption(o.value, model); if (o.textContent !== label) o.textContent = label; }
     const id = participant.value, f = model.signingParticipants?.[id];
     if (f?.fingerprint) {
       const pin = model.signingContext?.state.pins[id];
@@ -7925,8 +8035,10 @@ async function signingDialog(request) {
     updateSigningNotice();
   }, { once: true });
   if (go) {
-    if (go.task === "review" && go.participant && [...participant.options].some((o) => o.value === go.participant)) {
-      participant.value = go.participant;
+    // Without a requested participant the review lands on the first key that needs review.
+    const wanted = go.task === "review" ? go.participant || signingPendingReview(model)[0] : null;
+    if (wanted && [...participant.options].some((o) => o.value === wanted)) {
+      participant.value = wanted;
       participant.onchange();
     }
     goTo(go.task, go);
@@ -7936,10 +8048,14 @@ async function signingDialog(request) {
 function wireSigning() {
   const b = document.createElement("button");
   b.className = "btn";
-  b.textContent = exText("Signing", "Podpisy");
   b.id = "signingTools";
-  b.onclick = () => signingDialog();
+  b.innerHTML = '<span class="signing-tools-label"></span><span class="key-badge" hidden><span aria-hidden="true">🔑</span> <span class="key-badge-count"></span></span>';
+  b.querySelector(".signing-tools-label").textContent = exText("Signing", "Podpisy");
+  // With keys waiting for approval, Signing opens on the review of the first of them.
+  b.onclick = () => signingPendingReview(B).length && B.signingContext && !B.signingError ? signingDialog({ task: "review" }) : signingDialog();
   $("#toolbarToolsPanel").append(b);
+  $("#keyNoticeReview")?.addEventListener("click", () => signingDialog({ task: "review" }));
+  $("#keyNoticeLater")?.addEventListener("click", signingKeyNoticeDismiss);
   document.addEventListener("click", (event) => {
     const opener = event.target.closest?.("[data-signing-open]");
     if (!opener) return;

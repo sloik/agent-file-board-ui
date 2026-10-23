@@ -79,6 +79,8 @@ function syncSidebar(){
  const label=t(open?"sidebar_hide":"sidebar_show");button.setAttribute("aria-expanded",String(open));
  if(button.getAttribute("aria-label")!==label){button.setAttribute("aria-label",label);button.title=label+" ("+sidebarShortcut()+")";}
  const tool=$("#sidebarToggleTool");if(tool&&tool.firstChild.textContent!==label){tool.firstChild.textContent=label;tool.lastChild.textContent=sidebarShortcut();}
+ // The "«" inside the sidebar heading only ever hides it (SPEC-002-069).
+ const hide=$("#sideHide"),hideLabel=t("sidebar_hide");if(hide&&hide.getAttribute("aria-label")!==hideLabel){hide.setAttribute("aria-label",hideLabel);hide.title=hideLabel+" ("+sidebarShortcut()+")";}
 }
 function closeSidebarDrawer(focus){
  const side=$("#side");if(!side.classList.contains("open"))return;
@@ -96,6 +98,7 @@ function wireSidebarToggle(){
  const top=document.querySelector(".top"),measure=()=>document.documentElement.style.setProperty("--top-h",Math.round(top.getBoundingClientRect().bottom)+"px");
  measure();if(typeof ResizeObserver==="function")new ResizeObserver(measure).observe(top);
  $("#menu").onclick=toggleSidebar;$("#sideScrim").onclick=()=>closeSidebarDrawer(true);
+ $("#sideHide").onclick=()=>{toggleSidebar();$("#menu").focus({preventScroll:true});};
  document.addEventListener("keydown",event=>{
   if(event.defaultPrevented)return;
   if(event.key==="Escape"&&sidebarDrawer()&&$("#side").classList.contains("open")&&!document.querySelector("dialog[open]")){event.preventDefault();closeSidebarDrawer(true);}
