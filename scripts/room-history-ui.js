@@ -610,8 +610,10 @@ async function historyCreationDeclare({ me, tid }) {
 function historyCreationFailure(message, created) {
   return created?.written ? exText(`Setting saved in config.json, but the message was not posted (draft kept): ${message}`, `Ustawienie zapisano w config.json, ale wiadomość nie została wysłana (szkic zachowano): ${message}`) : message;
 }
-// AC4: a post from this viewer into a recording scope is never a silent gap.
-function historyPostedNote(msg) {
+// AC4: a post from this viewer into a recording scope is never a silent gap. Every published
+// post (composer, topic title, forms, answers) passes here; the note stays under the composer
+// until its destination changes.
+function historyPostedNote(msg, announce = true) {
   historyPosted = null;
   try {
     const h = parseHeaders(msg.text).native.h, scope = msg.relPath.split("/").slice(0, 2).join("/");
@@ -619,7 +621,7 @@ function historyPostedNote(msg) {
     const text = exText(`Not recorded by this viewer: record with boardctl history observe --scope ${scope} --from ${h.FROM} --signing-key-file KEY_FILE, or post from the CLI.`, `Nie zapisano przez tę przeglądarkę: zapisz przez boardctl history observe --scope ${scope} --from ${h.FROM} --signing-key-file KEY_FILE albo wyślij z CLI.`);
     // Called after the composer is reset: the note stays until its destination changes.
     historyPosted = { anchor: historyComposerAnchor(), text };
-    toast(text);
+    if (announce) toast(text);
   } catch { /* the history panel reports an unreadable setting */ } finally { historyComposerUpdate(); }
 }
 function historyCreationReset() {

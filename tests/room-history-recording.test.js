@@ -27,6 +27,11 @@ function cliStatus(f,scope,stateDir=null){
   const r=spawnSync(python,[h.path.join(h.VENDOR,'boardctl.py'),'history','status','--scope',scope,'--path',f.proj],{env:{...process.env,AGENT_FILE_BOARD_STATE_DIR:stateDir||h.path.join(f.tmp,'private-state')},encoding:'utf8'});
   assert.ok(r.stdout.trim(),r.stderr);return JSON.parse(r.stdout).scopes[scope];
 }
+// The CLI with another private state directory: a second reader on its own device.
+function cliAt(f,stateDir,...args){
+  const r=spawnSync(python,[h.path.join(h.VENDOR,'boardctl.py'),...args,'--path',f.proj],{env:{...process.env,AGENT_FILE_BOARD_STATE_DIR:stateDir},encoding:'utf8'});
+  assert.equal(r.status,0,r.stderr);return r.stdout;
+}
 function cliPost(f,who,room,thread,slug,...extra){
   const r=spawnSync(python,[h.path.join(h.VENDOR,'boardctl.py'),'post','--path',f.proj,'--from',who.participant,'--to','all','--scope','room','--room',room,'--thread',thread,'--slug',slug,'--body','Synthetic '+slug,'--signing-key-file',who.key,...extra],{env:{...process.env,AGENT_FILE_BOARD_STATE_DIR:h.path.join(f.tmp,'private-state')},encoding:'utf8'});
   assert.equal(r.status,0,r.stderr);return r.stderr;
@@ -52,14 +57,18 @@ test('AC1/AC2/AC6: a room the CLI created with recording shows its setting, who 
   const err=cliPost(f,owner,'releases','T050','open','--new-room','--record-history');
   assert.match(err,/history: recorded rooms\/releases as human-owner-01/);
   cliPost(f,owner,'releases','T050','second');
+  // A second recorder whose key the viewer will not approve.
+  const {peer}=f;cliTrust(f,peer);
+  assert.match(cliPost(f,peer,'releases','T050','peer-note'),/history: recorded rooms\/releases as research-agent-01/);
   await refresh(f);await openRoom(page,'releases');
-  const owner_=await name(page,owner.participant);
+  const owner_=await name(page,owner.participant),peer_=await name(page,peer.participant);
   assert.equal(await page.evaluate(()=>B.msgs.filter(m=>m.dir==='releases').every(m=>m.signing.eligibility==='eligible')),true,'signing verdicts are unaffected');
   await expect(page.locator('#historyOpen')).toContainText('Not set up');
   await openPanel(page);
   await expect(panel(page).locator('[data-history-recording="room"]')).toHaveText('Records automatically on signed posts');
   const hint=panel(page).locator(`[data-history-trust-hint="${owner.participant}"]`);
   await expect(hint).toContainText(`Records by ${owner_} count here only after you approve ${owner_}'s key.`);
+  await expect(panel(page).locator(`[data-history-trust-hint="${peer.participant}"]`)).toContainText(`Records by ${peer_} count here only after you approve ${peer_}'s key.`);
   await expect(panel(page).locator('.history-recorded-by')).toHaveCount(0);
   await agrees(page,cliStatus(f,'rooms/releases',h.path.join(f.tmp,'fresh-reader')),'a reader that approved nobody');
   await hint.getByRole('button',{name:`Review ${owner_}'s fingerprint`}).click();
@@ -67,12 +76,22 @@ test('AC1/AC2/AC6: a room the CLI created with recording shows its setting, who 
   await expect(page.locator('#signingDialog')).toBeVisible();
   await expect(page.getByLabel('Trust participant',{exact:true})).toHaveValue(owner.participant);
   await trust(page,owner);await closeSigning(page);
-  await expect(page.locator('#historyOpen')).toContainText('2 of 2 available');
+  await expect(page.locator('#historyOpen')).toContainText('available');
   await openPanel(page);
   await expect(panel(page).locator('.history-recorded-by')).toHaveText(`Recorded by ${owner_} (approved key)`);
-  await expect(panel(page).locator('[data-history-trust-hint]')).toHaveCount(0);
-  await agrees(page,cliStatus(f,'rooms/releases'),'a reader that approved the recorder');
+  await expect(panel(page).locator('[data-history-trust-hint]')).toHaveCount(1);
+  await expect(panel(page).locator(`[data-history-trust-hint="${peer.participant}"]`)).toBeVisible();
+  const ownerOnly=h.path.join(f.tmp,'owner-reader');
+  cliAt(f,ownerOnly,'signing','trust','--participant',owner.participant,'--profile',owner.profile,'--fingerprint',owner.fingerprint);
+  await agrees(page,cliStatus(f,'rooms/releases',ownerOnly),'a reader that approved one of two recorders');
   await shot(page,'desktop-light-history-recorded-by.png');
+  await closePanel(page);
+  // Approving the second recorder lists both, each with its key status.
+  await approve(page,peer);
+  await openPanel(page);
+  await expect(panel(page).locator('.history-recorded-by')).toHaveText(`Recorded by ${owner_} (approved key), ${peer_} (approved key)`);
+  await expect(panel(page).locator('[data-history-trust-hint]')).toHaveCount(0);
+  await agrees(page,cliStatus(f,'rooms/releases'),'a reader that approved both recorders');
   await closePanel(page);
   // A thread-only declaration names its topics.
   f.cli('history','policy','--scope','rooms/architecture','--thread','T001','--record','on-post');
@@ -122,6 +141,7 @@ test('AC3/AC4: a new room declared from the composer writes the CLI policy befor
   await unlock(page,owner);
   await page.check('#cRequireTrusted');
   await expect(notice(page)).toHaveAttribute('data-signing-status','signed');
+  await expect(page.locator('#toast.show')).toHaveCount(0,{timeout:10000});
   await shot(page,'desktop-composer-new-room-options.png');
   // Cancelling the review writes nothing and keeps the draft.
   await page.click('#send');
@@ -182,6 +202,16 @@ test('AC3: a new topic declares only that topic, under the number the message is
   assert.equal(cfg.message_signing,undefined,'only the ticked option is written');
   const posted=h.fs.readdirSync(h.path.join(f.proj,'.agent-board/rooms/product')).filter(n=>n.includes('_'+tid+'_'));
   assert.equal(posted.length,1,'the message uses the declared topic number');
+  // Every viewer post into the recording topic says so, not only the composer's (here: a topic title).
+  await page.click(`.tcard[data-tk='room:product|${tid}']`);
+  await expect(page.locator('#toast.show')).toHaveCount(0,{timeout:10000});
+  const posts=()=>page.evaluate(tid=>B.msgs.filter(m=>m.dir==='product'&&m.tid===tid).length,tid);
+  assert.equal(await posts(),1);
+  await page.fill('#topicTitle','Recorded topic');await page.click('#setTitle');
+  await expect.poll(posts).toBe(2);
+  await expect(page.locator('#toast')).toContainText(`Not recorded by this viewer: record with boardctl history observe --scope rooms/product --from ${owner.participant}`);
+  await exportBoard(page,f.proj);
+  assert.equal(h.fs.readdirSync(h.path.join(f.proj,'.agent-board/rooms/product')).filter(n=>n.includes('_'+tid+'_')).length,2,'the title message was posted');
   // A post into another topic of that room is not a recording scope: no note.
   const otherKey=await page.evaluate(tid=>[...document.querySelector('#cThread').options].map(o=>o.value).find(v=>v&&threadsOf()[v].tid!==tid),tid);
   await page.selectOption('#cThread',otherKey);

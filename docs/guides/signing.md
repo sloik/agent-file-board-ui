@@ -324,6 +324,7 @@ Agents often post with `boardctl`, not the viewer, so the refusal text comes fro
 1. Give the board an identity UUID first: `boardctl identity enable --path <board>`. A room cannot require trusted signatures without one.
 2. Register everyone who must post. Each person makes a key (`boardctl signing keygen --output KEY_FILE`, which prints the next commands) and public profile (`boardctl signing profile`); you import the public profile (`boardctl identity import <id> --profile-file <file> --sha256 <hash>`). Never collect private keys.
 3. Require signing: `boardctl signing require --path <board> --scope rooms/<room> --minimum trusted` for one room, or `--board` for the whole board. Then `boardctl signing check --path <board> --from <id> --scope rooms/<room>` shows each person what is still missing.
+   In the viewer, the room menu (…) > **Room history and signing…** does the same for an existing room or topic after you review the exact `config.json` change, and the composer offers **Require trusted signatures** when it creates a new room or topic. Lowering a requirement needs an extra confirmation, like `--weaken`.
 4. Tell people the steps: unlock your own key, choose who to sign as, approve your own fingerprint once. Approvals are per device and are never shared.
 
 ## When a key changes or a message stays blocked

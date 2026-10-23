@@ -3562,10 +3562,10 @@ async function sendImpl(){
       ...structuredComposerPayload(), contentType:$("#cContentType").value, replyTo: replyTo ? replyTo.file : null, confirmedAgent: confirmed});
     const submittedDraft=signingDraftStamp();
     await deliverMessage(msg);
-    if(submittedDraft!==signingDraftStamp()){toast(exText("Previous message posted; newer draft kept","Poprzednia wiadomość wysłana; nowy szkic zachowany"));historyPostedNote(msg);return;}
+    if(submittedDraft!==signingDraftStamp()){toast(exText("Previous message posted; newer draft kept","Poprzednia wiadomość wysłana; nowy szkic zachowany"));return;}
     clearStructuredAttachment();
     $("#cBody").value = ""; $("#cNewThread").value = ""; $("#cNewRoom").value = ""; clearReply(); syncLang(true); historyCreationReset();
-    historyPostedNote(msg);
+    historyPostedNote(msg,false);                            // keep the note for the composer's destination after the reset
   }catch(e){
     toast(historyCreationFailure(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)}),created));
   }
@@ -3769,7 +3769,7 @@ async function deliverMessageImpl(msg,options={}){
   msg=withFirstAnswerClaim(msg);
   let packet;try{packet=await signingDelivery(msg,options);}catch(e){throw signingRefusal(e);}msg=packet.msg;
   const target=options.base||baseHandle;
-  if(canWrite() && target){ if(packet.sidecar)await writeNewFile(packet.sidecar.path,packet.sidecar.text,target,"signature",packet.guard); if(packet.guard)await packet.guard(); await writeNewFile(msg.relPath,msg.text,target,"message",packet.guard); await readFromHandle(); toast(t("toast_sent")); }
+  if(canWrite() && target){ if(packet.sidecar)await writeNewFile(packet.sidecar.path,packet.sidecar.text,target,"signature",packet.guard); if(packet.guard)await packet.guard(); await writeNewFile(msg.relPath,msg.text,target,"message",packet.guard); await readFromHandle(); toast(t("toast_sent")); historyPostedNote(msg); }
   else{
     if(packet.sidecar)throw signingRefusal(Error("Signed publication requires a writable board folder; draft preserved"),true);
     const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([msg.text],{type:"text/plain;charset=utf-8"})); a.download=msg.fileName; a.click();
@@ -4811,8 +4811,10 @@ async function historyCreationDeclare({ me, tid }) {
 function historyCreationFailure(message, created) {
   return created?.written ? exText(`Setting saved in config.json, but the message was not posted (draft kept): ${message}`, `Ustawienie zapisano w config.json, ale wiadomość nie została wysłana (szkic zachowano): ${message}`) : message;
 }
-// AC4: a post from this viewer into a recording scope is never a silent gap.
-function historyPostedNote(msg) {
+// AC4: a post from this viewer into a recording scope is never a silent gap. Every published
+// post (composer, topic title, forms, answers) passes here; the note stays under the composer
+// until its destination changes.
+function historyPostedNote(msg, announce = true) {
   historyPosted = null;
   try {
     const h = parseHeaders(msg.text).native.h, scope = msg.relPath.split("/").slice(0, 2).join("/");
@@ -4820,7 +4822,7 @@ function historyPostedNote(msg) {
     const text = exText(`Not recorded by this viewer: record with boardctl history observe --scope ${scope} --from ${h.FROM} --signing-key-file KEY_FILE, or post from the CLI.`, `Nie zapisano przez tę przeglądarkę: zapisz przez boardctl history observe --scope ${scope} --from ${h.FROM} --signing-key-file KEY_FILE albo wyślij z CLI.`);
     // Called after the composer is reset: the note stays until its destination changes.
     historyPosted = { anchor: historyComposerAnchor(), text };
-    toast(text);
+    if (announce) toast(text);
   } catch { /* the history panel reports an unreadable setting */ } finally { historyComposerUpdate(); }
 }
 function historyCreationReset() {
