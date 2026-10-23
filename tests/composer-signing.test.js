@@ -242,3 +242,30 @@ test('Sign as me: numbered steps, persona defaults to "I am", and changing it ch
   await closeSigning(page);
   await status(page,'signed');
 });
+
+test('a persona switch during sending is refused after signing and at the final write guard, keeping the draft',async t=>{
+  const f=await boot(t),{page,owner,peer}=f;
+  page.on('dialog',dialog=>dialog.accept());
+  await openSigning(page);
+  await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles([owner.key,peer.key]);
+  await action(page,'Unlock selected keys');await closeSigning(page);
+  assert.deepEqual(await catalog(page),[owner.participant,peer.participant].sort(),'both keys are unlocked, so only the persona check can refuse');
+  await room(page);await status(page,'signed');
+  // S.me changes directly, so neither the draft stamp nor the provider epoch moves.
+  await page.fill('#cBody','Switched while signing');
+  await page.evaluate(id=>{const original=signingProvider.sign.bind(signingProvider);signingProvider.sign=async(...args)=>{const result=await original(...args);S.me=id;signingProvider.sign=original;return result;};},peer.participant);
+  await page.click('#send');
+  await expect(page.locator('#toast')).toContainText('Board, draft or signer changed');
+  await expect(page.locator('#cBody')).toHaveValue('Switched while signing');
+  assert.equal(await published(page,'Switched while signing'),false);
+  await page.evaluate(id=>{S.me=id;},owner.participant);
+  await page.fill('#cBody','Switched at write');
+  await page.evaluate(async id=>{
+    const proto=Object.getPrototypeOf(await baseHandle.getFileHandle('config.json')),original=proto.createWritable;
+    proto.createWritable=async function(...args){const writer=await original.apply(this,args);if(this.name.endsWith('_switched-at-write.txt')){const write=writer.write;writer.write=async(...data)=>{await write.apply(writer,data);S.me=id;};}return writer;};
+  },peer.participant);
+  await page.click('#send');
+  await expect(page.locator('#toast')).toContainText('Posting context changed');
+  await expect(page.locator('#cBody')).toHaveValue('Switched at write');
+  assert.equal(await published(page,'Switched at write'),false);
+});
