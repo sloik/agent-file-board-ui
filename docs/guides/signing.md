@@ -185,12 +185,12 @@ instead, and another unlocked key never stands in for the persona.
 Unlocking needs two things: the **persona** you sign as and **that persona’s private
 key file**. The file is read into this tab only.
 
-**From the composer (quickest).** The status row next to **Send** offers
+**From the composer (quickest).** The status row directly above **Send** offers
 **🔒 Unlock Maya’s key** for the persona in “I am”. It opens the file picker
-directly; choose that persona’s private key file and the key is unlocked and bound
-to the persona in one step. If the file belongs to another participant, the row
-says so (“This key belongs to Sam, not Maya.”) and offers **Switch persona to Sam**;
-it never switches for you. An invalid file reports the error and changes nothing.
+directly; choose that persona’s private key file (the file must be on this device)
+and the key is unlocked and bound to the persona in one step. If the file belongs to
+another participant, the row says so and offers **Switch persona to Sam**; it never
+switches for you. An invalid file reports the error and changes nothing.
 
 **From the Signing dialog.** Open **Tools → Signing → Sign as me** and follow the
 numbered steps:
@@ -220,7 +220,7 @@ at a narrow width.
 
 </details>
 
-### The signing status next to Send
+### The signing status above Send
 
 On a native board the composer always shows what will happen to the message you
 are about to post, for the persona in “I am” and the current room, topic or
@@ -228,26 +228,40 @@ recipient. It updates when you change persona or destination, unlock, lock, appr
 refresh, and within 30 seconds of the 15-minute key expiry. **Send** checks again at
 the moment of sending, and a refused send shows the same explanation.
 
-![The composer status row next to Send: “Will be signed as …” with a lock button.](../images/signing-composer.png)
+![The composer status row directly above Send: “Will be signed as …” with a lock button.](../images/signing-composer.png)
 
 | Status (for persona Maya) | What it means | Button |
 | --- | --- | --- |
-| ⚠️ Signing unavailable | The board’s signing evidence or your private signing records cannot be used (no board UUID, changed UUID, another tab, invalid evidence) | The step from [Why can’t I post?](#why-cant-i-post) |
-| 🔒 Cannot sign: read-only folder | Signing is needed, but the folder is open read-only | **Open the writable folder** |
-| 🔒 Maya has no signing key | Maya has no registered public key on this board | **How to get a key** |
-| 🚫 Maya's key is revoked | Maya’s current key was revoked or retired | **Review the key** |
-| 🔒 Maya's key was replaced | Maya’s key was rotated since you unlocked it | **🔒 Unlock the new key** |
-| 🔒 Unlock Maya's key to post | Signing is required here or signed mode is on, and Maya’s key is locked in this tab | **🔒 Unlock Maya's key** opens the file picker; where the destination allows it, **Post unsigned instead** |
-| 🔓 Approve Maya's key to post here | The key is unlocked, but this destination needs trusted signatures and you have not approved Maya’s key on this device (or it changed) | **🔓 Approve the key** |
-| 🔏 Will be signed as Maya | The message will be signed as Maya. The key locks after 15 minutes without use | **🔒 Lock key** |
-| 📝 Will post unsigned | This destination does not require signatures and signing is off | **🔒 Unlock Maya's key to sign**, when Maya has a registered key and the folder is writable |
+| ❗ Signing unavailable | The board’s signing evidence or your private signing records cannot be used (no board UUID, changed UUID, another tab, invalid evidence) | The step from [Why can’t I post?](#why-cant-i-post), for example **Open Signing** |
+| 👤 Choose who you are | No persona is selected in “I am” | **Choose persona** |
+| ⛔ Cannot sign: read-only folder | Signing is needed, but the folder is open read-only | **Open the writable folder** |
+| ❔ Maya has no signing key | Maya has no registered public key on this board | **How to get a key**; **Not yours? Choose another persona** |
+| 🚫 Maya's key is revoked | Maya’s current key was revoked or retired; it is never offered for approval | **What to do about a revoked key** |
+| 🔄 Maya's key was replaced | Maya’s key was rotated since you unlocked it | **🔒 Unlock the new key** |
+| 🔒 Unlock Maya's key to post | Signing is required here or turned on, and Maya’s key is locked in this tab | **🔒 Unlock Maya's key** opens the file picker. Also **Not yours? Choose another persona**, or, where the destination allows it, **Post unsigned instead** (asks you to confirm and locks the keys) |
+| ⚠️ Maya's key changed since you approved it | This destination needs trusted signatures, and the board lists a different key than the one you approved | **🔑 Verify the new key** opens the fingerprint review |
+| 🔑 Approve Maya's key once on this device | The key is unlocked, but this destination needs trusted signatures and you have not approved Maya’s key on this device | **🔑 Review and approve the key** opens the fingerprint review; the composer never approves in one click |
+| 🔏 Will be signed as Maya | The message will be signed as Maya. The key locks after 15 minutes without signing | **🔒 Lock Maya's key** (when other keys are unlocked too, **Lock all keys in this tab**: keys are always locked together) |
+| 📝 Will post unsigned | This destination does not require signatures and signing is off | A small link: **🔒 Unlock Maya's key to sign**, or **🔏 Turn signing on** when the key is already unlocked |
+
+**Send follows the status.** 🔏 signs as the persona, 📝 posts unsigned, and every
+other status refuses with its explanation and keeps your draft. A room that requires
+signatures signs whenever Maya’s key is unlocked and approved there, even if you
+turned signing off for optional rooms.
+
+If the key file you pick belongs to another participant, the row names that
+participant and the key’s fingerprint and says it is not for the current persona.
+**Switch persona to Sam** appears as a button and only acts when you press it. A key
+that matches nobody says “This key belongs to nobody on this board.” The file input
+is cleared after reading; nothing about which file held which key is stored. On a
+phone, the row shows the emoji and short label; tap **Details** for the explanation.
 
 On a read-only upload, the row also explains that unlocking is unavailable until you
 open the board folder with write access.
 
 Private keys become non-extractable WebCrypto handles in this tab. They are not
 saved to browser storage, exported, logged or passed to extension workers.
-**Lock signing keys** (or **🔒 Lock key** in the composer), reload, switching boards
+**Lock all keys** (or the 🔒 lock button in the composer; the tab always locks all keys together), reload, switching boards
 or 15 minutes without actual signing/unlock activity discards the capability. You
 must unlock again afterward; the composer shows 🔒 as soon as that happens.
 

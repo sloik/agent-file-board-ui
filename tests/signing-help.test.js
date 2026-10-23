@@ -148,8 +148,8 @@ test('docs troubleshooting table repeats the in-app wording for every blocked re
 test('docs list every composer status with its in-app label and button', () => {
   const api = module(), doc = fs.readFileSync(path.join(h.ROOT,'docs/guides/signing.md'),'utf8').replace(/\u2019/g,"'").replace(/\s+/g,' ');
   const base = over => ({hasContext:true,writable:true,required:false,mode:'unsigned',persona:'maya',name:'Maya',catalog:[],known:{},participants:{maya:{fingerprint:'fp'}},pins:{},...over});
-  const cases = [base({error:'boom'}),base({writable:false,required:true}),base({required:true,participants:{maya:{unregistered:true}}}),base({required:true,catalog:['maya'],participants:{maya:{fingerprint:'fp',revoked:{}}}}),
-    base({mode:'signed',known:{maya:'old'}}),base({required:true}),base({required:true,mode:'signed',catalog:['maya']}),base({mode:'signed',catalog:['maya']}),base()];
+  const cases = [base({error:'boom'}),base({persona:'',name:'',required:true}),base({writable:false,required:true}),base({required:true,participants:{maya:{unregistered:true}}}),base({required:true,catalog:['maya'],participants:{maya:{fingerprint:'fp',revoked:{}}}}),
+    base({mode:'signed',known:{maya:'old'}}),base({required:true}),base({required:true,mode:'signed',catalog:['maya'],pins:{maya:'old'}}),base({required:true,mode:'signed',catalog:['maya']}),base({mode:'signed',catalog:['maya']}),base()];
   assert.deepEqual(cases.map(c=>api.signingComposerStatus(c).id),Array.from(api.SIGNING_COMPOSER_ORDER));
   for (const status of cases.map(c=>api.signingComposerStatus(c))) {
     assert.ok(doc.includes(`${status.emoji} ${status.label}`),'docs show the status '+status.id);
@@ -168,12 +168,12 @@ test('Nadia: a required room walks from a locked key to a successful signed post
   assert.equal(await page.inputValue('#cBody'),'Hello from Nadia'); assert.equal(await page.evaluate(()=>B.msgs.length),before);
   // The button opens the key-file picker directly; the key binds to the persona in one step.
   const chooser = page.waitForEvent('filechooser'); await button(page).click(); await (await chooser).setFiles(f.owner.key);
-  await expectStatus(page,'needs-approval','🔓 Approve the key',`${nadia}'s key is not approved on this device yet. Even your own key is approved once here`);
+  await expectStatus(page,'needs-approval','🔑 Review and approve the key',`${nadia}'s key is not approved on this device yet. Even your own key is approved once here`);
   await button(page).click();
   assert.deepEqual(await openerState(page),{open:true,focus:'signingFingerprint',participant:f.owner.participant});
   await page.fill('#signingFingerprint',f.owner.fingerprint); await action(page,'Trust exact fingerprint');
   await closeSigning(page);
-  await expectStatus(page,'signed','🔒 Lock key','Your key is unlocked and approved for this destination.');
+  await expectStatus(page,'signed',`🔒 Lock ${nadia}'s key`,`${nadia}'s key is unlocked and approved for this destination.`);
   await page.click('#send'); await expect(page.locator('#cBody')).toHaveValue('');
 });
 
@@ -188,13 +188,14 @@ test('Kai: rotation, a needed re-approval and a revocation each name the exact c
   await page.fill('#cBody','Agent post after rotation'); await page.click('#send');
   await expect(page.locator('#toast')).toContainText('signing key was replaced (rotated)');
   await unlock(page,rotated);
-  await expectStatus(page,'needs-approval','🔓 Approve the new key','You approved an earlier key');
+  await expectStatus(page,'key-changed','🔑 Verify the new key','You approved an earlier key');
   await openSigning(page); await trust(page,rotated); await closeSigning(page); await expect(notice(page)).toHaveAttribute('data-signing-status','signed');
   f.cli('signing','revoke','--participant',rotated.participant,'--key-file',rotated.key,'--expect-profile',rotated.profile,'--status','compromised');
   await refresh(f);
-  await expectStatus(page,'key-revoked','Review the key','is revoked or retired and cannot sign new messages');
+  await expectStatus(page,'key-revoked','What to do about a revoked key','is revoked or retired and cannot sign new messages');
+  // A revoked key is never offered for approval; the button explains how to get a new one.
   await button(page).click();
-  assert.deepEqual(await openerState(page),{open:true,focus:'signingFingerprint',participant:rotated.participant});
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'signing-setup-you');
 });
 
 test('Marta: a required policy without a board UUID is named, and the button shows the owner steps', async t => {
@@ -283,7 +284,7 @@ test('the status fits a phone, in Polish, with a long message', async t => {
   assert.equal(await notice(page).getAttribute('data-signing-status'),'needs-unlock');
   const geometry = await page.evaluate(()=>{const n=document.querySelector('#signingNotice'),b=n.querySelector('.signing-notice-action').getBoundingClientRect(),r=n.getBoundingClientRect();return {over:document.documentElement.scrollWidth>innerWidth,inside:b.left>=r.left-1&&b.right<=r.right+1&&r.right<=innerWidth+1&&r.left>=0,text:n.querySelector('.signing-notice-text').textContent};});
   assert.deepEqual([geometry.over,geometry.inside],[false,true]);
-  assert.match(geometry.text,/Ten cel wymaga zaufanych podpisów, a klucz \(.+\) jest zablokowany w tej karcie/);
+  assert.match(geometry.text,/Ten cel wymaga zaufanych podpisów, a klucz: .+ jest zablokowany w tej karcie/);
 });
 
 async function helpOpen(page) {

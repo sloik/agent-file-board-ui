@@ -232,9 +232,13 @@ body.resizing{cursor:col-resize;user-select:none}
 .signing-example-steps li:before{content:counter(signing-step);display:block;font-weight:700;color:var(--accent);font-size:1.2em;margin-bottom:8px}
 .signing-example-steps p{margin:8px 0 0;color:var(--muted)}
 #signing-advanced pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:30vh;overflow:auto;font-size:.8em;padding:10px;background:var(--panel2)}
-.signing-notice{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:6px 0 0;padding:6px 10px;border:1px solid var(--line);border-left-width:4px;border-radius:7px;background:var(--panel2);color:var(--ink);font-size:.9em;line-height:1.45}
+.signing-notice{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 6px;padding:6px 10px;border:1px solid var(--line);border-left-width:4px;border-radius:7px;background:var(--panel2);color:var(--ink);font-size:.9em;line-height:1.45}
 .signing-notice[data-tone=warn]{border-color:var(--warn-ink);background:var(--warn-bg);color:var(--warn-ink)}.signing-notice[data-tone=ok]{border-color:var(--accent)}
-.signing-notice[hidden],.signing-notice [hidden]{display:none}.signing-notice-emoji{flex:0 0 auto;font-size:1.15em;line-height:1}
+.signing-notice[hidden],.signing-notice [hidden]{display:none}.signing-notice-head{display:inline-flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere}.signing-notice-emoji{flex:0 0 auto;font-size:1.15em;line-height:1}
+.signing-link{background:none;border:0;padding:2px 0;color:var(--accent);text-decoration:underline;cursor:pointer;font:inherit;text-align:left;max-width:100%;overflow-wrap:anywhere}
+.signing-notice-more{display:none}.signing-notice-hint{font-size:.9em;color:var(--muted)}
+@media (max-width:600px){.signing-notice:not(.expanded) .signing-notice-text{display:none}.signing-notice-more{display:inline-flex;align-items:center;min-height:44px;margin-left:auto}.signing-notice-head{flex:1 1 0}
+.signing-notice:not(.expanded) .signing-notice-body:not(:has(.signing-notice-note:not([hidden]))){display:none}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}}
 .signing-notice-body{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}.signing-notice:not([data-tone=warn]) .signing-notice-text{color:var(--muted)}
 .signing-notice-note{display:block;margin-top:4px;font-weight:600}.signing-notice-actions,.signing-notice-switches{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;min-width:0}
 .signing-notice .btn{flex:0 1 auto;white-space:normal;max-width:100%}
@@ -582,11 +586,11 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
         </div>
         </details>
         <div id="structuredAttachment" hidden><span id="structuredAttachedText"></span> <button class="btn" id="structuredRemove" type="button" data-i18n="authoring_remove"></button></div>
+        <div class="signing-notice" id="signingNotice" role="status" hidden><span class="signing-notice-head"><span class="signing-notice-emoji" aria-hidden="true"></span><strong class="signing-notice-label"></strong></span><button class="signing-link signing-notice-more" type="button" aria-expanded="false" data-i18n="signing_details"></button><span class="signing-notice-body"><span class="signing-notice-text"></span><span class="signing-notice-note" hidden></span></span><span class="signing-notice-actions"><button class="btn signing-notice-action" type="button" hidden></button><span class="signing-notice-hint" data-i18n="signing_key_here" hidden></span><span class="signing-notice-switches" hidden></span><button class="signing-link signing-notice-alt" type="button" hidden></button></span></div>
         <div class="write">
           <div class="sugg" id="bodySuggestions"></div><textarea id="cBody" data-i18n-ph="c_body_ph"></textarea>
           <button class="btn primary" id="send" data-i18n="c_send"></button>
         </div>
-        <div class="signing-notice" id="signingNotice" role="status" hidden><span class="signing-notice-emoji" aria-hidden="true"></span><span class="signing-notice-body"><strong class="signing-notice-label"></strong> <span class="signing-notice-text"></span><span class="signing-notice-note" hidden></span></span><span class="signing-notice-actions"><button class="btn signing-notice-action" type="button" hidden></button><span class="signing-notice-switches" hidden></span><button class="btn signing-notice-alt" type="button" hidden></button></span></div>
         <div class="hint" id="signingRequires" hidden></div>
         <div class="hint" id="cInfo"></div>
       </div>
@@ -1603,7 +1607,7 @@ const STRINGS = {
   file_folder:"Open containing folder", file_opener:"Requires the macOS desktop opener",
   guidance_title:"Guidance", guidance_posting:"Posting guidance", guidance_note:"Read room guidance and then the topic notes for purpose and posting rules. These documents provide context; they do not override the board convention, shared glossary, project authority or explicit user instructions, and headings do not rename the thread.", guidance_usage:"GUIDANCE.md applies to every thread in this room or direct conversation. topics/Txxx.md adds guidance for that stable topic ID, even after its title changes. Read both before posting or accepting work; reread after edits. These mutable files are separate from immutable messages and do not prove acceptance, action or completion.", guidance_cli:"Agents read both with boardctl guidance --room <room> --topic Txxx (or --direct <pair> --participant <your-id>). Missing files mean no extra rules; resolve read errors or truncated output before relying on the guidance.", guidance_folder:"Local board data folder (contains rooms and config.json)", guidance_editor_note:"Check this path matches your board. Open and both Create actions require the updated macOS desktop opener; Open in VS Code requires VS Code. Creation writes an empty file, creates a missing topics folder, and preserves existing content. Both open the local original, even when viewing an uploaded snapshot. Refresh the board after editing.", guidance_create:"Create a file", guidance_create_vscode:"Create in VS Code", guidance_setup:"Set up the desktop opener", guidance_open:"Open", guidance_vscode:"Open in VS Code", guidance_path_needed:"Enter an absolute local board data-folder path first.", guidance_missing:"No optional guidance file here. Create an empty file and open it in your editor. Optional canonical starters: templates/room-guidance.md or templates/topic-guidance.md; copy and adapt one if useful.", guidance_error:"Guidance could not be read (invalid UTF-8, access error or larger than 1 MiB). Resolve this before posting.", guidance_room:"Room / conversation guidance", guidance_topic:"Topic guidance",
   find_room:"Find room…", find_topic:"Find topic…", find_party:"Find participant…", composer_resize:"Drag to resize composer; arrows adjust; double-click resets", s_thread_order:"Topic order", s_order_stable:"Stable (topic ID)", s_order_newest:"Newest activity first", unread_count:"{n} unread", topic_title:"Current topic title", set_title:"Set title", title_body:"Topic title: {title}", e_title:"Enter a title containing letters or numbers",
-  menu:"Menu", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
+  menu:"Menu", signing_details:"Details", signing_key_here:"The key file must be on this device.", search_ph:"Search rooms, threads or text... (/)", i_am:"I am", choose_me:"- choose -",
   refresh_now:"Refresh now", settings_title:"Appearance and refresh settings",
   open_folder:"Open board folder", change_folder:"Choose another folder…", last_folder:"Last opened folder:",
   reopen_last:"Open last folder", forget:"Forget", folder_none:"Choose board folder…", folder_is:"Folder: {name}",
@@ -1915,7 +1919,7 @@ const STRINGS = {
   file_folder:"Otwórz folder zawierający", file_opener:"Wymaga programu otwierającego dla macOS",
   guidance_title:"Wskazówki", guidance_posting:"Zasady publikowania", guidance_note:"Przeczytaj wskazówki pokoju, a potem notatki tematu, aby poznać cel i zasady publikowania. To kontekst; nie zastępuje konwencji tablicy, wspólnego słownika, uprawnień projektu ani jawnych instrukcji użytkownika, a nagłówki nie zmieniają tytułu wątku.", guidance_usage:"GUIDANCE.md dotyczy wszystkich wątków pokoju lub rozmowy. topics/Txxx.md uzupełnia zasady stałego identyfikatora tematu, nawet po zmianie tytułu. Przeczytaj oba pliki przed publikacją lub przyjęciem pracy i ponownie po zmianach. Te edytowalne pliki są oddzielne od niezmiennych wiadomości i nie potwierdzają przyjęcia, wykonania ani ukończenia zadania.", guidance_cli:"Agenci odczytują oba pliki: boardctl guidance --room <pokój> --topic Txxx (lub --direct <para> --participant <twój-id>). Brak plików oznacza brak dodatkowych zasad; wyjaśnij błędy odczytu lub uciętą treść przed użyciem wskazówek.", guidance_folder:"Lokalny folder danych tablicy (zawiera rooms i config.json)", guidance_editor_note:"Sprawdź, czy ścieżka wskazuje Twoją tablicę. Otwórz i obie akcje tworzenia wymagają aktualnego programu otwierającego dla macOS; Otwórz w VS Code wymaga VS Code. Tworzenie zapisuje pusty plik, tworzy brakujący folder topics i zachowuje istniejącą treść. Obie akcje otwierają lokalny oryginał, także dla wgranej kopii. Po edycji odśwież tablicę.", guidance_create:"Utwórz plik", guidance_create_vscode:"Utwórz w VS Code", guidance_setup:"Konfiguracja programu otwierającego", guidance_open:"Otwórz", guidance_vscode:"Otwórz w VS Code", guidance_path_needed:"Najpierw wpisz bezwzględną ścieżkę lokalnego folderu danych tablicy.", guidance_missing:"Brak opcjonalnego pliku wskazówek. Utwórz pusty plik i otwórz go w edytorze. Opcjonalne wzory kanoniczne: templates/room-guidance.md lub templates/topic-guidance.md; skopiuj i dostosuj wybrany wzór.", guidance_error:"Nie można odczytać wskazówek (błędny UTF-8, błąd dostępu lub rozmiar ponad 1 MiB). Wyjaśnij to przed publikacją.", guidance_room:"Wskazówki pokoju / rozmowy", guidance_topic:"Wskazówki tematu",
   find_room:"Znajdź pokój…", find_topic:"Znajdź wątek…", find_party:"Znajdź uczestnika…", composer_resize:"Przeciągnij, aby zmienić wysokość edytora; strzałki zmieniają; dwuklik resetuje", s_thread_order:"Kolejność wątków", s_order_stable:"Stała (ID wątku)", s_order_newest:"Najnowsza aktywność najpierw", unread_count:"{n} nieprzeczytanych", topic_title:"Aktualny tytuł wątku", set_title:"Ustaw tytuł", title_body:"Tytuł wątku: {title}", e_title:"Podaj tytuł zawierający litery lub cyfry",
-  menu:"Menu", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
+  menu:"Menu", signing_details:"Szczegóły", signing_key_here:"Plik klucza musi być na tym urządzeniu.", search_ph:"Szukaj pokoju, wątku albo w treści... (/)", i_am:"Jestem", choose_me:"- wybierz -",
   refresh_now:"Odśwież teraz", settings_title:"Ustawienia wyglądu i odświeżania",
   open_folder:"Otwórz folder tablicy", change_folder:"Wybierz inny folder…", last_folder:"Ostatnio otwierany folder:",
   reopen_last:"Otwórz ostatni folder", forget:"Nie pamiętaj", folder_none:"Wybierz folder tablicy…", folder_is:"Folder: {name}",
@@ -5886,56 +5890,67 @@ function signingDiagnose(s) {
 }
 // Composer signing status (SPEC-002-061). The signer is always the persona selected in "I am",
 // so this answers one question before sending: what happens to the message in the composer now?
-// state: {error, hasContext, writable, required, mode, persona, name, catalog:[ids], known:{id:fp},
-// participants:{id:{fingerprint,revoked,unregistered}}, pins:{id:fp}}. The order mirrors what
-// send and delivery check; "unlock" comes before "approve" because people act in that order.
-const SIGNING_COMPOSER_ORDER = ["unavailable", "read-only", "not-registered", "key-revoked", "key-rotated", "needs-unlock", "needs-approval", "signed", "unsigned"];
+// state: {error, hasContext, writable, required, mode, persona, name, names:{id:display name}, catalog:[ids], known:{id:fp},
+// participants:{id:{fingerprint,revoked,unregistered}}, pins:{id:fp}}. SIGNING_COMPOSER_ORDER lists
+// the ids; evaluation checks an optional destination with signing off ("unsigned") right after
+// errors, so a read-only folder there still shows unsigned. "unlock" comes before "approve"
+// because people act in that order. Send follows the status: signed, unsigned or refused.
+const SIGNING_COMPOSER_ORDER = ["unavailable", "no-persona", "read-only", "not-registered", "key-revoked", "key-rotated", "needs-unlock", "key-changed", "needs-approval", "signed", "unsigned"];
 function signingComposerStatus(s, text = exText) {
   if (!s.error && !s.hasContext) return null;
-  const who = s.persona || "", name = s.name || who, p = (s.participants || {})[who] || {}, catalog = s.catalog || [], known = s.known || {}, pins = s.pins || {};
+  const who = s.persona || "", names = s.names || {}, name = s.name || names[who] || who, p = (s.participants || {})[who] || {}, catalog = s.catalog || [], known = s.known || {}, pins = s.pins || {};
   const make = (id, emoji, tone, label, detail, action = null, alt = null) => ({ id, emoji, tone, label, detail, action, alt });
   const unsignedAlt = !s.required && s.mode === "signed" ? { kind: "unsigned", label: text("Post unsigned instead", "Wyślij bez podpisu") } : null;
   if (s.error) {
     const d = signingDiagnose({ error: s.error }), b = signingBlockInfo(d.id, d.vars, text);
-    return make("unavailable", "⚠️", "warn", text("Signing unavailable", "Podpisy niedostępne"), b.message, { kind: "open", task: b.task, anchor: b.anchor, label: b.label });
+    return make("unavailable", "❗", "warn", text("Signing unavailable", "Podpisy niedostępne"), b.message, { kind: "open", task: b.task, anchor: b.anchor, label: b.label });
   }
   if (s.mode !== "signed" && !s.required) {
     const can = s.writable && !!p.fingerprint && !p.revoked;
+    if (can && catalog.includes(who)) return make("unsigned", "📝", "info", text("Will post unsigned", "Zostanie wysłana bez podpisu"), text(`${name}'s key is unlocked, but signing is off. This destination does not require signatures.`, `Klucz: ${name} – odblokowany, ale podpisywanie jest wyłączone. Ten cel nie wymaga podpisów.`),
+      { kind: "sign", label: text("Turn signing on", "Włącz podpisywanie") });
     return make("unsigned", "📝", "info", text("Will post unsigned", "Zostanie wysłana bez podpisu"), text("This destination does not require signatures.", "Ten cel nie wymaga podpisów."),
-      can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz (${name}), aby podpisać`) } : null);
+      can ? { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key to sign`, `Odblokuj klucz: ${name}, aby podpisać`) } : null);
   }
+  if (!who) return make("no-persona", "👤", "warn", text("Choose who you are", "Wybierz, kim jesteś"), text("Choose your persona in “I am”, then unlock its key. Messages are signed as the selected persona.", "Wybierz swoją personę w polu „Jestem”, a potem odblokuj jej klucz. Wiadomości są podpisywane jako wybrana persona."), { kind: "persona", label: text("Choose persona", "Wybierz personę") }, unsignedAlt);
   if (!s.writable) {
     const b = signingBlockInfo("read-only", { required: !!s.required }, text);
-    return make("read-only", "🔒", "warn", text("Cannot sign: read-only folder", "Nie można podpisać: folder tylko do odczytu"), b.message, { kind: "open-folder", label: b.label }, unsignedAlt);
+    return make("read-only", "⛔", "warn", text("Cannot sign: read-only folder", "Nie można podpisać: folder tylko do odczytu"), b.message, { kind: "open-folder", label: b.label }, unsignedAlt);
   }
-  if (!who || p.unregistered || (!p.fingerprint && !catalog.includes(who) && !p.error)) {
+  const otherPersona = { kind: "persona", label: text("Not yours? Choose another persona", "Nie Twoja? Wybierz inną personę") };
+  if (p.unregistered || (!p.fingerprint && !catalog.includes(who) && !p.error)) {
     const b = signingBlockInfo("not-registered", { s: name, required: !!s.required }, text);
-    return make("not-registered", "🔒", "warn", text(`${name || "This persona"} has no signing key`, `${name || "Ta persona"} nie ma klucza podpisu`), b.message, { kind: "howto", anchor: "keys", label: b.label }, unsignedAlt);
+    return make("not-registered", "❔", "warn", text(`${name} has no signing key`, `${name} nie ma klucza podpisu`), b.message, { kind: "howto", anchor: "keys", label: b.label }, unsignedAlt || otherPersona);
   }
   if (p.revoked) {
     const b = signingBlockInfo("key-revoked", { s: name }, text);
-    return make("key-revoked", "🚫", "warn", text(`${name}'s key is revoked`, `Klucz (${name}) jest unieważniony`), b.message, { kind: "approve", participant: who, label: b.label }, unsignedAlt);
+    return make("key-revoked", "🚫", "warn", text(`${name}'s key is revoked`, `Klucz: ${name} – unieważniony`), b.message, { kind: "howto", anchor: "keys", label: text("What to do about a revoked key", "Co zrobić z unieważnionym kluczem") }, unsignedAlt || otherPersona);
   }
   const unlock = { kind: "unlock", participant: who, label: text(`Unlock ${name}'s key`, `Odblokuj klucz: ${name}`) };
   if (!catalog.includes(who)) {
     if (known[who] && p.fingerprint && p.fingerprint !== known[who]) {
       const b = signingBlockInfo("key-rotated", { s: name }, text);
-      return make("key-rotated", "🔒", "warn", text(`${name}'s key was replaced`, `Klucz (${name}) został wymieniony`), b.message, { ...unlock, label: b.label }, unsignedAlt);
+      return make("key-rotated", "🔄", "warn", text(`${name}'s key was replaced`, `Klucz: ${name} – wymieniony`), b.message, { ...unlock, label: b.label }, unsignedAlt);
     }
-    const others = catalog.filter((id) => id !== who);
-    const why = s.required ? text(`This destination requires trusted signatures, and ${name}'s key is locked in this tab.`, `Ten cel wymaga zaufanych podpisów, a klucz (${name}) jest zablokowany w tej karcie.`)
-      : text(`Signing is on, and ${name}'s key is locked in this tab. Nothing is posted unsigned unless you choose that.`, `Podpisywanie jest włączone, a klucz (${name}) jest zablokowany w tej karcie. Nic nie zostanie wysłane bez podpisu, chyba że to wybierzesz.`);
+    const others = catalog.filter((id) => id !== who).map((id) => names[id] || id);
+    const why = s.required ? text(`This destination requires trusted signatures, and ${name}'s key is locked in this tab.`, `Ten cel wymaga zaufanych podpisów, a klucz: ${name} jest zablokowany w tej karcie.`)
+      : text(`You turned signing on, and ${name}'s key is locked in this tab (keys lock after 15 minutes without signing, or when you lock them). Nothing is posted unsigned unless you choose that.`, `Podpisywanie jest włączone, a klucz: ${name} jest zablokowany w tej karcie (klucze blokują się po 15 minutach bez podpisywania lub po zablokowaniu). Nic nie zostanie wysłane bez podpisu, chyba że to wybierzesz.`);
     const also = others.length ? " " + text(`Unlocked here: ${others.join(", ")}. Messages are signed only as the selected persona.`, `Odblokowane tutaj: ${others.join(", ")}. Wiadomości są podpisywane tylko jako wybrana persona.`) : "";
-    return make("needs-unlock", "🔒", "warn", text(`Unlock ${name}'s key to post`, `Odblokuj klucz (${name}), aby wysłać`), why + also + " " + text("You need the private key file for this persona.", "Potrzebujesz pliku klucza prywatnego tej persony."), unlock, unsignedAlt);
+    return make("needs-unlock", "🔒", "warn", text(`Unlock ${name}'s key to post`, `Odblokuj klucz: ${name}, aby wysłać`), why + also + " " + text("You need the private key file for this persona (for an agent, the same file its command line uses).", "Potrzebujesz pliku klucza prywatnego tej persony (dla agenta: tego samego pliku, którego używa wiersz poleceń)."), unlock, unsignedAlt || otherPersona);
+  }
+  // Approval always opens the fingerprint review; the composer never approves in one click.
+  if (s.required && p.fingerprint && pins[who] && pins[who] !== p.fingerprint) {
+    const b = signingBlockInfo("key-changed", { s: name }, text);
+    return make("key-changed", "⚠️", "warn", text(`${name}'s key changed since you approved it`, `Klucz: ${name} – zmieniony od Twojego zatwierdzenia`), b.message, { kind: "approve", participant: who, label: text("Verify the new key", "Sprawdź nowy klucz") });
   }
   if (s.required && p.fingerprint && pins[who] !== p.fingerprint) {
-    const b = signingBlockInfo(pins[who] ? "key-changed" : "key-not-approved", { s: name }, text);
-    return make("needs-approval", "🔓", "warn", text(`Approve ${name}'s key to post here`, `Zatwierdź klucz (${name}), aby wysłać tutaj`), b.message, { kind: "approve", participant: who, label: b.label });
+    const b = signingBlockInfo("key-not-approved", { s: name }, text);
+    return make("needs-approval", "🔑", "warn", text(`Approve ${name}'s key once on this device`, `Zatwierdź raz klucz: ${name} na tym urządzeniu`), b.message, { kind: "approve", participant: who, label: text("Review and approve the key", "Sprawdź i zatwierdź klucz") });
   }
   return make("signed", "🔏", "ok", text(`Will be signed as ${name}`, `Zostanie podpisana jako ${name}`),
-    s.required ? text("Your key is unlocked and approved for this destination. It locks after 15 minutes without use.", "Twój klucz jest odblokowany i zatwierdzony dla tego celu. Zablokuje się po 15 minutach bez użycia.")
-      : text("Your key is unlocked in this tab. It locks after 15 minutes without use.", "Twój klucz jest odblokowany w tej karcie. Zablokuje się po 15 minutach bez użycia."),
-    { kind: "lock", label: text("Lock key", "Zablokuj klucz") });
+    s.required ? text(`${name}'s key is unlocked and approved for this destination. It locks after 15 minutes without signing.`, `Klucz: ${name} – odblokowany i zatwierdzony dla tego celu. Zablokuje się po 15 minutach bez podpisywania.`)
+      : text(`${name}'s key is unlocked in this tab. It locks after 15 minutes without signing.`, `Klucz: ${name} – odblokowany w tej karcie. Zablokuje się po 15 minutach bez podpisywania.`),
+    { kind: "lock", participant: who, label: text(`Lock ${name}'s key`, `Zablokuj klucz: ${name}`) });
 }
 // Reason a received message cannot drive actions, with the one step that helps.
 function signingMessageBlock(m, text = exText) {
@@ -6134,36 +6149,58 @@ function signingDestinationPath() {
   return { path: `${top}/${dir}/x.txt`, thread: newRoom ? "" : th?.tid || "" };
 }
 const signingPersonaName = (id) => B?.people?.[id]?.name || id;
-// What happens to the message in the composer now, from signingComposerStatus and the live state.
+// The one send decision (SPEC-002-061): what signingComposerStatus says now for the persona in
+// "I am" and a destination. "signed" signs as that persona, "unsigned" posts unsigned, anything
+// else refuses with the status detail. The composer row and delivery both use it.
+function signingSendDecision(model, required) {
+  signingNoteCatalog();
+  const c = model.signingContext, names = Object.fromEntries(Object.entries(model.people || {}).map(([id, p]) => [id, p?.name || id]));
+  const status = signingComposerStatus({ error: model.signingError, hasContext: !!c, writable: canWrite(), required, mode: signingMode, persona: currentUser(), names,
+    catalog: signingProvider.catalog().map((p) => p.participant), known: signingKnown, participants: model.signingParticipants || {}, pins: c?.state?.pins || {} });
+  return { kind: !status || status.id === "unsigned" ? "unsigned" : status.id === "signed" ? "signed" : "refused", status };
+}
+// What happens to the message in the composer now, for the composer's destination.
 function signingPostBlock() {
   if (!B) return null;
-  signingNoteCatalog();
-  const c = B.signingContext, target = c ? signingDestinationPath() : null, persona = currentUser();
+  const c = B.signingContext, target = c ? signingDestinationPath() : null;
   let required = false;
   try { required = !!c && c.minimum(target.path, target.thread) === "trusted"; } catch { required = false; }
-  return signingComposerStatus({ error: B.signingError, hasContext: !!c, writable: !!baseHandle && canWrite(), required, mode: signingMode, persona, name: signingPersonaName(persona),
-    catalog: signingProvider.catalog().map((p) => p.participant), known: signingKnown, participants: B.signingParticipants || {}, pins: c?.state?.pins || {} });
+  return signingSendDecision(B, required).status;
 }
-// Padlock emoji on the buttons show what the step is about; the text says it.
-const SIGNING_ACTION_EMOJI = { unlock: "🔒", approve: "🔓", lock: "🔒" };
-function signingNoticeButton(button, action, status) {
+function signingStatusError(status) {
+  const error = new Error(status.detail);
+  error.name = "BoardError";
+  error.signing = status;
+  return error;
+}
+// Emoji on the buttons show what the step is about; the text says it.
+const SIGNING_ACTION_EMOJI = { unlock: "🔒", lock: "🔒", approve: "🔑", sign: "🔏", persona: "👤" };
+// The Provider can only lock every key at once, so the lock button says so when more than one is unlocked.
+function signingActionLabel(action) {
+  if (action.kind !== "lock") return action.label;
+  const others = signingProvider.catalog().filter((p) => p.participant !== action.participant);
+  return others.length ? exText("Lock all keys in this tab", "Zablokuj wszystkie klucze w tej karcie") : action.label;
+}
+function signingNoticeButton(button, action, link) {
   button.hidden = !action;
-  const emoji = action && status.id !== "key-revoked" ? SIGNING_ACTION_EMOJI[action.kind] : "";
-  const label = action ? (emoji ? emoji + " " : "") + action.label : "";
+  const emoji = action ? SIGNING_ACTION_EMOJI[action.kind] : "";
+  const label = action ? (emoji ? emoji + " " : "") + signingActionLabel(action) : "";
   if (button.textContent !== label) button.textContent = label;
   button.dataset.signingKind = action?.kind || "";
+  button.classList.toggle("btn", !link);
+  button.classList.toggle("signing-link", !!link);
 }
 // Extra facts the status function does not cover: the last composer unlock attempt,
 // and why unlocking is unavailable on a read-only folder.
 function signingNoticeNote(status) {
   const persona = currentUser(), note = signingComposerNote;
   if (note && note.persona === persona && note.location === signingLocation) return note;
-  if (status?.id === "unsigned" && !status.action && !(baseHandle && canWrite()) && B?.signingParticipants?.[persona]?.fingerprint)
+  if (status?.id === "unsigned" && !status.action && !canWrite() && B?.signingParticipants?.[persona]?.fingerprint)
     return { kind: "read-only", text: exText("Unlocking a key is unavailable because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie klucza jest niedostępne, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać."), owners: [] };
   return null;
 }
-// One status row next to Send, always visible on boards with signing. It is rebuilt only when
-// its content changes, so a refresh tick never steals focus from its buttons.
+// One status row directly above Send, always visible on boards with signing. It is rebuilt only
+// when its content changes, so a refresh tick never steals focus or moves the cursor.
 function updateSigningNotice(status = signingPostBlock()) {
   const req = $("#signingRequires");
   if (req) {
@@ -6173,8 +6210,8 @@ function updateSigningNotice(status = signingPostBlock()) {
   }
   const el = $("#signingNotice");
   if (!el) return;
-  const note = signingNoticeNote(status);
-  const key = JSON.stringify([status, note && [note.kind, note.text, note.owners.map((id) => [id, signingPersonaName(id)])]]);
+  const note = signingNoticeNote(status), action = status?.action || null;
+  const key = JSON.stringify([status, action && signingActionLabel(action), note && [note.kind, note.text, note.owners.map((id) => [id, signingPersonaName(id)])]]);
   signingNoticeStatus = status;
   if (key === signingNoticeKey) return;
   signingNoticeKey = key;
@@ -6188,15 +6225,17 @@ function updateSigningNotice(status = signingPostBlock()) {
   noteEl.textContent = note?.text || "";
   noteEl.hidden = !note;
   noteEl.classList.toggle("signing-error", note?.kind === "error");
-  signingNoticeButton(el.querySelector(".signing-notice-action"), status?.action || null, status);
-  signingNoticeButton(el.querySelector(".signing-notice-alt"), status?.alt || null, status);
+  el.querySelector(".signing-notice-hint").hidden = action?.kind !== "unlock";
+  // In an optional destination, signing is an offer, not the main step: it renders as a link.
+  signingNoticeButton(el.querySelector(".signing-notice-action"), action, status?.id === "unsigned");
+  signingNoticeButton(el.querySelector(".signing-notice-alt"), status?.alt || null, true);
   const switches = el.querySelector(".signing-notice-switches");
   switches.replaceChildren(...(note?.owners || []).map((id) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "btn";
-    b.dataset.signingSwitch = id;
-    b.textContent = exText(`Switch persona to ${signingPersonaName(id)}`, `Przełącz personę na: ${signingPersonaName(id)}`);
+    b.className = "btn signing-notice-switch";
+    b.signingSwitch = id;
+    b.textContent = "👤 " + exText(`Switch persona to ${signingPersonaName(id)}`, `Przełącz personę na: ${signingPersonaName(id)}`);
     return b;
   }));
   switches.hidden = !switches.childElementCount;
@@ -6205,14 +6244,12 @@ function updateSigningNotice(status = signingPostBlock()) {
 // is explained from the current composer status, so a refused send says what the status row says.
 const signingRaceError = /context changed|draft|retry|locked during|refresh/i;
 function signingRefusal(error, force = false) {
+  if (error?.signing) { updateSigningNotice(); return error; }
   if (!force && signingRaceError.test(error?.message || "")) return error;
   const status = signingPostBlock();
   if (!status || status.id === "signed" || status.id === "unsigned") return error;
   updateSigningNotice(status);
-  const friendly = new Error(status.detail);
-  friendly.name = "BoardError";
-  friendly.signing = status;
-  return friendly;
+  return signingStatusError(status);
 }
 // Change "I am" through the same path as the select, so every dependent view follows.
 function signingSelectPersona(id) {
@@ -6222,34 +6259,37 @@ function signingSelectPersona(id) {
   me.dispatchEvent(new Event("change"));
   return true;
 }
-// Unlock from the composer: one file, for the persona in "I am". A key of another participant
-// is named, never adopted silently; an invalid file changes nothing.
-async function signingComposerUnlock(file) {
+// Unlock from the composer, for the persona in "I am". A key of another participant is named with
+// its fingerprint and never adopted silently; an invalid file changes nothing. Nothing about which
+// file held which key is kept: the files are read once and the input is cleared.
+async function signingComposerUnlock(files) {
   const C = SigningContract, model = B, context = B?.signingContext, origin = dirHandle, location = signingLocation, persona = currentUser(), name = signingPersonaName(persona);
-  const before = new Set(signingProvider.catalog().map((p) => p.participant));
+  const before = new Set(signingProvider.catalog().map((p) => p.participant)), errors = [];
   const sameBoard = () => B?.signingContext?.boardId === context?.boardId && dirHandle === origin && signingLocation === location;
   const note = (kind, text, owners = []) => { signingComposerNote = { kind, text, owners, persona, location }; };
   signingComposerNote = null;
-  try {
-    C.require(model && context && !model.signingError, exText("Signing is unavailable for this board.", "Podpisy są niedostępne dla tej tablicy."));
-    C.require(baseHandle && canWrite(), exText("this folder is read-only. Open the board folder with write access to sign", "ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać"));
-    C.require(file.size <= 16384, "Private key file too large");
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    C.require(sameBoard(), exText("the board changed while reading the file", "tablica zmieniła się podczas czytania pliku"));
-    await signingProvider.unlock(bytes, context);
-    C.require(sameBoard(), exText("the board changed while unlocking", "tablica zmieniła się podczas odblokowywania"));
-  } catch (e) {
-    note("error", exText(`This file did not unlock ${name}'s key: ${e.message}. Nothing changed.`, `Ten plik nie odblokował klucza (${name}): ${e.message}. Nic nie zmieniono.`));
-    updateSigningNotice();
-    return;
+  for (const file of files.slice(0, 32)) {
+    try {
+      C.require(model && context && !model.signingError, exText("signing is unavailable for this board", "podpisy są niedostępne dla tej tablicy"));
+      C.require(canWrite(), exText("this folder is read-only. Open the board folder with write access to sign", "ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać"));
+      C.require(file.size <= 16384, "Private key file too large");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      C.require(sameBoard(), exText("the board changed while reading the file", "tablica zmieniła się podczas czytania pliku"));
+      await signingProvider.unlock(bytes, context);
+      C.require(sameBoard(), exText("the board changed while unlocking", "tablica zmieniła się podczas odblokowywania"));
+    } catch (e) {
+      errors.push(/no usable registered current profile/.test(e.message) ? exText("This key belongs to nobody on this board.", "Ten klucz nie należy do nikogo na tej tablicy.") : e.message);
+    }
   }
   const catalog = signingProvider.catalog(), added = catalog.filter((p) => !before.has(p.participant));
-  signingMode = "signed";
-  if (!catalog.some((p) => p.participant === persona)) {
-    const prints = new Set(added.map((p) => p.fingerprint)), owners = (added.length ? catalog.filter((p) => prints.has(p.fingerprint)) : catalog).map((p) => p.participant);
-    const names = owners.map(signingPersonaName).join(", ");
-    note("other", exText(`This key belongs to ${names}, not ${name}. It is unlocked in this tab, but messages are signed only as the persona in “I am”.`, `Ten klucz należy do: ${names}, nie do: ${name}. Jest odblokowany w tej karcie, ale wiadomości są podpisywane tylko jako persona z „Jestem”.`), owners);
-  }
+  const failed = errors.length ? exText(`Not unlocked: ${errors.join(" ")} Nothing else changed.`, `Nie odblokowano: ${errors.join(" ")} Nic więcej nie zmieniono.`) : "";
+  if (catalog.some((p) => p.participant === persona)) {
+    signingMode = "signed";
+    if (failed) note("error", failed);
+  } else if (added.length) {
+    const owners = added.map((p) => p.participant), who = added.map((p) => `${signingPersonaName(p.participant)} (${p.fingerprint})`).join(", ");
+    note("other", exText(`This key is registered to ${who}. It is not for ${name}, so nothing is signed with it while “I am” is ${name}.`, `Ten klucz jest zarejestrowany dla: ${who}. Nie jest dla: ${name}, więc nic nim nie zostanie podpisane, dopóki „Jestem” to ${name}.`) + (failed ? " " + failed : ""), owners);
+  } else note("error", errors.length ? failed : exText(`These keys were already unlocked here, and none is for ${name}.`, `Te klucze były już odblokowane, a żaden nie jest dla: ${name}.`));
   updateSigningNotice();
 }
 function signingNoticeAction(button) {
@@ -6260,8 +6300,13 @@ function signingNoticeAction(button) {
   else if (action.kind === "open-folder") signingOpenTask("folder");
   else if (action.kind === "howto") signingDialog({ task: "howto", anchor: action.anchor });
   else if (action.kind === "open") signingOpenTask(action.task, { anchor: action.anchor });
+  else if (action.kind === "persona") { const me = $("#me"); me?.scrollIntoView({ block: "nearest" }); me?.focus(); }
+  else if (action.kind === "sign") { signingMode = "signed"; signingComposerNote = null; updateSigningNotice(); }
   else if (action.kind === "lock") { signingProvider.lock(); signingComposerNote = null; updateSigningNotice(); }
-  else if (action.kind === "unsigned") { signingProvider.lock(); signingMode = "unsigned"; signingComposerNote = null; updateSigningNotice(); }
+  else if (action.kind === "unsigned") {
+    if (!window.confirm(exText("Post without a signature? This also locks the keys unlocked in this tab.", "Wysłać bez podpisu? To także zablokuje klucze odblokowane w tej karcie."))) return;
+    signingProvider.lock(); signingMode = "unsigned"; signingComposerNote = null; updateSigningNotice();
+  }
 }
 function signingOpenTask(task, options = {}) {
   if (task === "folder") { $("#folderName").click(); return; }
@@ -6470,12 +6515,15 @@ async function signingDelivery(msg, options = {}) {
   const sourceDigest = source && base ? await C.hash(await rawBytes(source.source.file)) : null;
   if(h['ANSWER-STATE']&&sourceDigest)C.require(AnswerState.metadata(h,source?.h,jsonObject).questionDigest===sourceDigest,"ANSWER-STATE question bytes changed");
   const minimum = context.minimum(msg.relPath, (h.THREAD || "").split("-")[0]);
-  if (signingMode !== "signed") {
+  // The decision taken now is re-derived after every await below and must not change.
+  const decided = () => signingSendDecision(model, minimum === "trusted").kind, decision = signingSendDecision(model, minimum === "trusted");
+  if (decision.kind === "refused") throw signingStatusError(decision.status);
+  if (decision.kind === "unsigned") {
     C.require(minimum === "optional", "Trusted signing required; unlock and trust a signing identity");
     return { msg, guard: async () => {
-      C.require(origin === dirHandle && model === (options.model || B) && stamp === signingDraftStamp() && signingMode === "unsigned", "Posting context changed; review draft");
+      C.require(origin === dirHandle && model === (options.model || B) && stamp === signingDraftStamp() && decided() === "unsigned", "Posting context changed; review draft");
       await signingFresh(model, base, context, expected, source, sourceDigest);
-      C.require(origin === dirHandle && model === (options.model || B) && stamp === signingDraftStamp() && signingMode === "unsigned", "Posting context changed; review draft");
+      C.require(origin === dirHandle && model === (options.model || B) && stamp === signingDraftStamp() && decided() === "unsigned", "Posting context changed; review draft");
     } };
   }
   C.require(h.FROM === currentUser(), "Message author differs from the selected persona");
@@ -6485,16 +6533,16 @@ async function signingDelivery(msg, options = {}) {
   const record = "sig_" + crypto.randomUUID(), message = msg.text.replace("\n---\n", "\nSIGNATURE: " + JSON.stringify({ version: 1, record }) + "\n---\n"), raw = C.bytes(message);
   const payload = C.canonical({ version: 1, boardId: context.boardId, participant: h.FROM, profile: current.head.digest, target: { kind: "message", path: msg.relPath, sha256: await C.hash(raw), bytes: raw.length } });
   const envelope = await signingProvider.sign(h.FROM, context, C.TYPES.message, payload);
-  C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && stamp === signingDraftStamp() && signingMode === "signed" && currentUser() === h.FROM, "Board, draft or signer changed; review and retry");
+  C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && stamp === signingDraftStamp() && decided() === "signed" && currentUser() === h.FROM, "Board, draft or signer changed; review and retry");
   if (base) {
     const cfg = await signingRead(base, "config.json"), reg = await signingRead(base, "participants.json");
     C.require(C.same(C.parse(cfg), context.config) && C.same(C.parse(reg), context.registry), "Board policy/profile changed; refresh and retry");
   }
   await C.verifyMessage(envelope, await context.load("profiles", current.head.digest), raw, { boardId: context.boardId, participant: h.FROM, profile: current.head.digest, path: msg.relPath });
   return { guard: async () => {
-    C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && signingMode === "signed" && currentUser() === h.FROM && stamp === signingDraftStamp(), "Posting context changed; draft preserved");
+    C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && decided() === "signed" && currentUser() === h.FROM && stamp === signingDraftStamp(), "Posting context changed; draft preserved");
     await signingFresh(model, base, context, expected, source, sourceDigest);
-    C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && signingMode === "signed" && currentUser() === h.FROM && stamp === signingDraftStamp() && (minimum !== "trusted" || context.state.pins[h.FROM] === fp), "Posting context changed; draft preserved");
+    C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && decided() === "signed" && currentUser() === h.FROM && stamp === signingDraftStamp() && (minimum !== "trusted" || context.state.pins[h.FROM] === fp), "Posting context changed; draft preserved");
   }, msg: { ...msg, text: message }, sidecar: { path: msg.relPath.split("/").slice(0, -1).join("/") + "/.signatures/" + record + ".json", text: C.text(envelope) } };
 }
 async function signingDialog(request) {
@@ -6923,9 +6971,10 @@ async function signingDialog(request) {
   unlockNote.id = "signingUnlockNote";
   node("p", text("Unlocking proves you hold the key; it does not approve it. Messages are signed as the persona selected in “I am”: switching persona switches the signer, and posting waits while that persona's key is locked.", "Odblokowanie potwierdza, że masz klucz; nie zatwierdza go. Wiadomości są podpisywane jako persona wybrana w „Jestem”: zmiana persony zmienia podpisującego, a wysyłanie czeka, dopóki klucz tej persony jest zablokowany."), own, "signing-help");
   const lockActions = node("div", "", own, "signing-actions");
-  add(lockActions, text("Lock signing keys", "Zablokuj klucze podpisu"), "lock", ownOut, () => {
+  // The Provider holds all unlocked keys under one generation, so locking is always all keys.
+  add(lockActions, text("🔒 Lock all keys", "🔒 Zablokuj wszystkie klucze"), "lock", ownOut, () => {
     signingProvider.lock();
-    return text("Keys locked. Signed sending stays blocked until you unlock the persona's key again.", "Klucze zablokowano. Wysyłanie z podpisem jest zablokowane do ponownego odblokowania klucza persony.");
+    return text("All keys in this tab are locked. Signed sending stays blocked until you unlock the persona's key again.", "Wszystkie klucze w tej karcie zablokowano. Wysyłanie z podpisem jest zablokowane do ponownego odblokowania klucza persony.");
   }, () => signingProvider.catalog().length > 0);
   add(lockActions, text("Use unsigned mode", "Używaj trybu bez podpisu"), "unsigned", ownOut, () => {
     signingProvider.lock();
@@ -7025,17 +7074,30 @@ function wireSigning() {
   const key = document.createElement("input");
   key.type = "file";
   key.id = "signingComposerKey";
-  key.accept = ".json,application/json";
+  key.multiple = true;
   key.hidden = true;
   key.setAttribute("aria-label", exText("Private key file of the selected persona", "Plik klucza prywatnego wybranej persony"));
-  key.onchange = () => { const file = key.files[0]; key.value = ""; if (file) signingComposerUnlock(file); };
+  key.onchange = () => { const files = [...key.files]; key.value = ""; if (files.length) signingComposerUnlock(files); };
   document.body.append(key);
-  $("#signingNotice")?.addEventListener("click", (event) => {
+  const el = $("#signingNotice");
+  el?.addEventListener("click", (event) => {
     const button = event.target.closest?.("button");
     if (!button) return;
-    if (button.dataset.signingSwitch) {
+    if (button.classList.contains("signing-notice-more")) {
+      const open = !el.classList.contains("expanded");
+      el.classList.toggle("expanded", open);
+      button.setAttribute("aria-expanded", String(open));
+      return;
+    }
+    // Switching persona is always this explicit click; the key was unlocked to sign, so signing turns on.
+    if (button.signingSwitch) {
+      const id = button.signingSwitch;
       signingComposerNote = null;
-      if (signingSelectPersona(button.dataset.signingSwitch)) $("#signingNotice .signing-notice-action:not([hidden])")?.focus();
+      if (signingSelectPersona(id)) {
+        signingMode = "signed";
+        updateSigningNotice();
+        $("#signingNotice .signing-notice-action:not([hidden])")?.focus();
+      }
       return;
     }
     signingNoticeAction(button);
@@ -7043,6 +7105,9 @@ function wireSigning() {
   // Any destination change (room, topic, new room, recipient) recomputes the status.
   for (const type of ["input", "change"]) $("#composer")?.addEventListener(type, () => updateSigningNotice());
   setInterval(signingTick, 3e4);
+  // Coming back to the tab rechecks at once; an expired key must not look ready.
+  window.addEventListener("focus", signingTick);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) signingTick(); });
 }
 // Keys lock silently after 15 idle minutes; the composer must not keep showing them as ready.
 function signingTick() {
