@@ -8,7 +8,7 @@ function signingBlockInfo(id, vars = {}, text = exText) {
   const rooms = text("This room requires trusted signatures", "Ten pokój wymaga zaufanych podpisów");
   const t = {
     "no-board-id": {
-      message: text("Posting is blocked: this board requires signatures, but it has no identity UUID, so signatures cannot be checked yet. Only the board owner can fix this.", "Wysyłanie zablokowane: ta tablica wymaga podpisów, ale nie ma identyfikatora UUID, więc nie można ich sprawdzić. Naprawić to może tylko właściciel tablicy."),
+      message: text("Posting is blocked: this board requires signatures, but it has no identity UUID, so signatures cannot be checked yet and its messages show as waiting for verification. Only the board owner can fix this.", "Wysyłanie zablokowane: ta tablica wymaga podpisów, ale nie ma identyfikatora UUID, więc nie można ich sprawdzić, a jej wiadomości czekają na weryfikację. Naprawić to może tylko właściciel tablicy."),
       short: text("The board has no identity UUID", "Tablica nie ma identyfikatora UUID"),
       label: text("Show the board owner steps", "Pokaż kroki dla właściciela"), task: "howto", anchor: "owner"
     },
@@ -44,7 +44,7 @@ function signingBlockInfo(id, vars = {}, text = exText) {
       label: text("Unlock my key", "Odblokuj mój klucz"), task: "own", focus: "#signingKeyFiles"
     },
     "key-rotated": {
-      message: text(`${possessive} signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key.`, `Klucz podpisu ${who} został wymieniony (rotacja), więc klucz odblokowany w tej karcie nie pasuje już do tablicy. Odblokuj nowy klucz prywatny.`),
+      message: text(`${possessive} signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.`, `Klucz podpisu ${who} został wymieniony (rotacja), więc klucz odblokowany w tej karcie nie pasuje już do tablicy. Odblokuj nowy klucz prywatny. Wiadomości podpisane starym kluczem pozostają zablokowane w pokojach z wymogiem.`),
       short: text("The key was rotated", "Klucz został wymieniony"),
       label: text("Unlock the new key", "Odblokuj nowy klucz"), task: "own", focus: "#signingKeyFiles"
     },
@@ -59,12 +59,12 @@ function signingBlockInfo(id, vars = {}, text = exText) {
       label: text("Review the key", "Sprawdź klucz"), task: "review", focus: "#signingFingerprint"
     },
     "key-changed": {
-      message: text(`${rooms}. You approved an earlier key for ${who}; the board now lists a different one. Approve the new key to post.`, `${rooms}. Zatwierdzono wcześniejszy klucz ${who}, a tablica wskazuje teraz inny. Zatwierdź nowy klucz, aby wysłać wiadomość.`),
+      message: text(`${rooms}. You approved an earlier key for ${who}; the board now lists a different one. Approve the new key to post. Messages from the earlier key stay blocked in required rooms.`, `${rooms}. Zatwierdzono wcześniejszy klucz ${who}, a tablica wskazuje teraz inny. Zatwierdź nowy klucz, aby wysłać wiadomość. Wiadomości ze starego klucza pozostają zablokowane w pokojach z wymogiem.`),
       short: text("You approved an older key", "Zatwierdzono starszy klucz"),
       label: text("Approve the new key", "Zatwierdź nowy klucz"), task: "review", focus: "#signingFingerprint"
     },
     "key-not-approved": {
-      message: text(`${rooms}, and ${possessive} key is not approved on this device yet. Even your own key is approved once here, so this device knows it really is yours.`, `${rooms}, a klucz (${who}) nie jest jeszcze zatwierdzony na tym urządzeniu. Nawet własny klucz zatwierdza się tu raz, aby urządzenie wiedziało, że naprawdę jest Twój.`),
+      message: text(`${rooms}, and ${possessive} key is not approved on this device yet. Even your own key is approved once here, so this device knows it really is yours. Approvals are kept per browser and folder, so each device does this once.`, `${rooms}, a klucz (${who}) nie jest jeszcze zatwierdzony na tym urządzeniu. Nawet własny klucz zatwierdza się tu raz, aby urządzenie wiedziało, że naprawdę jest Twój. Zatwierdzenia są osobne dla przeglądarki i folderu, więc każde urządzenie robi to raz.`),
       short: text("The key is not approved here", "Klucz nie jest zatwierdzony"),
       label: text("Approve the key", "Zatwierdź klucz"), task: "review", focus: "#signingFingerprint"
     }
@@ -135,6 +135,22 @@ function signingMessageBlock(m, text = exText) {
     return make(text(`Blocked: the signature is valid, but you have not approved the key of ${who} on this device.`, `Zablokowana: podpis jest poprawny, ale nie zatwierdzono na tym urządzeniu klucza: ${who}.`), text("Review the key", "Sprawdź klucz"), "review");
   }
   return make(text(`Blocked by signing rules${f.reason ? ": " + f.reason : ""}.`, `Zablokowana przez reguły podpisów${f.reason ? ": " + f.reason : ""}.`), text("Open Signing", "Otwórz Podpisy"), "check");
+}
+
+// Which scopes need trusted signatures, from the shared policy and the locally adopted floor.
+function signingRequirementList(policies) {
+  const boards = policies.some((p) => p?.minimum === "trusted"), scopes = new Set(), threads = new Set();
+  for (const p of policies) for (const [scope, rule] of Object.entries(p?.scopes || {})) {
+    if (rule.minimum === "trusted") scopes.add(scope);
+    for (const [tid, r] of Object.entries(rule.threads || {})) if (r.minimum === "trusted") threads.add(scope + " " + tid);
+  }
+  return { board: boards, scopes: [...scopes].sort(), threads: [...threads].sort() };
+}
+function signingRequirementText(list, text = exText) {
+  if (list.board) return text("Trusted signatures are required everywhere on this board.", "Zaufane podpisy są wymagane w całej tablicy.");
+  const parts = [...list.scopes, ...list.threads.map((x) => x.replace(" ", " / "))];
+  if (!parts.length) return text("No room or thread requires trusted signatures.", "Żaden pokój ani wątek nie wymaga zaufanych podpisów.");
+  return text("Trusted signatures are required in: ", "Zaufane podpisy są wymagane w: ") + parts.join(", ") + ".";
 }
 
 /* ---------- diagrams ---------- */

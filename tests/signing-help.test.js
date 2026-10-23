@@ -31,7 +31,7 @@ const boot = t => native.boot(t,browser,url);
 
 function module(pl=false) {
   const c = vm.createContext({exText:(en,polish)=>pl?polish:en});
-  vm.runInContext(fs.readFileSync(path.join(h.ROOT,'scripts/signing-help.js'),'utf8')+';this.api={signingBlockInfo,signingDiagnose,signingMessageBlock,signingDiagrams,signingDiagramSvg,signingStandaloneSvg,SIGNING_BLOCK_ORDER};',c);
+  vm.runInContext(fs.readFileSync(path.join(h.ROOT,'scripts/signing-help.js'),'utf8')+';this.api={signingBlockInfo,signingDiagnose,signingMessageBlock,signingDiagrams,signingDiagramSvg,signingStandaloneSvg,signingRequirementList,signingRequirementText,SIGNING_BLOCK_ORDER};',c);
   return c.api;
 }
 function requireSigning(f) {
@@ -355,4 +355,33 @@ test('help copy: each task says why, where things are stored and what is safe to
   await page.keyboard.press('Space');
   await expect(page.locator('#signing-howto')).toHaveJSProperty('open',true);
   await page.keyboard.press('Escape'); await expect(page.locator('#signingDialog')).not.toBeVisible();
+});
+
+test('requirements are listed, the guide opens offline, and disabled controls say why', async t => {
+  const f = await boot(t), {page} = f;
+  const api = module();
+  assert.equal(api.signingRequirementText(api.signingRequirementList([{minimum:'optional',scopes:{'rooms/release':{minimum:'trusted',threads:{T002:{minimum:'trusted'}}}}}])),'Trusted signatures are required in: rooms/release, rooms/release / T002.');
+  const cfgFile = path.join(f.proj,'.agent-board/config.json'), cfg = JSON.parse(fs.readFileSync(cfgFile));
+  cfg.message_signing = {version:1,minimum:'optional',scopes:{'rooms/architecture':{minimum:'trusted'}}}; fs.writeFileSync(cfgFile,JSON.stringify(cfg));
+  await refresh(f); await room(page);
+  await expect(page.locator('#signingRequires')).toHaveText('This destination requires trusted signatures.');
+  await page.selectOption('#cWhere',{index:0}); // another destination may not require it
+  await openSigning(page);
+  await expect(page.locator('#signingRequirements')).toHaveText('Trusted signatures are required in: rooms/architecture.');
+  assert.equal(await page.locator('#signingDialog a[href^="http"]').count(),0,'no external link in the signing dialog');
+  await page.locator('#signingDialog [data-action="guide"]').click();
+  await expect(page.locator('#signing-howto')).toHaveJSProperty('open',true);
+  await closeSigning(page);
+  // Read-only: Unlock is off and says so; the advice is the writable folder, never "unlock".
+  await page.evaluate(()=>{});
+  await page.reload(); await page.setInputFiles('#fallback',f.proj); await expect(page.locator('#me')).toBeVisible();
+  await openSigning(page);
+  await expect(page.locator('#signingUnlockNote')).toContainText('Unlock is off because this folder is read-only');
+  await expect(page.locator('#signingDialog [data-action="unlock"]')).toBeDisabled();
+  await closeSigning(page);
+  // An excluded message explains the disabled Reply.
+  await page.evaluate(()=>{signingInspect=true;build({background:true,preserveComposer:true});});
+  const reply = page.locator('#feed button[data-reply][disabled]').first();
+  assert.ok(await reply.count() > 0, 'fixture has an excluded message with a disabled Reply');
+  await expect(reply).toHaveAttribute('title',/Blocked|Not checked/);
 });

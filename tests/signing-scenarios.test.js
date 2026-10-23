@@ -102,7 +102,7 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   await openSigning(page);await page.locator('#signingParticipant').selectOption(f.owner.participant);await expect(page.locator(`[data-signing-participant="${f.owner.participant}"]`)).toContainText('Key changed — review needed');await closeSigning(page);
   const thread=h.fs.readFileSync(h.path.join(f.proj,root),'utf8').match(/^THREAD: (T\d+)/m)[1];
   await page.selectOption('#cThread',`room:architecture|${thread}`);
-  await page.fill('#cBody','Old capability cannot publish');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await expect(page.locator('#toast')).toHaveText("human-owner-01's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key.");await assertNotPublished(page,'Old capability cannot publish');
+  await page.fill('#cBody','Old capability cannot publish');await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await expect(page.locator('#toast')).toHaveText("human-owner-01's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.");await assertNotPublished(page,'Old capability cannot publish');
   const proofArgs=['post','--from',rotated.participant,'--to','all','--scope','room','--room','architecture','--thread',thread,'--slug','rotated-proof','--body','Rotated key proof','--signing-key-file',rotated.key];
   assert.match(f.reject(...proofArgs),/requires a deliberately trusted current signer/);cliTrust(f,rotated);
   const proof=f.cli(...proofArgs);
@@ -110,7 +110,7 @@ test('native lifecycle: dual rotation, new-key trust, compromise and persisted a
   await openSigning(page);await trust(page,rotated);await closeSigning(page);
   assert.equal((await decision(page,proof)).eligibility,'eligible');assert.equal(inspect(f,proof).eligibility,'eligible');
   // Trust and possession are separate gates: trusting the new key cannot unlock it.
-  await page.click('#send');await expect(page.locator('#toast')).toHaveText("human-owner-01's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key.");
+  await page.click('#send');await expect(page.locator('#toast')).toHaveText("human-owner-01's signing key was replaced (rotated), so the key unlocked in this tab no longer matches the board. Unlock the new private key. Messages signed with the old key stay blocked in required rooms.");
   await expect(page.locator('#cBody')).toHaveValue('Old capability cannot publish');await assertNotPublished(page,'Old capability cannot publish');
   await unlock(page,rotated);
   f.cli('signing','revoke','--participant',rotated.participant,'--key-file',rotated.key,'--expect-profile',rotated.profile,'--status','compromised');await refresh(f);

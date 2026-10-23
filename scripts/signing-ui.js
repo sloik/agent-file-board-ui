@@ -32,6 +32,12 @@ function signingPostBlock() {
 // One notice in the composer. It is rebuilt only when its content changes, so a refresh tick
 // never steals focus from its button.
 function updateSigningNotice(block = signingPostBlock()) {
+  const req = $("#signingRequires");
+  if (req) {
+    const note = signingRequirementNote();
+    if (req.textContent !== note) req.textContent = note;
+    req.hidden = !note;
+  }
   const el = $("#signingNotice");
   if (!el) return;
   const key = block ? [block.id, block.message, block.label, block.task, block.participant || ""].join("|") : "";
@@ -67,9 +73,16 @@ function signingOpenTask(task, options = {}) {
   if (task === "folder") { $("#folderName").click(); return; }
   signingDialog({ task, ...options });
 }
+function signingRequirementNote() {
+  const c = B?.signingContext;
+  if (!c || B.signingError) return "";
+  let required = false;
+  try { const target = signingDestinationPath(); required = c.minimum(target.path, target.thread) === "trusted"; } catch { return ""; }
+  return required ? exText("This destination requires trusted signatures.", "Ten cel wymaga zaufanych podpisów.") : "";
+}
 function signingExclusionHtml(m) {
   const b = signingMessageBlock(m), attrs = [`data-signing-open="${esc(b.task)}"`, b.participant ? `data-signing-for="${esc(b.participant)}"` : "", b.anchor ? `data-signing-anchor="${esc(b.anchor)}"` : ""].filter(Boolean).join(" ");
-  return `<p class="metadata-error signing-exclusion">${esc(exText("Inspection only", "Tylko podgląd"))}: ${esc(b.message)} <button type="button" class="btn" ${attrs}>${esc(b.label)}</button></p>`;
+  return `<p class="metadata-error signing-exclusion">${esc(exText("Inspection only", "Tylko podgląd"))}: ${esc(b.message)} ${esc(exText("Reply, choices and forms stay off for this message.", "Odpowiedź, wybory i formularze są dla tej wiadomości wyłączone."))} <button type="button" class="btn" ${attrs}>${esc(b.label)}</button></p>`;
 }
 // Signature integrity, local key approval and policy eligibility are independent facts.
 function signingMessageFacts(m) {
@@ -349,12 +362,14 @@ async function signingDialog(request) {
   dialog.addEventListener("cancel", cancelUnlock);
   dialog.addEventListener("close", cancelUnlock);
   node("p", text("Signing lets people check that a message really came from a particular key and was not changed. Some rooms require it. Pick the task that matches your question. If you cannot post, open “How signing works” and follow “Why can't I post?”.", "Podpis pozwala sprawdzić, że wiadomość naprawdę pochodzi od danego klucza i nie została zmieniona. Niektóre pokoje go wymagają. Wybierz zadanie pasujące do pytania. Jeśli nie możesz wysłać wiadomości, otwórz „Jak działają podpisy” i przejdź „Dlaczego nie mogę wysłać wiadomości?”."), dialog, "signing-intro");
-  const guide = node("a", text("Illustrated signing guide ↗", "Ilustrowany przewodnik po podpisach ↗"), dialog);
-  guide.href = "https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/signing.md";
-  guide.target = "_blank";
-  guide.rel = "noopener noreferrer";
+  const guide = node("button", text("Open the illustrated guide (works offline)", "Otwórz ilustrowany przewodnik (działa offline)"), dialog, "btn");
+  guide.type = "button";
+  guide.dataset.action = "guide";
+  guide.onclick = () => goTo("howto");
   const status = node("p", "", dialog, "signing-context");
   status.role = "status";
+  const requires = node("p", "", dialog, "signing-help");
+  requires.id = "signingRequirements";
   const example = node("details", "", dialog, "signing-example");
   node("summary", text("Example: Maya sends a signed message to Sam", "Przykład: Maya wysyła podpisaną wiadomość do Sama"), example);
   node("p", text("Fictional people; no real keys. Signing and approval are independent.", "Fikcyjne osoby; bez prawdziwych kluczy. Podpis i zatwierdzenie są niezależne."), example, "signing-help");
@@ -388,6 +403,15 @@ async function signingDialog(request) {
     wrap.innerHTML = signingDiagramSvg(key, text);
     node("figcaption", diagrams[key].caption, fig, "signing-help");
   }
+  node("h4", text("Good to know", "Warto wiedzieć"), howto);
+  const know = node("ul", "", howto, "signing-help");
+  for (const item of [
+    text("In a room that requires trusted signatures you must approve your own key too, once per device.", "W pokoju wymagającym zaufanych podpisów musisz zatwierdzić także własny klucz, raz na urządzenie."),
+    text("Approvals are kept per browser and per board folder. A second browser, computer or folder starts with none.", "Zatwierdzenia są osobne dla przeglądarki i folderu tablicy. Druga przeglądarka, komputer lub folder zaczyna bez nich."),
+    text("When a key is rotated, messages signed with the old key stay blocked in required rooms, even if you approved it.", "Po rotacji klucza wiadomości podpisane starym kluczem pozostają zablokowane w pokojach z wymogiem, nawet jeśli go zatwierdzono."),
+    text("If a requirement is set before the board has an identity UUID, every message shows as waiting for verification until the owner adds one.", "Jeśli wymóg ustawiono, zanim tablica dostała identyfikator UUID, każda wiadomość czeka na weryfikację, aż właściciel go doda."),
+    text("Read-only folders and uploads can check messages but cannot unlock keys or save signed messages.", "Foldery i wczytane pliki tylko do odczytu pozwalają sprawdzać wiadomości, ale nie odblokowywać kluczy ani zapisywać podpisanych wiadomości.")
+  ]) node("li", item, know);
   node("h4", text("What is safe to share", "Co można bezpiecznie udostępniać"), howto);
   const shared = node("dl", "", howto, "signing-legend");
   for (const [name, meaning] of [
@@ -680,6 +704,8 @@ async function signingDialog(request) {
     signingAs = "";
     return text("Keys unlocked. Choose who to sign as below before sending. There is no unsigned fallback.", "Klucze odblokowano. Przed wysłaniem wybierz poniżej, jako kto podpisujesz. Nie ma automatycznego przejścia na brak podpisu.");
   }, () => !!base && !!model.signingContext && !model.signingError);
+  const unlockNote = node("p", "", own, "signing-help");
+  unlockNote.id = "signingUnlockNote";
   const select = field(own, text("Choose who to sign as", "Wybierz, jako kto podpisujesz"), "select", "signingIdentity", "Signing identity");
   select.onchange = () => {
     try {
@@ -726,6 +752,8 @@ async function signingDialog(request) {
   function refresh() {
     const ready = !!model.signingContext && !model.signingError;
     status.textContent = model.signingError ? text("Signing unavailable: ", "Podpisy niedostępne: ") + model.signingError : !model.signingContext ? text("Signing requires a native board with valid signing configuration. Continue reading, or open a native board.", "Podpisy wymagają natywnej tablicy z poprawną konfiguracją. Kontynuuj czytanie lub otwórz natywną tablicę.") : !base ? text("Read-only board: approval lasts for this open session. Signed posting requires a writable folder; unsigned replies may download where rules allow.", "Tablica tylko do odczytu: zatwierdzenie obowiązuje w tej otwartej sesji. Podpisywanie wymaga zapisywalnego folderu; odpowiedzi bez podpisu można pobrać, jeśli reguły pozwalają.") : text("Your approvals are private to this browser and board location.", "Twoje zatwierdzenia są prywatne dla tej przeglądarki i lokalizacji tablicy.");
+    unlockNote.textContent = base ? "" : text("Unlock is off because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie jest wyłączone, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać.");
+    requires.textContent = model.signingContext ? signingRequirementText(signingRequirementList([model.signingContext.shared, model.signingContext.floor])) : "";
     counts.textContent = [text("Verified", "Zweryfikowane") + ": " + model.msgs.filter((m) => m.signing?.signature === "valid").length, text("Unsigned", "Bez podpisu") + ": " + model.msgs.filter((m) => m.signing?.signature === "unsigned").length, text("Pending / blocked", "Oczekujące / zablokowane") + ": " + model.msgs.filter((m) => !signingEligible(m)).length].join(" · ");
     const id = participant.value, f = model.signingParticipants?.[id];
     if (f?.fingerprint) {
