@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased (target viewer 3.3.1)
+## 3.3.1 — 2026-10-23
 
 - **Composer routing follows the view (SPEC-002-064):** the Where/Thread/To toolbar is
   replaced by a destination chip above the draft. A topic view posts to that topic, a

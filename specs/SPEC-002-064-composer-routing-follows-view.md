@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-064
 title: Composer routing follows the visible view; message a participant directly
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
