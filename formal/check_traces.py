@@ -17,6 +17,11 @@ import tempfile
 import check
 
 ROOT = Path(__file__).resolve().parent
+# Upper bound on traces from one collector run (positives or mutants), so a runaway
+# collector fails fast. Raised from 50 to 100 when ComposerSigning brought the positive
+# inventory to exactly 50 (SPEC-002-061); the inventory itself stays reviewed in
+# trace_contracts.json.
+MAX_TRACES = 100
 
 
 def literal(value):
@@ -122,7 +127,7 @@ def collect(mutant=False):
     if len(result.stdout) > 1048576:
         raise ValueError('trace output limit')
     traces = json.loads(result.stdout)
-    if not isinstance(traces, list) or not 1 <= len(traces) <= 50:
+    if not isinstance(traces, list) or not 1 <= len(traces) <= MAX_TRACES:
         raise ValueError('empty/oversized trace scenario inventory')
     for trace in traces:
         render(trace)
