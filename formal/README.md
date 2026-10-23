@@ -161,3 +161,50 @@ filesystem durability, UI rendering, global offline linearizability or all possi
 implementation executions. Readers must receive the same complete evidence and
 eligibility to claim convergence. See the answer-acceptance guide and reviewed
 alignment registry; PR/main and weekly formal jobs use the existing status runner.
+
+## ComposerSigning
+
+`ComposerSigning.tla` models the composer signing status of SPEC-002-061, where the
+signer is always the persona selected in "I am". Its `Status` mirrors the precedence of
+`signingComposerStatus` in `scripts/signing-help.js` for the modelled inputs:
+unavailable, then unsigned (signed mode off and the destination does not require
+signatures), no-persona, read-only, not-registered, key-revoked, key-rotated,
+needs-unlock, key-changed (an approval exists for an older fingerprint) and
+needs-approval (no approval), both for required destinations only, and signed. This
+evaluation order differs from the display order of `SIGNING_COMPOSER_ORDER` only in
+where unsigned is decided. Personas A and B have registered keys, C has none and
+"none" means no persona is selected. Actions are persona selection, destination
+change, composer unlock of either key, lock, timer expiry, tick, an explicit review
+approval of the persona's key (never implied by unlock), the composer "Turn signing
+on" action (`TurnSigningOn`), the Signing dialog's signed/unsigned choice, revocation,
+rotation, a signing context fault and reopening the folder read-only or writable.
+
+A composer unlock binds signed mode only when the key belongs to the selected persona;
+another participant's key joins the catalog and changes neither persona nor signer.
+Expiry clears the catalog without updating the shown status; every other action,
+including Send, recomputes it. Send recomputes the status and posts only when it is
+`signed` (signed as the persona) or `unsigned`. Rotation and revocation remove that key
+from the catalog, as provider key reconciliation does in `Signer`; rotation also drops
+the approval, which becomes an approval of an older fingerprint (`oldPins`).
+
+Invariants: `SignerIsPersona` (a signed post's signer is the persona at send time),
+`NoUnsignedWhereRequired` (no unsigned post when the destination requires signatures
+or signed mode is on), `ShownMatchesStatus` (the shown status equals `Status` except
+after an expiry the composer has not observed yet), `SendRechecks` (send consults the
+recomputed status, not the shown one) and `OtherKeyNeverBinds`. Four broken controls must
+fail exactly these: a signer that sticks to the previous persona, an unsigned fallback,
+a send that trusts the stale shown status after expiry, and another participant's key
+binding silently. `NeverWitnessesAll` is a reachability control: one behavior shows
+every status of `SIGNING_COMPOSER_ORDER` plus a signed and an unsigned post, in the
+feasible order listed by `Witness` (revocation and approval are not undone).
+
+`collect_composer.js` loads the production `signing-help.js` in a VM, changes host
+inputs (persona, catalog, mode, destination, approvals, fingerprints, revocation,
+folder access, signing errors) as the composer events do, and records the real
+function's status after every event. TLC checks every record against `Initial`, `Step`
+and `Safe`. Twelve fixed scenarios witness every status and both post kinds; eight
+seeded schedules add random enabled events. Five source mutations (another unlocked
+key makes the persona ready, signed mode reports unsigned, approval is skipped, a
+changed key reads as never approved, revocation is ignored) must be rejected. The collector's Send uses the production
+status as its gate; the host send path, composer rendering and key-file parsing are
+covered by unit and browser tests, not by this trace bridge.

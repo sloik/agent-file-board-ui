@@ -93,6 +93,39 @@
         "answer mutant: accepts excluded claim",
         "answer mutant: unauthorized resolution"
       ]
+    },
+    "ComposerSigning": {
+      "mode": "record",
+      "collector": "formal/collect_composer.js",
+      "positive": [
+        "composer: unlock persona key, turn signing on and post signed",
+        "composer: other participant key never binds",
+        "composer: switching to a locked persona blocks signed posting",
+        "composer: expiry is rechecked at send",
+        "composer: required destination needs approval",
+        "composer: no unsigned fallback in signed mode or required room",
+        "composer: read-only folder",
+        "composer: no persona or unregistered persona",
+        "composer: revoked key",
+        "composer: rotated key needs the new key and a fresh review",
+        "composer: signing unavailable",
+        "composer: every status in one session",
+        "composer generated schedule 0",
+        "composer generated schedule 1",
+        "composer generated schedule 2",
+        "composer generated schedule 3",
+        "composer generated schedule 4",
+        "composer generated schedule 5",
+        "composer generated schedule 6",
+        "composer generated schedule 7"
+      ],
+      "mutants": [
+        "composer mutant: another unlocked key makes the persona ready",
+        "composer mutant: signed mode falls back to unsigned",
+        "composer mutant: required destination skips approval",
+        "composer mutant: changed key treated as never approved",
+        "composer mutant: revoked key is ignored"
+      ]
     }
   }
 }
