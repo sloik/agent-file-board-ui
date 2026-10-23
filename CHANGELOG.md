@@ -1,5 +1,14 @@
 # Release notes
 
+## 3.2.1 — 2026-10-23
+
+- Fix: expanded parts of a message (signing details and hints, reviews,
+  information cards, report and extension sections, "Show all") no longer collapse
+  when the board refreshes. The reader's choice is kept per message and, for a
+  board opened from a folder, survives a page reload; it is stored only in this
+  browser (keys and open flags, never message text). Read-only uploads keep it for
+  the session.
+
 ## 3.2.0 — 2026-10-23
 
 Pairs with canonical 3.2.0 (also covers the canonical 3.1.0 room history

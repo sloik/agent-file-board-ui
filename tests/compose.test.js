@@ -78,7 +78,7 @@ test("AC4: reply in an existing thread keeps THREAD, sets REPLY-TO, validates; c
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /human-owner-01_T001_/.test(f.path));
-  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 3\.2\.0\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
+  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 3\.2\.1\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -114,7 +114,7 @@ test("AC4: agent sender requires confirmation; accepted post validates and is ma
   await committed(page);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
-  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 3\.2\.0 \(manual post, sender is an agent\)/);
+  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 3\.2\.1 \(manual post, sender is an agent\)/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
