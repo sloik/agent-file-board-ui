@@ -261,8 +261,8 @@ Agents often post with `boardctl`, not the viewer, so the refusal text comes fro
 ### For board owners: require signing for a room
 
 1. Give the board an identity UUID first: `boardctl identity enable --path <board>`. A room cannot require trusted signatures without one.
-2. Register everyone who must post. Each person makes a key and public profile (`boardctl signing profile`); you import the public profile (`boardctl identity import <id> --profile-file <file> --sha256 <hash>`). Never collect private keys.
-3. In `.agent-board/config.json` set `message_signing` to `{"version": 1, "minimum": "trusted"}` for the whole board, or give one room `scopes` with `"minimum": "trusted"`.
+2. Register everyone who must post. Each person makes a key (`boardctl signing keygen --output KEY_FILE`, which prints the next commands) and public profile (`boardctl signing profile`); you import the public profile (`boardctl identity import <id> --profile-file <file> --sha256 <hash>`). Never collect private keys.
+3. Require signing: `boardctl signing require --path <board> --scope rooms/<room> --minimum trusted` for one room, or `--board` for the whole board. Then `boardctl signing check --path <board> --from <id> --scope rooms/<room>` shows each person what is still missing.
 4. Tell people the steps: unlock your own key, choose who to sign as, approve your own fingerprint once. Approvals are per device and are never shared.
 
 ## When a key changes or a message stays blocked

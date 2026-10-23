@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),esbuild=require('esbuild'),root=path.resolve(__dirname,'..'),file=path.join(root,'board.html');
+const core=esbuild.buildSync({entryPoints:[path.join(__dirname,'room-history.js')],bundle:true,write:false,format:'iife',globalName:'RoomHistory',target:'es2022',minify:true,legalComments:'inline'}).outputFiles[0].text;
+const script=['/* BEGIN BUNDLED ROOM HISTORY */',core+'\n'+fs.readFileSync(path.join(__dirname,'room-history-ui.js'),'utf8'),'/* END BUNDLED ROOM HISTORY */'];
+const jsBlock=script.join('\n').replace(/<\/script/gi,'<\\/script').split(String.fromCharCode(0x2028)).join('\\u2028').split(String.fromCharCode(0x2029)).join('\\u2029');
+const cssStart='/* BEGIN ROOM HISTORY STYLES */',cssEnd='/* END ROOM HISTORY STYLES */',cssBlock=cssStart+'\n'+fs.readFileSync(path.join(__dirname,'room-history.css'),'utf8')+cssEnd;
+const jsStart=script[0],jsEnd=script[2];
+const splice=(text,start,end,block,fallback)=>text.includes(start)?text.slice(0,text.indexOf(start))+block+text.slice(text.indexOf(end)+end.length):fallback(text,block);
+const old=fs.readFileSync(file,'utf8');
+let next=splice(old,jsStart,jsEnd,jsBlock,(text,block)=>text.replace('/* BEGIN BUNDLED OFFLINE TOOLS */',()=>block+'\n\n/* BEGIN BUNDLED OFFLINE TOOLS */'));
+next=splice(next,cssStart,cssEnd,cssBlock,(text,block)=>text.replace('</head>',()=>'<style>\n'+block+'\n</style>\n</head>'));
+if(process.argv.includes('--check')){if(old!==next){console.error('Room history differs. Run node scripts/embed_history.js');process.exit(1);}}else fs.writeFileSync(file,next);
