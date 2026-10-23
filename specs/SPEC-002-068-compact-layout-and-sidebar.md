@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-068
 title: Compact layout - message field and Post always visible, destination shown by the sidebar, sidebar toggle
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -135,7 +135,7 @@ message field and Post are off-screen.
 - [x] AC18: existing tests that clicked the visible chip use a helper that clicks #composerTargetChange
   (spec change, not a loosened test); no assertion is weakened. SPEC-002-064 gets an amendment note
   pointing here. English and Polish strings for every new label.
-- [ ] AC19: docs (docs/guides/COMPOSER.md and README where relevant) and CHANGELOG updated; released
+- [x] AC19: docs (docs/guides/COMPOSER.md and README where relevant) and CHANGELOG updated; released
   as viewer 3.3.4 (the viewer shares canonical MAJOR.MINOR).
 
 No VoiceOver/screen-reader checks (owner policy).
@@ -161,5 +161,8 @@ listed in the feature commit. Decisions and deviations:
 - **#title** reads `# room › T003 Title` (no "·"), `# room`, or `✉ Peer › T002 Title`.
 - **Topic "..." menu** stays open while a dialog opened from it runs, so focus returns to the item;
   Escape or an outside click closes it.
+- The viewer update notice (a header child added by viewer-updates-ui) becomes an icon below 1100px
+  wide or 640px tall so the header stays one line; tested with the notice forced visible.
 - Documentation screenshots in docs/images were not regenerated.
-
+- AC19: release 3.3.4 is prepared (version, CHANGELOG, fixtures, alignment pins); tagging and
+  publishing remain the owner's release step.
