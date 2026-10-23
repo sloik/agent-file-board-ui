@@ -1,5 +1,16 @@
 # Release notes
 
+## 3.3.3 — 2026-10-23
+
+- **Where to keep your key (SPEC-002-067, canonical SPEC-002-066):** the composer's
+  unlock hint now names the conventional folder for the open board, for example
+  "usually in ~/private/afb/lukasz-mateusz/", and Signing help → "New here and have no
+  key yet?" gives the `boardctl signing keygen --path <board> --participant <your id>`
+  command, the file it writes and the rule: never in the board folder, a repository or
+  a synced folder such as Dropbox or iCloud Drive. Each person and agent holds only its
+  own key. English and Polish.
+- Bundles canonical Agent File Board 3.3.1 (keygen defaults to that folder).
+
 ## 3.3.2 — 2026-10-23
 
 - **Choose to sign anywhere (SPEC-002-065):** on a destination that does not require

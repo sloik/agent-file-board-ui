@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-067
 title: Viewer names the conventional private key folder
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -28,4 +28,4 @@ file safe, outside the board folder."
 - [x] AC3: Browser tests assert both texts with the fixture's project id; the viewer
   signing guide documents the location and why it is visible (file pickers hide
   dot-folders).
-- [ ] AC4: Released as viewer 3.3.3 with the canonical 3.3.1 vendor pin.
+- [x] AC4: Released as viewer 3.3.3 with the canonical 3.3.1 vendor pin.
