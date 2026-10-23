@@ -157,7 +157,7 @@ async function launch() { return chromium.launch(); }
 // Opens board.html (or a mutated copy) in a fresh context. Collects page errors, console errors, requests.
 async function openPage(browser, opts = {}) {
   const ctx = await browser.newContext({
-    colorScheme: opts.colorScheme || "light", viewport: { width: 1280, height: 800 },
+    colorScheme: opts.colorScheme || "light", viewport: opts.viewport || { width: 1280, height: 800 },
     acceptDownloads: true, locale: "en-US", permissions: [] });
   // Existing offline/security fixtures explicitly opt out of the newly optional
   // daily public-metadata check. Update tests exercise the enabled default.
@@ -213,6 +213,56 @@ async function openView(page, target) {
   if(target.includes('|')) await page.locator(`.tcard[data-tk="${target}"]`).click();
   else await page.locator(`.fname[data-dir="${target}"]`).click();
 }
+// SPEC-002-068: the chip row is hidden while the destination equals the view, so tests open the
+// destination popover through the always-visible change button next to Post.
+async function openDestination(page) {
+  await page.locator('#composerTargetChange').click();
+  await expect(page.locator('#composerTargetMenu')).toBeVisible();
+}
+async function startNewRoom(page, label = 'New room…') {
+  await openDestination(page);
+  await page.locator('#composerTargetList button', { hasText: label }).click();
+}
+// SPEC-002-068: rename, repairs, guidance and the missing-message check live in the topic bar's "..." menu.
+async function openTopicMenu(page) {
+  if (!await page.locator('#topicMenu').evaluate(el => el.open)) await page.locator('#topicMenuToggle').click();
+}
+async function topicAction(page, id) {
+  await openTopicMenu(page);
+  await page.locator('#' + id).click();
+}
+async function renameTopic(page, title) {
+  await openTopicMenu(page);
+  if (await page.locator('#titleEditor').evaluate(el => el.hidden)) await page.locator('#topicRename').click();
+  await page.fill('#topicTitle', title);
+  await page.click('#setTitle');
+}
+// SPEC-002-068 AC1/AC2: returns every layout violation instead of asserting, so a test can also
+// prove that a mutation makes it fail. Boxes come from getBoundingClientRect, never isVisible.
+async function layoutViolations(page) {
+  return page.evaluate(() => {
+    const out = [], H = innerHeight, W = innerWidth, $ = s => document.querySelector(s);
+    const shown = el => !!el && !el.hidden && el.getClientRects().length > 0;
+    const inside = (s, r) => { if (r.top < -0.5 || r.bottom > H + 0.5 || r.left < -0.5 || r.right > W + 0.5) out.push(`${s} outside ${W}x${H}: ${Math.round(r.left)},${Math.round(r.top)}-${Math.round(r.right)},${Math.round(r.bottom)}`); };
+    const body = $("#cBody"), send = $("#send");
+    if (!shown(body)) out.push("#cBody not rendered");
+    else {
+      inside("#cBody", body.getBoundingClientRect());
+      const cs = getComputedStyle(body), line = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2;
+      const content = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      if (content < 2 * line - 0.5) out.push(`#cBody shows ${content.toFixed(1)}px, under 2 lines of ${line.toFixed(1)}px`);
+    }
+    if (!shown(send)) out.push("#send not rendered"); else inside("#send", send.getBoundingClientRect());
+    for (const s of ["#signingNotice", "#composerTargetRow", "#composerPin"]) {
+      const el = $(s); if (!el || el.hidden) continue;
+      if (!shown(el)) out.push(s + " not rendered"); else inside(s, el.getBoundingClientRect());
+    }
+    const doc = document.documentElement;
+    if (doc.scrollHeight > H) out.push(`document scrollHeight ${doc.scrollHeight} > ${H}`);
+    if (doc.scrollWidth > W) out.push(`document scrollWidth ${doc.scrollWidth} > ${W}`);
+    return out;
+  });
+}
 function boardctl(args) {
   // Isolated Python omits the script directory; admit only the pinned CLI's
   // own module directory so its adjacent message_extensions import works.
@@ -243,6 +293,7 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
     if(c.perm!==undefined && ((await get("agent-file-board-ui-test-fs","permission")) || "granted")!==c.perm) return false;
     if(c.setting){const saved=await get("agent-file-board-ui","settings");if(saved?.[c.setting[0]]!==c.setting[1]) return false;}
     if(c.files){const root=await get("agent-file-board-ui-test-fs","root");if(!root || !c.files.every(file=>file.path.split("/").reduce((node,part)=>node?.children?.[part],root)?.text===file.text)) return false;}
+    if(c.local && localStorage.getItem(c.local[0])!==c.local[1]) return false;
     if(c.lastDir!==undefined){const folder=await get("agent-file-board-ui","lastDir");if((folder!==undefined && folder!==null)!==c.lastDir) return false;}
     return true;
   };
@@ -262,4 +313,4 @@ async function reloadSettled(ctx, page, cond, {timeout = 5000} = {}) {
 }
 
 module.exports = { reloadSettled, ROOT, BOARD_HTML, VENDOR, BOARDCTL, EXAMPLE, readTree, writeTree, tmpDir, copyDir, layoutExample, layoutShuffled,
-  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, expandComposer, expandAdvanced: expandComposer, openView, openToolbarTool, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };
+  fakeFsScript, launch, openPage, openFolderMenu, pickFolder, openBoardViaUi, expandComposer, expandAdvanced: expandComposer, openView, layoutViolations, openDestination, startNewRoom, openTopicMenu, topicAction, renameTopic, openToolbarTool, boardctl, dumpFakeFs, feedOrder, fs, os, path, pathToFileURL };

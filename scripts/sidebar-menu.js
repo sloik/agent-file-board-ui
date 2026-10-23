@@ -64,3 +64,43 @@ function wireSidebarMenu(){
  $("#side").addEventListener("scroll",positionSidebarMenu,{passive:true});window.addEventListener("resize",()=>closeSidebarMenu(false));
  $("#notificationsDialog").addEventListener("close",()=>{if($("#notificationsDialog").open)return;const target=sidebarNotificationReturn;sidebarNotificationReturn=null;if(target&&sidebarMenuCurrent(target))sidebarTrigger(target.kind,target.key)?.focus({preventScroll:true});});
 }
+/* Sidebar visibility (SPEC-002-068): #menu toggles a collapsed column above 820px and a drawer below.
+   Only an explicit toggle is remembered; until then the window size decides. */
+const SIDEBAR_KEY="afb.sidebar";
+let sidebarChoice=null;
+function sidebarStored(){try{const value=localStorage.getItem(SIDEBAR_KEY);return value==="shown"||value==="hidden"?value:null;}catch(e){return null;}}
+const sidebarDrawer=()=>innerWidth<=820;
+function sidebarShown(){const choice=sidebarChoice||sidebarStored();return choice?choice==="shown":innerWidth>=1000&&innerHeight>=560;}
+const sidebarShortcut=()=>/Mac|iPhone|iPad/.test(navigator.platform||"")?"⌘B":"Ctrl+B";
+function syncSidebar(){
+ const drawer=sidebarDrawer(),side=$("#side"),open=drawer?side.classList.contains("open"):sidebarShown(),button=$("#menu");
+ document.body.classList.toggle("side-hidden",!drawer&&!open);
+ $("#sideScrim").classList.toggle("show",drawer&&open);
+ const label=t(open?"sidebar_hide":"sidebar_show");button.setAttribute("aria-expanded",String(open));
+ if(button.getAttribute("aria-label")!==label){button.setAttribute("aria-label",label);button.title=label+" ("+sidebarShortcut()+")";}
+ const tool=$("#sidebarToggleTool");if(tool&&tool.firstChild.textContent!==label){tool.firstChild.textContent=label;tool.lastChild.textContent=sidebarShortcut();}
+}
+function closeSidebarDrawer(focus){
+ const side=$("#side");if(!side.classList.contains("open"))return;
+ side.classList.remove("open");closeSidebarMenu(false);syncSidebar();if(focus)$("#menu").focus({preventScroll:true});
+}
+function toggleSidebar(){
+ const side=$("#side");
+ if(sidebarDrawer()){if(side.classList.contains("open"))closeSidebarDrawer(true);else{side.classList.add("open");syncSidebar();}return;}
+ sidebarChoice=sidebarShown()?"hidden":"shown";
+ try{localStorage.setItem(SIDEBAR_KEY,sidebarChoice);}catch(e){}
+ if(sidebarChoice==="hidden"){closeSidebarMenu(false);if(side.contains(document.activeElement))$("#menu").focus({preventScroll:true});}
+ syncSidebar();
+}
+function wireSidebarToggle(){
+ const top=document.querySelector(".top"),measure=()=>document.documentElement.style.setProperty("--top-h",Math.round(top.getBoundingClientRect().bottom)+"px");
+ measure();if(typeof ResizeObserver==="function")new ResizeObserver(measure).observe(top);
+ $("#menu").onclick=toggleSidebar;$("#sideScrim").onclick=()=>closeSidebarDrawer(true);
+ document.addEventListener("keydown",event=>{
+  if(event.defaultPrevented)return;
+  if(event.key==="Escape"&&sidebarDrawer()&&$("#side").classList.contains("open")&&!document.querySelector("dialog[open]")){event.preventDefault();closeSidebarDrawer(true);}
+  else if((event.key==="b"||event.key==="B")&&(event.ctrlKey||event.metaKey)&&!event.altKey&&!event.shiftKey){event.preventDefault();toggleSidebar();}
+ });
+ addEventListener("resize",()=>{measure();if(!sidebarDrawer())$("#side").classList.remove("open");syncSidebar();});
+ syncSidebar();
+}

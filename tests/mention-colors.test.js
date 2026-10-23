@@ -32,7 +32,8 @@ test("mentions and participant hints match chat colors through themes and regist
       assert.equal(await color(page.locator(`#cToSuggestions button[data-party='${id}']`)),expected);
       // SPEC-002-064: the chip's recipient picker uses the same identity colors (the sender is not offered).
       if(id!==await page.inputValue('#me')){
-        await h.openView(page,'mentions');await page.click('#composerTo');await page.fill('#composerTargetSearch',id);
+        // SPEC-002-068: the room view hides the chip row; recipients open from Change destination › Send to….
+        await h.openView(page,'mentions');await h.openDestination(page);await page.locator('#composerTargetList button',{hasText:'Send to…'}).click();await page.fill('#composerTargetSearch',id);
         assert.equal(await color(page.locator(`#composerTargetList button[data-party='${id}']`)),expected);await page.keyboard.press('Escape');await page.locator('.tree-root').click();
       }
     }

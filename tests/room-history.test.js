@@ -38,7 +38,7 @@ function cliStatus(f){
 const normalized=rows=>rows.map(r=>({path:r.path,observed:r.observed,source:r.source,needsAttention:r.needsAttention,neutral:r.neutral})).sort((a,b)=>a.path<b.path?-1:1);
 const messageDir=f=>h.path.join(f.proj,'.agent-board',SCOPE);
 const messages=f=>h.fs.readdirSync(messageDir(f)).filter(name=>name.endsWith('.txt')).sort();
-async function openPanel(page){await indicator(page).click();await expect(page.locator('#historyDialog')).toBeVisible();}
+async function openPanel(page){await h.topicAction(page,'historyOpen');await expect(page.locator('#historyDialog')).toBeVisible();}
 async function closePanel(page){await page.locator('#historyDialog [data-action="close"]').click();await expect(page.locator('#historyDialog')).not.toBeVisible();}
 async function panelFacts(page){return JSON.parse(await page.locator('#historyDialog [data-history-json]').textContent());}
 async function panelRows(page){return normalized((await panelFacts(page)).entries);}
@@ -70,7 +70,7 @@ const treePaths=f=>{const out=[];(function walk(dir,prefix){for(const name of h.
 test('AC3/AC4/AC5: untrusted recording creates nothing, approval learns, memory survives reload, and a missing message shows after the shared recording is also gone',async t=>{
   const f=await boot(t),{page,owner}=f;
   await room(page);
-  await expect(indicator(page)).toBeVisible();
+  await h.openTopicMenu(page);await expect(indicator(page)).toBeVisible();
   await expect(indicator(page)).toContainText('Missing-message check: Not set up');
   const before=treePaths(f);
   observe(f);await refresh(f);
@@ -224,7 +224,7 @@ test('AC4: Polish, phone width and every theme keep the panel readable with keyb
   for(const theme of ['light','dark','dracula'])for(const width of [1280,375]){
     await page.click('#gear');await page.selectOption('#sTheme',theme);await page.click('#sClose');
     await page.setViewportSize({width,height:800});
-    await expect(indicator(page)).toBeVisible();
+    await h.openTopicMenu(page);await expect(indicator(page)).toBeVisible();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'no horizontal page scroll behind the indicator');
     await indicator(page).focus();await page.keyboard.press('Enter');
     await expect(page.locator('#historyDialog')).toBeVisible();

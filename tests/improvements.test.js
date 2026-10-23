@@ -50,7 +50,7 @@ test("timer refresh preserves different composer destination, new topic, recipie
   await page.click(".fname:has-text('architecture')");
   await page.locator("#feed [data-reply]").first().click({force:true});
   await page.selectOption("#cWhere","room:product"); await page.selectOption("#cThread","");
-  await page.fill("#cNewThread","Unfinished topic"); await page.fill("#cNewRoom","future-room");
+  await page.fill("#cNewThread","Unfinished topic"); await h.startNewRoom(page); await page.fill("#cNewRoom","future-room");
   await page.selectOption("#cTo","research-agent-01"); await page.selectOption("#cStatus","QUESTION"); await page.selectOption("#cLang","en");
   await page.fill("#cBody","My unfinished draft");
   await page.evaluate(()=>{const el=document.querySelector("#cBody");el.focus();el.setSelectionRange(3,7);window.savedBody=el;window.savedTo=document.querySelector("#cTo").firstChild;});
@@ -131,7 +131,7 @@ test("setting a current topic title appends a valid message, updates every curre
   const {ctx,page,tmp}=await boot();
   await page.click(".tcard[data-tk='room:product|T003']");
   const original=await page.evaluate(()=>window.__fakefs.dump());
-  await page.fill("#cBody","Keep my draft"); await page.fill("#topicTitle","Updated topic title"); await page.click("#setTitle");
+  await page.fill("#cBody","Keep my draft"); await h.renameTopic(page,"Updated topic title");
   await page.waitForFunction(()=>document.querySelector("#title").textContent.includes("Updated topic title"));
   assert.match(await page.locator(".tcard[data-tk='room:product|T003'] .ttl").innerText(),/Updated topic title/);
   assert.match(await page.locator("#cThread option:checked").innerText(),/Updated topic title/);
@@ -143,9 +143,9 @@ test("setting a current topic title appends a valid message, updates every curre
   const out=h.path.join(tmp,"output"); await h.dumpFakeFs(page,out); const v=h.boardctl(["validate","--path",out]); assert.equal(v.code,0,v.err);
   await refresh(page); assert.match(await page.textContent("#title"),/Updated topic title/);
   // Same minute, reversed alphabetic slug: the newest title must still win.
-  await page.fill("#topicTitle","An earlier alphabetic title"); await page.click("#setTitle");
+  await h.renameTopic(page,"An earlier alphabetic title");
   await page.waitForFunction(()=>document.querySelector("#title").textContent.includes("An earlier alphabetic title"));
-  await page.fill("#topicTitle","!!!"); await page.click("#setTitle"); assert.equal((await page.evaluate(()=>window.__fakefs.dump())).length,files.length+1);
+  await h.renameTopic(page,"!!!"); assert.equal((await page.evaluate(()=>window.__fakefs.dump())).length,files.length+1);
   await ctx.close();
 });
 
@@ -174,7 +174,7 @@ test("title updates retain a closed topic's status and require agent confirmatio
   await page.click(".folder:has(.fname:has-text('architecture')) .group");
   await page.click(".tcard[data-tk='room:architecture|T001']");
   const count=await page.evaluate(()=>window.__fakefs.dump().length);
-  await page.selectOption("#me","research-agent-01"); await page.fill("#topicTitle","Closed schema"); await page.click("#setTitle");
+  await page.selectOption("#me","research-agent-01"); await h.renameTopic(page,"Closed schema");
   assert.equal(log.dialogs.length,1); assert.equal(await page.evaluate(()=>window.__fakefs.dump().length),count);
   await page.selectOption("#me","human-owner-01"); await page.click("#setTitle");
   await page.waitForFunction(()=>document.querySelector("#title").textContent.includes("Closed schema"));

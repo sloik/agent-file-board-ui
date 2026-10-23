@@ -25,7 +25,7 @@ test("AC5 tree: root, rooms as folders, threads as cards, closed group, direct s
   // selecting a thread filters the feed
   await card.click();
   assert.deepEqual((await h.feedOrder(page)).map(f => f.split("_")[3]), ["T001", "T001", "T001", "T001"]);
-  assert.match(await page.textContent("#title"), /T001 · Message schema/);
+  assert.match(await page.textContent("#title"), /# architecture › T001 Message schema/);
   // selecting a room filters; direct conversation is its own section
   await page.click(".fname:has-text('product')");
   assert.equal((await h.feedOrder(page)).length, 2);
