@@ -63,7 +63,7 @@ test('unlocking keys requires an explicit signer choice and Viewing as never cho
   assert.equal(await page.evaluate(()=>signingAs),'');
   await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cTo',peer.participant);await page.selectOption('#cThread','');await page.fill('#cNewThread','Explicit signer required');await page.fill('#cBody','Do not silently select a signer');
   const before=await page.evaluate(()=>B.msgs.length);await page.click('#send');
-  await expect(page.locator('#toast')).toContainText('Select an unlocked signing identity');
+  await expect(page.locator('#toast')).toHaveText('Your keys are unlocked, but you have not chosen who to sign as.');
   await expect(page.locator('#cBody')).toHaveValue('Do not silently select a signer');assert.equal(await page.evaluate(()=>B.msgs.length),before);
   await native.openSigning(page);await select.selectOption(owner.participant);
   await expect(page.locator('#signing-own')).toContainText(owner.participant);
