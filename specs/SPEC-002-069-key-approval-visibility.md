@@ -74,6 +74,25 @@ The count is per board and per device, exactly as approvals are; nothing is writ
    text "Rooms" / "Pokoje" next to the glyph if the header stays one line (SPEC-002-068 AC7);
    otherwise glyph only.
    - the README/PANELS docs name both controls and the shortcut.
+4b. **Hover peek** (owner, 2026-10-23: "when toggled can we make it appear on hover so I can switch
+   between without needing to click on it?"). When the sidebar is hidden by the user at >820px wide,
+   on devices with a fine pointer that can hover (`@media (hover:hover) and (pointer:fine)`):
+   - a thin invisible hot zone (about 8px) along the left edge of the page below the header, and
+     hovering #menu, open the sidebar as an overlay ("peek") over the feed after ~150ms of hover (no
+     layout shift: the feed does not move or reflow; the overlay has a shadow, top at var(--top-h),
+     full height below the header, current --sidew width);
+   - the peek stays open while the pointer is over it or #menu, and closes ~300ms after the pointer
+     leaves both; clicking a room/topic/DM navigates and the peek stays open until the pointer leaves
+     (so the user can switch several times), Escape closes it;
+   - peek never changes the saved state (localStorage['afb.sidebar'] stays "hidden"), never changes
+     #menu aria-expanded, and is not keyboard-triggered (keyboard users use #menu / Ctrl/Cmd+B).
+     Pinning is still a click on #menu or the shortcut; inside the peek, the « button becomes a pin
+     button ("Keep sidebar open" / "Przypnij panel boczny") that shows the sidebar normally and
+     saves "shown";
+   - no peek on touch devices, at <=820px (drawer stays as is), or while a dialog/menu is open; the
+     hot zone must not block clicks or text selection in the feed beyond its 8px strip and must not
+     cause horizontal scroll;
+   - the exactly-one `.posting` highlight is visible in the peek.
 5. Help: `docs/guides/signing.md` gets a short "Keys waiting for approval" paragraph; the README
    feature list mentions the badge; CHANGELOG; release as viewer 3.3.5.
 
@@ -105,6 +124,14 @@ file picker does not reveal paths).
   is shown at >820px and in the phone drawer; clicking it hides the sidebar, sets `#menu`
   aria-expanded=false, focuses `#menu`, and the hidden state survives reload; `#menu` shows it
   again.
+- [ ] AC6c: at 1280x800 with the sidebar hidden: hovering the left-edge zone for 200ms shows .side as
+  an overlay (bounding box width ≈ --sidew, feed left edge unchanged, page scrollWidth <= innerWidth);
+  moving into it and clicking another topic navigates and it stays open; moving the pointer to the
+  feed center closes it within 600ms; reload: still hidden, localStorage unchanged, #menu
+  aria-expanded=false throughout; with a touch/no-hover context (Playwright hasTouch + isMobile or
+  emulated media) hovering does nothing; the pin button shows it persistently and saves "shown".
+  Non-vacuity: disabling the peek handler (in-test mutation) fails the first step. SPEC-002-068
+  layout tests stay green.
 - [ ] AC7: SPEC-002-068 layout tests (tests/compact-layout.test.js) still pass unchanged, with the
   badge and the notice present at 320x360.
 - [ ] AC8: docs, CHANGELOG, released as viewer 3.3.5.
