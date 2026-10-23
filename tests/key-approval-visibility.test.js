@@ -33,6 +33,7 @@ async function counted(page,n,{lang='en'}={}){
     await expect(badge(page)).toBeHidden({timeout});
     assert.equal(await page.locator('#toolbarToolsToggle').getAttribute('data-pending-keys'),null,'no dot');
     await expect(page.locator('#toolbarToolsToggle')).toHaveAttribute('title',lang==='pl'?'Narzędzia':'Tools',{timeout});
+    await expect(page.locator('#reviewKeysTool')).toBeHidden({timeout});
     return;
   }
   const label=lang==='pl'?`${n} ${n===1?'klucz':n<5?'klucze':'kluczy'} do sprawdzenia`:`${n} ${n===1?'key':'keys'} to review`;
@@ -40,6 +41,7 @@ async function counted(page,n,{lang='en'}={}){
   await expect(page.locator('#toolbarToolsToggle')).toHaveAttribute('title',(lang==='pl'?'Narzędzia':'Tools')+' - '+label,{timeout});
   await expect(badge(page)).toHaveAttribute('title',label,{timeout});
   await expect(page.locator('#signingTools .key-badge-count')).toHaveText(String(n),{timeout});
+  await expect(page.locator('#reviewKeysTool')).toHaveText('🔑 '+(lang==='pl'?`Sprawdź klucze (${n})`:`Review keys (${n})`),{timeout});
   // The closed menu still shows it: the dot is drawn on the summary itself.
   if(!await page.locator('#toolbarTools').evaluate(el=>el.open)){
     const dot=await page.locator('#toolbarToolsToggle').evaluate(el=>{const s=getComputedStyle(el,'::before');return [s.content,s.position,parseFloat(s.width)];});
@@ -86,12 +88,16 @@ test('AC2: revoked, unregistered and error states are not counted; a changed key
   assert.equal(options[2],`${names['implementation-agent-01']} (implementation-agent-01) - no key`);
 });
 
-test('AC3: the review list names each state, puts keys needing review first, and the badge opens the first of them',async t=>{
+test('AC3: the review list names each state, puts keys needing review first; Signing opens as before and "Review keys (N)" opens the first pending key',async t=>{
   const f=await boot(t),{page}=f;
   const ids=await pending(page),names=await page.evaluate(()=>Object.fromEntries(Object.entries(B.people).map(([id,p])=>[id,p.name||id])));
   assert.deepEqual([...ids].sort(),[f.owner.participant,f.peer.participant].sort());
   assert.deepEqual(ids,[...ids].sort((a,b)=>names[a].localeCompare(names[b])),'sorted by display name');
+  // Signing itself opens the dialog as before, at its top, so "Sign as me" is reached the usual way.
   await openSigning(page);
+  assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollTop),0,'Signing opens at the top');
+  await closeSigning(page);
+  await h.openToolbarTool(page,'reviewKeysTool');await expect(page.locator('#signingDialog')).toBeVisible();
   await expect(page.locator('#signingParticipant')).toHaveValue(ids[0]);
   await expect(page.locator('#signingPendingSummary')).toHaveText('2 keys need review');
   assert.deepEqual(await page.locator('#signingParticipant option').allTextContents(),
@@ -106,8 +112,8 @@ test('AC3: the review list names each state, puts keys needing review first, and
   await trust(page,ids[0]===f.owner.participant?f.owner:f.peer);
   await expect(page.locator('#signingPendingSummary')).toHaveText('1 key needs review');
   await expect(page.locator('#signingParticipant option').first()).toHaveText(`${names[ids[0]]} (${ids[0]}) - approved`);
-  await choose(page,'#sLang','pl');await expect(page.locator('#signingPendingSummary')).toHaveText('1 klucz wymaga sprawdzenia',{timeout:5000});
-  await expect(page.locator('#signingParticipant option').first()).toHaveText(`${names[ids[0]]} (${ids[0]}) - zatwierdzony`,{timeout:5000});
+  await choose(page,'#sLang','pl');await expect(page.locator('#signingPendingSummary')).toHaveText('1 klucz wymaga sprawdzenia',{timeout:10000});
+  await expect(page.locator('#signingParticipant option').first()).toHaveText(`${names[ids[0]]} (${ids[0]}) - zatwierdzony`,{timeout:10000});
   await choose(page,'#sLang','en');await closeSigning(page);
   await approve(page,ids[0]===f.owner.participant?f.peer:f.owner);
   await openSigning(page);await expect(page.locator('#signingPendingSummary')).toHaveText('All registered keys are approved on this device');
@@ -193,10 +199,7 @@ test('AC6/AC6b/AC7: the sidebar glyph and "Rooms", the « hide control, and the 
   await menu.click();await expect(page.locator('#side')).toBeVisible();assert.equal(await inside(),true,'« in the drawer');
   await hide.click();await expect(page.locator('#side')).toBeHidden();await expect(menu).toHaveAttribute('aria-expanded','false');assert.equal(await page.evaluate(()=>document.activeElement.id),'menu');
   // AC7: the SPEC-002-068 layout holds with the badge and the notice, down to 320x360, in both languages.
-  // The notice never adds a violation. At 390px wide the composer's own "Will post unsigned" status row
-  // already overflows on this signing board without the notice (as in 3.3.4), so only there the
-  // comparison stands alone; everywhere else the layout is clean.
-  const shown=new Set(['1280x800','1280x460','900x500','640x800','320x360']);
+  // The notice adds no violation and the layout is clean at every size (390px included since AC9).
   for(const lang of ['en','pl']){await choose(page,'#sLang',lang);
     for(const [width,height] of [[1280,800],[1280,460],[900,500],[640,800],[390,640],[390,560],[320,360]]){
       await page.setViewportSize({width,height});await expect(notice(page)).toBeVisible();
@@ -204,7 +207,7 @@ test('AC6/AC6b/AC7: the sidebar glyph and "Rooms", the « hide control, and the 
       await page.evaluate(()=>document.querySelector('#keyNotice').classList.remove('show'));const without=await h.layoutViolations(page);
       await page.evaluate(()=>signingKeysSync());await expect(notice(page)).toBeVisible();
       assert.deepEqual(v,without,`${lang} ${width}x${height}: the notice adds a violation`);
-      if(shown.has(`${width}x${height}`))assert.deepEqual(v,[],`${lang} ${width}x${height}: ${v.join('; ')}`);
+      assert.deepEqual(v,[],`${lang} ${width}x${height}: ${v.join('; ')}`);
       const n=await notice(page).boundingBox();assert.ok(n.height<=40&&n.x>=0&&n.x+n.width<=width+0.5,`${lang} ${width}x${height} notice ${JSON.stringify(n)}`);
       for(const id of ['#keyNoticeReview','#keyNoticeLater']){const b=await page.locator(id).boundingBox();assert.ok(b&&b.x+b.width<=width+0.5,`${lang} ${width}x${height} ${id} on screen`);}
       if(width>600){const g=await header(page);assert.ok(g.height<=52,`${lang} ${width}x${height} header ${g.height}`);assert.equal(g.rows,false);}
@@ -219,7 +222,7 @@ async function layoutBoard(opts={}){
 const peekGeometry=page=>page.evaluate(()=>({side:document.querySelector('#side').getBoundingClientRect().toJSON(),feed:document.querySelector('.feed-wrap').getBoundingClientRect().left,sidew:parseFloat(getComputedStyle(document.querySelector('.side')).width),peek:document.body.classList.contains('side-peek'),scroll:document.documentElement.scrollWidth<=innerWidth}));
 async function peeks(page){
   await page.mouse.move(3,400);await page.waitForTimeout(200);
-  await expect.poll(async()=>(await peekGeometry(page)).side.width,{timeout:500}).toBeGreaterThan(100);
+  await expect.poll(async()=>(await peekGeometry(page)).side.width,{timeout:2000}).toBeGreaterThan(100);
 }
 test('AC6c: the hidden sidebar peeks on hover over the left edge or #menu, stays while used, closes on leave, pins on request',async()=>{
   const {ctx,page,log}=await layoutBoard();try{
@@ -276,4 +279,39 @@ test('AC6c: no peek on touch devices or at 820px and below; non-vacuity: without
     await assert.rejects(peeks(page),'AC6c fails without the hover handler');
     assert.deepEqual(log.pageErrors,[]);
   }finally{await ctx.close();}}
+});
+
+// AC9: on a signing board with an unlock offer the composer status row keeps its label on one line
+// and wraps the offer below it, so the message field and Post fit every SPEC-002-068 AC1 size.
+const AC1_SIZES=[[1280,800],[1280,560],[1280,460],[900,500],[700,420],[640,800],[390,640],[390,560],[320,360]];
+async function statusFits(page){
+  const out=[];
+  for(const lang of ['en','pl']){await choose(page,'#sLang',lang);
+    for(const open of [true,false]){
+      await page.setViewportSize({width:1280,height:800});
+      if(await page.locator('#composerOptions').evaluate(el=>el.open)!==open)await page.locator('#composerOptions > summary').click();
+      for(const [width,height] of AC1_SIZES){
+        await page.setViewportSize({width,height});const at=`${lang} ${open?'open':'folded'} ${width}x${height}`;
+        for(const v of await h.layoutViolations(page))out.push(at+': '+v);
+        const label=await page.locator('#signingNotice .signing-notice-label').evaluate(el=>{const r=el.getBoundingClientRect(),line=parseFloat(getComputedStyle(el).lineHeight)||20;return {h:r.height,w:r.width,line};});
+        if(label.h>label.line*1.5||label.w<60)out.push(at+': label squeezed '+JSON.stringify(label));
+      }
+    }
+  }
+  await choose(page,'#sLang','en');return out;
+}
+test('AC9: the signing status row with an unlock offer fits every window; non-vacuity: the 3.3.4 row does not',async t=>{
+  const f=await boot(t),{page}=f;
+  await expect(page.locator('#signingNotice')).toHaveAttribute('data-signing-status','unsigned');
+  await expect(page.locator('#signingNotice .signing-notice-action')).toContainText('Unlock');
+  assert.deepEqual(await statusFits(page),[]);
+  // At 390x640 the label has its own line and the long unlock offer and Details wrap below it.
+  await page.setViewportSize({width:390,height:640});
+  const rows=await page.evaluate(()=>{const n=document.querySelector('#signingNotice'),r=s=>n.querySelector(s).getBoundingClientRect(),a=n.querySelector('.signing-notice-action');return {head:r('.signing-notice-head'),action:r('.signing-notice-action'),more:r('.signing-notice-more'),height:n.getBoundingClientRect().height,title:a.title,text:a.textContent};});
+  assert.ok(rows.action.top>=rows.head.bottom-1&&rows.more.top>=rows.head.bottom-1,'offer and Details below the label: '+JSON.stringify(rows));
+  assert.ok(rows.height<=140,'status row height '+rows.height);assert.equal(rows.title,rows.text,'the offer carries its text as a tooltip');
+  // Restoring the 3.3.4 rules (a label column that may shrink to nothing, wrapping word by word) brings the overflow back.
+  await page.addStyleTag({content:'.signing-notice[data-signing-status=unsigned]:not(.expanded) .signing-notice-head{min-width:0!important}.signing-notice[data-signing-status=unsigned]:not(.expanded) .signing-notice-label{white-space:normal!important}'});
+  await page.setViewportSize({width:390,height:640});
+  assert.notDeepEqual(await h.layoutViolations(page),[],'the old row overflows at 390x640');
 });

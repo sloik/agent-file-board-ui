@@ -62,6 +62,8 @@ function signingNoticeButton(button, action, link) {
   const emoji = action ? SIGNING_ACTION_EMOJI[action.kind] : "";
   const label = action ? (emoji ? emoji + " " : "") + signingActionLabel(action) : "";
   if (button.textContent !== label) button.textContent = label;
+  // The compact phone row may cut the label short (SPEC-002-069 AC9); the tooltip keeps it whole.
+  if (button.title !== label) button.title = label;
   button.dataset.signingKind = action?.kind || "";
   // A short label for the compact phone status line (SPEC-002-065); the full label stays the text.
   if (action?.short) button.dataset.short = (emoji ? emoji + " " : "") + action.short; else delete button.dataset.short;
@@ -319,6 +321,12 @@ function signingKeysSync() {
     set(badge.querySelector(".key-badge-count"), "textContent", n ? String(n) : "");
     set(badge, "title", label);
     set(tools, "title", n ? exText("Signing", "Podpisy") + ": " + label : "");
+  }
+  const review = $("#reviewKeysTool");
+  if (review) {
+    set(review, "hidden", !n);
+    set(review, "textContent", n ? "🔑 " + exText(`Review keys (${n})`, `Sprawdź klucze (${n})`) : "");
+    set(review, "title", label);
   }
   if (toggle) {
     if (n) { if (toggle.dataset.pendingKeys !== String(n)) toggle.dataset.pendingKeys = String(n); } else delete toggle.dataset.pendingKeys;
@@ -1043,9 +1051,14 @@ function wireSigning() {
   b.id = "signingTools";
   b.innerHTML = '<span class="signing-tools-label"></span><span class="key-badge" hidden><span aria-hidden="true">🔑</span> <span class="key-badge-count"></span></span>';
   b.querySelector(".signing-tools-label").textContent = exText("Signing", "Podpisy");
-  // With keys waiting for approval, Signing opens on the review of the first of them.
-  b.onclick = () => signingPendingReview(B).length && B.signingContext && !B.signingError ? signingDialog({ task: "review" }) : signingDialog();
-  $("#toolbarToolsPanel").append(b);
+  b.onclick = () => signingDialog();
+  // A separate entry, shown only while keys wait, opens the review on the first of them.
+  const review = document.createElement("button");
+  review.className = "btn";
+  review.id = "reviewKeysTool";
+  review.hidden = true;
+  review.onclick = () => signingDialog({ task: "review" });
+  $("#toolbarToolsPanel").append(b, review);
   $("#keyNoticeReview")?.addEventListener("click", () => signingDialog({ task: "review" }));
   $("#keyNoticeLater")?.addEventListener("click", signingKeyNoticeDismiss);
   document.addEventListener("click", (event) => {

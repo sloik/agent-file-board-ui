@@ -109,7 +109,8 @@ file picker does not reveal paths).
 - [ ] AC2: revoked, unregistered and error participants are not counted; a changed key is counted
   and sorted first.
 - [ ] AC3: `#signingParticipant` options carry the state text; needs-review options come first; the
-  review task opened from the badge preselects the first needing review; the summary line matches.
+  review task opened from the Tools item "Review keys (N)" (amended 2026-10-23, see below) preselects the
+  first needing review; #signingTools opens the dialog as before; the summary line matches.
 - [ ] AC4: first-open notice appears with N > 0, "Review keys" opens the review task with the first
   pending participant selected, "Not now" hides it and it stays hidden after reload; registering a
   new key (or changing one) shows it again; with Storage get/set throwing the page loads without
@@ -135,5 +136,17 @@ file picker does not reveal paths).
 - [ ] AC7: SPEC-002-068 layout tests (tests/compact-layout.test.js) still pass unchanged, with the
   badge and the notice present at 320x360.
 - [ ] AC8: docs, CHANGELOG, released as viewer 3.3.5.
+- [ ] AC9 (added 2026-10-23, owner: the field and Post must stay visible at small sizes): on a signing
+  board whose composer status offers to unlock a key ("Will post unsigned" + unlock link), the status
+  row keeps the compact SPEC-002-065 form at <=600px wide or <=640px tall without squeezing the
+  label: the label stays on one line (at least 8em, ellipsis), a short offer and Details share its
+  line, and a long offer wraps below it, so `layoutViolations` is empty at every SPEC-002-068 AC1 size, English and Polish,
+  Message options open and folded. Non-vacuity: restoring the 3.3.4 rule fails at 390x640. AC7 at
+  390x640 and 390x560 asserts zero violations.
+
+Amendment 2026-10-23 (owner, via the lead): #signingTools opens the dialog as before even while keys
+wait; a separate Tools item "Review keys (N)", shown only when N > 0, and the notice's "Review keys"
+open task 2 on the first pending key. AC9 added: the owner wants the message field and Post visible at
+small sizes, which the 3.3.4 composer status row broke on signing boards at 390px.
 
 No VoiceOver/screen-reader checks (owner policy).
