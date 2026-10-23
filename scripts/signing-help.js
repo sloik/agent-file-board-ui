@@ -259,7 +259,7 @@ function signingDiagrams(text = exText) {
   const flow = [{ head: T("Start at the top and follow the first \"No\".", "Zacznij od góry i idź za pierwszym „Nie”.") }];
   const step = (question, ids) => {
     const info = ids.map((i) => signingBlockInfo(i, { s: T("you", "Ty") }, T));
-    flow.push({ pair: [{ text: question, down: T("Yes", "Tak"), no: T("No", "Nie") }, { text: info.map((i) => i.short).join(T(" or ", " lub ")) + ". " + T("Fix: ", "Rozwiązanie: ") + info[0].label, cls: "sg-warn" }], leftWidth: 150 });
+    flow.push({ pair: [{ text: question, down: T("Yes", "Tak"), no: T("No", "Nie") }, { text: (info.length > 1 ? T("One of: ", "Jedno z: ") : "") + info.map((i) => i.short).join(". ") + ". " + T("Fix: ", "Rozwiązanie: ") + info[0].label, cls: "sg-warn" }], leftWidth: 150 });
   };
   step(T("Can this board's signing be read, with an identity UUID?", "Czy podpisy tej tablicy można odczytać i ma identyfikator UUID?"), ["no-board-id"]);
   flow.push({ pair: [{ text: T("Does this room require trusted signatures?", "Czy ten pokój wymaga zaufanych podpisów?"), down: T("Yes", "Tak"), no: T("No", "Nie") }, { text: T("Post. Signing is optional here.", "Wyślij. Podpis jest tu opcjonalny."), cls: "sg-ok" }], leftWidth: 150 });
