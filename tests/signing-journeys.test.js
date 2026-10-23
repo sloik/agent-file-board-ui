@@ -49,28 +49,29 @@ test('signing is presented as distinct human tasks with visible form labels on d
   }
 });
 
-test('unlocking keys requires an explicit signer choice and Viewing as never chooses the signer',async t=>{
+test('the signer is the persona in "I am": unlocking several keys signs only as the selected persona',async t=>{
   const {page,owner,peer}=await boot(t);
   await native.openSigning(page);
+  await expect(page.getByLabel('Persona to sign as',{exact:true})).toHaveValue(owner.participant);
   await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles([owner.key,peer.key]);
   await act(page,'unlock');
-  const select=page.getByLabel('Signing identity',{exact:true});
-  await expect(select).toHaveValue('');
-  assert.equal(await page.evaluate(()=>signingAs),'');
+  await expect(page.locator('#signing-own .signing-feedback')).toContainText('Unlocked. New messages are signed as');
+  assert.equal(await page.evaluate(()=>signingMode),'signed');
   assert.deepEqual((await page.evaluate(()=>signingProvider.catalog().map(item=>item.participant))).sort(),[owner.participant,peer.participant].sort());
+  await expect(page.locator('#signingMode')).toContainText(`(${owner.participant})`);
   await native.closeSigning(page);
+  await expect(page.locator('#signingNotice')).toHaveAttribute('data-signing-status','signed');
   await page.selectOption('#me',peer.participant);
-  assert.equal(await page.evaluate(()=>signingAs),'');
-  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cTo',peer.participant);await page.selectOption('#cThread','');await page.fill('#cNewThread','Explicit signer required');await page.fill('#cBody','Do not silently select a signer');
+  await expect(page.locator('#signingNotice .signing-notice-label')).toHaveText(`Will be signed as ${await page.evaluate(id=>B.people[id].name,peer.participant)}`);
+  // A persona without an unlocked key is refused; another unlocked key never stands in for it.
+  const nobody=await page.evaluate(()=>Object.entries(B.signingParticipants).find(([,v])=>v.unregistered)?.[0]);
+  await page.selectOption('#me',nobody);
+  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cTo',peer.participant);await page.selectOption('#cThread','');await page.fill('#cNewThread','Persona signer required');await page.fill('#cBody','Do not sign as another persona');
   const before=await page.evaluate(()=>B.msgs.length);await page.click('#send');
-  await expect(page.locator('#toast')).toHaveText('Your keys are unlocked, but you have not chosen who to sign as.');
-  await expect(page.locator('#cBody')).toHaveValue('Do not silently select a signer');assert.equal(await page.evaluate(()=>B.msgs.length),before);
-  await native.openSigning(page);await select.selectOption(owner.participant);
-  await expect(page.locator('#signing-own')).toContainText(owner.participant);
-  await native.closeSigning(page);await page.selectOption('#me',peer.participant);
-  assert.equal(await page.evaluate(()=>signingAs),owner.participant);
+  await expect(page.locator('#toast')).toContainText(`${await page.evaluate(id=>B.people[id].name,nobody)} has no signing key`);
+  await expect(page.locator('#cBody')).toHaveValue('Do not sign as another persona');assert.equal(await page.evaluate(()=>B.msgs.length),before);
   await native.openSigning(page);await act(page,'lock');
-  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);assert.equal(await page.evaluate(()=>signingAs),'');
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);assert.equal(await page.evaluate(()=>signingMode),'signed','locking never falls back to unsigned');
 });
 
 test('participant review rejects a mismatched fingerprint, explains approval and does not unlock a key',async t=>{
@@ -84,7 +85,7 @@ test('participant review rejects a mismatched fingerprint, explains approval and
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint);await act(page,'trust');
   await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'approval never imports a private key');
-  assert.equal(await page.evaluate(()=>signingAs),'');
+  assert.equal(await page.evaluate(()=>signingMode),'unsigned','approval never turns on signing');
   await act(page,'remove-trust');await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key not approved by you');
 });
 
@@ -93,8 +94,8 @@ test('key-file errors stay with the signing task and leave the user in control',
   await page.getByLabel('Private signing keys (kept only in this tab)').setInputFiles({name:'not-a-key.json',mimeType:'application/json',buffer:Buffer.from('{"not":"a private key"}')});
   await act(page,'unlock');
   await expect(page.locator('#signing-own .signing-feedback')).not.toBeEmpty();
-  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);assert.equal(await page.evaluate(()=>signingAs),'');
-  await expect(control(page,'unlock')).toBeEnabled();await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);assert.equal(await page.evaluate(()=>signingMode),'unsigned');
+  await expect(control(page,'unlock')).toBeEnabled();await expect(page.getByLabel('Persona to sign as',{exact:true})).toHaveValue(await page.inputValue('#me'));
 });
 
 test('read-only boards explain that signing a new message needs a writable folder',async t=>{
@@ -127,7 +128,7 @@ test('a paused key read cannot unlock or report success after switching to anoth
   await expect.poll(()=>page.evaluate(()=>window.oldSigningOperationFinished)).toBe(true);
   await expect.poll(()=>page.evaluate(()=>signingProvider.catalog().length)).toBe(0);
   await expect.poll(()=>page.locator('#signing-own').innerText()).toBe(before);
-  assert.equal(await page.evaluate(()=>B.signingContext.boardId),boardId);assert.equal(await page.evaluate(()=>signingAs),'');
+  assert.equal(await page.evaluate(()=>B.signingContext.boardId),boardId);assert.equal(await page.evaluate(()=>signingMode),'unsigned');
 });
 
 test('an idle signing dialog can review and approve a key after an ordinary same-board refresh',async t=>{
@@ -145,7 +146,7 @@ test('an idle signing dialog can review and approve a key after an ordinary same
   await act(page,'trust');await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
   assert.equal(await page.evaluate(id=>B.signingContext.state.pins[id],peer.participant),peer.fingerprint);
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'same-board refresh and key approval do not unlock private keys');
-  assert.equal(await page.evaluate(()=>signingAs),'');
+  assert.equal(await page.evaluate(()=>signingMode),'unsigned');
 });
 
 test('closing the dialog during private key import cancels the pending unlock',async t=>{
@@ -168,9 +169,9 @@ test('closing the dialog during private key import cancels the pending unlock',a
   await control(page,'unlock').click();await expect.poll(()=>page.evaluate(()=>window.privateSigningImportPending)).toBe(true);
   await native.closeSigning(page);await page.evaluate(()=>releasePrivateSigningImport());
   await expect.poll(()=>page.evaluate(()=>window.closedSigningOperationFinished)).toBe(true);
-  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);assert.equal(await page.evaluate(()=>signingAs),'');
+  assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[]);
   assert.equal(await page.evaluate(()=>signingMode),mode,'a canceled unlock does not enable signed mode');
-  await native.openSigning(page);await expect(page.getByLabel('Signing identity',{exact:true})).toHaveValue('');
+  await native.openSigning(page);await expect(page.locator('#signingMode')).toContainText('Unsigned mode');
 });
 
 test('read-only exact-key approval and removal immediately reverify message eligibility and visible trust',async t=>{

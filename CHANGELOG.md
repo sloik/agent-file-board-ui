@@ -1,5 +1,32 @@
 # Release notes
 
+## Unreleased
+
+- **Composer signing status (SPEC-002-061):** the composer always shows what will
+  happen to the message you are about to post: 🔏 signed as the persona, 📝 posted
+  unsigned, or a distinct emoji with the missing step (👤 choose persona, ⛔ read-only
+  folder, ❔ no registered key, 🚫 revoked, 🔄 rotated, 🔒 unlock, ⚠️ key changed,
+  🔑 approve once, ❗ signing unavailable). It sits directly above Send and updates on
+  persona, destination, unlock, lock, approval, refresh, returning to the tab and key
+  expiry. Send follows the status: signed, unsigned or refused with the same
+  explanation, keeping the draft.
+- **Signer = persona:** in signed mode messages are signed as the persona selected
+  in "I am" at send time. The separate "Choose who to sign as" step is gone; a
+  persona whose key is locked blocks signed posting (no unsigned fallback, never
+  another unlocked key).
+- **Unlock from the composer:** "🔒 Unlock <persona>'s key" opens the key-file
+  picker directly (any file type, several files) and binds the key to the persona in
+  one step. A key that belongs to another participant is named with its fingerprint,
+  with an explicit "Switch persona" button; a key of nobody on the board and invalid
+  files change nothing; read-only boards say why unlocking is unavailable. Approval
+  always goes through the fingerprint review. "Post unsigned instead" is a secondary
+  link with a confirmation. On phones the row shows emoji and short label, with
+  details on tap and 44px actions.
+- **Signing dialog:** "Sign as me" now has numbered steps (persona, key file,
+  unlock) and says that both are needed and the file stays in this tab; its lock
+  button says "Lock all keys" because keys are always locked together. The
+  "Why can't I post?" diagram and the signing guides follow the new rule.
+
 ## 3.2.1 — 2026-10-23
 
 - Fix: expanded parts of a message (signing details and hints, reviews,
