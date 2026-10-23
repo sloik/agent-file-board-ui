@@ -78,7 +78,7 @@ test("AC4: reply in an existing thread keeps THREAD, sets REPLY-TO, validates; c
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /human-owner-01_T001_/.test(f.path));
-  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 3\.3\.0\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
+  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 3\.3\.1\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -114,7 +114,7 @@ test("AC4: agent sender requires confirmation; accepted post validates and is ma
   await committed(page);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
-  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 3\.3\.0 \(manual post, sender is an agent\)/);
+  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 3\.3\.1 \(manual post, sender is an agent\)/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -125,6 +125,7 @@ test("AC4: unregistered sender is refused in the UI (empty registry) and nothing
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(proj) });
   await h.openBoardViaUi(page);await h.expandComposer(page);
   const before = (await page.evaluate(() => window.__fakefs.dump())).length;
+  await page.selectOption("#cWhere", "room:product");
   await page.fill("#cBody", "I am nobody");
   await page.click("#send");
   await page.waitForSelector(".toast.show");
@@ -168,7 +169,7 @@ test("AC4: a message that would collide gets a numeric slug suffix and is never 
   await ctx.close();
 });
 test('file creation is not write completion; commit waits and preserves edits made during close',async()=>{
- const {page,ctx}=await boot();await page.fill('#cBody','Delayed commit');
+ const {page,ctx}=await boot();await page.selectOption('#cWhere','room:product');await page.fill('#cBody','Delayed commit');
  await page.evaluate(async()=>{const proto=Object.getPrototypeOf(await baseHandle.getFileHandle('config.json')),original=proto.createWritable;proto.createWritable=async function(...args){const writer=await original.apply(this,args);if(this.name.endsWith('_delayed-commit.txt')){const close=writer.close;writer.close=async()=>{window.__commitWaiting=true;await new Promise(resolve=>window.__releaseCommit=resolve);await close();};}return writer;};});
  await page.click('#send');await page.waitForFunction(()=>window.__commitWaiting);
  assert.equal(await page.evaluate(()=>window.__fakefs.dump().find(f=>f.path.endsWith('_delayed-commit.txt')).text),'');

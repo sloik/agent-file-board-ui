@@ -280,20 +280,58 @@ mark{background:var(--mark);color:inherit;border-radius:3px}
 .composer{flex:none;height:var(--composerh,auto);max-height:65vh;overflow:auto;min-height:160px;border-top:1px solid var(--line);background:var(--panel);padding:10px 22px 14px}
 .toolbar-tools{position:relative;flex:none}.toolbar-tools>summary{cursor:pointer}.toolbar-tools:not([open])>.toolbar-tools-panel{display:none}.toolbar-tools-panel{position:fixed;z-index:80;width:220px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:0 8px 24px #0003;box-sizing:border-box}.toolbar-tools-panel>.btn{display:block;width:100%;text-align:left;margin:3px 0}
 @media(max-width:600px){.top{gap:6px}.top .spacer{display:none}.top .search{flex-basis:100%;max-width:none;min-width:0}.toolbar-tools>summary{font-size:0}.toolbar-tools>summary::after{content:"⋯";font-size:18px;line-height:1}}
-.composer-options-summary{cursor:pointer;font-size:12px;overflow-wrap:anywhere}.composer-options-summary>span{margin-right:8px}#composerRouteSummary{color:var(--muted)}#composerOptions[open]>.ctx{margin-top:10px;max-height:min(28vh,260px);overflow:auto}#composerOptions{flex:none}
+.composer-options-summary{cursor:pointer;font-size:12px;overflow-wrap:anywhere}.composer-options-summary>span{margin-right:8px}#composerOptionsSummary{color:var(--muted)}#composerOptions[open]>.ctx{margin-top:10px;max-height:min(28vh,260px);overflow:auto}#composerOptions{flex:none}
 /* Expanded options share bounded columns instead of wrapping whole field pairs. */
 #composerOptions[open]>.ctx{margin-top:6px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px 8px;align-items:center;font-size:12px}
 #composerOptions .ctx label{flex-wrap:nowrap;gap:4px}
 #composerOptions .ctx input,#composerOptions .ctx select{min-width:0;max-width:100%;padding:3px 5px;font-size:12.5px;box-sizing:border-box}
-#composerOptions .composer-route{grid-column:span 2;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 6px}
-#composerOptions .composer-route>.completion{min-width:0}
-#composerOptions .composer-route>.completion input{width:100%}
-#composerOptions .composer-route>select,#composerOptions .composer-route>#cNewThread{grid-column:1/-1;width:100%;max-width:100%}
 #composerOptions .ctx label:not(.composer-route)>select{flex:1;width:0}
 #composerOptions #composeGuidance{padding:4px 6px;font-size:12px;white-space:normal;line-height:1.25}
-#composerOptions #cNewRoom{grid-column:span 2;width:100%}
-@media(max-width:1000px){#composerOptions .ctx label:not(.composer-route){grid-column:span 2}#composerOptions #composeGuidance{grid-column:span 2}#composerOptions #cNewRoom{grid-column:span 4}}
-@media(max-width:600px){#composerOptions[open]>.ctx{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#composerOptions .composer-route,#composerOptions .ctx label:not(.composer-route),#composerOptions #composeGuidance,#composerOptions #cNewRoom{grid-column:auto}#composerOptions .composer-route>.completion input{height:25px}#composerOptions .ctx label:not(.composer-route){display:grid;grid-template-columns:1fr}#composerOptions .ctx label:not(.composer-route)>select{width:100%}}
+/* Advanced routing keeps the original Where/Thread/To fields as power-user controls (SPEC-002-064). */
+.composer-advanced{grid-column:1/-1;min-width:0}.composer-advanced>summary{cursor:pointer;color:var(--muted)}
+.composer-advanced-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 8px;margin-top:6px}
+#composerOptions .composer-route{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:3px 6px;align-items:center;min-width:0}
+#composerOptions .composer-route>.completion{min-width:0}
+#composerOptions .composer-route>.completion input{width:100%}
+#composerOptions .composer-route>select{width:100%;max-width:100%}
+@media(max-width:1000px){#composerOptions .ctx label:not(.composer-route){grid-column:span 2}#composerOptions #composeGuidance{grid-column:span 2}}
+@media(max-width:600px){#composerOptions[open]>.ctx{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#composerOptions .ctx label:not(.composer-route),#composerOptions #composeGuidance{grid-column:auto}#composerOptions .composer-route>.completion input{height:25px}#composerOptions .ctx label:not(.composer-route){display:grid;grid-template-columns:1fr}#composerOptions .ctx label:not(.composer-route)>select{width:100%}.composer-advanced-fields{grid-template-columns:minmax(0,1fr)}}
+/* The destination chip: where Send posts, always visible above the draft (SPEC-002-064). */
+.composer-target-row{display:flex;gap:6px;align-items:center;min-width:0;flex:none}
+.composer-chip,.composer-chip-to{display:inline-flex;align-items:center;gap:0;min-width:0;max-width:100%;padding:3px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel2);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.composer-chip{flex:0 1 auto;overflow:hidden}.composer-chip-to{flex:0 1 auto;max-width:40%;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.composer-chip-lead{color:var(--muted);flex:none;margin-right:4px}
+.composer-chip-where{flex:0 1 auto;min-width:3ch;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.composer-chip-topic{flex:0 2 auto;min-width:3ch;overflow:hidden;text-overflow:ellipsis}
+.composer-chip-change{flex:none;margin-left:8px;color:var(--accent);font-weight:600}
+.composer-chip:hover,.composer-chip-to:hover,.composer-chip:focus-visible,.composer-chip-to:focus-visible{border-color:var(--accent)}
+.composer-chip[aria-expanded="true"],.composer-chip-to[aria-expanded="true"]{border-color:var(--accent);outline:1px solid var(--accent)}
+#composer[data-target="none"] .composer-chip{border-style:dashed}
+#composer[data-pinned] .composer-chip{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-ink)}
+.direct-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.direct-new{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:6px;min-width:26px;height:24px;cursor:pointer;font:inherit;line-height:1}.direct-new:hover,.direct-new:focus-visible{border-color:var(--accent)}
+.presence-message{margin-left:8px;padding:2px 8px;font-size:12px}
+.composer-pin,.composer-target-note{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:5px 9px;border-radius:7px;font-size:12.5px;overflow-wrap:anywhere;min-width:0;flex:none}
+.composer-pin{background:var(--warn-bg);color:var(--warn-ink);border:1px solid color-mix(in srgb,var(--warn-ink) 35%,transparent)}
+.composer-target-note{background:var(--panel2);color:var(--ink)}.composer-target-note[data-tone="warn"]{background:var(--warn-bg);color:var(--warn-ink)}
+.composer-target-note-actions{display:inline-flex;flex-wrap:wrap;gap:6px}
+.composer-pin[hidden],.composer-target-note[hidden],.composer-chip-to[hidden]{display:none}
+.composer-pin .btn,.composer-target-note .btn{padding:2px 8px;font-size:12px}
+.composer-target-fields{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;min-width:0;flex:none}
+.composer-target-fields:not(:has(>:not([hidden]))){display:none}
+.composer-target-fields>input{flex:1 1 160px;min-width:0;max-width:100%;box-sizing:border-box;padding:4px 7px}
+.composer-target-fields>.history-create{flex-basis:100%}
+.composer-target-menu{position:fixed;z-index:90;display:flex;flex-direction:column;gap:6px;width:min(420px,calc(100vw - 16px));max-height:60vh;padding:8px;box-sizing:border-box;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.composer-target-menu[hidden]{display:none}
+.composer-target-menu h3{margin:0;font-size:13px}
+.composer-target-menu input{width:100%;box-sizing:border-box;min-width:0}
+.composer-target-list{overflow:auto;min-height:0;display:flex;flex-direction:column}
+.composer-target-list h4{margin:6px 4px 2px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.composer-target-list button{display:flex;align-items:center;gap:6px;width:100%;min-height:32px;padding:4px 8px;text-align:left;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.composer-target-list button>span{overflow:hidden;text-overflow:ellipsis}
+.composer-target-list button.sel,.composer-target-list button:hover{background:var(--panel2)}
+.composer-target-list button[data-party]{color:var(--c)}
+.composer-target-list button[aria-selected="true"]::before{content:"\2713";color:var(--accent)}
+@media(max-width:600px){.composer-target-menu{left:0!important;right:0;bottom:0!important;top:auto!important;width:auto;max-height:70vh;border-radius:12px 12px 0 0;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}.composer-target-list button{min-height:44px}.composer-target-row{flex-wrap:wrap}.composer-chip-to{flex:none;max-width:100%}}
 .composer .inner{display:flex;flex-direction:column;gap:8px;height:100%}
 .composer .write{flex:1;min-height:46px;position:relative}
 .composer textarea{height:100%;max-height:none}
@@ -512,9 +550,11 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 .history-weaken input,.history-option input{margin-top:.25em;flex:none}
 #historySettingsDialog .history-note{color:var(--muted);font-size:.9em;margin:4px 0}
 #historySettingsDialog [data-action="apply"]{margin-top:8px}
-.history-create{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0}
+.history-create{grid-column:1/-1;min-width:0}
+.history-create-fold>summary{cursor:pointer;color:var(--muted);font-size:.9em;font-weight:600}
+.history-create-body{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0;margin-top:4px}
 .history-create[hidden],.history-create[hidden] input{display:none}
-#composerOptions .ctx .history-create label[data-history-option]{display:inline-flex;grid-template-columns:none;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0;max-width:100%}
+.history-create label[data-history-option]{display:inline-flex;grid-template-columns:none;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0;max-width:100%}
 .history-create-note{flex-basis:100%;color:var(--muted);font-size:.85em;overflow-wrap:anywhere}
 .history-composer-note{overflow-wrap:anywhere}
 .history-composer-note[hidden]{display:none}
@@ -592,17 +632,21 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
     <div class="composer status-tone s-INFO" id="composer">
       <div class="inner">
         <div class="replying" id="replying"><span><span data-i18n="replying_to"></span> <b id="replyName"></b></span><button type="button" id="replyClear" data-i18n-title="cancel_reply">&#10005;</button></div>
-        <details id="composerOptions"><summary class="composer-options-summary"><span data-i18n="composer_options"></span><span id="composerRouteSummary"></span><span id="cStatusPreview" data-i18n-title="draft_status" class="chip status status-tone s-INFO">INFO</span></summary>
+        <div class="composer-target-row" id="composerTargetRow"><button type="button" class="composer-chip" id="composerTarget" aria-haspopup="dialog" aria-expanded="false" aria-controls="composerTargetMenu"><span class="composer-chip-lead"></span> <span class="composer-chip-where"></span><span class="composer-chip-topic"></span><span class="composer-chip-change"></span></button><button type="button" class="composer-chip-to" id="composerTo" aria-haspopup="dialog" aria-expanded="false" aria-controls="composerTargetMenu" hidden></button></div>
+        <div class="composer-pin" id="composerPin" role="status" hidden><span class="composer-pin-text"></span> <button type="button" class="btn" id="composerPinHere"></button> <button type="button" class="btn" id="composerPinKeep"></button></div>
+        <div class="composer-target-note" id="composerTargetNote" role="status" hidden><span class="composer-target-note-text"></span><span class="composer-target-note-actions"></span></div>
+        <div class="composer-target-fields" id="composerTargetFields"><input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" data-i18n-aria="c_new_room_title" size="11" hidden><input id="cNewThread" data-i18n-ph="c_new_thread_ph" data-i18n-aria="c_new_thread_ph" size="20" hidden></div>
+        <details id="composerOptions"><summary class="composer-options-summary"><span data-i18n="composer_options"></span><span id="composerOptionsSummary"></span><span id="cStatusPreview" data-i18n-title="draft_status" class="chip status status-tone s-INFO">INFO</span></summary>
         <div class="ctx">
-          <label class="composer-route"><span data-i18n="c_where"></span> <span class="completion"><input id="cWhereSearch" autocomplete="off" data-i18n-ph="find_room" data-i18n-aria="find_room"><div class="sugg" id="cWhereSuggestions"></div></span> <select id="cWhere"></select></label>
-          <label class="composer-route"><span data-i18n="c_thread"></span> <span class="completion"><input id="cThreadSearch" autocomplete="off" data-i18n-ph="find_topic" data-i18n-aria="find_topic"><div class="sugg" id="cThreadSuggestions"></div></span> <select id="cThread"></select>
-          <input id="cNewThread" data-i18n-ph="c_new_thread_ph" size="20" style="display:none"></label>
-          <label class="composer-route"><span data-i18n="c_to"></span> <span class="completion"><input id="cToSearch" autocomplete="off" data-i18n-ph="find_party" data-i18n-aria="find_party"><div class="sugg" id="cToSuggestions"></div></span> <select id="cTo"></select></label>
           <label><span data-i18n="content_type"></span> <select id="cContentType"><option value="text/plain" data-i18n="content_plain"></option><option value="text/markdown">Markdown</option><option value="text/html">HTML</option></select></label>
           <label><span data-i18n="c_status"></span> <select id="cStatus"></select></label>
           <label><span data-i18n="c_lang"></span> <select id="cLang"></select></label>
           <button class="btn" type="button" id="composeGuidance" data-i18n="guidance_posting"></button>
-          <input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" size="11">
+          <details id="composerAdvanced" class="composer-advanced"><summary data-i18n="c_advanced"></summary><div class="composer-advanced-fields">
+          <label class="composer-route"><span data-i18n="c_where"></span> <span class="completion"><input id="cWhereSearch" autocomplete="off" data-i18n-ph="find_room" data-i18n-aria="find_room"><div class="sugg" id="cWhereSuggestions"></div></span> <select id="cWhere"></select></label>
+          <label class="composer-route"><span data-i18n="c_thread"></span> <span class="completion"><input id="cThreadSearch" autocomplete="off" data-i18n-ph="find_topic" data-i18n-aria="find_topic"><div class="sugg" id="cThreadSuggestions"></div></span> <select id="cThread"></select></label>
+          <label class="composer-route"><span data-i18n="c_to"></span> <span class="completion"><input id="cToSearch" autocomplete="off" data-i18n-ph="find_party" data-i18n-aria="find_party"><div class="sugg" id="cToSuggestions"></div></span> <select id="cTo"></select></label>
+          </div></details>
         </div>
         </details>
         <div id="structuredAttachment" hidden><span id="structuredAttachedText"></span> <button class="btn" id="structuredRemove" type="button" data-i18n="authoring_remove"></button></div>
@@ -1330,7 +1374,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "3.3.0";
+const VIEWER_VERSION = "3.3.1";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
@@ -1343,7 +1387,7 @@ const FILE_RE = /^\d{4}-\d{2}-\d{2}_\d{4}_[a-z0-9-]+_T\d+_[a-z0-9]+(?:-[a-z0-9]+
 const SAFE_SEG_RE = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 const RUNTIME_HUMAN = "agent-file-board-ui " + VIEWER_VERSION;
 const RUNTIME_AGENT = "agent-file-board-ui " + VIEWER_VERSION + " (manual post, sender is an agent)";
-const DEF = {lang:"en",theme:"system",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showReceipts:false,showPresenceNotices:false,presenceAnnouncements:false,composerOptionsOpen:false,expandAll:false,autoOpen:true,
+const DEF = {lang:"en",theme:"system",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showReceipts:false,showPresenceNotices:false,presenceAnnouncements:false,composerOptionsOpen:false,composerAdvancedOpen:false,expandAll:false,autoOpen:true,
   sideW:270,settingsW:340,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
   me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null};
 const $ = s => document.querySelector(s);
@@ -1660,8 +1704,8 @@ const STRINGS = {
   outside_filter:"Message is outside the current filter",
   receipt_line:"{who} acknowledges reading", receipt_to:"up to",
   replying_to:"Replying to:", cancel_reply:"Cancel reply",
-  c_where:"Where", c_thread:"Thread", c_new_thread_opt:"+ new thread...", c_new_thread_ph:"new thread name",
-  c_to:"To", c_all:"all", c_status:"Status", c_lang:"Language", c_new_room_ph:"+ new room",
+  c_where:"Where", c_thread:"Thread", c_new_thread_opt:"+ new thread...", c_new_thread_ph:"Topic name", c_advanced:"Advanced routing",
+  c_to:"To", c_all:"all", c_status:"Status", c_lang:"Language", c_new_room_ph:"Room name",
   c_new_room_title:"Type to create a new room", c_new_direct:"+ new direct conversation...",
   c_body_ph:"Write a message... (@mention) - Ctrl/Cmd+Enter posts", c_send:"Post",
   c_info_readonly:"Read-only mode: \"Post\" downloads the file for manual placement in the folder.",
@@ -1972,8 +2016,8 @@ const STRINGS = {
   outside_filter:"Wiadomość poza bieżącym filtrem",
   receipt_line:"{who} potwierdza odczyt", receipt_to:"do",
   replying_to:"Odpowiedź na:", cancel_reply:"Anuluj odpowiedź",
-  c_where:"Gdzie", c_thread:"Wątek", c_new_thread_opt:"+ nowy wątek...", c_new_thread_ph:"nazwa nowego wątku",
-  c_to:"Do", c_all:"wszyscy", c_status:"Status", c_lang:"Język", c_new_room_ph:"+ nowy pokój",
+  c_where:"Gdzie", c_thread:"Wątek", c_new_thread_opt:"+ nowy wątek...", c_new_thread_ph:"Nazwa wątku", c_advanced:"Zaawansowane kierowanie",
+  c_to:"Do", c_all:"wszyscy", c_status:"Status", c_lang:"Język", c_new_room_ph:"Nazwa pokoju",
   c_new_room_title:"Wpisz, aby utworzyć nowy pokój", c_new_direct:"+ nowa rozmowa bezpośrednia...",
   c_body_ph:"Napisz wiadomość... (@wzmianka) - Ctrl/Cmd+Enter wysyła", c_send:"Wyślij",
   c_info_readonly:"Tryb tylko do odczytu: „Wyślij” pobierze plik do ręcznego wrzucenia do folderu.",
@@ -2742,7 +2786,8 @@ function renderPresence(){
   if(!$("#presenceDialog").open) return;
   let html=people.map(p=>{
     const {state,sessions}=presenceOf(p.id);
-    return `<section class="presence-person" data-presence-id="${esc(p.id)}" style="--c:${colorOf(p.id)}"><h3>${esc(p.name)} ${presenceBadge(p.id)}</h3><code>${esc(p.id)}</code> · ${esc(presenceLabel(state))}<p class="hint participant-key-trust">${esc(signingParticipantSummary(p.id))}</p>${operatorDetails(p)}${sessions.map(r=>`<div class="presence-session"><code>${esc(r.session)}</code> · ${esc(r.runtime)} · ${esc(r.status==="released"?t("presence_released"):r.beat<=Date.now() && Date.now()<r.end?t("presence_active"):t("presence_expired"))}<p>${esc(r.summary)}</p><p class="hint">${esc(t("presence_times",{heartbeat:r.heartbeat_at,expires:r.expires_at}))}</p></div>`).join("")}</section>`;
+    const message=B?.layout.dialect==="native" && p.id!==currentUser() ? ` <button type="button" class="btn presence-message" data-message-participant="${esc(p.id)}">${esc(exText("Message","Napisz"))}</button>` : "";
+    return `<section class="presence-person" data-presence-id="${esc(p.id)}" style="--c:${colorOf(p.id)}"><h3>${esc(p.name)} ${presenceBadge(p.id)}${message}</h3><code>${esc(p.id)}</code> · ${esc(presenceLabel(state))}<p class="hint participant-key-trust">${esc(signingParticipantSummary(p.id))}</p>${operatorDetails(p)}${sessions.map(r=>`<div class="presence-session"><code>${esc(r.session)}</code> · ${esc(r.runtime)} · ${esc(r.status==="released"?t("presence_released"):r.beat<=Date.now() && Date.now()<r.end?t("presence_active"):t("presence_expired"))}<p>${esc(r.summary)}</p><p class="hint">${esc(t("presence_times",{heartbeat:r.heartbeat_at,expires:r.expires_at}))}</p></div>`).join("")}</section>`;
   }).join("") || `<p>${esc(t("presence_empty"))}</p>`;
   if(B?.presence.errors.size) html=`<p class="metadata-error">${esc(t("presence_errors"))}</p>`+html;
   const next=document.createElement("div"); next.innerHTML=html;
@@ -2910,7 +2955,7 @@ function build({background = false, preserveComposer = false} = {}){
   const directHtml = B.directs.map(d=>folder("direct",d)).join("");
   $("#tree").innerHTML =
     `<button class="tree-root ${!sel.scope?"active":""}" data-nav="all"><span>\u{1F5C2}</span>${esc(t("all_messages"))}<span class="cnt">${B.msgs.filter(visibleMsg).length}</span></button>`+
-    roomsHtml + (B.directs.length? `<h3>${esc(t("direct_h"))}</h3>`+directHtml : "");
+    roomsHtml + (B.layout.dialect==="native" ? `<h3 class="direct-head"><span>${esc(t("direct_h"))}</span><button type="button" class="direct-new" data-message-participant title="${esc(exText("Message a participant","Napisz do uczestnika"))}" aria-label="${esc(exText("Message a participant","Napisz do uczestnika"))}">+</button></h3>`+directHtml : B.directs.length? `<h3>${esc(t("direct_h"))}</h3>`+directHtml : "");
   side.scrollTop=sideTop;
   syncSidebarMenu();
   fillComposer(preserveComposer);
@@ -3435,7 +3480,7 @@ function updateIdentityColor(){ $("#me").closest(".me").style.setProperty("--c",
 
 /* ===== composer ===== */
 function whereOptions(){
-  const o = [];
+  const o = [{v:"", l:exText("Choose where to post","Wybierz, gdzie wysłać")}];
   for(const r of B.rooms) o.push({v:"room:"+r, l:"# "+r});
   if(B.layout.dialect==="native"){
     for(const d of B.directs) o.push({v:"direct:"+d, l:"\u2709 "+dirTitle("direct",d)});
@@ -3452,15 +3497,14 @@ function updateComposerStatus(){
 }
 function fillComposer(preserve = false){
   if(!B) return;
+  // Options are rebuilt in place; only setComposerTarget() and the Advanced fields change the destination.
   const keepWhere = $("#cWhere").value, keepThread = $("#cThread").value, keepTo = $("#cTo").value, keepStatus = $("#cStatus").value, keepLang = $("#cLang").value;
   const opts = whereOptions();
   optionsInto($("#cWhere"), opts.map(o=>`<option value="${esc(o.v)}">${esc(o.l)}</option>`).join(""));
-  let want = !preserve && sel.scope ? sel.scope+":"+sel.dir : keepWhere;
-  if(!opts.some(o=>o.v===want)) want = B.defaultRoom && opts.some(o=>o.v==="room:"+B.defaultRoom) ? "room:"+B.defaultRoom : (opts[0]&&opts[0].v)||"";
-  $("#cWhere").value = want;
-  fillThreads(preserve ? keepThread : (sel.thread || keepThread), preserve);
+  $("#cWhere").value = opts.some(o=>o.v===keepWhere) ? keepWhere : "";
+  fillThreads(keepThread);
   const people = Object.values(B.people).sort((a,b)=>a.id<b.id?-1:1);
-  optionsInto($("#cTo"), `<option value="all">${esc(t("c_all"))}</option>` + people.map(p=>`<option value="${esc(p.id)}" data-party-label="${esc(p.name)}" title="${esc(presenceLabel(presenceOf(p.id).state))}">${esc(p.name)} ${presenceIcon(presenceOf(p.id).state)}</option>`).join(""));
+  optionsInto($("#cTo"), `<option value="all">${esc(t("c_all"))}</option>` + people.map(p=>`<option value="${esc(p.id)}" data-party-label="${esc(p.name)}" title="${esc(presenceLabel(presenceOf(p.id).state))}">${esc(p.name)} ${presenceIcon(presenceOf(p.id).state)}</option>`).join("") + composerToOption(keepTo));
   if([...$("#cTo").options].some(o=>o.value===keepTo)) $("#cTo").value = keepTo;
   optionsInto($("#cStatus"), B.statuses.map(s=>`<option>${esc(s)}</option>`).join(""));
   $("#cStatus").value = B.statuses.includes(keepStatus) ? keepStatus : B.statuses[0];
@@ -3469,16 +3513,23 @@ function fillComposer(preserve = false){
   if(B.languages.includes(keepLang)) $("#cLang").value = keepLang; else if(B.languages.includes(B.defaultLanguage)) $("#cLang").value = B.defaultLanguage;
   $("#cLang").parentElement.style.display = B.layout.dialect==="legacy" ? "none" : "";
   $("#cContentType").parentElement.style.display = B.layout.dialect==="legacy" ? "none" : "";
+  composerFollowView(preserve);
   syncLang();
 }
-function fillThreads(prefer, preserve = false){
+/* A comma set of recipients (AC8) is kept as one extra option, so every reader of #cTo sees it unchanged. */
+function composerToOption(value){
+  const ids = String(value||"").split(",").filter(Boolean);
+  if(ids.length<2 || !ids.every(id=>B.people[id])) return "";
+  return `<option value="${esc(ids.join(","))}">${esc(ids.map(id=>B.people[id].name).join(", "))}</option>`;
+}
+/* The thread list for the destination room. Only an explicit Advanced "Where" change keeps the old newest-thread default. */
+function fillThreads(prefer, {newest = false} = {}){
   const where = $("#cWhere").value;
   const th = threadsOf();
   const all = Object.values(th).filter(x=>(x.scope+":"+x.dir)===where).sort((a,b)=>a.tid<b.tid?1:-1);
   const keys = new Set(all.map(x=>x.key));
   optionsInto($("#cThread"), all.map(x=>`<option value="${esc(x.key)}">${esc(x.tid+" \u00b7 "+threadTitle(x))}</option>`).join("") + `<option value="">${esc(t("c_new_thread_opt"))}</option>`);
-  if(preserve && prefer==="") $("#cThread").value=""; else if(prefer && keys.has(prefer)) $("#cThread").value = prefer; else if(all[0]) $("#cThread").value = all[0].key; else $("#cThread").value = "";
-  $("#cNewThread").style.display = $("#cThread").value ? "none" : "inline-block";
+  if(prefer && keys.has(prefer)) $("#cThread").value = prefer; else if(newest && all[0]) $("#cThread").value = all[0].key; else $("#cThread").value = "";
   syncLang();
 }
 /* default the language selector to what boardctl would resolve (topic default, sender preference, board default) unless the user picked one */
@@ -3506,10 +3557,7 @@ function startReply(m){
   replyTo = m;
   $("#replying").style.display = "flex";
   $("#replyName").textContent = `${personOf(m.author,m.authorName).name} \u00b7 ${m.time.slice(5,16)} \u00b7 ${m.label}`;
-  $("#cWhere").value = m.scope+":"+m.dir;
-  fillThreads(m.tkey);
-  const ok = B.people[m.author] ? m.author : "all";
-  $("#cTo").value = ok;
+  setComposerTarget({scope:m.scope, dir:m.dir, thread:m.tkey, to:B.people[m.author] ? m.author : "all"});
   const auto = "@"+personOf(m.author,m.authorName).name+" ";
   startReply.auto = auto;
   if(!$("#cBody").value.trim()) $("#cBody").value = auto;
@@ -4714,9 +4762,12 @@ const historyError = (message) => Object.assign(new Error(message), { name: "Boa
 // "room" for a new room, "thread" for a new topic, null otherwise; only where the options can be honored.
 function historyCreationMode() {
   if (!B || B.layout.dialect !== "native" || !canWrite() || !B.signingContext?.boardId) return null;
-  const where = $("#cWhere")?.value || "";
-  if (!where.startsWith("direct:") && where !== "newdirect" && slugify($("#cNewRoom")?.value || "")) return "room";
-  return $("#cThread") && !$("#cThread").value ? "thread" : null;
+  const target = composerTarget();
+  if (!target.scope) return null; // no destination chosen yet (SPEC-002-064)
+  if (target.scope === "room" && target.newRoom) return "room";
+  // A new direct conversation needs exactly one other registered participant.
+  if (target.scope === "newdirect" && (!B.people[target.to] || target.to === currentUser())) return null;
+  return target.thread ? null : "thread";
 }
 function historyCreationChoice() {
   const mode = historyCreationMode(), box = document.getElementById("historyCreate");
@@ -4726,13 +4777,12 @@ function historyCreationChoice() {
 }
 // The composer signing status treats a ticked requirement as required at once (AC3).
 const historyCreationRequires = () => !!historyCreationChoice()?.require;
+// The pair for a new direct conversation comes from the composer target (one participant), never a room's TO set.
 function historyComposerScope() {
-  const where = $("#cWhere")?.value || "", L = B.layout, room = slugify($("#cNewRoom")?.value || "");
-  if (where === "newdirect") return L.directDir + "/" + [currentUser(), $("#cTo")?.value].sort().join("--");
-  if (where.startsWith("direct:")) return L.directDir + "/" + where.slice(7);
-  return L.roomsDir + "/" + (room || where.slice(5));
+  const target = composerTarget(), L = B.layout;
+  return (target.scope === "direct" || target.scope === "newdirect" ? L.directDir : L.roomsDir) + "/" + (target.dir || "");
 }
-let historyPosted = null;
+let historyPosted = null, historyCreateKey = "";
 const historyComposerAnchor = () => { try { return historyComposerScope() + "|" + signingDestinationPath().thread; } catch { return ""; } };
 // Keeps the composer's history options and note in step with its destination.
 function historyComposerUpdate() {
@@ -4740,7 +4790,15 @@ function historyComposerUpdate() {
   if (!box || !note) return;
   const mode = historyCreationMode();
   box.hidden = !mode;
-  if (!mode) for (const input of box.querySelectorAll("input")) input.checked = false;
+  // Ticks belong to one destination: any target change (room A new topic -> room B new topic too) clears them.
+  const key = mode ? [mode, $("#cWhere")?.value || "", $("#cThread")?.value || "", $("#cWhere")?.value === "newdirect" ? composerTarget().to : ""].join("|") : "";
+  if (key !== historyCreateKey) {
+    historyCreateKey = key;
+    const ticked = [...box.querySelectorAll("input")].filter((input) => input.checked);
+    for (const input of ticked) input.checked = false;
+    // The signing row being drawn was computed before this reset; redraw it once the current update finishes.
+    if (ticked.length && typeof updateSigningNotice === "function") queueMicrotask(() => updateSigningNotice());
+  }
   const set = (el, value) => { if (el.textContent !== value) el.textContent = value; };
   set(box.querySelector(".history-create-title"), mode === "room" ? exText("New room settings", "Ustawienia nowego pokoju") : exText("New topic settings", "Ustawienia nowego wątku"));
   set(box.querySelector("[data-history-option=require] span"), exText("Require trusted signatures", "Wymagaj zaufanych podpisów"));
@@ -4824,6 +4882,13 @@ function historyPostedNote(msg, announce = true) {
     historyPosted = { anchor: historyComposerAnchor(), text };
     if (announce) toast(text);
   } catch { /* the history panel reports an unreadable setting */ } finally { historyComposerUpdate(); }
+}
+// The composer may re-follow the view after a send (SPEC-002-064); the post-send note moves with it,
+// as if the composer had re-followed before historyPostedNote anchored it.
+function historyPostedCarry(retarget) {
+  const kept = historyPosted;
+  retarget();
+  if (kept && B) { historyPosted = { ...kept, anchor: historyComposerAnchor() }; historyComposerUpdate(); }
 }
 function historyCreationReset() {
   for (const input of document.querySelectorAll("#historyCreate input")) input.checked = false;
@@ -4932,14 +4997,19 @@ function wireRoomHistory() {
   create.id = "historyCreate";
   create.className = "history-create";
   create.hidden = true;
-  create.innerHTML = '<strong class="history-create-title"></strong><label data-history-option="require"><input type="checkbox" id="cRequireTrusted"> <span></span></label><label data-history-option="record"><input type="checkbox" id="cRecordHistory"> <span></span></label><span class="history-create-note"></span>';
-  $("#cNewRoom").after(create);
+  // A plain room view targets a new topic, so the options are folded under a small disclosure (SPEC-002-064).
+  create.innerHTML = '<details class="history-create-fold"><summary class="history-create-title"></summary><div class="history-create-body"><label data-history-option="require"><input type="checkbox" id="cRequireTrusted"> <span></span></label><label data-history-option="record"><input type="checkbox" id="cRecordHistory"> <span></span></label><span class="history-create-note"></span></div></details>';
+  // The options sit right below the inline room/topic name inputs (SPEC-002-064).
+  const fields = document.getElementById("composerTargetFields");
+  if (fields) fields.append(create); else $("#cNewRoom").after(create);
   for (const input of create.querySelectorAll("input")) input.addEventListener("change", () => updateSigningNotice());
   const note = document.createElement("div");
   note.id = "historyComposerNote";
   note.className = "hint history-composer-note";
   note.hidden = true;
-  $("#signingRequires").before(note);
+  // The pre-send hint and the post-send note sit with the destination chip, never inside its popover.
+  const chipNote = document.getElementById("composerTargetNote");
+  if (chipNote) chipNote.after(note); else $("#signingRequires").before(note);
 }
 
 /* END BUNDLED ROOM HISTORY */
@@ -6042,19 +6112,246 @@ function wireTheme(){
 
 /* Collapse controls, never draft data or the visible posting destination. */
 function updateComposerSummary(){
- const target=$('#composerRouteSummary');if(!target)return;
- if(!B){target.textContent=t('e_open_first');target.title=target.textContent;return;}
- const value=id=>$(id)?.value||'',label=id=>$(id)?.selectedOptions[0]?.dataset.partyLabel||$(id)?.selectedOptions[0]?.textContent||'';
- const thread=B?threadsOf()[value('#cThread')]:null;
- const newRoom=value('#cWhere').startsWith('room:')?slugify(value('#cNewRoom')):'';
- const where=newRoom?'# '+newRoom:label('#cWhere');
- const topic=(!newRoom&&thread?.tid)||value('#cNewThread').trim()||t('c_new_thread_opt');
- const recipient=value('#cTo')&&value('#cTo')!=='all'?label('#cTo')+' ('+value('#cTo')+')':label('#cTo');
- const parts=[where,topic,recipient,label('#cContentType'),value('#cLang')].filter(Boolean);
- target.textContent=parts.join(' · ');target.title=target.textContent;
+ composerTargetRender();
+ const target=$('#composerOptionsSummary');if(!target)return;
+ const label=id=>$(id)?.selectedOptions[0]?.textContent||'';
+ target.textContent=B?[label('#cContentType'),$('#cLang')?.value||''].filter(Boolean).join(' · '):'';
+}
+
+/* Composer routing (SPEC-002-064): the visible view picks the destination. The Where/Thread/To
+   selects stay as hidden backing state (draft stamp, voice, signing and history read them);
+   setComposerTarget() is the only writer outside the Advanced fields. */
+let composerViewKey=null,composerPin=null,composerNewRoomMode=false,composerTopicAuto=true,composerMenu=null,composerNoteKey='';
+function composerTarget(){
+ const where=$('#cWhere')?.value||'',newRoom=slugify($('#cNewRoom')?.value||''),to=$('#cTo')?.value||'all',newTopic=$('#cNewThread')?.value||'';
+ if(where==='newdirect')return {scope:'newdirect',dir:[currentUser(),to].sort().join('--'),thread:'',newRoom:'',newTopic,to};
+ if(where.startsWith('direct:'))return {scope:'direct',dir:where.slice(7),thread:$('#cThread')?.value||'',newRoom:'',newTopic,to};
+ if(!where&&!newRoom)return {scope:null,dir:null,thread:'',newRoom:'',newTopic,to};
+ return {scope:'room',dir:newRoom||where.slice(5),thread:newRoom?'':$('#cThread')?.value||'',newRoom,newTopic,to};
+}
+const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'');
+const sameComposerTarget=(a,b)=>composerTargetKey(a)===composerTargetKey(b);
+// What the visible view implies: a thread posts there, a room starts a new topic, a direct
+// conversation continues its most recent topic; All messages has no destination.
+function composerViewTarget(){
+ if(!B||!sel.scope)return {scope:null};
+ if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread};
+ return sel.scope==='direct'?composerDirectTarget(sel.dir):{scope:sel.scope,dir:sel.dir,thread:''};
+}
+function composerDirectTarget(dir){
+ const latest=Object.values(threadsOf()).filter(x=>x.scope==='direct'&&x.dir===dir).sort((a,b)=>b.last.localeCompare(a.last)||(b.lastOrder||0)-(a.lastOrder||0))[0];
+ return {scope:'direct',dir,thread:latest?.key||''};
+}
+const composerHasDraft=()=>notificationHasDraft()||!!voiceWorkPending;
+function setComposerTarget(target={}){
+ if(!B)return;
+ const scope=target.scope||null;let where=!scope?'':scope==='newdirect'?'newdirect':scope+':'+target.dir;
+ if(![...$('#cWhere').options].some(o=>o.value===where))where='';
+ composerPin=null;composerNewRoomMode=!!target.newRoom;composerTopicAuto=true;
+ $('#cWhere').value=where;if(!target.newRoom)$('#cNewRoom').value='';
+ fillThreads(where&&scope!=='newdirect'?target.thread||'':'');
+ let to=target.to||'all';
+ if(scope==='direct'){const ids=target.dir.split('--'),me=currentUser();to=ids.includes(me)?ids.find(id=>id!==me)||'all':'all';}
+ if(to.includes(',')&&![...$('#cTo').options].some(o=>o.value===to))$('#cTo').insertAdjacentHTML('beforeend',composerToOption(to));
+ $('#cTo').value=[...$('#cTo').options].some(o=>o.value===to)?to:'all';
+ updateComposerSummary();updateSigningNotice();
+}
+// Advanced fields and pin choices are explicit: they end any pending mismatch banner.
+function composerExplicit(){composerPin=null;composerTargetRender();}
+function composerFollowView(preserve){
+ const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null]);
+ if(key===composerViewKey)return composerTargetRender();
+ composerViewKey=key;
+ if(preserve)return composerTargetRender();
+ const want=composerViewTarget(),now=composerTarget();
+ if(sameComposerTarget(want,now)){composerPin=null;return composerTargetRender();}
+ // Draft pin (AC5): a draft never silently retargets; only an explicit choice does.
+ if(composerHasDraft()&&now.scope){composerPin=want;return composerTargetRender();}
+ setComposerTarget(want);
+}
+const composerName=id=>B?.people?.[id]?.name||id;
+function composerDirLabel(scope,dir){
+ if(scope!=='direct')return '# '+dir;
+ const ids=dir.split('--'),me=currentUser();
+ return '✉ '+(ids.includes(me)?composerName(ids.find(id=>id!==me)||me):ids.map(composerName).join(' ↔ '));
+}
+function composerTargetText(target=composerTarget()){
+ if(!target.scope)return {where:exText('Choose where to post','Wybierz, gdzie wysłać'),topic:''};
+ const where=target.scope==='newdirect'?'✉ '+composerName(target.to):target.newRoom?'# '+target.newRoom:composerDirLabel(target.scope,target.dir);
+ const th=target.thread?threadsOf()[target.thread]:null,name=target.newTopic.trim();
+ return {where,topic:th?th.tid+' '+threadTitle(th):exText('New topic','Nowy wątek')+(name?': '+name:'')};
+}
+function composerToText(to){
+ if(!to||to==='all')return exText('to all','do wszystkich');
+ return exText('to ','do ')+to.split(',').map(composerName).join(', ');
+}
+// Why Send cannot post to this destination now, with the one-click fixes the chip offers.
+function composerBlock(target){
+ const me=currentUser();
+ if(target.scope==='direct'&&!target.dir.split('--').includes(me))return {text:exText(`You (${composerName(me)}) are not in this conversation.`,`Ty (${composerName(me)}) nie należysz do tej rozmowy.`),
+  actions:target.dir.split('--').filter(id=>B.people[id]).map(id=>({action:'persona',id,label:exText('Switch to '+composerName(id),'Przełącz na '+composerName(id))}))};
+ if(target.scope==='newdirect'&&(!B.people[target.to]||target.to===me))return {text:exText('Choose another participant to message.','Wybierz innego uczestnika.'),actions:[{action:'participant',label:exText('Message a participant…','Napisz do uczestnika…')}]};
+ return null;
+}
+function composerTargetRender(){
+ const composer=$('#composer'),chip=$('#composerTarget');if(!chip)return;
+ const target=B?composerTarget():{scope:null,thread:'',newTopic:''},text=B?composerTargetText(target):{where:t('e_open_first'),topic:''};
+ composer.dataset.target=target.scope||'none';
+ const set=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
+ set(chip.querySelector('.composer-chip-lead'),!target.scope?'':replyTo?exText('Replying in','Odpowiadasz w'):exText('Posting to:','Wysyłasz do:'));
+ set(chip.querySelector('.composer-chip-where'),text.where);set(chip.querySelector('.composer-chip-topic'),text.topic?'\u00a0\u203a '+text.topic:'');
+ set(chip.querySelector('.composer-chip-change'),exText('Change','Zmień'));
+ const full=[chip.querySelector('.composer-chip-lead').textContent,text.where,text.topic].filter(Boolean).join(' ');
+ if(chip.title!==full)chip.title=full;chip.setAttribute('aria-label',full+' — '+exText('Change','Zmień'));
+ const to=$('#composerTo');to.hidden=target.scope!=='room';set(to,composerToText(target.to));to.title=to.textContent;
+ const advanced=$('#composerOptions')?.open&&$('#composerAdvanced')?.open;
+ $('#cNewRoom').hidden=!B||target.scope==='direct'||target.scope==='newdirect'||!(composerNewRoomMode||$('#cNewRoom').value||advanced);
+ $('#cNewThread').hidden=!B||!target.scope||!!target.thread;
+ if(composerPin&&(!B||sameComposerTarget(composerPin,target)))composerPin=null;
+ const pin=$('#composerPin');pin.hidden=!composerPin;composer.toggleAttribute('data-pinned',!!composerPin);
+ if(composerPin){const now=text.where+(text.topic?' › '+text.topic:'');set(pin.querySelector('.composer-pin-text'),exText(`Draft for ${now}, not this view.`,`Szkic dla ${now}, nie dla tego widoku.`));set($('#composerPinHere'),exText('Post here instead','Wyślij tutaj'));set($('#composerPinKeep'),exText('Keep','Zostaw'));}
+ const block=B&&target.scope?composerBlock(target):null,th=target.thread&&B?threadsOf()[target.thread]:null;
+ const note=block||(th?.status==='CLOSED'?{tone:'info',text:exText('Topic closed. Posting is still allowed.','Wątek zamknięty. Nadal możesz tu pisać.'),actions:[{action:'newtopic',label:exText('New topic here','Nowy wątek tutaj')}]}:null);
+ const noteEl=$('#composerTargetNote'),key=JSON.stringify(note);
+ if(key!==composerNoteKey){composerNoteKey=key;noteEl.hidden=!note;
+  if(note){noteEl.dataset.tone=note.tone||'warn';set(noteEl.querySelector('.composer-target-note-text'),note.text);
+   noteEl.querySelector('.composer-target-note-actions').replaceChildren(...note.actions.map(a=>{const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.composerAction=a.action;if(a.id)b.dataset.id=a.id;b.textContent=a.label;return b;}));}}
+ $('#send').disabled=!!B&&(!target.scope||!!block);
+}
+// Send from the composer: refuses without a destination, then re-follows the view after a post.
+async function composerSend(){
+ if(B){const target=composerTarget(),block=target.scope&&composerBlock(target);
+  if(!target.scope){toast(exText('Choose where to post first.','Najpierw wybierz, gdzie wysłać.'));composerMenuOpen('target',$('#composerTarget'));return;}
+  if(block){toast(block.text);return;}}
+ const before=B?composerTarget():null,me=currentUser(),body=$('#cBody').value;
+ await send();
+ if(!B||!body.trim()||$('#cBody').value||composerHasDraft())return;
+ const pair=before?.scope==='newdirect'?[me,before.to].sort().join('--'):'';
+ const carry=typeof historyPostedCarry==='function'?historyPostedCarry:f=>f();
+ if(pair&&B.directs.includes(pair)){carry(()=>{sel={scope:'direct',dir:pair,thread:null};rememberView();build();});return;}
+ // A view without a destination (All messages, search) keeps the one just used instead of clearing it.
+ if(composerViewTarget().scope)carry(()=>{composerViewKey=null;composerFollowView(false);});else composerTargetRender();
+}
+// "Message a participant" (native dialect): an existing pair opens its conversation, a new one targets newdirect.
+function messageParticipant(id){
+ const me=currentUser();composerMenuClose();
+ if(!B||B.layout.dialect!=='native'||!B.people[id]||!me||id===me)return;
+ const pair=[me,id].sort().join('--');
+ if(B.directs.includes(pair)){sel={scope:'direct',dir:pair,thread:null};rememberView();$('#side').classList.remove('open');build();setComposerTarget(composerViewTarget());$('#cBody').focus();return;}
+ setComposerTarget({scope:'newdirect',to:id});composerTopicFromBody();
+ ($('#cBody').value.trim()?$('#cNewThread'):$('#cBody')).focus();
+}
+// A new direct conversation needs a topic: pre-fill it from the draft's first line until edited.
+function composerTopicFromBody(){
+ if(!B||!composerTopicAuto||composerTarget().scope!=='newdirect')return;
+ const v=slugify($('#cBody').value.replace(/@\S+/g,'').split('\n')[0]).slice(0,32).replace(/-+$/,'');
+ if($('#cNewThread').value!==v){$('#cNewThread').value=v;composerTargetRender();}
+}
+function composerMenuItems(mode,q){
+ const match=s=>!q||s.toLowerCase().includes(q),items=[],cur=composerTarget(),native=B.layout.dialect==='native',me=currentUser();
+ const head=label=>items.push({head:label});
+ if(mode==='participant'){
+  for(const p of Object.values(B.people).sort((a,b)=>a.name.localeCompare(b.name)))if(p.id!==me&&match(p.name+' '+p.id))items.push({label:p.name+' · '+p.id,party:p.id,pick:()=>messageParticipant(p.id)});
+  return items;
+ }
+ if(mode==='to'){
+  const picked=cur.to&&cur.to!=='all'?cur.to.split(','):[];
+  const write=ids=>{const v=ids.length?ids.join(','):'all';if(!$('#cTo').querySelector(`option[value="${CSS.escape(v)}"]`))$('#cTo').insertAdjacentHTML('beforeend',composerToOption(v));$('#cTo').value=v;$('#cTo').dispatchEvent(new Event('change',{bubbles:true}));};
+  if(match(exText('Everyone','Wszyscy')+' all'))items.push({label:exText('Everyone','Wszyscy')+' (all)',selected:!picked.length,keep:true,pick:()=>write([])});
+  for(const p of Object.values(B.people).sort((a,b)=>a.name.localeCompare(b.name)))if(p.id!==me&&match(p.name+' '+p.id))items.push({label:p.name+' · '+p.id,party:p.id,selected:picked.includes(p.id),keep:true,pick:()=>write(picked.includes(p.id)?picked.filter(x=>x!==p.id):[...picked,p.id])});
+  return items;
+ }
+ const actions=[];
+ if((cur.scope==='room'||cur.scope==='direct')&&!cur.newRoom&&cur.thread)actions.push({label:exText('New topic here…','Nowy wątek tutaj…'),pick:()=>{setComposerTarget({scope:cur.scope,dir:cur.dir,thread:''});$('#cNewThread').focus();}});
+ actions.push({label:exText('New room…','Nowy pokój…'),pick:()=>{const base=cur.scope==='room'&&B.rooms.includes(cur.dir)?cur.dir:B.defaultRoom&&B.rooms.includes(B.defaultRoom)?B.defaultRoom:B.rooms[0];setComposerTarget({scope:'room',dir:base,thread:'',newRoom:true});updateComposerSummary();$('#cNewRoom').focus();}});
+ if(native)actions.push({label:exText('Message a participant…','Napisz do uczestnika…'),stay:true,pick:()=>composerMenuOpen('participant',composerMenu.anchor)});
+ actions.push({label:exText('Advanced…','Zaawansowane…'),pick:()=>{S.composerOptionsOpen=S.composerAdvancedOpen=true;saveSettings();updateComposerSummary();$('#cWhere').focus();}});
+ const shown=actions.filter(a=>match(a.label));if(shown.length){head(exText('Actions','Akcje'));items.push(...shown);}
+ const rooms=B.rooms.filter(r=>match('# '+r));if(rooms.length){head(t('sg_rooms'));for(const r of rooms)items.push({label:'# '+r,pick:()=>{setComposerTarget({scope:'room',dir:r,thread:''});$('#cNewThread').focus();}});}
+ const topics=Object.values(threadsOf()).filter(x=>(x.scope==='room'||native)&&match(composerDirLabel(x.scope,x.dir)+' '+x.tid+' '+threadTitle(x))).sort((a,b)=>b.last.localeCompare(a.last)).slice(0,q?40:12);
+ if(topics.length){head(t('sg_threads'));for(const x of topics)items.push({label:composerDirLabel(x.scope,x.dir)+' › '+x.tid+' '+threadTitle(x),pick:()=>setComposerTarget({scope:x.scope,dir:x.dir,thread:x.key})});}
+ const directs=native?B.directs.filter(d=>match(composerDirLabel('direct',d)+' '+d)):[];
+ if(directs.length){head(t('sg_direct'));for(const d of directs)items.push({label:composerDirLabel('direct',d),pick:()=>setComposerTarget(composerDirectTarget(d))});}
+ return items;
+}
+function composerMenuDraw(){
+ const menu=$('#composerTargetMenu'),list=$('#composerTargetList'),q=$('#composerTargetSearch').value.trim().toLowerCase();
+ const all=composerMenuItems(composerMenu.mode,q);composerMenu.items=all.filter(x=>!x.head);
+ if(composerMenu.selected>=composerMenu.items.length)composerMenu.selected=composerMenu.items.length-1;
+ let i=0;list.innerHTML=all.map(x=>x.head?`<h4>${esc(x.head)}</h4>`:`<button type="button" role="option" id="composerTargetOption${i}" data-index="${i++}" aria-selected="${x.selected===undefined?'false':String(!!x.selected)}"${x.party?` data-party="${esc(x.party)}" style="--c:${colorOf(x.party)}"`:''} class="${i-1===composerMenu.selected?'sel':''}"><span>${esc(x.label)}</span></button>`).join('')||`<h4>${esc(exText('No matches','Brak wyników'))}</h4>`;
+ const title={target:exText('Where to post','Gdzie wysłać'),participant:exText('Message a participant','Napisz do uczestnika'),to:exText('Send to','Odbiorcy')}[composerMenu.mode];
+ $('#composerTargetMenuTitle').textContent=title;$('#composerTargetSearch').setAttribute('aria-label',title);
+ const active=composerMenu.selected>=0?'composerTargetOption'+composerMenu.selected:'';if(active)$('#composerTargetSearch').setAttribute('aria-activedescendant',active);else $('#composerTargetSearch').removeAttribute('aria-activedescendant');
+ list.querySelector('.sel')?.scrollIntoView({block:'nearest'});composerMenuPlace();
+}
+function composerMenuPlace(){
+ const menu=$('#composerTargetMenu');if(!composerMenu||menu.hidden)return;
+ const r=composerMenu.anchor.getBoundingClientRect();
+ if(innerWidth<=600){menu.style.left=menu.style.top=menu.style.bottom=menu.style.maxHeight='';return;}
+ menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+'px';
+ if(r.top>=240){menu.style.top='auto';menu.style.bottom=(innerHeight-r.top+6)+'px';menu.style.maxHeight=Math.min(innerHeight*.6,r.top-14)+'px';}
+ else{menu.style.bottom='auto';menu.style.top=(r.bottom+6)+'px';menu.style.maxHeight=Math.max(160,innerHeight-r.bottom-16)+'px';}
+}
+function composerMenuOpen(mode,anchor){
+ if(!B)return;
+ for(const b of [$('#composerTarget'),$('#composerTo')])b.setAttribute('aria-expanded',String(b===anchor));
+ composerMenu={mode,anchor,items:[],selected:-1};const menu=$('#composerTargetMenu'),search=$('#composerTargetSearch');
+ search.value='';search.placeholder=mode==='target'?exText('Search rooms, topics, conversations','Szukaj pokoi, wątków, rozmów'):exText('Search participants','Szukaj uczestników');
+ menu.hidden=false;composerMenuDraw();search.focus();
+}
+function composerMenuClose(focus=false){
+ if(!composerMenu)return;const anchor=composerMenu.anchor;composerMenu=null;$('#composerTargetMenu').hidden=true;
+ for(const b of [$('#composerTarget'),$('#composerTo')])b.setAttribute('aria-expanded','false');
+ if(focus)anchor.focus();
+}
+function composerMenuPick(i){
+ const item=composerMenu?.items[i];if(!item)return;
+ if(item.keep){item.pick();composerMenu.selected=i;composerMenuDraw();return;}
+ if(item.stay){item.pick();return;}
+ const anchor=composerMenu.anchor;composerMenuClose();const before=document.activeElement;item.pick();
+ if(document.activeElement===before||document.activeElement===document.body)anchor.focus();
+}
+function wireComposerTarget(){
+ const menu=document.createElement('div');menu.id='composerTargetMenu';menu.className='composer-target-menu';menu.hidden=true;menu.setAttribute('role','dialog');menu.setAttribute('aria-labelledby','composerTargetMenuTitle');
+ menu.innerHTML='<h3 id="composerTargetMenuTitle"></h3><input id="composerTargetSearch" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="composerTargetList"><div class="composer-target-list" id="composerTargetList" role="listbox"></div>';
+ document.body.append(menu);
+ const toggle=(mode,el)=>()=>{if(composerMenu?.anchor===el&&composerMenu.mode===mode)composerMenuClose(true);else composerMenuOpen(mode,el);};
+ $('#composerTarget').onclick=toggle('target',$('#composerTarget'));$('#composerTo').onclick=toggle('to',$('#composerTo'));
+ const search=$('#composerTargetSearch');
+ search.addEventListener('input',()=>{composerMenu.selected=-1;composerMenuDraw();});
+ search.addEventListener('keydown',e=>{
+  if(!composerMenu)return;const n=composerMenu.items.length;
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();composerMenuClose(true);}
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!n)return;const s=composerMenu.selected;composerMenu.selected=s<0?(e.key==='ArrowDown'?0:n-1):(s+(e.key==='ArrowDown'?1:-1)+n)%n;composerMenuDraw();}
+  else if(e.key==='Enter'){e.preventDefault();composerMenuPick(composerMenu.selected<0?0:composerMenu.selected);}
+  else if(e.key==='Tab')composerMenuClose();
+ });
+ menu.addEventListener('mousedown',e=>{if(e.target!==search)e.preventDefault();});
+ $('#composerTargetList').addEventListener('click',e=>{const b=e.target.closest('button[data-index]');if(b)composerMenuPick(Number(b.dataset.index));});
+ document.addEventListener('mousedown',e=>{if(composerMenu&&!menu.contains(e.target)&&!composerMenu.anchor.contains(e.target))composerMenuClose();},true);
+ window.addEventListener('resize',composerMenuPlace);
+ $('#composerPinHere').onclick=()=>{if(composerPin)setComposerTarget(composerPin);};
+ $('#composerPinKeep').onclick=()=>{composerPin=null;composerTargetRender();$('#cBody').focus();};
+ $('#composerTargetNote').addEventListener('click',e=>{
+  const b=e.target.closest('[data-composer-action]');if(!b)return;const cur=composerTarget();
+  if(b.dataset.composerAction==='newtopic'){setComposerTarget({scope:cur.scope,dir:cur.dir,thread:''});$('#cNewThread').focus();}
+  else if(b.dataset.composerAction==='persona'){$('#me').value=b.dataset.id;$('#me').dispatchEvent(new Event('change'));}
+  else if(b.dataset.composerAction==='participant')composerMenuOpen('participant',$('#composerTarget'));
+ });
+ $('#cNewThread').addEventListener('input',()=>{composerTopicAuto=false;composerTargetRender();});
+ $('#cBody').addEventListener('input',composerTopicFromBody);
+ $('#composerAdvanced').addEventListener('toggle',composerTargetRender);
+ // The chip row, name fields and banners change the composer's height: keep a reader at the live edge there.
+ let following=true;const feed=$('#feed');
+ feed.addEventListener('scroll',()=>{following=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;},{passive:true});
+ if(typeof ResizeObserver==='function')new ResizeObserver(()=>{if(following)feed.scrollTop=feed.scrollHeight;}).observe($('#composer'));
+ $('#tree').addEventListener('click',e=>{if(e.target.closest('[data-message-participant]')){e.preventDefault();$('#side').classList.remove('open');composerMenuOpen('participant',$('#composerTarget'));}});
+ $('#presenceList').addEventListener('click',e=>{const b=e.target.closest('[data-message-participant]');if(b){$('#presenceDialog').close();messageParticipant(b.dataset.messageParticipant);}});
+ composerTargetRender();
 }
 function applyComposerOptions(){
  const el=$('#composerOptions');if(el.open!==!!S.composerOptionsOpen)el.open=!!S.composerOptionsOpen;
+ const advanced=$('#composerAdvanced');if(advanced&&advanced.open!==!!S.composerAdvancedOpen)advanced.open=!!S.composerAdvancedOpen;
  updateComposerSummary();
 }
 function wireComposerOptions(){
@@ -6069,6 +6366,14 @@ function wireComposerOptions(){
  $('#composerOptions').addEventListener('toggle',()=>{
   const open=$('#composerOptions').open;
   if(S.composerOptionsOpen!==open){S.composerOptionsOpen=open;saveSettings();}
+ });
+ // Advanced routing remembers its fold the same way (SPEC-002-064).
+ $('#composerAdvanced > summary').addEventListener('click',event=>{
+  event.preventDefault();S.composerAdvancedOpen=!$('#composerAdvanced').open;$('#composerAdvanced').open=S.composerAdvancedOpen;saveSettings();
+ });
+ $('#composerAdvanced').addEventListener('toggle',()=>{
+  const open=$('#composerAdvanced').open;
+  if(S.composerAdvancedOpen!==open){S.composerAdvancedOpen=open;saveSettings();}
  });
  for(const event of ['input','change'])$('#composer').addEventListener(event,updateComposerSummary);
 }
@@ -7917,14 +8222,16 @@ function wire(){
   wireCompletions();
   wireComposerResize();
   $("#setTitle").onclick=setTopicTitle;
-  $("#cWhere").onchange = ()=>{ fillThreads(null); };
-  $("#cNewRoom").addEventListener("input",()=>updateSigningNotice());
-  $("#cThread").onchange = ()=>{ $("#cNewThread").style.display = $("#cThread").value?"none":"inline-block"; if(!$("#cThread").value) $("#cNewThread").focus(); syncLang(); updateSigningNotice(); };
+  $("#cWhere").onchange = ()=>{ composerExplicit(); fillThreads(null,{newest:true}); updateSigningNotice(); };
+  $("#cNewRoom").addEventListener("input",()=>{ composerTargetRender(); updateSigningNotice(); });
+  $("#cThread").onchange = ()=>{ composerExplicit(); composerTargetRender(); if(!$("#cThread").value) $("#cNewThread").focus(); syncLang(); updateSigningNotice(); };
+  $("#cTo").addEventListener("change",composerExplicit);
   $("#cStatus").onchange = updateComposerStatus;
   $("#cLang").onchange = ()=>{ langTouched = true; };
-  $("#send").onclick = send;
+  $("#send").onclick = composerSend;
   $("#replyClear").onclick = clearReply;
-  $("#cBody").onkeydown = e=>{ if(e.key==="Enter" && (e.metaKey||e.ctrlKey)){ e.preventDefault(); send(); } };
+  $("#cBody").onkeydown = e=>{ if(e.key==="Enter" && (e.metaKey||e.ctrlKey)){ e.preventDefault(); composerSend(); } };
+  wireComposerTarget();
 
   ["#rOn","#rEvery","#rUnit","#rWin","#rFrom","#rTo"].forEach(id=>$(id).addEventListener("change",rSave));
   $("#rDays").addEventListener("change", rSave);

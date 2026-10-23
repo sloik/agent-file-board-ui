@@ -513,9 +513,12 @@ const historyError = (message) => Object.assign(new Error(message), { name: "Boa
 // "room" for a new room, "thread" for a new topic, null otherwise; only where the options can be honored.
 function historyCreationMode() {
   if (!B || B.layout.dialect !== "native" || !canWrite() || !B.signingContext?.boardId) return null;
-  const where = $("#cWhere")?.value || "";
-  if (!where.startsWith("direct:") && where !== "newdirect" && slugify($("#cNewRoom")?.value || "")) return "room";
-  return $("#cThread") && !$("#cThread").value ? "thread" : null;
+  const target = composerTarget();
+  if (!target.scope) return null; // no destination chosen yet (SPEC-002-064)
+  if (target.scope === "room" && target.newRoom) return "room";
+  // A new direct conversation needs exactly one other registered participant.
+  if (target.scope === "newdirect" && (!B.people[target.to] || target.to === currentUser())) return null;
+  return target.thread ? null : "thread";
 }
 function historyCreationChoice() {
   const mode = historyCreationMode(), box = document.getElementById("historyCreate");
@@ -525,13 +528,12 @@ function historyCreationChoice() {
 }
 // The composer signing status treats a ticked requirement as required at once (AC3).
 const historyCreationRequires = () => !!historyCreationChoice()?.require;
+// The pair for a new direct conversation comes from the composer target (one participant), never a room's TO set.
 function historyComposerScope() {
-  const where = $("#cWhere")?.value || "", L = B.layout, room = slugify($("#cNewRoom")?.value || "");
-  if (where === "newdirect") return L.directDir + "/" + [currentUser(), $("#cTo")?.value].sort().join("--");
-  if (where.startsWith("direct:")) return L.directDir + "/" + where.slice(7);
-  return L.roomsDir + "/" + (room || where.slice(5));
+  const target = composerTarget(), L = B.layout;
+  return (target.scope === "direct" || target.scope === "newdirect" ? L.directDir : L.roomsDir) + "/" + (target.dir || "");
 }
-let historyPosted = null;
+let historyPosted = null, historyCreateKey = "";
 const historyComposerAnchor = () => { try { return historyComposerScope() + "|" + signingDestinationPath().thread; } catch { return ""; } };
 // Keeps the composer's history options and note in step with its destination.
 function historyComposerUpdate() {
@@ -539,7 +541,15 @@ function historyComposerUpdate() {
   if (!box || !note) return;
   const mode = historyCreationMode();
   box.hidden = !mode;
-  if (!mode) for (const input of box.querySelectorAll("input")) input.checked = false;
+  // Ticks belong to one destination: any target change (room A new topic -> room B new topic too) clears them.
+  const key = mode ? [mode, $("#cWhere")?.value || "", $("#cThread")?.value || "", $("#cWhere")?.value === "newdirect" ? composerTarget().to : ""].join("|") : "";
+  if (key !== historyCreateKey) {
+    historyCreateKey = key;
+    const ticked = [...box.querySelectorAll("input")].filter((input) => input.checked);
+    for (const input of ticked) input.checked = false;
+    // The signing row being drawn was computed before this reset; redraw it once the current update finishes.
+    if (ticked.length && typeof updateSigningNotice === "function") queueMicrotask(() => updateSigningNotice());
+  }
   const set = (el, value) => { if (el.textContent !== value) el.textContent = value; };
   set(box.querySelector(".history-create-title"), mode === "room" ? exText("New room settings", "Ustawienia nowego pokoju") : exText("New topic settings", "Ustawienia nowego wątku"));
   set(box.querySelector("[data-history-option=require] span"), exText("Require trusted signatures", "Wymagaj zaufanych podpisów"));
@@ -623,6 +633,13 @@ function historyPostedNote(msg, announce = true) {
     historyPosted = { anchor: historyComposerAnchor(), text };
     if (announce) toast(text);
   } catch { /* the history panel reports an unreadable setting */ } finally { historyComposerUpdate(); }
+}
+// The composer may re-follow the view after a send (SPEC-002-064); the post-send note moves with it,
+// as if the composer had re-followed before historyPostedNote anchored it.
+function historyPostedCarry(retarget) {
+  const kept = historyPosted;
+  retarget();
+  if (kept && B) { historyPosted = { ...kept, anchor: historyComposerAnchor() }; historyComposerUpdate(); }
 }
 function historyCreationReset() {
   for (const input of document.querySelectorAll("#historyCreate input")) input.checked = false;
@@ -731,12 +748,17 @@ function wireRoomHistory() {
   create.id = "historyCreate";
   create.className = "history-create";
   create.hidden = true;
-  create.innerHTML = '<strong class="history-create-title"></strong><label data-history-option="require"><input type="checkbox" id="cRequireTrusted"> <span></span></label><label data-history-option="record"><input type="checkbox" id="cRecordHistory"> <span></span></label><span class="history-create-note"></span>';
-  $("#cNewRoom").after(create);
+  // A plain room view targets a new topic, so the options are folded under a small disclosure (SPEC-002-064).
+  create.innerHTML = '<details class="history-create-fold"><summary class="history-create-title"></summary><div class="history-create-body"><label data-history-option="require"><input type="checkbox" id="cRequireTrusted"> <span></span></label><label data-history-option="record"><input type="checkbox" id="cRecordHistory"> <span></span></label><span class="history-create-note"></span></div></details>';
+  // The options sit right below the inline room/topic name inputs (SPEC-002-064).
+  const fields = document.getElementById("composerTargetFields");
+  if (fields) fields.append(create); else $("#cNewRoom").after(create);
   for (const input of create.querySelectorAll("input")) input.addEventListener("change", () => updateSigningNotice());
   const note = document.createElement("div");
   note.id = "historyComposerNote";
   note.className = "hint history-composer-note";
   note.hidden = true;
-  $("#signingRequires").before(note);
+  // The pre-send hint and the post-send note sit with the destination chip, never inside its popover.
+  const chipNote = document.getElementById("composerTargetNote");
+  if (chipNote) chipNote.after(note); else $("#signingRequires").before(note);
 }

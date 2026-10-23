@@ -32,9 +32,11 @@
 .history-weaken input,.history-option input{margin-top:.25em;flex:none}
 #historySettingsDialog .history-note{color:var(--muted);font-size:.9em;margin:4px 0}
 #historySettingsDialog [data-action="apply"]{margin-top:8px}
-.history-create{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0}
+.history-create{grid-column:1/-1;min-width:0}
+.history-create-fold>summary{cursor:pointer;color:var(--muted);font-size:.9em;font-weight:600}
+.history-create-body{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0;margin-top:4px}
 .history-create[hidden],.history-create[hidden] input{display:none}
-#composerOptions .ctx .history-create label[data-history-option]{display:inline-flex;grid-template-columns:none;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0;max-width:100%}
+.history-create label[data-history-option]{display:inline-flex;grid-template-columns:none;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0;max-width:100%}
 .history-create-note{flex-basis:100%;color:var(--muted);font-size:.85em;overflow-wrap:anywhere}
 .history-composer-note{overflow-wrap:anywhere}
 .history-composer-note[hidden]{display:none}

@@ -51,6 +51,8 @@ const notice=page=>page.locator('#signingNotice');
 async function approve(page,who){await openSigning(page);await trust(page,who);await closeSigning(page);}
 async function review(page){const d=page.locator('#historyReviewDialog');await expect(d).toBeVisible();return d;}
 
+// SPEC-002-064: the creation options are folded under a small disclosure next to the name fields.
+async function openCreateOptions(page){const fold=page.locator('#historyCreate .history-create-fold');if(!await fold.evaluate(el=>el.open))await fold.locator('summary').click();}
 test('AC1/AC2/AC6: a room the CLI created with recording shows its setting, who recorded and whose key to approve, like history status',async t=>{
   const f=await boot(t),{page,owner}=f;
   cliTrust(f,owner);
@@ -124,12 +126,14 @@ test('AC1: a malformed room_history never breaks the board and is reported in th
 test('AC3/AC4: a new room declared from the composer writes the CLI policy before the first signed message; existing rooms are refused',async t=>{
   const f=await boot(t),{page,owner}=f;
   await page.selectOption('#me',owner.participant);await approve(page,owner);
-  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Launch plan');await page.fill('#cNewRoom','launch');
+  // SPEC-002-064: the chip's "New room…" shows the room and topic name inputs with these options below them.
+  await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'New room…'}).click();
+  await expect(page.locator('#cNewRoom')).toBeFocused();await page.fill('#cNewRoom','launch');await page.fill('#cNewThread','Launch plan');
   const box=page.locator('#historyCreate');
   await expect(box).toBeVisible();await expect(box).toContainText('New room settings');
   await expect(page.locator('#cRequireTrusted')).not.toBeChecked();await expect(page.locator('#cRecordHistory')).not.toBeChecked();
   await expect(notice(page)).toHaveAttribute('data-signing-status','unsigned');
-  await page.check('#cRequireTrusted');
+  await openCreateOptions(page);await page.check('#cRequireTrusted');
   await expect(notice(page)).toHaveAttribute('data-signing-status','needs-unlock');
   await page.uncheck('#cRequireTrusted');
   await expect(notice(page)).toHaveAttribute('data-signing-status','unsigned');
@@ -179,7 +183,7 @@ test('AC3/AC4: a new room declared from the composer writes the CLI policy befor
   await expect(page.locator('#historyComposerNote')).toContainText('rooms/launch records history automatically, but this viewer cannot record');
   // An existing room is refused and pointed at the room menu; nothing is written.
   const now=await opfsConfig(page);
-  await page.selectOption('#cThread','');await page.fill('#cNewThread','Again');await page.fill('#cNewRoom','architecture');await page.check('#cRecordHistory');await page.fill('#cBody','Not a new room');await page.click('#send');
+  await page.selectOption('#cThread','');await page.fill('#cNewThread','Again');await page.fill('#cNewRoom','architecture');await openCreateOptions(page);await page.check('#cRecordHistory');await page.fill('#cBody','Not a new room');await page.click('#send');
   await expect(page.locator('#toast')).toContainText('Room architecture already has messages');
   await expect(page.locator('#toast')).toContainText('room menu');
   assert.equal(await opfsConfig(page),now);
@@ -189,10 +193,11 @@ test('AC3/AC4: a new room declared from the composer writes the CLI policy befor
 test('AC3: a new topic declares only that topic, under the number the message is posted with',async t=>{
   const f=await boot(t),{page,owner}=f;
   await page.selectOption('#me',owner.participant);await approve(page,owner);await unlock(page,owner);
-  await page.selectOption('#cWhere','room:product');await page.selectOption('#cThread','');await page.fill('#cNewThread','Signed topic');
+  // SPEC-002-064: the room view targets a new topic; after the post the composer re-follows that view and keeps the note.
+  await page.locator('.fname[data-dir="product"]').click();await page.fill('#cNewThread','Signed topic');
   await expect(page.locator('#historyCreate')).toContainText('New topic settings');
   const tid=await page.evaluate(()=>nextThreadId());
-  await page.check('#cRecordHistory');await page.fill('#cBody','A recorded topic');await page.click('#send');
+  await openCreateOptions(page);await page.check('#cRecordHistory');await page.fill('#cBody','A recorded topic');await page.click('#send');
   const d=await review(page);await expect(d).toContainText(`rooms/product ${tid} will record room history`);
   await d.locator('[data-action="confirm"]').click();
   await expect(page.locator('#historyComposerNote')).toContainText('Not recorded by this viewer');
@@ -292,12 +297,12 @@ test('AC3/AC5: Polish at phone width keeps the composer options and the room set
   await page.selectOption('#me',owner.participant);await approve(page,owner);
   await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#sClose');
   await page.setViewportSize({width:375,height:800});
-  await page.evaluate(()=>{document.querySelector('#composerOptions').open=true;});
-  await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cThread','');await page.fill('#cNewThread','Start');await page.fill('#cNewRoom','start');
+  await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'Nowy pokój…'}).click();
+  await page.fill('#cNewRoom','start');await page.fill('#cNewThread','Start');
   const box=page.locator('#historyCreate');
   await expect(box).toContainText('Ustawienia nowego pokoju');
   await expect(box).toContainText('Wymagaj zaufanych podpisów');await expect(box).toContainText('Automatycznie zapisuj historię pokoju');
-  await page.check('#cRequireTrusted');
+  await openCreateOptions(page);await page.check('#cRequireTrusted');
   await expect(notice(page)).toHaveAttribute('data-signing-status','needs-unlock');
   const fits=sel=>page.locator(sel).evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&el.scrollWidth<=el.clientWidth+1;});
   assert.equal(await fits('#historyCreate'),true);
@@ -318,4 +323,30 @@ test('AC3/AC5: Polish at phone width keeps the composer options and the room set
   await shot(page,'phone-pl-review-config.png');
   await r.locator('[data-action="cancel"]').click();
   await shot(page,'phone-pl-room-settings.png');
+});
+
+test('SPEC-002-064: creation options follow the composer target, start unticked and reset on every target change',async t=>{
+  const f=await boot(t),{page,owner}=f;
+  await page.selectOption('#me',owner.participant);await approve(page,owner);
+  const box=page.locator('#historyCreate');
+  // A plain room view targets a new topic: the folded options appear, unticked.
+  await page.locator('.fname[data-dir="architecture"]').click();
+  await expect(box).toBeVisible();await expect(box).toContainText('New topic settings');
+  assert.equal(await box.locator('.history-create-fold').evaluate(el=>el.open),false,'folded by default');
+  await expect(page.locator('#cRecordHistory')).not.toBeChecked();
+  assert.equal(await box.evaluate(el=>el.parentElement.id),'composerTargetFields','with the inline name fields, not in Advanced');
+  await openCreateOptions(page);await page.check('#cRequireTrusted');await page.check('#cRecordHistory');
+  await expect(notice(page)).toHaveAttribute('data-signing-status','needs-unlock');
+  // Room A new topic -> room B new topic: a different destination, so the ticks are cleared and signing recomputed.
+  const other=await page.evaluate(()=>B.rooms.find(r=>r!=='architecture'));
+  await page.locator(`.fname[data-dir="${other}"]`).click();
+  await expect(box).toBeVisible();await expect(page.locator('#cRequireTrusted')).not.toBeChecked();await expect(page.locator('#cRecordHistory')).not.toBeChecked();
+  await expect(notice(page)).not.toHaveAttribute('data-signing-status','needs-unlock');
+  // An existing topic hides them; "New topic here" brings them back; "New room…" switches to room settings.
+  const topic=await page.evaluate(other=>Object.values(threadsOf()).find(x=>x.dir===other)?.key,other);
+  if(topic){await page.evaluate(key=>setComposerTarget({scope:'room',dir:threadsOf()[key].dir,thread:key}),topic);await expect(box).toBeHidden();
+    await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'New topic here…'}).click();await expect(box).toBeVisible();await expect(box).toContainText('New topic settings');}
+  await openCreateOptions(page);await page.check('#cRecordHistory');
+  await page.click('#composerTarget');await page.locator('#composerTargetList button',{hasText:'New room…'}).click();
+  await page.fill('#cNewRoom','fresh-room');await expect(box).toContainText('New room settings');await expect(page.locator('#cRecordHistory')).not.toBeChecked();
 });

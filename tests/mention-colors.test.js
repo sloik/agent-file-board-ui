@@ -30,6 +30,11 @@ test("mentions and participant hints match chat colors through themes and regist
       await page.press('#cBody','Enter');assert.equal(await page.inputValue('#cBody'),'@'+id+' ');
       await page.fill('#cToSearch',id);
       assert.equal(await color(page.locator(`#cToSuggestions button[data-party='${id}']`)),expected);
+      // SPEC-002-064: the chip's recipient picker uses the same identity colors (the sender is not offered).
+      if(id!==await page.inputValue('#me')){
+        await h.openView(page,'mentions');await page.click('#composerTo');await page.fill('#composerTargetSearch',id);
+        assert.equal(await color(page.locator(`#composerTargetList button[data-party='${id}']`)),expected);await page.keyboard.press('Escape');await page.locator('.tree-root').click();
+      }
     }
     assert.equal(await mentions.count(),12,'three identities and one unknown per format; code and email stay literal');
     assert.equal(await page.locator("article[data-file*='_mention-'] code .mention").count(),0);

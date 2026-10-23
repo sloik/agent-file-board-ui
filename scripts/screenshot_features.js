@@ -45,7 +45,7 @@ async function peopleAndNotifications(browser){
   await capture(page,'board-composer-compact');
   await h.expandComposer(page);await capture(page,'board-composer-options');
   await page.setViewportSize({width:390,height:844});
-  await page.locator('#composerOptions summary').click();await capture(page,'board-composer-compact-phone');
+  await page.locator('#composerOptions > summary').click();await capture(page,'board-composer-compact-phone');
   await page.setViewportSize({width:1440,height:1000});await page.fill('#cBody','');
   await h.openToolbarTool(page,'presenceOpen');await capture(page,'board-operators');await page.click('#presenceClose');
   await page.click('[data-notification-menu="room"][data-notification-key="architecture"]');await capture(page,'board-sidebar-follow');

@@ -463,10 +463,12 @@ Living specifications are excluded.
 
 ## Compact composing and quiet presence
 
-![Current composer with destination summary, body and Post visible, secondary options collapsed.](images/board-composer-compact.png)
+![Current composer with the destination chip, body and Post visible, secondary options collapsed.](images/board-composer-compact.png)
 
-**Message options** expands routing, format, language and status controls without
-resetting the draft. **Tools** groups secondary actions. Routine session arrival
+The composer posts where you are looking: a destination chip follows the visible
+topic, room or direct conversation, and a draft keeps its destination until you
+choose otherwise. **Message options** expands format, language and status (plus
+Advanced routing) without resetting the draft. **Tools** groups secondary actions. Routine session arrival
 and departure posts are opt-in; presence leases still renew. See the
 [desktop/phone composing guide](guides/COMPOSER.md) and [adaptive observation guide](guides/BOARD-LOOP.md).
 

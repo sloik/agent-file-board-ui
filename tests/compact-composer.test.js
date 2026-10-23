@@ -9,25 +9,29 @@ const fold=page=>page.locator('#composerOptions > summary');
 
 test('compact options preserve routing, draft, reply and attachment through keyboard collapse and refresh',async()=>{
  const {ctx,page,log}=await boot();try{
-  assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),false);assert.equal(await page.locator('#cWhere').isVisible(),false);assert.equal(await page.locator('#cBody').isVisible(),true);assert.equal(await page.locator('#send').isVisible(),true);
+  assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),false);assert.equal(await page.locator('#cWhere').isVisible(),false);assert.equal(await page.locator('#cBody').isVisible(),true);assert.equal(await page.locator('#send').isVisible(),true);assert.equal(await page.locator('#composerTarget').isVisible(),true);
   const before=await messages(page);await page.fill('#cBody','Keep this unposted draft');
   const article=page.locator('article.msg').first();await article.hover();await article.locator('[data-reply]').click();const reply=await page.locator('#replyName').innerText();
   await page.click('#structuredOpen');await page.selectOption('#structuredExample','report-v1');await page.click('#structuredLoad');await page.click('#structuredValidate');await page.waitForSelector('#structuredPreview .report-content');await page.click('#structuredAttach');assert.equal(await page.locator('#structuredAttachment').isVisible(),true);
-  await fold(page).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),true);assert.equal(await page.locator('#cWhere').isVisible(),true);
+  await fold(page).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),true);assert.equal(await page.locator('#cWhere').isVisible(),false,'routing stays under Advanced');
+  await page.locator('#composerAdvanced > summary').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#cWhere').isVisible(),true);
   await page.selectOption('#cWhere','room:architecture');await page.selectOption('#cTo','human-owner-01');await page.selectOption('#cStatus','REQUEST');await page.selectOption('#cContentType','text/markdown');await page.selectOption('#cLang','pl');await page.fill('#cNewRoom','New Review Room');await page.selectOption('#cThread','');await page.fill('#cNewThread','A focused review');
   await fold(page).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),false);
-  const route=await page.locator('#composerRouteSummary').innerText();for(const text of ['new-review-room','A focused review','human-owner-01','Markdown','pl'])assert.ok(route.includes(text),text);
+  const route=await page.locator('#composerTarget').textContent(),to=await page.locator('#composerTo').textContent(),options=await page.locator('#composerOptionsSummary').textContent();
+  for(const text of ['new-review-room','A focused review'])assert.ok(route.includes(text),text);assert.ok(to.includes('human-owner-01'),to);for(const text of ['Markdown','pl'])assert.ok(options.includes(text),text);
+  assert.equal(await page.locator('#cNewRoom').isVisible(),true,'a typed room name stays visible with the options collapsed');assert.equal(await page.locator('#cNewThread').isVisible(),true);
   assert.equal(await page.locator('#cStatusPreview').innerText(),'REQUEST');assert.equal(await page.inputValue('#cBody'),'Keep this unposted draft');assert.equal(await page.locator('#replyName').innerText(),reply);assert.equal(await page.locator('#structuredAttachment').isVisible(),true);
   await page.locator('#cBody').evaluate(el=>el.setSelectionRange(2,8));const n=await page.evaluate(()=>window.__boardTest.stats.builds);await page.click('#reload');await page.waitForFunction(n=>window.__boardTest.stats.builds>n,n);
-  assert.equal(await page.inputValue('#cBody'),'Keep this unposted draft');assert.deepEqual(await page.locator('#cBody').evaluate(el=>[el.selectionStart,el.selectionEnd]),[2,8]);assert.equal(await page.locator('#composerRouteSummary').innerText(),route);assert.equal(await page.locator('#replyName').innerText(),reply);assert.equal(await page.locator('#structuredAttachment').isVisible(),true);
+  assert.equal(await page.inputValue('#cBody'),'Keep this unposted draft');assert.deepEqual(await page.locator('#cBody').evaluate(el=>[el.selectionStart,el.selectionEnd]),[2,8]);assert.equal(await page.locator('#composerTarget').textContent(),route);assert.equal(await page.locator('#composerTo').textContent(),to);assert.equal(await page.locator('#composerOptionsSummary').textContent(),options);assert.equal(await page.locator('#replyName').innerText(),reply);assert.equal(await page.locator('#structuredAttachment').isVisible(),true);
   assert.deepEqual(await messages(page),before);await h.reloadSettled(ctx,page,{setting:['composerOptionsOpen',false],lastDir:true});assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),false);clean(log);
  }finally{await ctx.close();}
 });
 
 test('a basic message posts from the collapsed composer through the normal immutable writer',async()=>{
  const {ctx,page,log}=await boot();try{
-  await page.selectOption('#me','human-owner-01');const before=await messages(page);await page.fill('#cBody','Posted with compact message controls');await page.click('#send');await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('Posted with compact message controls')));
+  await page.selectOption('#me','human-owner-01');await h.openView(page,'room:product|T003');const before=await messages(page);await page.fill('#cBody','Posted with compact message controls');await page.click('#send');await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('Posted with compact message controls')));
   const after=await messages(page);assert.equal(after.length,before.length+1);for(const f of before)assert.deepEqual(after.find(x=>x.path===f.path),f);assert.equal(await page.locator('#composerOptions').evaluate(el=>el.open),false);
+  assert.match(after.find(f=>f.text.includes('Posted with compact message controls')).text,/^THREAD: T003-/m);
   const out=h.tmpDir('afb-compact-posted-');await h.dumpFakeFs(page,out);const v=h.boardctl(['validate','--path',out]);assert.equal(v.code,0,v.err);clean(log);
  }finally{await ctx.close();}
 });
@@ -84,8 +88,8 @@ test('secondary tools collapse into a keyboard menu that fits phones and restore
 
 test('expanded options use shorter bounded routing groups on desktop tablet and phone',async()=>{
  const {ctx,page,log}=await boot();try{
-  const before=await messages(page);await h.expandComposer(page);await page.fill('#cBody','Keep draft while arranging options');
-  await page.locator('#cThread option:checked').evaluate(el=>el.textContent='T001 · '+ 'A long topic title '.repeat(20));
+  const before=await messages(page);await h.openView(page,'room:product|T003');await h.expandComposer(page);await page.fill('#cBody','Keep draft while arranging options');
+  await page.locator('#cThread option:checked').evaluate(el=>el.textContent='T003 · '+ 'A long topic title '.repeat(20));
   for(const [width,oldHeight] of [[1280,107],[820,142],[390,340]]){
    await page.setViewportSize({width,height:900});
    const bounds=await page.locator('#composerOptions .ctx').evaluate(el=>{
@@ -94,9 +98,10 @@ test('expanded options use shorter bounded routing groups on desktop tablet and 
    assert.ok(bounds.height<oldHeight,width+' options are shorter than the previous layout: '+bounds.height+' vs '+oldHeight);assert.equal(bounds.overflow,false);
    for(const f of bounds.fields){assert.ok(f.width>20&&f.left>=-1&&f.right<=bounds.width+1,width+' bounded field '+f.id);}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await page.locator('#cBody').isVisible(),true);assert.equal(await page.locator('#send').isVisible(),true);
+   const chip=await page.locator('#composerTarget').boundingBox();assert.ok(chip.x>=0&&chip.x+chip.width<=width,width+' chip within bounds');
    await page.screenshot({path:'/tmp/afb-dense-options-'+width+'.png'});
   }
-  await page.selectOption('#cThread','');assert.equal(await page.locator('#cNewThread').isVisible(),true);assert.equal(await page.locator('#cNewThread').evaluate(el=>el.closest('label').classList.contains('composer-route')),true);await page.fill('#cNewThread','Compact new topic');
+  await page.selectOption('#cThread','');assert.equal(await page.locator('#cNewThread').isVisible(),true);assert.equal(await page.locator('#cNewThread').evaluate(el=>el.closest('#composerTargetFields')!==null),true,'the topic name sits with the destination, not in Advanced');await page.fill('#cNewThread','Compact new topic');
   assert.equal(await page.inputValue('#cBody'),'Keep draft while arranging options');assert.deepEqual(await messages(page),before);clean(log);
  }finally{await ctx.close();}
 });
