@@ -15,11 +15,13 @@ const id=s=>status(s)?.id;
 test('every state is reachable, ordered, and carries emoji, label, detail in both languages',()=>{
   const cases={
     unavailable:base({error:'Private signing context changed in another tab'}),
+    'no-persona':base({required:true,persona:'',name:''}),
     'read-only':base({writable:false,required:true}),
     'not-registered':base({required:true,participants:{maya:{unregistered:true}}}),
     'key-revoked':base({required:true,catalog:['maya'],participants:{maya:{fingerprint:FP,revoked:{reason:'retired'}}}}),
     'key-rotated':base({mode:'signed',known:{maya:OLD}}),
     'needs-unlock':base({required:true}),
+    'key-changed':base({required:true,mode:'signed',catalog:['maya'],pins:{maya:OLD}}),
     'needs-approval':base({required:true,mode:'signed',catalog:['maya']}),
     signed:base({mode:'signed',catalog:['maya']}),
     unsigned:base()
@@ -48,7 +50,9 @@ test('precedence: errors, then read-only, then registration, revocation, rotatio
   assert.equal(id(base({required:true,known:{maya:OLD},participants:{maya:{fingerprint:FP,revoked:{}}}})),'key-revoked');
   assert.equal(id(base({required:true,known:{maya:OLD}})),'key-rotated');
   assert.equal(id(base({required:true,known:{maya:FP}})),'needs-unlock');
-  assert.equal(id(base({required:true,mode:'signed',catalog:['maya'],pins:{maya:OLD}})),'needs-approval');
+  assert.equal(id(base({required:true,mode:'signed',catalog:['maya'],pins:{maya:OLD}})),'key-changed');
+  assert.equal(id(base({required:true,mode:'signed',catalog:['maya']})),'needs-approval');
+  assert.equal(id(base({required:true,persona:'',name:'',writable:false})),'no-persona');
   assert.equal(id(base({required:true,mode:'signed',catalog:['maya'],pins:{maya:FP}})),'signed');
 });
 
@@ -64,7 +68,7 @@ test('no unsigned fallback: signed mode or a required destination never reports 
   for(const required of [false,true])for(const catalog of [[],['sam']])for(const writable of [false,true]){
     const r=status(base({mode:'signed',required,catalog,writable}));
     assert.notEqual(r.id,'unsigned');
-    assert.equal(!!r.alt,!required&&r.id!=='needs-approval'&&r.id!=='signed','"post unsigned instead" is offered only where the destination allows it');
+    assert.equal(r.alt?.kind==='unsigned',!required&&r.id!=='signed','"post unsigned instead" is offered only where the destination allows it');
   }
   for(const mode of ['signed','unsigned'])assert.notEqual(id(base({mode,required:true,catalog:['maya'],pins:{maya:FP}})),'unsigned');
 });
@@ -83,4 +87,26 @@ test('actions point at the step that helps',()=>{
   assert.equal(status(base()).action.kind,'unlock','an optional destination still offers to sign');
   assert.equal(status(base({participants:{maya:{unregistered:true}}})).action,null,'no unlock offer without a registered key');
   assert.equal(status(base({writable:false})).action,null,'no unlock offer on a read-only folder');
+});
+
+test('each state has its own mark: a blocked state never shows an open padlock, and only needs-unlock uses the closed one',()=>{
+  const marks=new Map();
+  const states=[base({error:'x'}),base({required:true,persona:'',name:''}),base({writable:false,required:true}),base({required:true,participants:{maya:{unregistered:true}}}),base({required:true,participants:{maya:{fingerprint:FP,revoked:{}}}}),base({mode:'signed',known:{maya:OLD}}),base({required:true}),base({required:true,catalog:['maya'],pins:{maya:OLD}}),base({required:true,catalog:['maya']}),base({mode:'signed',catalog:['maya']}),base()];
+  for(const s of states){const r=status(s);marks.set(r.id,r.emoji);}
+  assert.equal(new Set(marks.values()).size,marks.size,'distinct emoji per state: '+JSON.stringify([...marks]));
+  assert.ok(![...marks.values()].includes('🔓'));
+});
+
+test('a changed key is told apart from a first approval and both go to the fingerprint review',()=>{
+  const changed=status(base({required:true,catalog:['maya'],pins:{maya:OLD}})),first=status(base({required:true,catalog:['maya']}));
+  assert.notEqual(changed.label,first.label);
+  assert.equal(changed.action.kind,'approve');assert.equal(first.action.kind,'approve');
+  assert.match(changed.label,/changed/);
+});
+
+test('an unlocked key with signing off offers to turn signing on; a locked persona offers another persona in required rooms',()=>{
+  const r=status(base({catalog:['maya']}));
+  assert.equal(r.id,'unsigned');assert.equal(r.action.kind,'sign');assert.match(r.detail,/signing is off/);
+  assert.equal(status(base({required:true})).alt.kind,'persona');
+  assert.equal(status(base({required:true,persona:'',name:''})).action.kind,'persona');
 });
