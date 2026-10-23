@@ -33,6 +33,11 @@ if sys.argv[3]=='init':
   key,path=keyfile(name);reg=json.loads((board/'participants.json').read_bytes());person=next(p for p in reg['participants'] if p['id']==participant)
   source,digest=profile(person,key,None);ctl('identity','import',participant,'--profile-file',str(source),'--sha256',digest)
   result[name]=info(participant,path)
+elif sys.argv[3]=='register':
+ participant=sys.argv[4];board_id=json.loads((board/'config.json').read_bytes())['identity']['boardId']
+ key,path=keyfile(participant);reg=json.loads((board/'participants.json').read_bytes());person=next(p for p in reg['participants'] if p['id']==participant)
+ source,digest=profile(person,key,None);ctl('identity','import',participant,'--profile-file',str(source),'--sha256',digest)
+ result=info(participant,path)
 else:
  participant='human-owner-01';old=commands.session(root).resolve(participant)['head'];board_id=json.loads((board/'config.json').read_bytes())['identity']['boardId']
  key,path=keyfile('rotated');person=json.loads(old.snapshot);person['name']='Rotated owner';source,digest=profile(person,key,old.envelope_sha256);event=private/'transition.json'
@@ -56,6 +61,7 @@ function fixture() {
     cli: (...args) => run([h.path.join(canonical,'boardctl.py'),...args,'--path',proj]),
     reject: (...args) => run([h.path.join(canonical,'boardctl.py'),...args,'--path',proj],2),
     rotate: () => JSON.parse(run(['-I','-c',setup,canonical,proj,'rotate'])),
+    register: (participant) => JSON.parse(run(['-I','-c',setup,canonical,proj,'register',participant])),
     clean: () => h.fs.rmSync(tmp,{recursive:true,force:true})};
 }
 module.exports = {fixture};

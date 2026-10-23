@@ -79,13 +79,49 @@ function syncSidebar(){
  const label=t(open?"sidebar_hide":"sidebar_show");button.setAttribute("aria-expanded",String(open));
  if(button.getAttribute("aria-label")!==label){button.setAttribute("aria-label",label);button.title=label+" ("+sidebarShortcut()+")";}
  const tool=$("#sidebarToggleTool");if(tool&&tool.firstChild.textContent!==label){tool.firstChild.textContent=label;tool.lastChild.textContent=sidebarShortcut();}
+ // The "«" inside the sidebar heading hides it; in a hover peek it pins the sidebar instead (SPEC-002-069).
+ const hide=$("#sideHide"),peek=sidebarPeeking(),hideLabel=t(peek?"sidebar_pin":"sidebar_hide"),glyph=peek?"\u{1F4CC}":"\u00AB";
+ if(hide&&hide.getAttribute("aria-label")!==hideLabel){hide.setAttribute("aria-label",hideLabel);hide.title=hideLabel+" ("+sidebarShortcut()+")";}
+ if(hide&&hide.textContent!==glyph)hide.textContent=glyph;
+}
+/* Hover peek (SPEC-002-069 4b): with the sidebar hidden above 820px and a mouse, resting on the left
+   edge or on #menu shows it as an overlay; leaving closes it. It never changes the saved choice,
+   #menu's state or the layout, and only a pointer opens it. */
+let sidebarPeekOpen=0,sidebarPeekClose=0;
+function sidebarPeeking(){return document.body.classList.contains("side-peek");}
+function sidebarPeekAllowed(){
+ return !sidebarDrawer()&&!sidebarShown()&&matchMedia("(hover:hover) and (pointer:fine)").matches&&!document.querySelector("dialog[open]")&&!document.querySelector("details.toolbar-tools[open]");
+}
+function setSidebarPeek(open){
+ clearTimeout(sidebarPeekOpen);clearTimeout(sidebarPeekClose);
+ if(open===sidebarPeeking())return;
+ if(!open&&$("#side").contains(document.activeElement))document.activeElement.blur();
+ if(!open)closeSidebarMenu(false);
+ document.body.classList.toggle("side-peek",open);syncSidebar();
+ if(open)$("#tree .posting")?.scrollIntoView({block:"nearest"});
+}
+function sidebarPeekEnter(event,opens){
+ if(event.pointerType==="touch")return;
+ clearTimeout(sidebarPeekClose);
+ if(opens&&!sidebarPeeking()&&sidebarPeekAllowed()){clearTimeout(sidebarPeekOpen);sidebarPeekOpen=setTimeout(()=>{if(sidebarPeekAllowed())setSidebarPeek(true);},150);}
+}
+function sidebarPeekLeave(event){
+ if(event.pointerType==="touch")return;
+ clearTimeout(sidebarPeekOpen);clearTimeout(sidebarPeekClose);
+ // An open row menu belongs to the peek; it closes with it once the pointer is gone.
+ if(sidebarPeeking())sidebarPeekClose=setTimeout(()=>setSidebarPeek(false),300);
+}
+function wireSidebarPeek(){
+ for(const [el,opens] of [[$("#sidePeekZone"),true],[$("#menu"),true],[$("#side"),false],[$("#sidebarNotificationMenu"),false]]){
+  el.addEventListener("pointerenter",event=>sidebarPeekEnter(event,opens));el.addEventListener("pointerleave",sidebarPeekLeave);
+ }
 }
 function closeSidebarDrawer(focus){
  const side=$("#side");if(!side.classList.contains("open"))return;
  side.classList.remove("open");closeSidebarMenu(false);syncSidebar();if(focus)$("#menu").focus({preventScroll:true});
 }
 function toggleSidebar(){
- const side=$("#side");
+ const side=$("#side");setSidebarPeek(false);
  if(sidebarDrawer()){if(side.classList.contains("open"))closeSidebarDrawer(true);else{side.classList.add("open");syncSidebar();}return;}
  sidebarChoice=sidebarShown()?"hidden":"shown";
  try{localStorage.setItem(SIDEBAR_KEY,sidebarChoice);}catch(e){}
@@ -96,11 +132,14 @@ function wireSidebarToggle(){
  const top=document.querySelector(".top"),measure=()=>document.documentElement.style.setProperty("--top-h",Math.round(top.getBoundingClientRect().bottom)+"px");
  measure();if(typeof ResizeObserver==="function")new ResizeObserver(measure).observe(top);
  $("#menu").onclick=toggleSidebar;$("#sideScrim").onclick=()=>closeSidebarDrawer(true);
+ $("#sideHide").onclick=()=>{if(sidebarPeeking()){toggleSidebar();return;}toggleSidebar();$("#menu").focus({preventScroll:true});};
+ wireSidebarPeek();
  document.addEventListener("keydown",event=>{
   if(event.defaultPrevented)return;
   if(event.key==="Escape"&&sidebarDrawer()&&$("#side").classList.contains("open")&&!document.querySelector("dialog[open]")){event.preventDefault();closeSidebarDrawer(true);}
+  else if(event.key==="Escape"&&sidebarPeeking()&&!document.querySelector("dialog[open]")){event.preventDefault();setSidebarPeek(false);}
   else if((event.key==="b"||event.key==="B")&&(event.ctrlKey||event.metaKey)&&!event.altKey&&!event.shiftKey){event.preventDefault();toggleSidebar();}
  });
- addEventListener("resize",()=>{measure();if(!sidebarDrawer())$("#side").classList.remove("open");syncSidebar();});
+ addEventListener("resize",()=>{measure();if(!sidebarDrawer())$("#side").classList.remove("open");if(sidebarDrawer())setSidebarPeek(false);syncSidebar();});
  syncSidebar();
 }

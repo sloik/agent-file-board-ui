@@ -62,6 +62,8 @@ function signingNoticeButton(button, action, link) {
   const emoji = action ? SIGNING_ACTION_EMOJI[action.kind] : "";
   const label = action ? (emoji ? emoji + " " : "") + signingActionLabel(action) : "";
   if (button.textContent !== label) button.textContent = label;
+  // The compact phone row may cut the label short (SPEC-002-069 AC9); the tooltip keeps it whole.
+  if (button.title !== label) button.title = label;
   button.dataset.signingKind = action?.kind || "";
   // A short label for the compact phone status line (SPEC-002-065); the full label stays the text.
   if (action?.short) button.dataset.short = (emoji ? emoji + " " : "") + action.short; else delete button.dataset.short;
@@ -81,6 +83,7 @@ function signingNoticeNote(status) {
 // when its content changes, so a refresh tick never steals focus or moves the cursor.
 function updateSigningNotice(status = signingPostBlock()) {
   if (typeof historyComposerUpdate === "function") historyComposerUpdate();
+  signingKeysSync();
   // The status row already says when a destination requires signatures; the older hint shows only without it.
   const req = $("#signingRequires");
   if (req) {
@@ -244,6 +247,99 @@ function signingParticipantSummary(id,model=B) {
   if(f.revoked) return exText("Current key revoked — do not use","Bieżący klucz unieważniony — nie używaj");
   if(f.trusted) return exText("Current key trusted by you","Ufasz bieżącemu kluczowi");
   return f.changed?exText("Key changed — review needed","Klucz zmieniony — wymaga sprawdzenia"):exText("Current key not approved by you","Nie zatwierdzono bieżącego klucza");
+}
+// Keys waiting for approval (SPEC-002-069): a current, unrevoked fingerprint that is not the one
+// approved on this device. Approval is read from the pins, which an upload's approval updates
+// without rebuilding signingParticipants. Changed keys first, then by display name.
+function signingNeedsReview(id, model = B) {
+  const f = model?.signingParticipants?.[id], pin = model?.signingContext?.state?.pins?.[id];
+  return !!f?.fingerprint && !f.revoked && pin !== f.fingerprint;
+}
+function signingPendingReview(model) {
+  const pins = model?.signingContext?.state?.pins || {}, name = (id) => model.people?.[id]?.name || id;
+  const changed = (id) => pins[id] ? 0 : 1;
+  return Object.keys(model?.signingParticipants || {}).filter((id) => signingNeedsReview(id, model))
+    .sort((a, b) => changed(a) - changed(b) || name(a).localeCompare(name(b)) || (a < b ? -1 : a > b ? 1 : 0));
+}
+// Polish counts take three forms: 1 klucz, 2-4 (not 12-14) klucze, otherwise kluczy.
+function signingCount(n, en1, en, one, few, many) {
+  if (S.lang !== "pl") return n === 1 ? en1 : en;
+  const form = new Intl.PluralRules("pl").select(n);
+  return form === "one" ? one : form === "few" ? few : many;
+}
+const signingKeysToReview = (n) => signingCount(n, `${n} key to review`, `${n} keys to review`, `${n} klucz do sprawdzenia`, `${n} klucze do sprawdzenia`, `${n} kluczy do sprawdzenia`);
+// The state after each name in the review list, from the same data as signingParticipantSummary.
+function signingParticipantState(id, model = B) {
+  const f = model?.signingParticipants?.[id];
+  if (f?.unregistered) return exText("no key", "brak klucza");
+  if (!f?.fingerprint) return exText("key unavailable", "klucz niedostępny");
+  if (f.revoked) return exText("revoked", "unieważniony");
+  if (!signingNeedsReview(id, model)) return exText("approved", "zatwierdzony");
+  return model.signingContext?.state?.pins?.[id] ? exText("key changed", "klucz zmieniony") : exText("needs review", "wymaga sprawdzenia");
+}
+const signingParticipantOption = (id, model = B) => `${model.people[id]?.name || id} (${id}) - ${signingParticipantState(id, model)}`;
+function signingPendingSummary(model = B) {
+  const n = signingPendingReview(model).length;
+  if (n) return signingCount(n, "1 key needs review", `${n} keys need review`, "1 klucz wymaga sprawdzenia", `${n} klucze wymagają sprawdzenia`, `${n} kluczy wymaga sprawdzenia`);
+  return Object.values(model?.signingParticipants || {}).some((f) => f?.fingerprint) ? exText("All registered keys are approved on this device", "Wszystkie zarejestrowane klucze są zatwierdzone na tym urządzeniu") : exText("No participant has a registered key yet", "Żaden uczestnik nie ma jeszcze zarejestrowanego klucza");
+}
+// The first-open notice is dismissed per board for the exact pending (participant, fingerprint)
+// pairs: a new or changed key shows it again. Storage may throw; the session copy still hides it.
+const signingKeyNoticeSession = {};
+function signingKeyNoticeId(model = B) {
+  return "afb.keyReview." + (boardStorageId || model?.signingContext?.boardId || signingLocation || "");
+}
+function signingKeyNoticePairs(model = B) {
+  return signingPendingReview(model).map((id) => id + "=" + model.signingParticipants[id].fingerprint).sort();
+}
+function signingKeyNoticeDismissed(id) {
+  let stored = null;
+  try { stored = JSON.parse(localStorage.getItem(id) || "null"); } catch { stored = null; }
+  return new Set([...(Array.isArray(stored) ? stored : []), ...(signingKeyNoticeSession[id] || [])]);
+}
+function signingKeyNoticeStore(id, pairs) {
+  try { localStorage.setItem(id, JSON.stringify(pairs)); } catch {}
+}
+function signingKeyNoticeDismiss() {
+  const id = signingKeyNoticeId(), pairs = signingKeyNoticePairs();
+  signingKeyNoticeSession[id] = pairs;
+  signingKeyNoticeStore(id, pairs);
+  signingKeysSync();
+}
+// One place for the count: the Signing badge in Tools, the dot on the closed Tools menu and the notice.
+// It runs on every composer status update, so it writes only what changed.
+function signingKeysSync() {
+  const model = B && B.signingContext && !B.signingError ? B : null, pending = model ? signingPendingReview(model) : [], n = pending.length;
+  const dismissed = model ? signingKeyNoticeDismissed(signingKeyNoticeId(model)) : new Set();
+  const notice = n > 0 && signingKeyNoticePairs(model).some((pair) => !dismissed.has(pair)), label = n ? signingKeysToReview(n) : "";
+  const set = (el, key, value) => { if (el && el[key] !== value) el[key] = value; };
+  const tools = $("#signingTools"), toggle = $("#toolbarToolsToggle"), box = $("#keyNotice");
+  if (tools) {
+    set(tools.querySelector(".signing-tools-label"), "textContent", exText("Signing", "Podpisy"));
+    const badge = tools.querySelector(".key-badge");
+    set(badge, "hidden", !n);
+    set(badge.querySelector(".key-badge-count"), "textContent", n ? String(n) : "");
+    set(badge, "title", label);
+    set(tools, "title", n ? exText("Signing", "Podpisy") + ": " + label : "");
+  }
+  const review = $("#reviewKeysTool");
+  if (review) {
+    set(review, "hidden", !n);
+    set(review, "textContent", n ? "🔑 " + exText(`Review keys (${n})`, `Sprawdź klucze (${n})`) : "");
+    set(review, "title", label);
+  }
+  if (toggle) {
+    if (n) { if (toggle.dataset.pendingKeys !== String(n)) toggle.dataset.pendingKeys = String(n); } else delete toggle.dataset.pendingKeys;
+    set(toggle, "title", n ? t("toolbar_tools") + " - " + label : t("toolbar_tools"));
+  }
+  if (box) {
+    if (box.classList.contains("show") !== notice) box.classList.toggle("show", notice);
+    const text = notice ? signingCount(n, "1 participant key is not approved on this device.", `${n} participant keys are not approved on this device.`, "1 klucz uczestnika nie jest zatwierdzony na tym urządzeniu.", `${n} klucze uczestników nie są zatwierdzone na tym urządzeniu.`, `${n} kluczy uczestników nie jest zatwierdzonych na tym urządzeniu.`) : "";
+    set($("#keyNoticeText"), "textContent", text);
+    set($("#keyNoticeText"), "title", text);
+    set($("#keyNoticeReview"), "textContent", exText("Review keys", "Sprawdź klucze"));
+    set($("#keyNoticeLater"), "textContent", exText("Not now", "Nie teraz"));
+  }
 }
 function signingMessageHtml(m) {
   const f=m.signing || {}, facts=signingMessageFacts(m), reason=f.reason && f.reason!=="verified" && f.reason!=="unsigned"?f.reason:"";
@@ -682,10 +778,14 @@ async function signingDialog(request) {
   node("p", text("The newest 200 messages are checked on opening. Checking older messages does not approve keys or modify shared message files.", "Po otwarciu sprawdzanych jest 200 najnowszych wiadomości. Sprawdzanie starszych nie zatwierdza kluczy ani nie zmienia wspólnych plików wiadomości."), check, "signing-help");
   const review = section("signing-review", text("2. Review a participant key", "2. Sprawdź klucz uczestnika"), text("Compare the full fingerprint with the participant through a separate channel you already trust, such as an in-person conversation. A message on this board alone is not enough.", "Porównaj cały odcisk z uczestnikiem przez osobny zaufany kanał, np. podczas osobistej rozmowy. Sama wiadomość na tej tablicy nie wystarcza."));
   plain(review, text("a signature only says “this key signed it”. Your approval tells this device which key really belongs to which person.", "podpis mówi tylko „ten klucz to podpisał”. Twoje zatwierdzenie mówi temu urządzeniu, który klucz naprawdę należy do której osoby."), text("your approval stays in this browser, for this board folder only. It is not written to the board and not sent to anyone.", "zatwierdzenie zostaje w tej przeglądarce, tylko dla tego folderu tablicy. Nie jest zapisywane na tablicy ani nikomu wysyłane."), text("a fingerprint. Never share a private key.", "odcisk klucza. Nigdy nie udostępniaj klucza prywatnego."));
+  // Keys that need review come first, each option names its state (SPEC-002-069).
+  const pendingSummary = node("p", "", review, "signing-pending-summary");
+  pendingSummary.id = "signingPendingSummary";
   const participant = field(review, text("Participant to review", "Uczestnik do sprawdzenia"), "select", "signingParticipant", "Trust participant");
-  for (const p of model.signingContext?.registry.participants || []) {
-    const o = node("option", `${model.people[p.id]?.name || p.id} (${p.id})`, participant);
-    o.value = p.id;
+  const pendingIds = signingPendingReview(model), registered = (model.signingContext?.registry.participants || []).map((p) => p.id);
+  for (const id of [...pendingIds, ...registered.filter((id) => !pendingIds.includes(id))]) {
+    const o = node("option", signingParticipantOption(id, model), participant);
+    o.value = id;
   }
   const keyCard = node("div", "", review, "signing-key-card"), keyName = node("strong", "", keyCard), keyState = node("p", "", keyCard), key = node("code", "", keyCard), keyHelp = node("p", "", keyCard, "signing-help");
   const inspectActions = node("div", "", review, "signing-actions");
@@ -888,6 +988,8 @@ async function signingDialog(request) {
     unlockNote.textContent = base ? "" : text("Unlock is off because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie jest wyłączone, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać.");
     requires.textContent = model.signingContext ? signingRequirementText(signingRequirementList([model.signingContext.shared, model.signingContext.floor])) : "";
     counts.textContent = [text("Verified", "Zweryfikowane") + ": " + model.msgs.filter((m) => m.signing?.signature === "valid").length, text("Unsigned", "Bez podpisu") + ": " + model.msgs.filter((m) => m.signing?.signature === "unsigned").length, text("Pending / blocked", "Oczekujące / zablokowane") + ": " + model.msgs.filter((m) => !signingEligible(m)).length].join(" · ");
+    pendingSummary.textContent = signingPendingSummary(model);
+    for (const o of participant.options) { const label = signingParticipantOption(o.value, model); if (o.textContent !== label) o.textContent = label; }
     const id = participant.value, f = model.signingParticipants?.[id];
     if (f?.fingerprint) {
       const pin = model.signingContext?.state.pins[id];
@@ -933,8 +1035,10 @@ async function signingDialog(request) {
     updateSigningNotice();
   }, { once: true });
   if (go) {
-    if (go.task === "review" && go.participant && [...participant.options].some((o) => o.value === go.participant)) {
-      participant.value = go.participant;
+    // Without a requested participant the review lands on the first key that needs review.
+    const wanted = go.task === "review" ? go.participant || signingPendingReview(model)[0] : null;
+    if (wanted && [...participant.options].some((o) => o.value === wanted)) {
+      participant.value = wanted;
       participant.onchange();
     }
     goTo(go.task, go);
@@ -944,10 +1048,19 @@ async function signingDialog(request) {
 function wireSigning() {
   const b = document.createElement("button");
   b.className = "btn";
-  b.textContent = exText("Signing", "Podpisy");
   b.id = "signingTools";
+  b.innerHTML = '<span class="signing-tools-label"></span><span class="key-badge" hidden><span aria-hidden="true">🔑</span> <span class="key-badge-count"></span></span>';
+  b.querySelector(".signing-tools-label").textContent = exText("Signing", "Podpisy");
   b.onclick = () => signingDialog();
-  $("#toolbarToolsPanel").append(b);
+  // A separate entry, shown only while keys wait, opens the review on the first of them.
+  const review = document.createElement("button");
+  review.className = "btn";
+  review.id = "reviewKeysTool";
+  review.hidden = true;
+  review.onclick = () => signingDialog({ task: "review" });
+  $("#toolbarToolsPanel").append(b, review);
+  $("#keyNoticeReview")?.addEventListener("click", () => signingDialog({ task: "review" }));
+  $("#keyNoticeLater")?.addEventListener("click", signingKeyNoticeDismiss);
   document.addEventListener("click", (event) => {
     const opener = event.target.closest?.("[data-signing-open]");
     if (!opener) return;

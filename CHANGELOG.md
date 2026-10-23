@@ -1,5 +1,34 @@
 # Release notes
 
+## 3.3.5 — 2026-10-23
+
+- **Keys waiting for your approval are visible (SPEC-002-069):** registered participant keys
+  that are not approved on this device (including keys that changed) are counted per board:
+  **Tools → Signing** shows **🔑 N**, the closed **Tools** menu carries a dot whose tooltip names
+  the count, and a board that opens with keys waiting shows one line under the header,
+  “N participant keys are not approved on this device”, with **Review keys** and **Not now**.
+  **Not now** is remembered per board for exactly those keys; a new or changed key shows the
+  line again. Revoked keys, participants without a key and unreadable profiles are not counted.
+- **The review list says where each key stands:** in **Signing → 2. Review a participant key**
+  each participant is labelled needs review, key changed, approved, no key, revoked or key
+  unavailable; keys needing review come first (changed keys at the top), a line above says how
+  many need review, and **Review keys** (in the notice, or **🔑 Review keys (N)** in Tools while keys
+  wait) opens on the first of them; **Signing** opens as before. Approval still
+  needs the full fingerprint pasted after comparing it through another channel.
+- **A recognisable sidebar control:** the header's sidebar button shows a panel icon (its left
+  column filled while the sidebar is shown) and **Rooms** on wide windows instead of **☰**, and
+  **«** in the sidebar's heading hides the sidebar. Ctrl/⌘+B and the Tools entry are unchanged.
+- **The message field and Post stay visible on phones with signing:** on a board that offers to
+  unlock your key, the composer's "Will post unsigned" line squeezed its label into a narrow column
+  at 390px wide and pushed the message field and Post below the window. The label now keeps its
+  line and the offer wraps below it; short offers still share the line.
+- **Peek at a hidden sidebar:** with a mouse or trackpad, resting the pointer on the left edge of
+  the window or on the sidebar button shows the hidden sidebar over the conversation, so you can
+  switch rooms and topics without pinning it; it closes when the pointer leaves (or with Escape).
+  **📌 Keep sidebar open** in the peek pins it. The saved choice and the layout do not change, and
+  touch screens and the phone drawer work as before.
+  English and Polish, with Polish plural forms.
+
 ## 3.3.4 — 2026-10-23
 
 - **The message field and Post always fit the window (SPEC-002-068):** on short or narrow

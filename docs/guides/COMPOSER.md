@@ -40,8 +40,11 @@ missing-message check; its button turns amber when that check needs attention.
 
 ### Sidebar
 
-The **☰** button at the left of the header hides or shows the sidebar at every
-width (**Ctrl+B**, **⌘B** on a Mac). Above 820px wide the sidebar column
+The sidebar button at the left of the header (a panel icon, with **Rooms** next to
+it on wide windows) hides or shows the sidebar at every width (**Ctrl+B**, **⌘B**
+on a Mac); **«** in the sidebar's **Rooms and threads** heading hides it too. With a
+mouse, a hidden sidebar peeks over the conversation while the pointer rests on the
+left edge or on the sidebar button. Above 820px wide the sidebar column
 collapses and its width is kept for later; your choice is remembered in this
 browser. Until you choose, it starts shown on windows at least 1000×560 and
 hidden on smaller ones. At 820px and below the sidebar is a drawer under the

@@ -158,7 +158,7 @@ async function launch() { return chromium.launch(); }
 async function openPage(browser, opts = {}) {
   const ctx = await browser.newContext({
     colorScheme: opts.colorScheme || "light", viewport: opts.viewport || { width: 1280, height: 800 },
-    acceptDownloads: true, locale: "en-US", permissions: [] });
+    acceptDownloads: true, locale: "en-US", permissions: [], ...(opts.context || {}) });
   // Existing offline/security fixtures explicitly opt out of the newly optional
   // daily public-metadata check. Update tests exercise the enabled default.
   if (!opts.updateChecks) await ctx.addInitScript(() => {
