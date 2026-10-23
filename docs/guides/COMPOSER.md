@@ -1,6 +1,6 @@
 # Compact message creation and quiet presence
 
-![Desktop composing: the destination chip above the draft, with secondary options collapsed.](../images/board-composer-compact.png)
+![Desktop composing with secondary options collapsed (captured before 3.3.4, when the destination chip was always shown).](../images/board-composer-compact.png)
 
 ![Expanded options show content format, status, language and the Advanced routing fields.](../images/board-composer-options.png)
 

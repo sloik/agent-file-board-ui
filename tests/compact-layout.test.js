@@ -282,3 +282,18 @@ test('phones: the search is a button that expands over the bar; "/" opens it; ic
   await fits(page,'390x844');clean(log);
  }finally{await ctx.close();}
 });
+
+test('a visible viewer update notice keeps the header one line from 601px and the layout inside phones',async()=>{
+ const {ctx,page,log}=await boot();try{
+  await topicDraft(page);await page.evaluate(()=>{document.querySelector('#viewerUpdateNotice').style.display='';});
+  for(const lang of ['en','pl']){await choose(page,'#sLang',lang);
+   for(const width of [601,640,700,820,900,1099,1100,1280])for(const height of [800,460]){
+    await page.setViewportSize({width,height});const at=`${lang} ${width}x${height} with update notice`;
+    const g=await page.evaluate(()=>{const top=document.querySelector('.top').getBoundingClientRect(),me=document.querySelector('#me').getBoundingClientRect(),notice=document.querySelector('#viewerUpdateNotice').getBoundingClientRect();return {top:top.height,me:me.width,notice:notice.width};});
+    assert.ok(g.top<=52,at+' header '+g.top);assert.ok(g.me>=40,at+' persona select '+g.me);assert.ok(g.notice>=30,at+' notice '+g.notice);await fits(page,at);
+   }
+   for(const [width,height] of [[390,640],[390,560],[320,360]]){await page.setViewportSize({width,height});await fits(page,`${lang} ${width}x${height} with update notice`);}
+  }
+  assert.equal(await page.locator('#viewerUpdateNotice').getAttribute('title'),'Viewer update available');clean(log);
+ }finally{await ctx.close();}
+});

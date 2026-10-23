@@ -38,4 +38,5 @@ function wireToolbarExtras(){
  status.id='toolbarStatus';status.className='hint toolbar-status';
  version.type='button';version.className='btn verbar';version.id='toolbarVersion';version.onclick=()=>$('#verbar').click();
  panel.append(toggle,status,version);syncSidebar();
+ const notice=$('#viewerUpdateNotice');if(notice)notice.title=notice.textContent; // its text hides behind an icon below 1100px
 }
