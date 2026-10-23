@@ -1,0 +1,86 @@
+'use strict';
+// SPEC-002-061: one pure function decides the composer signing status; the signer is the selected persona.
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const ROOT=path.resolve(__dirname,'..');
+function api(pl=false){
+  const c=vm.createContext({exText:(en,polish)=>pl?polish:en});
+  vm.runInContext(fs.readFileSync(path.join(ROOT,'scripts/signing-help.js'),'utf8')+';this.api={signingComposerStatus,SIGNING_COMPOSER_ORDER};',c);
+  return c.api;
+}
+const {signingComposerStatus:status,SIGNING_COMPOSER_ORDER:ORDER}=api();
+const FP='ed25519:aaaa',OLD='ed25519:old';
+const base=(over={})=>({hasContext:true,writable:true,required:false,mode:'unsigned',persona:'maya',name:'Maya',catalog:[],known:{},participants:{maya:{fingerprint:FP},sam:{fingerprint:'ed25519:bbbb'}},pins:{},...over});
+const id=s=>status(s)?.id;
+
+test('every state is reachable, ordered, and carries emoji, label, detail in both languages',()=>{
+  const cases={
+    unavailable:base({error:'Private signing context changed in another tab'}),
+    'read-only':base({writable:false,required:true}),
+    'not-registered':base({required:true,participants:{maya:{unregistered:true}}}),
+    'key-revoked':base({required:true,catalog:['maya'],participants:{maya:{fingerprint:FP,revoked:{reason:'retired'}}}}),
+    'key-rotated':base({mode:'signed',known:{maya:OLD}}),
+    'needs-unlock':base({required:true}),
+    'needs-approval':base({required:true,mode:'signed',catalog:['maya']}),
+    signed:base({mode:'signed',catalog:['maya']}),
+    unsigned:base()
+  };
+  assert.deepEqual(Object.keys(cases).sort(),[...ORDER].sort());
+  for(const [want,s] of Object.entries(cases)){
+    for(const pl of [false,true]){
+      const r=api(pl).signingComposerStatus(s);
+      assert.equal(r.id,want,want);
+      assert.ok(r.emoji&&r.label&&r.detail,want+' has emoji, label and detail');
+      assert.ok(['ok','info','warn'].includes(r.tone));
+      if(r.action)assert.ok(r.action.kind&&r.action.label,want+' action is named');
+    }
+  }
+  assert.notEqual(api(true).signingComposerStatus(cases['needs-unlock']).label,status(cases['needs-unlock']).label,'Polish text differs');
+});
+
+test('no signing context and no error shows nothing',()=>{
+  assert.equal(status(base({hasContext:false})),null);
+});
+
+test('precedence: errors, then read-only, then registration, revocation, rotation, unlock, approval',()=>{
+  assert.equal(id(base({error:'x',writable:false,required:true})),'unavailable');
+  assert.equal(id(base({writable:false,required:true,participants:{maya:{unregistered:true}}})),'read-only');
+  assert.equal(id(base({required:true,participants:{maya:{unregistered:true}}})),'not-registered');
+  assert.equal(id(base({required:true,known:{maya:OLD},participants:{maya:{fingerprint:FP,revoked:{}}}})),'key-revoked');
+  assert.equal(id(base({required:true,known:{maya:OLD}})),'key-rotated');
+  assert.equal(id(base({required:true,known:{maya:FP}})),'needs-unlock');
+  assert.equal(id(base({required:true,mode:'signed',catalog:['maya'],pins:{maya:OLD}})),'needs-approval');
+  assert.equal(id(base({required:true,mode:'signed',catalog:['maya'],pins:{maya:FP}})),'signed');
+});
+
+test('the signer is the selected persona: another unlocked key never makes the persona ready',()=>{
+  const s=base({mode:'signed',catalog:['sam']}),r=status(s);
+  assert.equal(r.id,'needs-unlock');
+  assert.equal(r.action.kind,'unlock');assert.equal(r.action.participant,'maya');
+  assert.match(r.detail,/Unlocked here: sam/);
+  assert.equal(id(base({mode:'signed',catalog:['sam'],persona:'sam',name:'Sam'})),'signed');
+});
+
+test('no unsigned fallback: signed mode or a required destination never reports unsigned',()=>{
+  for(const required of [false,true])for(const catalog of [[],['sam']])for(const writable of [false,true]){
+    const r=status(base({mode:'signed',required,catalog,writable}));
+    assert.notEqual(r.id,'unsigned');
+    assert.equal(!!r.alt,!required&&r.id!=='needs-approval'&&r.id!=='signed','"post unsigned instead" is offered only where the destination allows it');
+  }
+  for(const mode of ['signed','unsigned'])assert.notEqual(id(base({mode,required:true,catalog:['maya'],pins:{maya:FP}})),'unsigned');
+});
+
+test('required destination with approved key is signed; optional destination does not need approval',()=>{
+  assert.equal(id(base({required:true,mode:'unsigned',catalog:['maya'],pins:{maya:FP}})),'signed');
+  assert.equal(id(base({required:false,mode:'signed',catalog:['maya']})),'signed');
+});
+
+test('actions point at the step that helps',()=>{
+  assert.equal(status(base({required:true})).action.kind,'unlock');
+  assert.equal(status(base({required:true,catalog:['maya']})).action.kind,'approve');
+  assert.equal(status(base({writable:false,required:true})).action.kind,'open-folder');
+  assert.equal(status(base({required:true,participants:{maya:{unregistered:true}}})).action.kind,'howto');
+  assert.equal(status(base({mode:'signed',catalog:['maya']})).action.kind,'lock');
+  assert.equal(status(base()).action.kind,'unlock','an optional destination still offers to sign');
+  assert.equal(status(base({participants:{maya:{unregistered:true}}})).action,null,'no unlock offer without a registered key');
+  assert.equal(status(base({writable:false})).action,null,'no unlock offer on a read-only folder');
+});
