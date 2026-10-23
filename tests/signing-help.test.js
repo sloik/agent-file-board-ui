@@ -376,8 +376,14 @@ test('requirements are listed, the guide opens offline, and disabled controls sa
   const cfgFile = path.join(f.proj,'.agent-board/config.json'), cfg = JSON.parse(fs.readFileSync(cfgFile));
   cfg.message_signing = {version:1,minimum:'optional',scopes:{'rooms/architecture':{minimum:'trusted'}}}; fs.writeFileSync(cfgFile,JSON.stringify(cfg));
   await refresh(f); await room(page);
-  await expect(page.locator('#signingRequires')).toHaveText('This destination requires trusted signatures.');
-  await page.selectOption('#cWhere',{index:0}); // another destination may not require it
+  // The requirement is shown by the status row, not by a second hint under Send.
+  await expect(notice(page)).toHaveAttribute('data-signing-status','needs-unlock');
+  await expect(notice(page).locator('.signing-notice-text')).toContainText('This destination requires trusted signatures');
+  await expect(page.locator('#signingRequires')).toBeHidden();
+  const optional = await page.evaluate(()=>[...document.querySelector('#cWhere').options].map(o=>o.value).find(v=>v.startsWith('room:')&&v!=='room:architecture'));
+  await page.selectOption('#cWhere',optional); // another destination does not require it
+  await expect(notice(page)).toHaveAttribute('data-signing-status','unsigned');
+  await expect(page.locator('#signingRequires')).toBeHidden();
   await openSigning(page);
   await expect(page.locator('#signingRequirements')).toHaveText('Trusted signatures are required in: rooms/architecture.');
   assert.equal(await page.locator('#signingDialog a[href^="http"]').count(),0,'no external link in the signing dialog');

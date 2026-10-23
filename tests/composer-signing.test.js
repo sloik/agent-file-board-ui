@@ -89,7 +89,7 @@ test('the status is visible before sending and follows the destination and the p
   await status(page,'needs-unlock',{emoji:'🔒',label:`Unlock ${maya}'s key to post`,detail:'This destination requires trusted signatures',action:`🔒 Unlock ${maya}'s key`,alt:'👤 Not yours? Choose another persona'});
   await expect(notice(page).locator('.signing-notice-action')).toHaveClass(/\bbtn\b/);
   await expect(notice(page).locator('.signing-notice-hint')).toHaveText('The key file must be on this device.');
-  await expect(page.locator('#signingRequires')).toHaveText('This destination requires trusted signatures.');
+  await expect(page.locator('#signingRequires')).toBeHidden('the status row already says the destination requires signatures');
   // The status sits directly above Send, so the persona that will sign is next to the button.
   assert.equal(await page.evaluate(()=>document.querySelector('#signingNotice').nextElementSibling.contains(document.querySelector('#send'))),true);
   await notice(page).locator('.signing-notice-alt').click();
@@ -264,8 +264,20 @@ test('phone width in Polish with a long persona name: emoji and short label, det
   await composerUnlock(page,peer.key);
   await expect(notice(page).locator('.signing-notice-note')).toContainText(`Ten klucz jest zarejestrowany dla: ${sam} (${peer.fingerprint}). Nie jest dla: ${maya}`);
   await expect(notice(page).locator('.signing-notice-switch')).toHaveText(`👤 Przełącz personę na: ${sam}`);
-  // The note gets its own row: the label keeps its width instead of being squeezed beside it.
+  // Collapsed, only the emoji, label, Details and the main action show; Send stays on screen.
+  for (const part of ['.signing-notice-note','.signing-notice-switch','.signing-notice-alt','.signing-notice-hint']) await expect(notice(page).locator(part)).toBeHidden();
+  await expect(notice(page).locator('.signing-notice-action')).toBeVisible();
+  await expect(more).toHaveText('Szczegóły');
+  // With the message options folded (the phone default), the message field and Send stay on screen.
+  await page.locator('#composerOptions > summary').click();await expect(page.locator('#composerOptions')).toHaveJSProperty('open',false);
+  await page.locator('#composer').evaluate(c=>c.scrollTop=c.scrollHeight);
+  await expect(page.locator('#cBody')).toBeInViewport();await expect(page.locator('#send')).toBeInViewport({ratio:1});
+  await page.locator('#composerOptions > summary').click();
+  // Expanded, the note gets its own row: the label keeps its width instead of being squeezed beside it.
+  await more.click();
+  await expect(notice(page).locator('.signing-notice-note')).toBeVisible();await expect(notice(page).locator('.signing-notice-switch')).toBeVisible();
   assert.deepEqual(await page.evaluate(()=>{const n=document.querySelector('#signingNotice'),head=n.querySelector('.signing-notice-head').getBoundingClientRect(),note=n.querySelector('.signing-notice-note').getBoundingClientRect();return [head.width>=innerWidth/2,note.top>=head.bottom-1];}),[true,true]);
+  await more.click();
   // Every state, rendered with the longest Polish labels and a long persona name, fits the phone.
   const results=await page.evaluate(()=>{
     const long='Maksymilianna Konstantynopolitańczykiewiczówna-Szczebrzeszyńska',me=currentUser(),out=[];

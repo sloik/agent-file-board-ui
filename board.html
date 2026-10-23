@@ -242,7 +242,7 @@ body.resizing{cursor:col-resize;user-select:none}
 .signing-notice-note{display:block;margin-top:4px;font-weight:600}.signing-notice-actions,.signing-notice-switches{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;min-width:0}
 .signing-notice .btn{flex:0 1 auto;white-space:normal;max-width:100%}
 @media (max-width:600px){.signing-notice:not(.expanded) .signing-notice-text{display:none}.signing-notice-more{display:inline-flex;align-items:center;min-height:44px;margin-left:auto}.signing-notice-head{flex:1 1 0}.signing-notice-body{flex:1 1 100%}
-.signing-notice:not(.expanded) .signing-notice-body:not(:has(.signing-notice-note:not([hidden]))){display:none}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}}
+.signing-notice:not(.expanded) :is(.signing-notice-body,.signing-notice-hint,.signing-notice-switches,.signing-notice-alt){display:none}.signing-notice.has-note:not(.expanded) .signing-notice-more::after{content:" •";font-weight:700}.signing-notice-actions{flex:1 1 100%}.signing-notice .btn,.signing-notice .signing-link{min-height:44px}.signing-notice .btn{flex:1 1 auto}}
 .signing-exclusion .btn{margin-left:6px;white-space:normal;max-width:100%}
 .signing-plain{display:grid;grid-template-columns:minmax(90px,max-content) minmax(0,1fr);gap:4px 12px;font-size:.88em;line-height:1.5;margin:8px 0 12px;color:var(--muted)}.signing-plain dt{font-weight:650;color:var(--ink)}.signing-plain dd{margin:0}
 #signing-howto summary{font-size:1.05em}.signing-figure{margin:16px 0;padding:0}.signing-figure h4,#signingDialog #signing-howto>h4{margin:14px 0 6px;font-size:1em}.signing-diagram-wrap{max-width:560px;margin:0 auto}
@@ -6203,9 +6203,10 @@ function signingNoticeNote(status) {
 // One status row directly above Send, always visible on boards with signing. It is rebuilt only
 // when its content changes, so a refresh tick never steals focus or moves the cursor.
 function updateSigningNotice(status = signingPostBlock()) {
+  // The status row already says when a destination requires signatures; the older hint shows only without it.
   const req = $("#signingRequires");
   if (req) {
-    const note = signingRequirementNote();
+    const note = status ? "" : signingRequirementNote();
     if (req.textContent !== note) req.textContent = note;
     req.hidden = !note;
   }
@@ -6219,6 +6220,7 @@ function updateSigningNotice(status = signingPostBlock()) {
   el.hidden = !status;
   el.dataset.signingStatus = status?.id || "";
   el.dataset.tone = status?.tone || "";
+  el.classList.toggle("has-note", !!note);
   el.querySelector(".signing-notice-emoji").textContent = status?.emoji || "";
   el.querySelector(".signing-notice-label").textContent = status?.label || "";
   el.querySelector(".signing-notice-text").textContent = status?.detail || "";

@@ -71,9 +71,10 @@ function signingNoticeNote(status) {
 // One status row directly above Send, always visible on boards with signing. It is rebuilt only
 // when its content changes, so a refresh tick never steals focus or moves the cursor.
 function updateSigningNotice(status = signingPostBlock()) {
+  // The status row already says when a destination requires signatures; the older hint shows only without it.
   const req = $("#signingRequires");
   if (req) {
-    const note = signingRequirementNote();
+    const note = status ? "" : signingRequirementNote();
     if (req.textContent !== note) req.textContent = note;
     req.hidden = !note;
   }
@@ -87,6 +88,7 @@ function updateSigningNotice(status = signingPostBlock()) {
   el.hidden = !status;
   el.dataset.signingStatus = status?.id || "";
   el.dataset.tone = status?.tone || "";
+  el.classList.toggle("has-note", !!note);
   el.querySelector(".signing-notice-emoji").textContent = status?.emoji || "";
   el.querySelector(".signing-notice-label").textContent = status?.label || "";
   el.querySelector(".signing-notice-text").textContent = status?.detail || "";
