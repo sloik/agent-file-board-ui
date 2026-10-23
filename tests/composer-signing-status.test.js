@@ -86,8 +86,14 @@ test('actions point at the step that helps',()=>{
   assert.equal(status(base({required:true,participants:{maya:{unregistered:true}}})).action.kind,'howto');
   assert.equal(status(base({mode:'signed',catalog:['maya']})).action.kind,'lock');
   assert.equal(status(base()).action.kind,'unlock','an optional destination still offers to sign');
-  assert.equal(status(base({participants:{maya:{unregistered:true}}})).action,null,'no unlock offer without a registered key');
-  assert.equal(status(base({writable:false})).action,null,'no unlock offer on a read-only folder');
+  // SPEC-002-065: signing can always be chosen; without a key to unlock the offer is "sign",
+  // and signed mode then names the missing step instead of an unlock that cannot work.
+  for(const [why,over,next] of [['without a registered key',{participants:{maya:{unregistered:true}}},'not-registered'],['on a read-only folder',{writable:false},'read-only'],['for a revoked key',{participants:{maya:{fingerprint:'fp-maya',revoked:{}}}},'key-revoked'],['without a persona',{persona:'',name:''},'no-persona']]){
+    const r=status(base(over));
+    assert.equal(r.id,'unsigned',why);assert.equal(r.action.kind,'sign','offers signing '+why);assert.equal(r.action.label,'Sign this message');
+    const on=status(base({...over,mode:'signed'}));
+    assert.equal(on.id,next,'signed mode names the missing step '+why);assert.equal(on.alt?.kind,'unsigned','and offers the way back '+why);
+  }
 });
 
 test('each state has its own mark: a blocked state never shows an open padlock, and only needs-unlock uses the closed one',()=>{

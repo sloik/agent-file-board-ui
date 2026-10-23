@@ -108,7 +108,14 @@ test('the status is visible before sending and follows the destination and the p
   assert.equal(await page.evaluate(()=>document.activeElement.id),'signing-setup-you');
   await closeSigning(page);
   await otherRoom(page);
-  await status(page,'unsigned',{action:null});
+  // SPEC-002-065: signing can be chosen even without a key; signed mode then names the missing step.
+  await status(page,'unsigned',{label:'Will post unsigned',action:'🔏 Sign this message',alt:null});
+  await notice(page).locator('.signing-notice-action').click();
+  await status(page,'not-registered',{emoji:'❔',action:'How to get a key',alt:'Post unsigned instead'});
+  await expect(page.locator('#send')).toBeEnabled();
+  page.once('dialog',d=>d.accept());
+  await notice(page).locator('.signing-notice-alt').click();
+  await status(page,'unsigned',{action:'🔏 Sign this message'});
 });
 
 test('composer unlock: one step for the persona, approval only through the fingerprint review, and the signed post verifies in Python',async t=>{
@@ -243,8 +250,13 @@ test('a read-only upload says why unlocking is unavailable',async t=>{
   requireArchitecture(f);
   await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();await h.expandComposer(page);
   await otherRoom(page);
-  await status(page,'unsigned',{action:null});
+  await status(page,'unsigned',{action:'🔏 Sign this message'});
   await expect(notice(page).locator('.signing-notice-note')).toHaveText('Unlocking a key is unavailable because this folder is read-only. Open the board folder with write access to sign.');
+  await notice(page).locator('.signing-notice-action').click();
+  await status(page,'read-only',{emoji:'⛔',action:'Open the writable folder',alt:'Post unsigned instead'});
+  page.once('dialog',d=>d.accept());
+  await notice(page).locator('.signing-notice-alt').click();
+  await status(page,'unsigned',{action:'🔏 Sign this message'});
   await room(page);
   await status(page,'read-only',{emoji:'⛔',label:'Cannot sign: read-only folder',detail:'this board is open read-only',action:'Open the writable folder',alt:null});
   await notice(page).locator('.signing-notice-action').click();
