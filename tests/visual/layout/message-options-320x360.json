@@ -59,5 +59,7 @@
  "#signingPendingSummary":{"present":false},
  "#signingParticipant":{"present":false},
  "#signing-review h3":{"present":false},
- "#signingFingerprint":{"present":false}
+ "#signingFingerprint":{"present":false},
+ "#signingCompare":{"present":false},
+ "#signingDialog [data-action=\"trust\"]":{"present":false}
 }}
