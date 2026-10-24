@@ -320,6 +320,21 @@ function signingDiagrams(text = exText) {
       { note: T("The same rule applies when you post: your message needs your own approved key.", "Ta sama reguła dotyczy Twoich wiadomości: potrzebujesz własnego zatwierdzonego klucza.") }
     ]
   };
+  // Docs only (SPEC-002-071): where the two values in a key review come from.
+  d.channels = {
+    title: T("Two channels: the board and a channel you already trust", "Dwa kanały: tablica i kanał, któremu już ufasz"),
+    caption: T("The board shows the key to check. The value to compare it with must come from its owner by another route.", "Tablica pokazuje klucz do sprawdzenia. Wartość do porównania musi przyjść od właściciela inną drogą."),
+    rows: [
+      { head: T("1. The board: the key to check", "1. Tablica: klucz do sprawdzenia") },
+      { text: T("The board lists Maya's public fingerprint. Anyone who can write to the board folder could have put it there.", "Tablica pokazuje publiczny odcisk Mai. Mógł go tam umieścić każdy, kto może pisać do folderu tablicy.") },
+      { head: T("2. A channel you already trust: the value to compare", "2. Kanał, któremu już ufasz: wartość do porównania") },
+      { text: T("Maya reads her fingerprint on her own device (Sign as me, Copy my fingerprint) and sends it to Sam in person, by phone or in a chat app they already use.", "Maya odczytuje odcisk na własnym urządzeniu (Podpisuj jako ja, Kopiuj mój odcisk) i wysyła go Samowi osobiście, telefonicznie lub w komunikatorze, którego już używają.") },
+      { arrow: T("Sam pastes it in step 2 and the viewer compares", "Sam wkleja go w kroku 2, a przeglądarka porównuje") },
+      { pair: [{ text: T("Same value", "Ta sama wartość"), bold: true }, { text: T("Matches: Sam approves Maya's key on this device.", "Zgadza się: Sam zatwierdza klucz Mai na tym urządzeniu."), cls: "sg-ok" }], leftWidth: 110 },
+      { pair: [{ text: T("Different value", "Inna wartość"), bold: true }, { text: T("Does not match: do not approve. Ask Maya to check again.", "Nie zgadza się: nie zatwierdzaj. Poproś Maję o ponowne sprawdzenie."), cls: "sg-warn" }], leftWidth: 110 },
+      { note: T("Copying the value from the board and pasting it back only compares the board with itself.", "Skopiowanie wartości z tablicy i wklejenie jej z powrotem porównuje tablicę tylko z nią samą.") }
+    ]
+  };
   const flow = [{ head: T("Start at the top and follow the first \"No\".", "Zacznij od góry i idź za pierwszym „Nie”.") }];
   const step = (question, ids) => {
     const info = ids.map((i) => signingBlockInfo(i, { s: T("you", "Ty") }, T));

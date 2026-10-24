@@ -121,7 +121,7 @@ test('a message that cannot drive actions explains why and offers a next step', 
 
 test('committed documentation diagrams are generated from the same source as the in-app diagrams', () => {
   const api = module();
-  for (const key of ['keys','sign','required','why']) {
+  for (const key of ['keys','sign','required','why','channels']) {
     const file = path.join(h.ROOT,'docs/images/signing-help',`${key}.svg`);
     assert.equal(fs.readFileSync(file,'utf8'),api.signingStandaloneSvg(key)+'\n',`${key}.svg is current; run node scripts/build_signing_diagrams.js`);
     const svg = api.signingStandaloneSvg(key);
@@ -140,7 +140,7 @@ test('docs troubleshooting table repeats the in-app wording for every blocked re
     const block = api.signingMessageBlock(m);
     assert.ok(doc.includes(block.message),'docs quote: '+block.message); assert.ok(doc.includes(block.label),block.label);
   }
-  for (const key of ['keys','sign','required','why']) assert.ok(doc.includes(`../images/signing-help/${key}.svg`),key);
+  for (const key of ['keys','sign','required','why','channels']) assert.ok(doc.includes(`../images/signing-help/${key}.svg`),key);
   assert.match(doc,/requires a deliberately trusted current signer/);
   assert.match(doc,/boardctl identity enable/);
 });

@@ -137,6 +137,14 @@ In real use, Maya must supply her own full fingerprint through a separately
 trusted route; copying the fingerprint from the same untrusted board alone does
 not establish her identity. Stop if the fingerprints differ.
 
+Maya can print the fingerprint of her own key file at any time with
+`boardctl signing check --path <board> --from maya --scope rooms/<room>
+--signing-key-file <her key file>`: the line “key file matches current profile”
+shows it. In the viewer the same comparison is guided: Sam pastes what Maya sent
+into **Review a key**, the viewer shows whether it matches, and **Approve** is
+enabled only on a match. See
+[Approving a participant key, step by step](signing.md#approving-a-participant-key-step-by-step).
+
 ### 3. Change the message, keep the signature
 
 This deliberately edits only the disposable message, preserving its path and
