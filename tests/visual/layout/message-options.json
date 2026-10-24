@@ -33,7 +33,7 @@
  "#repairsOpen":{"present":true,"visible":false},
  "#guidanceOpen":{"present":true,"visible":false},
  ".feed":{"present":true,"visible":true,"box":{"x":276,"y":88,"w":1004,"h":461},"style":{"display":"block","background-color":"rgba(0, 0, 0, 0)","color":"rgb(28, 34, 48)","border-color":"rgb(28, 34, 48)","box-shadow":"none","font-weight":"400"},"name":"","text":null,"textBearing":true},
- "#feed article.msg":{"present":true,"visible":true,"box":{"x":413,"y":147,"w":845,"h":163},"style":{"display":"grid","background-color":"color(srgb 0.87702 0.909647 0.980549)","color":"rgb(28, 34, 48)","border-color":"color(srgb 0.598039 0.694118 0.902157)","box-shadow":"none","font-weight":"400"},"name":"","text":null,"textBearing":true},
+ "#feed article.msg:last-of-type":{"present":true,"visible":true,"box":{"x":298,"y":320,"w":845,"h":183},"style":{"display":"grid","background-color":"color(srgb 0.961725 0.905255 0.846274)","color":"rgb(28, 34, 48)","border-color":"color(srgb 0.836275 0.681765 0.52451)","box-shadow":"color(srgb 0.760784 0.407843 0.0392157 / 0.55) 0px 0px 0px 2px","font-weight":"400"},"name":"","text":null,"textBearing":true},
  "#composer":{"present":true,"visible":true,"box":{"x":276,"y":558,"w":1004,"h":242},"style":{"display":"block","background-color":"rgb(255, 255, 255)","color":"rgb(28, 34, 48)","border-color":"rgb(229, 231, 235) rgb(28, 34, 48) rgb(28, 34, 48)","box-shadow":"none","font-weight":"400"},"name":"","text":null,"textBearing":true},
  "#replying":{"present":true,"visible":false},
  "#composerTargetRow":{"present":true,"visible":false},

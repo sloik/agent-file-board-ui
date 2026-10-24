@@ -25,17 +25,18 @@ async function render(browser,url,{layoutDir,pixelDir}){
 async function determinism(browser,url,pixels){
  const runs=[1,2].map(()=>{const d=h.tmpDir('afb-visual-run-');return {dir:d,layoutDir:h.path.join(d,'layout'),pixelDir:pixels?h.path.join(d,'pixels'):null};});
  for(const r of runs)await render(browser,url,r);
- const out=[];
+ const out=[],keep=(file,data)=>{const p=h.path.join(V.RESULTS,'determinism',file);h.fs.mkdirSync(h.path.dirname(p),{recursive:true});h.fs.writeFileSync(p,data);};
  for(const name of V.SCENES){
   const [a,b]=runs.map(r=>h.fs.readFileSync(V.layoutFile(name,r.layoutDir),'utf8'));
-  if(a!==b)out.push(name+': layout snapshots differ between runs');
+  if(a!==b){out.push(name+': layout snapshots differ between runs');keep(name+'.run1.json',a);keep(name+'.run2.json',b);}
   if(pixels){
    const [pa,pb]=runs.map(r=>h.fs.readFileSync(V.pixelFile(name,r.pixelDir)));
-   const c=await V.comparePixels(browser,pa,pb);if(c.diff)out.push(`${name}: ${c.diff} pixels differ between runs`);
+   const c=await V.comparePixels(browser,pa,pb);
+   if(c.diff){out.push(`${name}: ${c.diff} pixels differ between runs`);keep(name+'.run1.png',pa);keep(name+'.run2.png',pb);if(c.png)keep(name+'.diff.png',Buffer.from(c.png,'base64'));}
   }
  }
  for(const r of runs)h.fs.rmSync(r.dir,{recursive:true,force:true});
- if(out.length)throw new Error('Not deterministic:\n'+out.join('\n'));
+ if(out.length)throw new Error('Not deterministic (both runs kept in test-results/visual/determinism):\n'+out.join('\n'));
  console.log(`Deterministic: ${V.SCENES.length} scenes rendered twice, identical layout${pixels?' and zero pixel difference':''}.`);
 }
 

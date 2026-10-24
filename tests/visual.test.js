@@ -64,7 +64,7 @@ test('non-vacuity: a recoloured .posting border, #send moved 20px and a hidden #
   assert.deepEqual(V.compareLayout(shot.name,expected,await V.layoutOf(s.page,shot.name,shot.viewport)),[],'the unmutated scene matches');
   for(const [css,want] of [
    ['.tcard.posting{box-shadow:inset 4px 0 0 rgb(220,38,38),0 0 0 2px rgb(220,38,38)!important}',/^topic #tree \.posting box-shadow: expected .+, got .*rgb\(220, 38, 38\)/],
-   ['#send{translate:-20px 0!important}',/^topic #send box\.x: expected \d+, got \d+ \(tolerance 4px\)$/],
+   ['#send{translate:-20px 0!important}',/^topic #send box\.x: expected \d+, got \d+ \(tolerance 4px; right edge 4px\)$/],
    ['#sideHide{display:none!important}',/^topic #sideHide visible: expected true, got false$/],
   ]){
    const tag=await s.page.addStyleTag({content:css});

@@ -20,12 +20,15 @@ label. Release versions, key fingerprints and board ids are normalized.
 
 The comparison allows for fonts, not for design changes:
 
-- boxes within 4px; elements laid out after text (header controls, menu lines) may move 24px;
-- the width and height of an element with text within 12% or 24px, whichever is larger;
-- colours, `display`, `font-weight`, visibility, presence and labels exactly.
+- positions within 4px at either edge (a right-aligned control whose label widens keeps its right edge);
+  elements laid out after text (header controls, menu lines, dialog paragraphs) may move 12% of their
+  distance from that edge, at least 24px;
+- the width and height of an element with text within 12% or 24px, whichever is larger, otherwise 4px;
+- colours, `display`, `font-weight`, visibility (rendered, not inside a closed `<details>`, not clipped
+  away by the viewport or an overflow container), presence and labels exactly.
 
 A difference names the scene, the element and the property, for example
-`topic #send box.x: expected 1204, got 1184 (tolerance 4px)`, and the actual snapshot is written to
+`topic #send box.x: expected 1204, got 1184 (tolerance 4px; right edge 4px)`, and the actual snapshot is written to
 `test-results/visual/<scene>.layout.json`.
 
 Snapshots live in `tests/visual/layout/<scene>.json`. A missing snapshot fails; a normal run never writes

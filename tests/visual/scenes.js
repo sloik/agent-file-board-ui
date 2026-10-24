@@ -14,21 +14,21 @@ const THRESHOLD=16,MAX_RATIO=0.001;
 const CONTEXT={timezoneId:'UTC',locale:'en-US',reducedMotion:'reduce',colorScheme:'light',deviceScaleFactor:1};
 
 // Landmarks: present, visible, box, look and label of each. `flow` marks elements whose position follows
-// text laid out before them (header controls, menu lines), so platform fonts can move them further.
+// text laid out before them (header controls, menu lines, dialog paragraphs), so platform fonts move them further.
 // Containers (`box`) record no label: their text is the sum of the landmarks inside them.
 const LANDMARKS=[
  ['.top',{box:true}],['#menu'],['#folderName',{flow:true}],['#q',{flow:true}],['#verbar',{flow:true}],['#me',{flow:true}],['#reload',{flow:true}],
  ['#toolbarToolsToggle',{flow:true}],['#gear',{flow:true}],
  ['#keyNotice',{box:true}],['#keyNoticeText',{flow:true}],['#keyNoticeReview',{flow:true}],['#keyNoticeLater',{flow:true}],
- ['#toolbarToolsPanel',{box:true}],['#vocabularyOpen',{flow:true}],['#presenceOpen',{flow:true}],['#signingTools',{flow:true}],['#reviewKeysTool',{flow:true}],
+ ['#toolbarToolsPanel',{flow:true,box:true}],['#vocabularyOpen',{flow:true}],['#presenceOpen',{flow:true}],['#signingTools',{flow:true}],['#reviewKeysTool',{flow:true}],
  ['#sidebarToggleTool',{flow:true}],['#toolbarVersion',{flow:true}],
  ['.side',{box:true}],['#sideHide'],['#sideScrim',{box:true}],['#tree .tree-root',{flow:true}],['#tree .posting',{flow:true}],['#tree .posting-mark',{flow:true}],
  ['.feed-head',{box:true}],['#title'],['#topicMenuToggle'],['#topicMenuPanel',{box:true}],['#topicRename',{flow:true}],['#repairsOpen',{flow:true}],['#guidanceOpen',{flow:true}],
- ['.feed',{box:true}],['#feed article.msg',{flow:true,box:true}],
+ ['.feed',{box:true}],['#feed article.msg:last-of-type',{flow:true,box:true}],
  ['#composer',{box:true}],['#replying'],['#composerTargetRow',{box:true}],['#composerTarget',{flow:true}],['#composerPin',{box:true}],['#composerTargetMenu',{box:true}],['#composerTargetList button',{flow:true}],
- ['#composerOptions',{box:true}],['#composerOptionsSummary'],['#cStatus',{flow:true}],['#composerAdvanced',{flow:true,box:true}],['#cWhere',{flow:true}],['#cNewThread',{flow:true}],
+ ['#composerOptions',{box:true}],['#composerOptionsSummary',{flow:true}],['#cStatus',{flow:true}],['#composerAdvanced',{flow:true,box:true}],['#cWhere',{flow:true}],['#cNewThread',{flow:true}],
  ['#signingNotice',{box:true}],['#signingNotice .signing-notice-label',{flow:true}],['#signingNotice .signing-notice-action',{flow:true}],['#signingNotice .signing-notice-alt',{flow:true}],
- ['#cBody'],['#composerTargetChange'],['#send'],['#cInfo',{flow:true}],
+ ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
  ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingParticipant',{flow:true}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
 ];
 const STYLES=['display','background-color','color','border-color','box-shadow','font-weight'];
@@ -44,12 +44,18 @@ async function snapshot(page){
    const el=document.querySelector(sel);
    if(!el){out[sel]={present:false};continue;}
    const cs=getComputedStyle(el),r=el.getBoundingClientRect();
-   const visible=el.getClientRects().length>0&&r.width>0&&r.height>0&&cs.visibility!=='hidden'&&parseFloat(cs.opacity)>0;
+   // Visible: rendered (checkVisibility also excludes the content of a closed <details>), and some of it
+   // inside the viewport and every clipping (overflow) ancestor.
+   let clip={l:0,t:0,r:innerWidth,b:innerHeight};
+   for(let p=el.parentElement;p;p=p.parentElement){const ps=getComputedStyle(p);if(ps.overflowX==='visible'&&ps.overflowY==='visible')continue;
+    const q=p.getBoundingClientRect();clip={l:Math.max(clip.l,q.left),t:Math.max(clip.t,q.top),r:Math.min(clip.r,q.right),b:Math.min(clip.b,q.bottom)};}
+   const shown=Math.min(clip.r,r.right)-Math.max(clip.l,r.left)>0&&Math.min(clip.b,r.bottom)-Math.max(clip.t,r.top)>0;
+   const visible=el.checkVisibility({opacityProperty:true,visibilityProperty:true,contentVisibilityAuto:true})&&r.width>0&&r.height>0&&shown;
    if(!visible){out[sel]={present:true,visible:false};continue;}
    const field=/^(INPUT|TEXTAREA)$/.test(el.tagName)?el.value:el.tagName==='SELECT'?(el.selectedOptions[0]?.textContent||''):null;
    out[sel]={present:true,visible:true,box:{x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)},
     style:Object.fromEntries(styles.map(p=>[p,cs.getPropertyValue(p)])),name:el.getAttribute('aria-label')||'',
-    text:o?.box?null:field!==null?field:(el.innerText||''),textBearing:!!(el.innerText||'').trim()||field!==null};
+    text:o?.box?null:field!==null?field:(el.innerText||''),textBearing:!!el.textContent.trim()||field!==null};
   }
   return out;
  },{landmarks:LANDMARKS,styles:STYLES});
@@ -65,9 +71,17 @@ function compareLayout(scene,expected,actual){
   if(!e||!a){out.push(`${at}: landmark ${e?'missing from the page snapshot':'not in the baseline'}`);continue;}
   for(const k of ['present','visible'])if(e[k]!==a[k])out.push(`${at} ${k}: expected ${e[k]}, got ${a[k]}`);
   if(!e.visible||!a.visible)continue;
-  const pos=flow[sel]?24:4;
-  for(const [k,tol] of [['x',pos],['y',pos],['w',4],['h',4]]){
-   const size=k==='w'||k==='h',t=size&&(e.textBearing||a.textBearing)?Math.max(24,Math.abs(e.box[k])*0.12):tol;
+  // Position: 4px, or for flow elements 12% of the distance from the edge they are laid out from (at least 24px).
+  // Either edge may hold: a right-aligned control whose label widens keeps its right edge.
+  const tol=d=>flow[sel]?Math.max(24,Math.abs(d)*0.12):4;
+  for(const [k,size,extent,edge] of [['x','w',expected.viewport.width,'right'],['y','h',expected.viewport.height,'bottom']]){
+   const near=tol(e.box[k]),far=tol(extent-e.box[k]-e.box[size]);
+   if(Math.abs(a.box[k]-e.box[k])>near&&Math.abs(a.box[k]+a.box[size]-e.box[k]-e.box[size])>far)
+    out.push(`${at} box.${k}: expected ${e.box[k]}, got ${a.box[k]} (tolerance ${Math.round(near)}px; ${edge} edge ${Math.round(far)}px)`);
+  }
+  // Size: 4px; an element with text 12% or 24px, whichever is larger.
+  for(const k of ['w','h']){
+   const t=e.textBearing||a.textBearing?Math.max(24,Math.abs(e.box[k])*0.12):4;
    if(Math.abs(e.box[k]-a.box[k])>t)out.push(`${at} box.${k}: expected ${e.box[k]}, got ${a.box[k]} (tolerance ${Math.round(t)}px)`);
   }
   for(const p of STYLES)if(e.style[p]!==a.style[p])out.push(`${at} ${p}: expected ${e.style[p]}, got ${a.style[p]}`);
