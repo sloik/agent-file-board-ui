@@ -265,12 +265,17 @@ test('AC5: Remove my approval asks with its consequence, the row then needs revi
   await selectKey(page,PEER);await action(page,'remove-trust');await expect(page.locator('#signingUndo')).toBeVisible();
   await undoEndsWithDialog(page);
   await expect(page.locator('#signingReviewSteps')).toBeVisible();
-  // Undo refuses a key that changed since the removal.
-  await page.locator('#signingFingerprint').fill(f.peer.fingerprint);await action(page,'trust');
+  // Removing the approval of a changed key offers no Undo: the approved key is no longer the board's.
+  await selectKey(page,'build-agent-02');await action(page,'remove-trust');
+  await expect(row(page,'build-agent-02')).toHaveAttribute('data-key-state','review');
+  await expect(page.locator('#signingUndo')).toBeHidden();await expect(page.locator('#signingDialog [data-action="undo-remove"]')).toBeDisabled();
+  // A key replaced after the removal: Undo goes away, and the action itself still refuses.
+  await selectKey(page,PEER);await page.locator('#signingFingerprint').fill(f.peer.fingerprint);await action(page,'trust');
   await action(page,'remove-trust');await expect(page.locator('#signingUndo')).toBeVisible();
   const rotated=f.rotate(PEER);await importBoard(page,f.proj);
   await expect.poll(async()=>{await page.evaluate(()=>readFromHandle(true));return page.evaluate(id=>B.signingParticipants[id].fingerprint,PEER);}).toBe(rotated.fingerprint);
-  await page.locator('#signingDialog [data-action="undo-remove"]').click();
+  await expect(page.locator('#signingUndo')).toBeHidden({timeout:10000});
+  await page.locator('#signingDialog [data-action="undo-remove"]').evaluate(b=>{b.disabled=false;b.click();});
   await expect(page.locator('#signing-review .signing-feedback')).toHaveText('The key changed since you removed the approval. Review it again.');
   assert.equal((await page.evaluate(()=>B.signingContext.state.pins))[PEER],undefined);
 });

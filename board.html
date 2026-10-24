@@ -8609,7 +8609,8 @@ async function signingDialog(request) {
     signingUndo.delete(id);
     await reload(id);
     return text(`Approval of ${name}'s key restored on this browser.`, `Przywrócono zatwierdzenie klucza (${name}) w tej przeglądarce.`);
-  }, () => !!selected && !!signingUndoFor(selected, session) && model.signingContext?.state.pins[selected] !== signingUndoFor(selected, session), (id) => focusKeyRow(id));
+  }, () => !!selected && !!signingUndoFor(selected, session) && model.signingContext?.state.pins[selected] !== signingUndoFor(selected, session) &&
+    model.signingParticipants?.[selected]?.fingerprint === signingUndoFor(selected, session), (id) => focusKeyRow(id));
   const own = section("signing-own", text("3. Sign your messages", "3. Podpisuj własne wiadomości"), text("You need a private JWK key matching a current registered participant profile. Ask the board administrator to register your public key first. Never share your private key or put it in the board folder.", "Potrzebujesz prywatnego klucza JWK pasującego do bieżącego profilu uczestnika. Najpierw poproś administratora o rejestrację klucza publicznego. Nigdy nie udostępniaj prywatnego klucza ani nie zapisuj go w folderze tablicy."));
   plain(own, text("only your own private key can sign as you. That makes your messages hard to fake. Rooms that require signatures also need your own key approved once, in task 2.", "tylko Twój klucz prywatny może podpisywać jako Ty. Dzięki temu Twoich wiadomości trudno podrobić. Pokoje wymagające podpisów potrzebują też jednorazowego zatwierdzenia Twojego klucza w zadaniu 2."), text("your private key stays in this tab's memory after you unlock it. It is never saved, uploaded or put in the board folder, and is forgotten when you lock, reload or wait 15 minutes.", "klucz prywatny zostaje w pamięci tej karty po odblokowaniu. Nigdy nie jest zapisywany, wysyłany ani umieszczany w folderze tablicy i znika po zablokowaniu, przeładowaniu lub 15 minutach."), text("nothing here. The key file is secret. Share only your public fingerprint.", "nic z tego. Plik klucza jest tajny. Udostępniaj tylko publiczny odcisk."));
   const ownState = node("p", "", own, "signing-mode");
@@ -8880,8 +8881,9 @@ async function signingDialog(request) {
     put(confirmText, text(`Remove? Messages from ${name} will show as not approved here${scopes.length ? " and rooms that require approved signatures will refuse them" : ""}. Removing approval does not revoke their key.`,
       `Usunąć? Wiadomości od: ${name} będą tu pokazywane jako niezatwierdzone${scopes.length ? ", a pokoje wymagające zatwierdzonych podpisów je odrzucą" : ""}. Usunięcie zatwierdzenia nie unieważnia klucza.`) +
       (own ? " " + text("This is your own key: your posts in rooms that require approved signatures will be blocked until you approve it again.", "To Twój klucz: Twoje wiadomości w pokojach wymagających zatwierdzonych podpisów będą blokowane, dopóki go znowu nie zatwierdzisz.") : ""));
+    // Undo only for the exact key removed: once the board lists another key, a full review is the way back.
     const undoFp = id ? signingUndoFor(id, session) : null;
-    hide(undoBox, !undoFp || pin === undoFp);
+    hide(undoBox, !undoFp || pin === undoFp || f?.fingerprint !== undoFp);
     put(undoText, text(`Approval removed — ${name} now needs review. `, `Usunięto zatwierdzenie — ${name} wymaga teraz sprawdzenia. `));
     // Required in: where approved signatures are required, from the shared policy and the local floor.
     const noUuid = !!model.signingContext && !model.signingContext.boardId;

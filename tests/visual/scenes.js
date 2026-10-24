@@ -32,7 +32,7 @@ const LANDMARKS=[
  ['#composerOptions',{box:true}],['#composerOptionsSummary',{flow:true}],['#cStatus',{flow:true}],['#composerAdvanced',{flow:true,box:true}],['#cWhere',{flow:true}],['#cNewThread',{flow:true}],
  ['#signingNotice',{box:true}],['#signingNotice .signing-notice-label',{flow:true,intrinsic:'w'}],['#signingNotice .signing-notice-action',{flow:true}],['#signingNotice .signing-notice-alt',{flow:true}],
  ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
- ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingKeys',{flow:true,box:true}],['#signingKeyDetail',{flow:true,box:true}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
+ ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingKeys',{flow:true,box:true,intrinsic:'h'}],['#signingKeyDetail',{flow:true,box:true,intrinsic:'h'}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
  ['#signingCompare',{flow:true}],['#signingDialog [data-action="trust"]',{flow:true}],
 ];
 const STYLES=['display','background-color','color','border-color','box-shadow','font-weight'];
