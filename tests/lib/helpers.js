@@ -173,8 +173,14 @@ async function openPage(browser, opts = {}) {
     r.onsuccess=()=>{const db=r.result,tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({auto:false},'viewer-updates-v1');tx.oncomplete=()=>db.close();};
   });
   const page = await ctx.newPage();
-  const log = { pageErrors: [], consoleErrors: [], requests: [], dialogs: [] };
+  const log = { pageErrors: [], consoleErrors: [], requests: [], dialogs: [], trace: [] };
   page.on("pageerror", e => log.pageErrors.push(String(e && e.message || e)));
+  // Where and when each page error happened, next to the navigations (SPEC-002-070 Firefox diagnosis).
+  const started = Date.now(), mark = entry => log.trace.push({ ms: Date.now() - started, url: page.url(), ...entry });
+  page.on("pageerror", e => mark({ pageerror: String(e && e.message || e), name: e && e.name, stack: String(e && e.stack || "") }));
+  page.on("framenavigated", f => mark({ navigated: f.url(), main: f === page.mainFrame() }));
+  ctx.on("weberror", w => { if (w.page() !== page) mark({ otherPage: w.page() && w.page().url(), weberror: String(w.error().message), stack: String(w.error().stack || "") }); });
+  page.on("console", m => { if (/indexeddb|insecure|security/i.test(m.text())) mark({ console: m.type(), text: m.text(), location: m.location() }); });
   page.on("console", m => { if (m.type() === "error") log.consoleErrors.push(m.text()); });
   page.on("request", r => log.requests.push(r.url()));
   if (opts.dialog) page.on("dialog", async d => { log.dialogs.push({ type: d.type(), message: d.message() }); if (opts.dialog === "accept") await d.accept(); else await d.dismiss(); });

@@ -23,7 +23,8 @@ async function firefoxOrSkip(t){
  t.skip('Firefox cannot launch on this machine: '+String(foxError?.message||foxError).split('\n')[0]);return null;
 }
 async function boot(b,opts={}){const s=await h.openPage(b,{tree:h.readTree(V.exampleBoard()),dialog:'accept',...opts});await h.openBoardViaUi(s.page);return s;}
-const clean=log=>{assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.requests.filter(u=>/^https?:/.test(u)),[]);};
+// On failure the message carries each page error's URL, stack and the navigation timeline around it.
+const clean=log=>{assert.deepEqual(log.pageErrors,[],'page errors with their context:\n'+JSON.stringify(log.trace,null,1));assert.deepEqual(log.requests.filter(u=>/^https?:/.test(u)),[]);};
 // The posted file, found by its text (not just its path, which can exist before its content is written).
 async function posted(page,body){
  await expect.poll(()=>page.evaluate(body=>window.__fakefs.dump().some(f=>f.text.includes(body)),body),{timeout:10000,message:'message file written: '+body}).toBe(true);
