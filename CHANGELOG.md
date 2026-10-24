@@ -1,5 +1,13 @@
 # Release notes
 
+## 3.3.6 — 2026-10-24
+
+- **Fix: no empty button in Tools when no keys are waiting.** In 3.3.5 the hidden
+  **Review keys (N)** entry still rendered as an empty button between **Signing** and
+  **Voice input** when every registered key was approved, because a later Tools-menu rule
+  overrode `[hidden]`. The entry now takes no space at 0, and the AC1 test checks its computed
+  display, not only its visibility inside the closed menu. Found by the SPEC-002-070 visual scenes.
+
 ## 3.3.5 — 2026-10-23
 
 - **Keys waiting for your approval are visible (SPEC-002-069):** registered participant keys
