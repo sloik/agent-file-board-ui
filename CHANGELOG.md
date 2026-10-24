@@ -1,5 +1,15 @@
 # Release notes
 
+## 3.3.8 — 2026-10-24
+
+- **Copy the fingerprint in the key review (SPEC-002-072):** the key card in
+  **Tools → Signing → Review a key** has **Copy fingerprint**, which copies the full value this
+  board lists so you can send it to its owner and ask them to compare it with the one on their
+  device. Step 1 is now **Check the fingerprint with them** and names both ways: send them the
+  board's value to compare, or ask them to send theirs. Pasting the board's value back still
+  matches only with the confirmation **I confirmed it with NAME outside this board**, and the
+  warning now says to approve only after they confirmed it outside the board.
+
 ## 3.3.7 — 2026-10-24
 
 - **Guided key review.** **Review a key** is now four numbered steps: get the
