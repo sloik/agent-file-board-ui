@@ -59,5 +59,7 @@
  "#signingPendingSummary":{"present":true,"visible":true,"box":{"x":240,"y":451,"w":800,"h":22},"style":{"display":"block","background-color":"rgba(0, 0, 0, 0)","color":"rgb(28, 34, 48)","border-color":"rgb(28, 34, 48)","box-shadow":"none","font-weight":"400"},"name":"","text":"3 keys need review","textBearing":true},
  "#signingParticipant":{"present":true,"visible":true,"box":{"x":240,"y":515,"w":800,"h":40},"style":{"display":"block","background-color":"rgb(250, 251, 252)","color":"rgb(28, 34, 48)","border-color":"rgb(229, 231, 235)","box-shadow":"none","font-weight":"400"},"name":"Trust participant","text":"human-owner-01 (human-owner-01) - needs review","textBearing":true},
  "#signing-review h3":{"present":true,"visible":true,"box":{"x":240,"y":286,"w":800,"h":25},"style":{"display":"block","background-color":"rgba(0, 0, 0, 0)","color":"rgb(28, 34, 48)","border-color":"rgb(28, 34, 48)","box-shadow":"none","font-weight":"700"},"name":"","text":"2. Review a participant key","textBearing":true},
- "#signingFingerprint":{"present":true,"visible":false}
+ "#signingFingerprint":{"present":true,"visible":false},
+ "#signingCompare":{"present":true,"visible":false},
+ "#signingDialog [data-action=\"trust\"]":{"present":true,"visible":false}
 }}

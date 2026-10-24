@@ -33,6 +33,7 @@ const LANDMARKS=[
  ['#signingNotice',{box:true}],['#signingNotice .signing-notice-label',{flow:true,intrinsic:'w'}],['#signingNotice .signing-notice-action',{flow:true}],['#signingNotice .signing-notice-alt',{flow:true}],
  ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
  ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingParticipant',{flow:true}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
+ ['#signingCompare',{flow:true}],['#signingDialog [data-action="trust"]',{flow:true}],
 ];
 const STYLES=['display','background-color','color','border-color','box-shadow','font-weight'];
 // Release versions, key fingerprints and board ids change without the page changing: masked in pixels, normalized in labels.
@@ -149,7 +150,8 @@ async function bootExample(browser,{viewport={width:1280,height:800},html}={}){
 // Signing scenes run on the native OPFS path over http, like tests/key-approval-visibility.test.js, but in a
 // context with the scene options (the shared signing boot uses a bare context).
 async function bootSigning(browser,url){
- const f=signingFixture();f.register('implementation-agent-01');
+ // Seeded keys and board ID (SPEC-002-071): a pasted fingerprint in the review scenes renders the same every run.
+ const f=signingFixture({seed:'visual'});f.register('implementation-agent-01');
  const ctx=await browser.newContext({...CONTEXT,viewport:{width:1280,height:800}}),page=await ctx.newPage(),log={pageErrors:[]};
  page.on('pageerror',e=>log.pageErrors.push(e.message));
  await page.clock.setFixedTime(AT);
@@ -167,6 +169,13 @@ async function peek(page){
  await page.mouse.move(800,400);await page.mouse.move(3,400);
  await expect.poll(()=>page.evaluate(()=>document.body.classList.contains('side-peek')&&document.querySelector('#side').getBoundingClientRect().width>100),{timeout:3000}).toBe(true);
  await page.mouse.move(60,200);
+}
+// Types a value derived from the selected participant's board fingerprint and shows the comparison.
+async function reviewValue(page,derive){
+ const fp=await page.evaluate(()=>B.signingParticipants[document.querySelector('#signingParticipant').value].fingerprint);
+ await page.locator('#signingFingerprint').fill(derive(fp));
+ await page.locator('#signingFingerprint').blur();
+ await page.locator('#signingCompare').evaluate(el=>el.scrollIntoView({block:'center'}));
 }
 const S=(name,width=1280,height=800)=>({name,viewport:{width,height}});
 const COMPOSER_SIZES=name=>[S(name),S(name+'-1280x460',1280,460),S(name+'-390x640',390,640),S(name+'-320x360',320,360)];
@@ -190,6 +199,9 @@ const GROUPS=[
   S('key-notice'),
   {...S('key-notice-pl'),step:async p=>{await choose(p,'#sLang','pl');await expect(p.locator('#keyNoticeReview')).not.toHaveText('Review keys');}},
   {...S('signing-review'),step:async p=>{await choose(p,'#sLang','en');await p.click('#keyNoticeReview');await expect(p.locator('#signingDialog')).toBeVisible();await expect(p.locator('#signingPendingSummary')).toHaveText('3 keys need review');}},
+  // SPEC-002-071: the guided review with the participant's value pasted, then with one character changed.
+  {...S('signing-review-match'),step:async p=>{await reviewValue(p,fp=>fp);await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','match');}},
+  {...S('signing-review-mismatch'),step:async p=>{await reviewValue(p,fp=>{const i=fp.length-12;return fp.slice(0,i)+(fp[i]==='A'?'B':'A')+fp.slice(i+1);});await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');}},
   {...S('signing-composer'),step:async p=>{await p.locator('#signingDialog [data-action="close"]').click();await expect(p.locator('#signingDialog')).toBeHidden();
    await p.click('#keyNoticeLater');await expect(p.locator('#keyNotice')).toBeHidden();await topicDraft(p);
    await expect(p.locator('#signingNotice')).toHaveAttribute('data-signing-status','unsigned');await expect(p.locator('#signingNotice .signing-notice-action')).toContainText('Unlock');}},

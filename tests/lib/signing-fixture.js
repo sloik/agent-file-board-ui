@@ -6,20 +6,23 @@ const h = require('./helpers');
 const canonical = h.path.join(h.ROOT, 'vendor/agent-file-board');
 const python = process.env.AFB_SIGNING_PYTHON || 'python3';
 const setup = String.raw`
-import sys,json,base64,hashlib,uuid,io,contextlib
+import sys,os,json,base64,hashlib,uuid,io,contextlib
 from pathlib import Path
 sys.path.insert(0,sys.argv[1])
 import boardctl,signing_core as core,signing_commands as commands
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding,PrivateFormat,NoEncryption
 root=Path(sys.argv[2]);private=root.parent;board=root/'.agent-board'
+# Screenshots pass a seed so fingerprints and the board ID repeat between runs; tests use fresh keys.
+seed=os.environ.get('AFB_FIXTURE_SEED','')
 def ctl(*args):
  with contextlib.redirect_stdout(io.StringIO()):
   code=boardctl.main([*args,'--path',str(root)])
  assert code==0,args
 def keyfile(name):
- key=Ed25519PrivateKey.generate();seed=key.private_bytes(Encoding.Raw,PrivateFormat.Raw,NoEncryption())
- jwk=dict(json.loads(core._private_descriptor(key))['key'],d=base64.urlsafe_b64encode(seed).decode().rstrip('='))
+ key=Ed25519PrivateKey.from_private_bytes(hashlib.sha256((seed+':'+name).encode()).digest()) if seed else Ed25519PrivateKey.generate()
+ raw=key.private_bytes(Encoding.Raw,PrivateFormat.Raw,NoEncryption())
+ jwk=dict(json.loads(core._private_descriptor(key))['key'],d=base64.urlsafe_b64encode(raw).decode().rstrip('='))
  path=private/(name+'.json');path.write_text(json.dumps(jwk));path.chmod(0o600);return key,path
 def profile(person,key,previous):
  raw=core.sign_profile(json.dumps(person).encode(),board_id=board_id,previous=previous,private_key=key)
@@ -27,7 +30,7 @@ def profile(person,key,previous):
 def info(participant,path):
  head=commands.session(root).resolve(participant)['head'];return dict(participant=participant,key=str(path),profile=head.envelope_sha256,fingerprint=head.fingerprint)
 if sys.argv[3]=='init':
- board_id=str(uuid.uuid4());ctl('identity','enable','--board-id',board_id)
+ board_id=str(uuid.uuid5(uuid.NAMESPACE_URL,'afb-fixture:'+seed) if seed else uuid.uuid4());ctl('identity','enable','--board-id',board_id)
  result={}
  for name,participant in [('owner','human-owner-01'),('peer','research-agent-01')]:
   key,path=keyfile(name);reg=json.loads((board/'participants.json').read_bytes());person=next(p for p in reg['participants'] if p['id']==participant)
@@ -46,9 +49,9 @@ else:
  result=info(participant,path)
 print(json.dumps(result))
 `;
-function fixture() {
+function fixture({seed = ''} = {}) {
   const tmp = h.fs.realpathSync(h.tmpDir('afb-signing-scenarios-')), proj = h.layoutExample(tmp);
-  const env = {...process.env, AGENT_FILE_BOARD_STATE_DIR: h.path.join(tmp, 'private-state')};
+  const env = {...process.env, AGENT_FILE_BOARD_STATE_DIR: h.path.join(tmp, 'private-state'), AFB_FIXTURE_SEED: seed};
   const run = (args, expected = 0) => {
     const r = spawnSync(python, args, {env, encoding:'utf8'});
     assert.equal(r.status, expected, r.stderr || r.stdout);

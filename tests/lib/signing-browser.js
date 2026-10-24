@@ -32,8 +32,8 @@ async function exportBoard(page, proj) {
   h.fs.rmSync(h.path.join(proj,'.agent-board'),{recursive:true,force:true});
   h.writeTree(tree,proj);
 }
-async function boot(t, browser, url, prepare = null) {
-  const f=fixture(); t.after(f.clean); if(prepare)prepare(f);
+async function boot(t, browser, url, prepare = null, fixtureOptions = {}) {
+  const f=fixture(fixtureOptions); t.after(f.clean); if(prepare)prepare(f);
   const ctx=await browser.newContext(),page=await ctx.newPage();t.after(()=>ctx.close());
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.addInitScript(()=>{window.showDirectoryPicker=()=>navigator.storage.getDirectory();});

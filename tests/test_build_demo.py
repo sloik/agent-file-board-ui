@@ -54,7 +54,8 @@ class DemoTests(unittest.TestCase):
                         self.assertIn(posixpath.normpath(str(path)), names, link)
 
                 illustrated = re.findall(r'\[[^\]]*\]\(\.\./images/([A-Za-z0-9_.-]+)\)', signing)
-                self.assertEqual(set(illustrated), {'signing-three-tasks.svg', 'signing-key-comparison.svg', 'signing-message.png', 'signing-review.png', 'signing-review-approved.png', 'signing-own.png', 'signing-phone.png', 'signing-composer.png'})
+                self.assertEqual(set(illustrated), {'signing-three-tasks.svg', 'signing-key-comparison.svg', 'signing-message.png', 'signing-review.png', 'signing-review-approved.png', 'signing-own.png', 'signing-phone.png', 'signing-composer.png',
+                                                   'signing-review-step1.png', 'signing-review-step2.png', 'signing-review-step3.png', 'signing-review-step4.png', 'signing-review-mismatch.png', 'signing-review-echo.png', 'signing-review-own-key.png', 'signing-my-fingerprint.png'})
                 for image in illustrated:
                     self.assertEqual(archive.read(PREFIX + '/images/' + image), (ROOT / 'docs/images' / image).read_bytes())
 

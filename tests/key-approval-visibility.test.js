@@ -109,7 +109,10 @@ test('AC3: the review list names each state, puts keys needing review first; Sig
   assert.equal(view,true,'review task in view');
   // Approving still needs the pasted fingerprint; the list relabels without reordering.
   await page.fill('#signingFingerprint',f.owner.fingerprint.slice(0,-1));
-  await page.locator('#signingDialog [data-action="trust"]').click();
+  // SPEC-002-071: a cut-off value is neutral and keeps Approve disabled; a forced click still meets the action's own check.
+  await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','partial');
+  await expect(page.locator('#signingDialog [data-action="trust"]')).toBeDisabled();
+  await page.locator('#signingDialog [data-action="trust"]').evaluate(b=>{b.disabled=false;b.click();});
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Fingerprint does not match');
   await trust(page,ids[0]===f.owner.participant?f.owner:f.peer);
   await expect(page.locator('#signingPendingSummary')).toHaveText('1 key needs review');

@@ -253,7 +253,7 @@ test('the status tick never moves the cursor or the focus in the message field',
 test('a read-only upload says why unlocking is unavailable',async t=>{
   const f=await boot(t),{page}=f;
   requireArchitecture(f);
-  await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();await h.expandComposer(page);
+  await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();await page.waitForFunction(()=>window.__boardTest.getModel()!==null);await h.expandComposer(page);
   await otherRoom(page);
   await status(page,'unsigned',{action:'🔏 Sign this message'});
   await expect(notice(page).locator('.signing-notice-note')).toHaveText('Unlocking a key is unavailable because this folder is read-only. Open the board folder with write access to sign.');

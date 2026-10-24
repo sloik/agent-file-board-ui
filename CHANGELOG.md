@@ -1,7 +1,35 @@
 # Release notes
 
-## Unreleased
+## 3.3.7 — 2026-10-24
 
+- **Guided key review.** **Review a key** is now four numbered steps: get the
+  fingerprint from its owner through a channel you already trust, paste what they
+  sent, compare, approve. **How NAME finds it** names the viewer path
+  (**Tools → Signing → Sign as me → Copy my fingerprint**) and the canonical command
+  `boardctl signing check --path <board> --from <id> --scope rooms/<room>
+  --signing-key-file <key file>`. **Copy what to send them** copies a short request
+  with the board name and ID, the participant and only the prefix and last 8
+  characters of the key. **Paste** reads the clipboard (or points to Cmd+V / Ctrl+V when
+  the browser does not allow it) and removes spaces and line breaks.
+- **Live comparison; Approve only on a match.** ✓ **Matches the key on this board**,
+  ✗ **Does not match** with both values in groups of 4 and the first differing group
+  marked, or a neutral note while the value is incomplete. The button reads
+  **Approve NAME's key** and is enabled only on a match; approval is still the
+  manual paste plus this click.
+- **Echo guard.** The board's own value is never a copy button. If it is copied
+  inside the dialog and pasted back, a warning asks for the owner's value and
+  Approve waits for **I confirmed it with NAME outside this board**. The approval
+  action rechecks this.
+- **Your key fingerprint.** After unlocking, **Sign as me** shows the fingerprint
+  read from your key file, in groups of 4, with **Copy my fingerprint**.
+- **Check with my key file.** Reviewing your own key, the viewer compares your key
+  file with the key the board lists and fills the comparison; you still press
+  Approve. It unlocks through the usual unlock only when the file holds the
+  listed key; a different key file shows a mismatch and unlocks nothing.
+- **Illustrated guide.** docs/guides/signing.md walks through each step with
+  screenshots from a fixed fictional board, the request text and a new diagram of
+  the two channels. `npm run screenshots:all` now also refreshes the signing
+  captures, and a test checks every image the guides show exists.
 - **Tests: the 3.3.6 look and behaviour are locked in (SPEC-002-070):** layout snapshots of 30 named
   scenes run on every platform, Linux pixel screenshots run in CI (baselines from the
   `update_visual_baselines` workflow input), and seven user journeys run end to end, three of them in

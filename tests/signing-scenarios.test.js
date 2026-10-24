@@ -63,7 +63,11 @@ test('native browser streams: UI→CLI→UI replies, explicit trust/adoption and
   const reply=f.cli('post','--from',f.peer.participant,'--to',f.owner.participant,'--scope','room','--room','architecture','--thread',thread,'--reply-to',h.path.basename(root),'--slug','cli-signed-reply','--body','CLI signed reply','--signing-key-file',f.peer.key);
   await refresh(f);assert.equal((await decision(page,reply)).signature,'valid');assert.equal((await decision(page,reply)).eligibility,'excluded');
   await openSigning(page);await page.locator('#signingParticipant').selectOption(f.peer.participant);
-  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(f.peer.fingerprint+'wrong');await action(page,'Trust exact fingerprint');
+  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(f.peer.fingerprint+'wrong');
+  // SPEC-002-071: a mismatch keeps Approve disabled and says so; a forced click still meets the action's own check.
+  await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');await expect(page.locator('#signingCompare')).toContainText('Does not match');
+  await expect(page.locator('#signingDialog [data-action="trust"]')).toBeDisabled();
+  await page.locator('#signingDialog [data-action="trust"]').evaluate(b=>{b.disabled=false;b.click();});
   await expect(page.locator('#signing-review .signing-feedback')).toHaveText('Fingerprint does not match verified current profile');
   assert.equal((await decision(page,reply)).trust,'unfamiliar');
   await action(page,'Inspect current profile');await expect(page.locator('#signing-review')).toContainText(f.peer.fingerprint);
