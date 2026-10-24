@@ -78,6 +78,9 @@ function layoutShuffled(tmp) {
 function fakeFsScript(tree, rootName) {
   const rootIdentity=require("node:crypto").randomUUID();
   return `(() => {
+  // The substitute belongs to the board document only: indexedDB.open throws in a Firefox about:blank document
+  // (seen on CI around reloads), and the rejected promise surfaced as a page error.
+  if(location.protocol==="about:")return;
   const dbReady=new Promise((resolve,reject)=>{
     const r=indexedDB.open("agent-file-board-ui-test-fs",1);
     r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
