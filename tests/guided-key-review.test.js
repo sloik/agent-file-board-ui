@@ -301,11 +301,11 @@ test('AC7: Check with my key file matches the unlocked own key; a different key 
 test('AC8: approving after the guided steps keeps the pins, counts and composer status of the existing flow',async t=>{
   const {page,owner,peer}=await boot(t);
   await review(page,peer.participant);
-  // SPEC-002-073 summary line: pending of registered keys, and what this browser approved.
-  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 2 keys need your review · 0 approved on this browser');
+  // SPEC-002-073 summary line: keys needing attention (the chip's set) of all participants, and what this browser approved.
+  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 3 need your attention · 0 approved on this browser');
   await page.locator('#signingFingerprint').fill(peer.fingerprint);await approve(page).click();
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Exact key approved locally');
-  await expect(page.locator('#signingPendingSummary')).toHaveText('1 of 2 keys needs your review · 1 approved on this browser');
+  await expect(page.locator('#signingPendingSummary')).toHaveText('1 of 3 needs your attention · 1 approved on this browser');
   await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
   assert.deepEqual(await page.evaluate(()=>B.signingContext.state.pins),{[peer.participant]:peer.fingerprint});
   await expect(page.locator('#signingTools .key-badge-count')).toHaveText('1');

@@ -65,7 +65,7 @@ test('AC1/AC2: one row per participant with its status, grouped attention first;
   const fp=f.ids['ada-reviewer'].fingerprint,rest=fp.slice(45);
   assert.equal(byId['ada-reviewer'].short,rest.slice(0,6)+'…'+rest.slice(-6));assert.equal(byId['ada-reviewer'].title,fp);
   assert.equal(byId['implementation-agent-01'].short,'','no key, no fingerprint');
-  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 7 keys need your review · 2 approved on this browser');
+  await expect(page.locator('#signingPendingSummary')).toHaveText('3 of 8 need your attention · 2 approved on this browser');
   await expect(page.locator('#signingDialog [data-key-filter]')).toHaveText(['All 8','Needs attention 3','Approved 2','No key 1','Revoked 2']);
   // Filters.
   for(const [filter,ids] of [['attention',['build-agent-02','ada-reviewer','cache-agent-03']],['approved',[OWNER,PEER]],['none',['implementation-agent-01']],['revoked',['docs-agent-04','edge-agent-05']],['all',ORDER]]){
@@ -76,7 +76,7 @@ test('AC1/AC2: one row per participant with its status, grouped attention first;
   }
   // Polish.
   await choose(page,'#sLang','pl');
-  await expect(page.locator('#signingPendingSummary')).toHaveText('2 z 7 kluczy wymagają Twojego sprawdzenia · 2 zatwierdzone w tej przeglądarce',{timeout:10000});
+  await expect(page.locator('#signingPendingSummary')).toHaveText('3 z 8 wymagają Twojej uwagi · 2 zatwierdzone w tej przeglądarce',{timeout:10000});
   await expect.poll(()=>keyRows(page),{timeout:10000}).toEqual(['Build agent (build-agent-02) - Klucz zmieniony','Ada Novak (ada-reviewer) - Wymaga sprawdzenia','Cache agent (cache-agent-03) - Nie można wczytać klucza','Docs agent (docs-agent-04) - Unieważniony (wycofany)','Edge agent (edge-agent-05) - Unieważniony (przejęty)',
     'implementation-agent-01 (implementation-agent-01) - Brak klucza','human-owner-01 (human-owner-01) - Zatwierdzony w tej przeglądarce','research-agent-01 (research-agent-01) - Zatwierdzony w tej przeglądarce']);
   await expect(page.locator('#signingDialog [data-key-filter]')).toHaveText(['Wszystkie 8','Wymaga uwagi 3','Zatwierdzone 2','Brak klucza 1','Unieważnione 2']);

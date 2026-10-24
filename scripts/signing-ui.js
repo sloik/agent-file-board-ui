@@ -338,22 +338,17 @@ function signingFingerprintBrief(value) {
   const v = String(value || ""), rest = v.startsWith(SIGNING_FP_PREFIX) ? v.slice(SIGNING_FP_PREFIX.length) : v;
   return rest.length > 14 ? rest.slice(0, 6) + "…" + rest.slice(-6) : rest;
 }
-// The line above the list. No all-clear while a key needs review, cannot be loaded or is revoked.
+// The line above the list: the same set and total as the "Needs attention" and "All" chips (changed, needs review
+// and can't-load keys, out of every participant). No all-clear while a key needs attention or is revoked.
 function signingPendingSummary(model = B, text = exText) {
   const states = Object.keys(model?.signingParticipants || {}).map((id) => signingKeyState(id, model));
-  const count = (test) => states.filter(test).length, keys = count((s) => s !== "none"), pending = count((s) => s === "changed" || s === "review");
-  const approved = count((s) => s === "approved"), errors = count((s) => s === "error"), revoked = count((s) => signingKeyGroup(s) === "revoked");
-  if (!keys) return { tone: "", text: text("No participant has a registered key yet", "Żaden uczestnik nie ma jeszcze zarejestrowanego klucza") };
+  const count = (test) => states.filter(test).length, total = states.length, attention = count(signingKeyAttention);
+  const approved = count((s) => s === "approved"), revoked = count((s) => signingKeyGroup(s) === "revoked");
+  if (!count((s) => s !== "none")) return { tone: "", text: text("No participant has a registered key yet", "Żaden uczestnik nie ma jeszcze zarejestrowanego klucza") };
   const here = signingCount(approved, "1 approved on this browser", `${approved} approved on this browser`, "1 zatwierdzony w tej przeglądarce", `${approved} zatwierdzone w tej przeglądarce`, `${approved} zatwierdzonych w tej przeglądarce`);
-  if (pending) {
-    const lead = text(`${pending} of ${keys} ${keys === 1 ? "key" : "keys"} ${pending === 1 ? "needs" : "need"} your review`,
-      `${pending} z ${keys} ${keys === 1 ? "klucza" : "kluczy"} ${signingCount(pending, "", "", "wymaga", "wymagają", "wymaga")} Twojego sprawdzenia`);
-    return { tone: "warn", text: lead + " · " + here };
-  }
-  if (errors || revoked) {
-    const extra = [errors ? text(`${errors} cannot be loaded`, `nie można wczytać: ${errors}`) : "", revoked ? text(`${revoked} revoked`, `unieważnione: ${revoked}`) : ""].filter(Boolean);
-    return { tone: "", text: [text("No key needs your review", "Żaden klucz nie wymaga Twojego sprawdzenia"), ...extra, here].join(" · ") };
-  }
+  if (attention) return { tone: "warn", text: text(`${attention} of ${total} ${attention === 1 ? "needs" : "need"} your attention`,
+    `${attention} z ${total} ${signingCount(attention, "", "", "wymaga", "wymagają", "wymaga")} Twojej uwagi`) + " · " + here };
+  if (revoked) return { tone: "", text: [text("Nothing needs your attention", "Nic nie wymaga Twojej uwagi"), text(`${revoked} revoked`, `unieważnione: ${revoked}`), here].join(" · ") };
   return { tone: "ok", text: text("All keys reviewed", "Wszystkie klucze sprawdzone") + " · " + here };
 }
 // The facts kept per participant from the resolver: the current key, its approval and lifecycle, the profile

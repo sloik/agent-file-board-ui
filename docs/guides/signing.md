@@ -123,8 +123,9 @@ without a key and unreadable profiles are not counted.
 **Keys** lists every participant of the board, attention first. Each row shows the
 name and id, human or agent, a status with an icon and a word (never colour
 alone), the start and end of the fingerprint, what **this browser** holds for that
-participant, and one action. A line above the list counts the keys that need your
-review and the keys approved on this browser; chips filter the list (**All**,
+participant, and one action. A line above the list says how many participants need
+your attention (the same keys as the **Needs attention** chip: changed, needing review
+or not loadable), out of all of them, and how many keys are approved on this browser; chips filter the list (**All**,
 **Needs attention**, **Approved**, **No key**, **Revoked**), and boards with eight or
 more participants also get a search field for names and ids. The list keeps its
 order while the dialog is open, so a row never jumps after you act on it; it sorts

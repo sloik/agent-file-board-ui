@@ -209,7 +209,7 @@ const GROUPS=[
   {...S('key-notice-pl'),step:async p=>{await choose(p,'#sLang','pl');await expect(p.locator('#keyNoticeReview')).not.toHaveText('Review keys');}},
   // SPEC-002-071: the guided review with the participant's value pasted, then with one character changed.
   // The key notice opens Keys on the first key needing review (SPEC-002-073; the plain list is the keys-list scene).
-  {...S('signing-review-match'),step:async p=>{await choose(p,'#sLang','en');await p.click('#keyNoticeReview');await expect(p.locator('#signingDialog')).toBeVisible();await expect(p.locator('#signingPendingSummary')).toHaveText('3 of 3 keys need your review · 0 approved on this browser');
+  {...S('signing-review-match'),step:async p=>{await choose(p,'#sLang','en');await p.click('#keyNoticeReview');await expect(p.locator('#signingDialog')).toBeVisible();await expect(p.locator('#signingPendingSummary')).toHaveText('3 of 3 need your attention · 0 approved on this browser');
    await reviewValue(p,fp=>fp);await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','match');}},
   {...S('signing-review-mismatch'),step:async p=>{await reviewValue(p,fp=>{const i=fp.length-12;return fp.slice(0,i)+(fp[i]==='A'?'B':'A')+fp.slice(i+1);});await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');}},
   {...S('signing-composer'),step:async p=>{await p.locator('#signingDialog [data-action="close"]').click();await expect(p.locator('#signingDialog')).toBeHidden();

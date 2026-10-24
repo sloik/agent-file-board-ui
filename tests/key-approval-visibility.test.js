@@ -104,7 +104,7 @@ test('AC3: the review list names each state, puts keys needing review first; Sig
   // SPEC-002-073: "Review keys" opens Keys filtered to the keys needing attention, the first of them open.
   await expect.poll(()=>selectedKey(page)).toBe(ids[0]);
   await expect(page.locator('#signingDialog [data-key-filter="attention"]')).toHaveAttribute('aria-pressed','true');
-  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 2 keys need your review · 0 approved on this browser');
+  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 3 need your attention · 0 approved on this browser');
   assert.deepEqual(await keyRows(page),
     [...ids.map(id=>`${names[id]} (${id}) - Needs review`),`${names['implementation-agent-01']} (implementation-agent-01) - No key`]);
   // The dialog opened on the review task: its heading is in view under the dialog header.
@@ -118,9 +118,9 @@ test('AC3: the review list names each state, puts keys needing review first; Sig
   await page.locator('#signingDialog [data-action="trust"]').evaluate(b=>{b.disabled=false;b.click();});
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Fingerprint does not match');
   await trust(page,ids[0]===f.owner.participant?f.owner:f.peer);
-  await expect(page.locator('#signingPendingSummary')).toHaveText('1 of 2 keys needs your review · 1 approved on this browser');
+  await expect(page.locator('#signingPendingSummary')).toHaveText('1 of 3 needs your attention · 1 approved on this browser');
   await expect.poll(async()=>(await keyRows(page))[0]).toBe(`${names[ids[0]]} (${ids[0]}) - Approved on this browser`);
-  await choose(page,'#sLang','pl');await expect(page.locator('#signingPendingSummary')).toHaveText('1 z 2 kluczy wymaga Twojego sprawdzenia · 1 zatwierdzony w tej przeglądarce',{timeout:10000});
+  await choose(page,'#sLang','pl');await expect(page.locator('#signingPendingSummary')).toHaveText('1 z 3 wymaga Twojej uwagi · 1 zatwierdzony w tej przeglądarce',{timeout:10000});
   await expect.poll(async()=>(await keyRows(page))[0],{timeout:10000}).toBe(`${names[ids[0]]} (${ids[0]}) - Zatwierdzony w tej przeglądarce`);
   await choose(page,'#sLang','en');await closeSigning(page);
   await approve(page,ids[0]===f.owner.participant?f.peer:f.owner);

@@ -116,7 +116,7 @@ test('journey 5 (Chromium): key notice, Review keys, paste the fingerprint, appr
   await page.locator('#signingFingerprint').fill(byId[first].fingerprint);
   await native.action(page,'Trust exact fingerprint');
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Exact key approved locally');
-  await expect(page.locator('#signingPendingSummary')).toHaveText(left?'1 of 2 keys needs your review · 1 approved on this browser':'All keys reviewed · 2 approved on this browser');
+  await expect(page.locator('#signingPendingSummary')).toHaveText(left?'1 of 3 needs your attention · 1 approved on this browser':'All keys reviewed · 2 approved on this browser');
   await native.closeSigning(page);
   if(left)await expect(page.locator('#keyNoticeText')).toHaveText('1 participant key is not approved on this device.');
   else await expect(notice).toBeHidden();
