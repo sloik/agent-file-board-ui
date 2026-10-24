@@ -34,6 +34,8 @@ async function counted(page,n,{lang='en'}={}){
     assert.equal(await page.locator('#toolbarToolsToggle').getAttribute('data-pending-keys'),null,'no dot');
     await expect(page.locator('#toolbarToolsToggle')).toHaveAttribute('title',lang==='pl'?'Narzędzia':'Tools',{timeout});
     await expect(page.locator('#reviewKeysTool')).toBeHidden({timeout});
+    // toBeHidden also passes while the Tools menu is closed; the entry itself must not render (3.3.5 showed an empty button).
+    assert.equal(await page.locator('#reviewKeysTool').evaluate(e=>getComputedStyle(e).display),'none','Review keys entry takes no space with 0 pending keys');
     return;
   }
   const label=lang==='pl'?`${n} ${n===1?'klucz':n<5?'klucze':'kluczy'} do sprawdzenia`:`${n} ${n===1?'key':'keys'} to review`;

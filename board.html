@@ -296,7 +296,7 @@ mark{background:var(--mark);color:inherit;border-radius:3px}
 .empty h2{color:var(--ink);font-size:18px}
 /* The composer is capped and never scrolls as a whole: a dragged height is a minimum, the options scroll in the middle zone. */
 .composer{min-height:min(var(--composerh,0px),max(112px,45dvh));max-height:max(112px,45dvh);overflow:hidden;border-top:1px solid var(--line);background:var(--panel);padding:8px 22px 10px}
-.toolbar-tools{position:relative;flex:none}.toolbar-tools>summary{cursor:pointer}.toolbar-tools:not([open])>.toolbar-tools-panel{display:none}.toolbar-tools-panel{position:fixed;z-index:80;width:220px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:0 8px 24px #0003;box-sizing:border-box}.toolbar-tools-panel>.btn{display:block;width:100%;text-align:left;margin:3px 0}
+.toolbar-tools{position:relative;flex:none}.toolbar-tools>summary{cursor:pointer}.toolbar-tools:not([open])>.toolbar-tools-panel{display:none}.toolbar-tools-panel{position:fixed;z-index:80;width:220px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:0 8px 24px #0003;box-sizing:border-box}.toolbar-tools-panel>.btn{display:block;width:100%;text-align:left;margin:3px 0}.toolbar-tools-panel>.btn[hidden]{display:none}
 @media(max-width:1099px),(max-height:640px){.top>.verbar{display:none}.toolbar-tools>summary{font-size:0}.toolbar-tools>summary::after{content:"⋯";font-size:18px;line-height:1}#structuredOpen,#notificationsOpen{font-size:0;width:34px;height:34px;padding:0;position:relative}#structuredOpen::before{content:"\1F4DD";font-size:15px}#notificationsOpen::before{content:"\1F514";font-size:15px}#notificationsOpen[data-count]:not([data-count=""])::after{content:attr(data-count);position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:var(--accent);color:var(--on-accent);font-size:10px;line-height:16px;font-weight:700}.me>span:first-child{display:none}}
 @media(min-width:1100px) and (min-height:641px){.toolbar-tools-panel>.verbar{display:none}}
 /* The update notice and brand give way before the persona selector does (SPEC-002-068). */
@@ -1445,7 +1445,7 @@ ${v}`:O}let f={};if(!r&&!c&&!l)return{program:u,metadata:f,scripts:new Set,compl
 <script>
 "use strict";
 /* ===== constants and state (no code runs before init() at the end of this script) ===== */
-const VIEWER_VERSION = "3.3.5";
+const VIEWER_VERSION = "3.3.6";
 const SETTINGS_KEY = "agent-file-board-ui.settings";
 const DEFAULT_STATUSES = ["INFO","QUESTION","REQUEST","REPLY","DECISION-NEEDED","DONE","CLOSED"];
 const LEGACY_STATUS = {"INFO":"INFO","PYTANIE":"QUESTION","PROSBA":"REQUEST","ODPOWIEDZ":"REPLY","DECYZJA-MISI":"DECISION-NEEDED","ZROBIONE":"DONE","ZAMKNIETY":"CLOSED"};
