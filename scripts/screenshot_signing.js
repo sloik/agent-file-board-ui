@@ -6,7 +6,9 @@ const assert=require('node:assert/strict'),http=require('node:http');
 const h=require('../tests/lib/helpers');
 const signing=require('../tests/lib/signing-browser');
 // Every capture this script writes to docs/images; tests check each is referenced by a guide.
-const SHOTS=['signing-message','signing-review','signing-review-step1','signing-review-step2','signing-review-step3','signing-review-mismatch','signing-review-echo','signing-review-step4','signing-review-approved','signing-review-own-key','signing-my-fingerprint','signing-own','signing-composer','signing-phone'];
+const SHOTS=['signing-message','signing-review','signing-review-step1','signing-review-step2','signing-review-step3','signing-review-mismatch','signing-review-echo','signing-review-step4','signing-review-approved','signing-review-own-key','signing-my-fingerprint','signing-own','signing-composer','signing-phone',
+  // SPEC-002-073: the Keys list on a board with a key in every state.
+  'signing-keys','signing-keys-changed','signing-keys-revoked','signing-keys-remove','signing-keys-phone'];
 async function main(){
   const browser=await h.launch(),cleanups=[];
   const server=http.createServer((req,res)=>{if(req.url!=='/board.html'){res.writeHead(404).end();return;}res.setHeader('Content-Type','text/html; charset=utf-8');res.end(h.fs.readFileSync(h.BOARD_HTML));});
@@ -36,8 +38,8 @@ async function main(){
     await page.setViewportSize({width:1100,height:1800});
     await signing.openSigning(page);
     const review=page.locator('#signing-review'),steps=page.locator('#signingReviewSteps > li'),field=page.locator('#signingFingerprint');
-    await page.locator('#signingParticipant').selectOption(f.peer.participant);
     await page.locator('[data-signing-task=review]').click();
+    await signing.selectKey(page,f.peer.participant);
     await shot(review,'signing-review');
     await page.locator('.signing-find summary').click();
     await page.locator('#signingCopyRequest').click();
@@ -73,8 +75,8 @@ async function main(){
     await page.locator('#signingMyFingerprint').waitFor();
     await shot(page.locator('#signing-own'),'signing-own');
     await shot(page.locator('#signingMyFingerprint'),'signing-my-fingerprint');
-    await page.locator('#signingParticipant').selectOption(f.owner.participant);
     await page.locator('[data-signing-task=review]').click();
+    await signing.selectKey(page,f.owner.participant);
     await page.locator('#signingCheckOwnKey').click();
     await page.locator('#signingCompare[data-state="match"]').waitFor();
     await stepShot(steps.nth(0).locator('xpath=..'),'signing-review-own-key');
@@ -87,6 +89,36 @@ async function main(){
     await page.locator('[data-signing-task=check]').click();
     assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true);
     await shot(page,'signing-phone');
+    await signing.closeSigning(page);
+    // Keys (SPEC-002-073) on a second board with a key in every state: three approved through the review,
+    // then one of them replaced on the board.
+    let ids;
+    const k=await signing.boot({after:fn=>cleanups.push(fn)},browser,origin+'/board.html',f=>{ids=f.keys();},{seed:'docs'}),kp=k.page;
+    await kp.selectOption('#me',k.owner.participant);
+    await signing.openSigning(kp);
+    for(const identity of [k.owner,k.peer,ids['build-agent-02']])await signing.trust(kp,identity);
+    await signing.closeSigning(kp);
+    k.rotate('build-agent-02');await signing.importBoard(kp,k.proj);await kp.evaluate(()=>readFromHandle(true));
+    await kp.click('#keyNoticeLater');
+    const keyShot=async(locator,name)=>{assert.ok(SHOTS.includes(name),name);await locator.screenshot({path:h.path.join(out,name+'.png'),animations:'disabled'});written.push(name);};
+    // Tall enough that the whole task fits in the dialog: an element capture shows only its visible part.
+    await kp.setViewportSize({width:1100,height:2100});
+    await signing.openSigning(kp);await kp.locator('[data-signing-task=review]').click();
+    const keys=kp.locator('#signing-review');
+    await keyShot(keys,'signing-keys');
+    await signing.selectKey(kp,'build-agent-02');await kp.locator('#signingKeyDetail').evaluate(el=>{el.scrollTop=0;});
+    await keyShot(kp.locator('#signingKeyDetail'),'signing-keys-changed');
+    await signing.selectKey(kp,'edge-agent-05');
+    await keyShot(kp.locator('#signingKeyDetail'),'signing-keys-revoked');
+    await signing.selectKey(kp,k.peer.participant);
+    await kp.locator('[data-action="remove-trust-ask"]').click();
+    await keyShot(kp.locator('#signingKeyDetail .signing-key-remove'),'signing-keys-remove');
+    await signing.closeSigning(kp);
+    await kp.setViewportSize({width:390,height:844});
+    await h.openToolbarTool(kp,'reviewKeysTool');
+    await kp.locator('#signingKeyDetail').waitFor();
+    await kp.locator('#signingKeys [aria-selected="true"]').evaluate(el=>el.scrollIntoView({block:'center'}));
+    await keyShot(kp,'signing-keys-phone');
     assert.deepEqual(written.sort(),[...SHOTS].sort(),'every declared capture is written');
     console.log('Captured real message, the guided key review steps, own fingerprint and own-key check, own signing, composer status and phone layout. Fixture keys remain private and are deleted.');
   }finally{

@@ -60,7 +60,7 @@ else:
  owner=participant=='human-owner-01';key,path=keyfile('rotated' if owner else participant+'-rotated');person=json.loads(old.snapshot)
  if owner:person['name']='Rotated owner'
  source,digest=profile(person,key,old.envelope_sha256);event=private/(participant+'-transition.json')
- ctl('signing','transition','--participant',participant,'--profile-file',str(source),'--sha256',digest,'--key-file',str(private/(('owner' if owner else participant)+'.json')),'--new-key-file',str(path),'--output',str(event))
+ ctl('signing','transition','--participant',participant,'--profile-file',str(source),'--sha256',digest,'--key-file',str(private/({'human-owner-01':'owner','research-agent-01':'peer'}.get(participant,participant)+'.json')),'--new-key-file',str(path),'--output',str(event))
  ctl('signing','update','--participant',participant,'--profile-file',str(source),'--sha256',digest,'--expect-profile',old.envelope_sha256,'--event-file',str(event))
  result=info(participant,path)
 print(json.dumps(result))
