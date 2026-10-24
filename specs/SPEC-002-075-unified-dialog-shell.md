@@ -77,6 +77,19 @@ voiceDialog, historyDialog, historyReviewDialog, historySettingsDialog). Two com
 
 No VoiceOver/screen-reader checks (owner policy).
 
+## Amendment (2026-10-24): Settings is a popover, not a dialog
+
+Design item 3 assumed Settings is a dialog whose Done (`#sClose`) could become the header Close. Settings is a
+non-modal, user-resizable popover beside the board (no backdrop; theme and text-size changes preview live; saved
+width and resize handle). It stays a popover: no wide tier, no modal. It applies the shell's head/foot classes and
+rule instead: one header Close top-right, footer with only Send feedback and Reset to defaults.
+
+It already had a header Close (`#settingsClose`), and one button cannot carry both ids. `#sClose` is kept because
+the spec names it and it has the most references (38). Done saved nothing, so it becomes the single header Close:
+label Close/Zamknij (`vocabulary_close`), focus returns to `#gear`. `#settingsClose` is removed and its 12
+references are retargeted. The retargets change selectors only; no assertion is loosened. Approved by the lead on
+2026-10-24.
+
 ## Implementation notes (2026-10-24, viewer 3.3.10)
 
 Dialog inventory (17 `<dialog>`s plus Settings), with tier and the entry point the tests use:
