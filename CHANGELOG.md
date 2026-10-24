@@ -1,5 +1,24 @@
 # Release notes
 
+## 3.3.10 — 2026-10-24
+
+- **One layout for every dialog (SPEC-002-075):** every dialog opened from **Tools**, the header,
+  the topic or room menu or the composer is a wide panel (up to 1200px, 48px narrower than the
+  window; at most 88% of the window height, 960px at most) with the title on the left and
+  **Close** at the top right in a pinned header. Only the dialog's own actions sit at the bottom
+  right (for example **Insert into draft**, **Reload installed viewer**, **Review change…**);
+  there is no Close at the bottom any more (**Extensions**, **Extension diagnostics**,
+  **Voice input** and **Viewer updates** moved theirs to the top). The `config.json` review is
+  the one compact confirmation (560px) and gains a Close that answers "no", like **Cancel**.
+- **Keys gets the room:** **Signing** grows from 1040px to 1200px, so the Keys list and the key
+  detail together use about 1120px at 1280×800. Keys works exactly as before.
+- **Phones:** at 600px wide or less, or 480px tall or less, every dialog fills the screen.
+- **Settings** keeps its resizable side panel; its **Done** button became the single **Close** at
+  the top right (settings already apply as you change them). **Send feedback** and **Reset to
+  defaults** stay at the bottom.
+- Escape and focus return work as before; closing **Room history and signing** now returns focus
+  to the room's menu button, and closing the `config.json` review returns it to **Review change…**.
+
 ## 3.3.9 — 2026-10-24
 
 - **Keys: manage participant keys in one list (SPEC-002-073):** **Tools → Signing → Keys**
