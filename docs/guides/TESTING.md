@@ -26,6 +26,9 @@ The comparison allows for fonts, not for design changes:
   elements laid out after text (header controls, menu lines, dialog paragraphs) may move 12% of their
   distance from that edge, at least 24px;
 - the width and height of an element with text within 12% or 24px, whichever is larger, otherwise 4px;
+  the width of a one-line shrink-to-content text run (`#title`, `#verbar`, the signing status label) and the
+  height of a wrapped message are font facts and are not compared (their anchored edge still is; the Linux
+  pixel baselines cover the rest);
 - colours, `display`, `font-weight`, visibility (rendered, not inside a closed `<details>`, not clipped
   away by the viewport or an overflow container), presence and labels exactly.
 

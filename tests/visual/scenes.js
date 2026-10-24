@@ -15,19 +15,22 @@ const CONTEXT={timezoneId:'UTC',locale:'en-US',reducedMotion:'reduce',colorSchem
 
 // Landmarks: present, visible, box, look and label of each. `flow` marks elements whose position follows
 // text laid out before them (header controls, menu lines, dialog paragraphs), so platform fonts move them further.
-// Containers (`box`) record no label: their text is the sum of the landmarks inside them.
+// Containers (`box`) record no label: their text is the sum of the landmarks inside them. `intrinsic` names a size
+// that is a font fact, not layout: 'w' for a one-line shrink-to-content text run, 'h' for a block of wrapped
+// message text. Its anchored edge, visibility and label are still compared; the Linux pixel baselines see the rest.
+// (Whether a run is cut off is a font fact too: the topic title fits at 390px on macOS and is ellipsized on Linux.)
 const LANDMARKS=[
- ['.top',{box:true}],['#menu'],['#folderName',{flow:true}],['#q',{flow:true}],['#verbar',{flow:true}],['#me',{flow:true}],['#reload',{flow:true}],
+ ['.top',{box:true}],['#menu'],['#folderName',{flow:true}],['#q',{flow:true}],['#verbar',{flow:true,intrinsic:'w'}],['#me',{flow:true}],['#reload',{flow:true}],
  ['#toolbarToolsToggle',{flow:true}],['#gear',{flow:true}],
  ['#keyNotice',{box:true}],['#keyNoticeText',{flow:true}],['#keyNoticeReview',{flow:true}],['#keyNoticeLater',{flow:true}],
  ['#toolbarToolsPanel',{flow:true,box:true}],['#vocabularyOpen',{flow:true}],['#presenceOpen',{flow:true}],['#signingTools',{flow:true}],['#reviewKeysTool',{flow:true}],
  ['#sidebarToggleTool',{flow:true}],['#toolbarVersion',{flow:true}],
  ['.side',{box:true}],['#sideHide'],['#sideScrim',{box:true}],['#tree .tree-root',{flow:true}],['#tree .posting',{flow:true}],['#tree .posting-mark',{flow:true}],
- ['.feed-head',{box:true}],['#title'],['#topicMenuToggle'],['#topicMenuPanel',{box:true}],['#topicRename',{flow:true}],['#repairsOpen',{flow:true}],['#guidanceOpen',{flow:true}],
- ['.feed',{box:true}],['#feed article.msg:last-of-type',{flow:true,box:true}],
+ ['.feed-head',{box:true}],['#title',{intrinsic:'w'}],['#topicMenuToggle'],['#topicMenuPanel',{box:true}],['#topicRename',{flow:true}],['#repairsOpen',{flow:true}],['#guidanceOpen',{flow:true}],
+ ['.feed',{box:true}],['#feed article.msg:last-of-type',{flow:true,box:true,intrinsic:'h'}],
  ['#composer',{box:true}],['#replying'],['#composerTargetRow',{box:true}],['#composerTarget',{flow:true}],['#composerPin',{box:true}],['#composerTargetMenu',{box:true}],['#composerTargetList button',{flow:true}],
  ['#composerOptions',{box:true}],['#composerOptionsSummary',{flow:true}],['#cStatus',{flow:true}],['#composerAdvanced',{flow:true,box:true}],['#cWhere',{flow:true}],['#cNewThread',{flow:true}],
- ['#signingNotice',{box:true}],['#signingNotice .signing-notice-label',{flow:true}],['#signingNotice .signing-notice-action',{flow:true}],['#signingNotice .signing-notice-alt',{flow:true}],
+ ['#signingNotice',{box:true}],['#signingNotice .signing-notice-label',{flow:true,intrinsic:'w'}],['#signingNotice .signing-notice-action',{flow:true}],['#signingNotice .signing-notice-alt',{flow:true}],
  ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
  ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingParticipant',{flow:true}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
 ];
@@ -65,7 +68,7 @@ async function snapshot(page){
 
 // Every difference beyond tolerance, each naming scene, element and property.
 function compareLayout(scene,expected,actual){
- const out=[],flow=Object.fromEntries(LANDMARKS.map(([s,o])=>[s,!!o?.flow]));
+ const out=[],flow=Object.fromEntries(LANDMARKS.map(([s,o])=>[s,!!o?.flow])),intrinsic=Object.fromEntries(LANDMARKS.map(([s,o])=>[s,o?.intrinsic||'']));
  for(const sel of new Set([...Object.keys(expected.elements),...Object.keys(actual.elements)])){
   const e=expected.elements[sel],a=actual.elements[sel],at=`${scene} ${sel}`;
   if(!e||!a){out.push(`${at}: landmark ${e?'missing from the page snapshot':'not in the baseline'}`);continue;}
@@ -79,8 +82,8 @@ function compareLayout(scene,expected,actual){
    if(Math.abs(a.box[k]-e.box[k])>near&&Math.abs(a.box[k]+a.box[size]-e.box[k]-e.box[size])>far)
     out.push(`${at} box.${k}: expected ${e.box[k]}, got ${a.box[k]} (tolerance ${Math.round(near)}px; ${edge} edge ${Math.round(far)}px)`);
   }
-  // Size: 4px; an element with text 12% or 24px, whichever is larger.
-  for(const k of ['w','h']){
+  // Size: 4px; an element with text 12% or 24px, whichever is larger; an intrinsic size is not compared.
+  for(const k of ['w','h'].filter(k=>k!==intrinsic[sel])){
    const t=e.textBearing||a.textBearing?Math.max(24,Math.abs(e.box[k])*0.12):4;
    if(Math.abs(e.box[k]-a.box[k])>t)out.push(`${at} box.${k}: expected ${e.box[k]}, got ${a.box[k]} (tolerance ${Math.round(t)}px)`);
   }
