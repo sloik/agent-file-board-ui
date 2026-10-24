@@ -526,6 +526,68 @@ async function signingDelivery(msg, options = {}) {
     C.require(origin === dirHandle && model === (options.model || B) && epoch === signingProvider.generation && decided() === "signed" && currentUser() === h.FROM && stamp === signingDraftStamp() && (minimum !== "trusted" || context.state.pins[h.FROM] === fp), "Posting context changed; draft preserved");
   }, msg: { ...msg, text: message }, sidecar: { path: msg.relPath.split("/").slice(0, -1).join("/") + "/.signatures/" + record + ".json", text: C.text(envelope) } };
 }
+// Guided key review (SPEC-002-071). The prefix is SigningContract.FP; this file is also loaded without the contract.
+const SIGNING_FP_PREFIX = "urn:ietf:params:oauth:jwk-thumbprint:sha-256:";
+const signingStripSpace = (value) => String(value ?? "").replace(/\s+/g, "");
+// Display only: the prefix, then groups of 4. The copied and compared value stays the exact string.
+function signingFingerprintGroups(value) {
+  const v = String(value || ""), prefixed = v.startsWith(SIGNING_FP_PREFIX), rest = prefixed ? v.slice(SIGNING_FP_PREFIX.length) : v;
+  return [...(prefixed ? [SIGNING_FP_PREFIX] : []), ...(rest.match(/.{1,4}/gsu) || [])];
+}
+// The one comparison behind the live result and the Approve button. A cut-off value is neutral, not a mismatch.
+function signingFingerprintCompare(board, pasted) {
+  const b = String(board || ""), p = String(pasted || "");
+  if (!b) return { state: "none" };
+  if (p === b) return { state: "match" };
+  if (!p || b.startsWith(p) || (!p.startsWith(SIGNING_FP_PREFIX) && b.endsWith(p))) return { state: "partial" };
+  let index = 0;
+  while (index < b.length && index < p.length && b[index] === p[index]) index++;
+  return { state: "mismatch", index };
+}
+// Echo guard: the pasted value is something copied inside this dialog, so it came from the board, not the owner.
+function signingFingerprintEcho(copied, pasted, board) {
+  const p = String(pasted || "");
+  return !!p && [...copied].some((c) => c === p || (!!board && p === board && c.includes(p)));
+}
+function signingReviewApprovable(board, pasted, echo, confirmed) {
+  return signingFingerprintCompare(board, pasted).state === "match" && (!echo || !!confirmed);
+}
+// Enough for the owner to see which key is meant, never the full value to echo back.
+function signingFingerprintShort(value) {
+  const v = String(value || ""), prefixed = v.startsWith(SIGNING_FP_PREFIX);
+  return (prefixed ? SIGNING_FP_PREFIX : "") + "…" + v.slice(-8);
+}
+// The canonical command that prints the fingerprint of a private key file (its "key file matches current profile" row).
+function signingOwnFingerprintCommand(id, text = exText) {
+  return text(`boardctl signing check --path <board> --from ${id} --scope rooms/<room> --signing-key-file ${signingKeyFolder()}${id}.json`,
+    `boardctl signing check --path <tablica> --from ${id} --scope rooms/<pokój> --signing-key-file ${signingKeyFolder()}${id}.json`);
+}
+function signingReviewRequest({ name, id, board, boardId, fingerprint }, text = exText) {
+  const where = boardId ? `${board} (${text("board ID", "ID tablicy")} ${boardId})` : board, short = signingFingerprintShort(fingerprint), cli = signingOwnFingerprintCommand(id, text);
+  return text(`Hi ${name}, I am approving your signing key on the board ${where}. Please send me your full key fingerprint, read on your own device: in the viewer, Tools → Signing → Sign as me → Copy my fingerprint (after unlocking your key file), or run ${cli} and copy the fingerprint in its "key file matches current profile" line. This board lists your key as ${short}; I will compare the whole value.`,
+    `Cześć ${name}, zatwierdzam Twój klucz podpisu na tablicy ${where}. Prześlij mi proszę cały odcisk klucza, odczytany na własnym urządzeniu: w przeglądarce Narzędzia → Podpisy → Podpisuj jako ja → Kopiuj mój odcisk (po odblokowaniu pliku klucza) albo uruchom ${cli} i skopiuj odcisk z wiersza "key file matches current profile". Ta tablica pokazuje Twój klucz jako ${short}; porównam całą wartość.`);
+}
+// A fingerprint in groups; the group holding the first difference is marked. textContent stays the exact value.
+function signingFingerprintNode(value, diff = -1) {
+  const code = document.createElement("code");
+  code.className = "signing-fp";
+  let at = 0;
+  for (const group of signingFingerprintGroups(value)) {
+    const span = document.createElement("span");
+    span.textContent = group;
+    if (diff >= at && diff < at + group.length) span.className = "signing-fp-diff";
+    code.append(span);
+    at += group.length;
+  }
+  return code;
+}
+async function signingClipboardWrite(value, text = exText) {
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    throw Error(text("Copying is not allowed in this browser. Select and copy this text yourself: ", "Kopiowanie jest zablokowane w tej przeglądarce. Zaznacz i skopiuj ten tekst samodzielnie: ") + value);
+  }
+}
 async function signingDialog(request) {
   const go = request && typeof request.task === "string" ? request : null;
   if (!B) {
@@ -713,32 +775,33 @@ async function signingDialog(request) {
     C.require(B === model, text("Board refreshed while working. Review the current key and retry.", "Tablica odświeżyła się podczas operacji. Sprawdź bieżący klucz i spróbuj ponownie."));
   };
   const actions = [];
+  const run = async (out, fn) => {
+    if (busy) return;
+    busy = true;
+    refresh();
+    out.textContent = text("Working…", "Pracuję…");
+    out.classList.remove("signing-error");
+    try {
+      rebind();
+      refresh();
+      active();
+      const result = await fn();
+      active();
+      refresh();
+      out.textContent = result || text("Done.", "Gotowe.");
+    } catch (e) {
+      out.textContent = e.message;
+      out.classList.add("signing-error");
+    } finally {
+      busy = false;
+      refresh();
+    }
+  };
   const add = (s, label, action, out, fn, available = () => true) => {
     const b = node("button", label, s, "btn");
     b.dataset.action = action;
     actions.push({ b, available });
-    b.onclick = async () => {
-      if (busy) return;
-      busy = true;
-      refresh();
-      out.textContent = text("Working…", "Pracuję…");
-      out.classList.remove("signing-error");
-      try {
-        rebind();
-        refresh();
-        active();
-        const result = await fn();
-        active();
-        refresh();
-        out.textContent = result || text("Done.", "Gotowe.");
-      } catch (e) {
-        out.textContent = e.message;
-        out.classList.add("signing-error");
-      } finally {
-        busy = false;
-        refresh();
-      }
-    };
+    b.onclick = () => run(out, fn);
     return b;
   };
   const check = section("signing-check", text("1. Check received messages", "1. Sprawdź otrzymane wiadomości"), text("A verified signature checks message integrity. Your approval of its key is a separate decision. Neither proves that the message is true.", "Zweryfikowany podpis sprawdza integralność wiadomości. Zatwierdzenie jej klucza jest osobną decyzją. Żadne nie dowodzi prawdziwości treści."));
@@ -789,17 +852,146 @@ async function signingDialog(request) {
   }
   const keyCard = node("div", "", review, "signing-key-card"), keyName = node("strong", "", keyCard), keyState = node("p", "", keyCard), key = node("code", "", keyCard), keyHelp = node("p", "", keyCard, "signing-help");
   const inspectActions = node("div", "", review, "signing-actions");
-  const fingerprint = field(review, text("Paste the fingerprint you independently confirmed", "Wklej niezależnie potwierdzony odcisk"), "input", "signingFingerprint", "Independently verified fingerprint");
+  // Guided steps (SPEC-002-071): get the fingerprint from its owner, paste it, compare, approve.
+  // Approval stays a deliberate paste; the board's own value is never offered as a copy button.
+  const stepList = node("ol", "", review, "signing-review-steps");
+  stepList.id = "signingReviewSteps";
+  const step = () => {
+    const li = node("li", "", stepList);
+    return { li, title: node("strong", "", li) };
+  };
+  const s1 = step(), s2 = step(), s3 = step(), s4 = step();
+  const s1Body = node("p", "", s1.li, "signing-help");
+  const findIt = node("details", "", s1.li, "signing-find"), findSummary = node("summary", "", findIt), findList = node("ul", "", findIt, "signing-help");
+  const findViewer = node("li", "", findList), findCli = node("li", "", findList), findCliLead = node("span", "", findCli), findCliCode = node("code", "", findCli), findCliTail = node("span", "", findCli);
+  const s1Actions = node("div", "", s1.li, "signing-actions");
+  const ownCheck = node("div", "", s1.li, "signing-own-check");
+  ownCheck.id = "signingOwnCheck";
+  const ownCheckHelp = node("p", "", ownCheck, "signing-help"), ownCheckActions = node("div", "", ownCheck, "signing-actions");
+  // Chosen through the button above; the label names it for the file chooser.
+  const ownKeyLabel = node("label", text("Your private key file, read in this tab only", "Twój plik klucza prywatnego, czytany tylko w tej karcie"), ownCheck), ownKeyFile = node("input", "", ownKeyLabel);
+  ownKeyLabel.hidden = true;
+  ownKeyFile.type = "file";
+  ownKeyFile.id = "signingOwnKeyFile";
+  ownKeyFile.accept = ".json,application/json";
+  const fpLabel = node("label", "", s2.li, "signing-field");
+  fpLabel.htmlFor = "signingFingerprint";
+  const fpTitle = node("span", "", fpLabel), fingerprint = node("input", "", fpLabel);
+  fingerprint.id = "signingFingerprint";
   fingerprint.autocomplete = "off";
   fingerprint.spellcheck = false;
   fingerprint.placeholder = text("Exact fingerprint, including prefix", "Dokładny odcisk, łącznie z prefiksem");
+  const s2Actions = node("div", "", s2.li, "signing-actions"), pasteOut = node("p", "", s2.li, "signing-help signing-paste-note");
+  pasteOut.id = "signingPasteHint";
+  pasteOut.setAttribute("aria-live", "polite");
+  const compare = node("div", "", s3.li, "signing-compare");
+  compare.id = "signingCompare";
+  compare.setAttribute("aria-live", "polite");
+  const s4Actions = node("div", "", s4.li, "signing-actions"), echoBox = node("div", "", s4.li, "signing-echo");
+  echoBox.id = "signingEcho";
+  echoBox.hidden = true;
+  const echoText = node("p", "", echoBox), echoLabel = node("label", "", echoBox, "signing-echo-confirm"), echoConfirm = node("input", "", echoLabel), echoConfirmText = node("span", "", echoLabel);
+  echoConfirm.type = "checkbox";
+  echoConfirm.id = "signingEchoConfirm";
   const reviewOut = feedback(review), reviewActions = node("div", "", review, "signing-actions");
-  let reviewed = null;
+  let reviewed = null, compareKey = "";
+  // Strings this dialog put on the clipboard: the request text and any selection copied here, except the
+  // owner's own fingerprint from Sign as me and text copied out of input fields.
+  const copied = new Set();
+  dialog.addEventListener("copy", (event) => {
+    if (event.target?.closest?.("input,textarea,#signingMyFingerprint")) return;
+    const value = signingStripSpace(document.getSelection()?.toString());
+    if (value) copied.add(value);
+  });
+  const reviewBoard = () => {
+    const id = participant.value;
+    return (reviewed?.id === id ? reviewed.fingerprint : model.signingParticipants?.[id]?.fingerprint) || "";
+  };
+  const reviewName = () => model.people?.[participant.value]?.name || participant.value;
+  const reviewEcho = () => signingFingerprintEcho(copied, fingerprint.value, reviewBoard());
+  const setFingerprint = (value) => {
+    fingerprint.value = signingStripSpace(value);
+    echoConfirm.checked = false;
+    syncReview();
+  };
+  fingerprint.addEventListener("paste", (event) => {
+    const pasted = event.clipboardData?.getData("text");
+    if (typeof pasted !== "string") return;
+    event.preventDefault();
+    setFingerprint(pasted);
+  });
+  fingerprint.addEventListener("input", () => {
+    const clean = signingStripSpace(fingerprint.value);
+    if (clean !== fingerprint.value) fingerprint.value = clean;
+    echoConfirm.checked = false;
+    syncReview();
+  });
+  echoConfirm.onchange = () => syncReview();
   participant.onchange = () => {
     reviewed = null;
     fingerprint.value = "";
+    echoConfirm.checked = false;
     reviewOut.textContent = "";
+    pasteOut.textContent = "";
     refresh();
+  };
+  const copyRequest = add(s1Actions, text("Copy what to send them", "Kopiuj tekst do wysłania"), "copy-request", reviewOut, async () => {
+    const id = participant.value, name = reviewName(), project = model.cfg?.project;
+    const message = signingReviewRequest({ name, id, board: project?.name || project?.id || text("this board", "ta tablica"), boardId: model.signingContext?.boardId, fingerprint: reviewBoard() }, text);
+    copied.add(signingStripSpace(message));
+    await signingClipboardWrite(message, text);
+    return text(`Copied. Send it to ${name} through a channel you already trust, then paste their reply in step 2.`, `Skopiowano. Wyślij to (${name}) kanałem, któremu już ufasz, a odpowiedź wklej w kroku 2.`);
+  }, () => !!reviewBoard());
+  const paste = add(s2Actions, text("Paste", "Wklej"), "paste", pasteOut, async () => {
+    let value = null;
+    try { value = await navigator.clipboard.readText(); } catch { value = null; }
+    if (typeof value !== "string") {
+      // The field is disabled while this action runs; focus it once the action has finished.
+      setTimeout(() => fingerprint.focus());
+      throw Error(text("Press Cmd+V / Ctrl+V in the field", "Naciśnij Cmd+V / Ctrl+V w polu"));
+    }
+    setFingerprint(value);
+    return text("Pasted. The comparison is below.", "Wklejono. Wynik porównania jest niżej.");
+  }, () => !!model.signingContext && !model.signingError);
+  // Own key shortcut: the key file on this device confirms what the board lists. It fills the field with
+  // the value derived from that file; approval is still the Approve button below.
+  const unlockedOwn = () => signingProvider.catalog().find((p) => p.participant === participant.value && p.participant === currentUser());
+  const ownMatch = (fp) => fp === reviewBoard() ? text("Your key file matches the key this board lists for you. Approve it in step 4.", "Twój plik klucza zgadza się z kluczem, który ta tablica pokazuje dla Ciebie. Zatwierdź go w kroku 4.") :
+    text("Your key file does not match the key this board lists for you. Do not approve it; ask the board owner which key is registered.", "Twój plik klucza nie zgadza się z kluczem, który ta tablica pokazuje dla Ciebie. Nie zatwierdzaj go; zapytaj właściciela tablicy, który klucz jest zarejestrowany.");
+  const checkOwn = add(ownCheckActions, text("Check with my key file", "Sprawdź moim plikiem klucza"), "check-own-key", reviewOut, () => {
+    const own = unlockedOwn();
+    if (own) {
+      setFingerprint(own.fingerprint);
+      return ownMatch(own.fingerprint);
+    }
+    ownKeyFile.value = "";
+    ownKeyFile.click();
+    return text("Choose your private key file. It is read in this tab only.", "Wybierz swój plik klucza prywatnego. Jest czytany tylko w tej karcie.");
+  }, () => participant.value === currentUser() && !!reviewBoard() && (!!unlockedOwn() || (!!base && !!model.signingContext && !model.signingError)));
+  ownKeyFile.onchange = () => {
+    const file = ownKeyFile.files[0];
+    ownKeyFile.value = "";
+    if (!file) return;
+    run(reviewOut, async () => {
+      const id = participant.value;
+      C.require(id === currentUser(), "Participant changed; review again");
+      C.require(file.size <= 16384, "Private key file too large");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      active();
+      let fp;
+      try {
+        const jwk = C.parse(bytes, 16384);
+        fp = (await C.publicKey({ format: "jwk", algorithm: "Ed25519", key: { kty: jwk.kty, crv: jwk.crv, x: jwk.x } })).fingerprint;
+      } catch {
+        throw Error("Invalid private JWK");
+      }
+      active();
+      C.require(id === participant.value, "Participant changed; review again");
+      // Unlock through the existing flow only for the key the board lists: that also proves the file holds it.
+      if (fp === reviewBoard() && !unlockedOwn()) await unlockFiles([file]);
+      setFingerprint(fp);
+      return ownMatch(fp);
+    });
   };
   add(inspectActions, text("Refresh key details", "Odśwież dane klucza"), "inspect-profile", reviewOut, async () => {
     const id = participant.value;
@@ -879,11 +1071,12 @@ async function signingDialog(request) {
       throw error;
     }
   };
-  add(reviewActions, text("Approve this exact key", "Zatwierdź ten konkretny klucz"), "trust", reviewOut, async () => {
-    const id = participant.value, typed = fingerprint.value, r = await model.signingContext.resolve(id);
+  const approve = add(s4Actions, text("Approve this exact key", "Zatwierdź ten konkretny klucz"), "trust", reviewOut, async () => {
+    const id = participant.value, typed = fingerprint.value, confirmed = echoConfirm.checked, r = await model.signingContext.resolve(id);
     active();
     C.require(id === participant.value && typed === fingerprint.value, "Key review changed; review again");
     C.require(typed === r.head.fingerprint, "Fingerprint does not match verified current profile");
+    C.require(!signingFingerprintEcho(copied, typed, r.head.fingerprint) || confirmed, text("This is the value shown on this board. Confirm you checked it with the participant outside this board.", "To wartość pokazana na tej tablicy. Potwierdź, że sprawdzono ją z uczestnikiem poza tą tablicą."));
     C.require(!r.revoked[r.head.fingerprint], "Signing key revoked");
     await signingFresh(model, base, model.signingContext, model.signingExpected);
     active();
@@ -892,7 +1085,8 @@ async function signingDialog(request) {
     active();
     await reload(id);
     return text("Exact key approved locally. This does not approve message content or share your decision with others.", "Konkretny klucz zatwierdzono lokalnie. Nie oznacza to zatwierdzenia treści ani udostępnienia tej decyzji innym.");
-  }, () => !!model.signingContext && !!model.signingParticipants?.[participant.value]?.fingerprint && !model.signingParticipants[participant.value].revoked);
+  }, () => !!model.signingContext && !!model.signingParticipants?.[participant.value]?.fingerprint && !model.signingParticipants[participant.value].revoked &&
+    signingReviewApprovable(reviewBoard(), fingerprint.value, reviewEcho(), echoConfirm.checked));
   add(reviewActions, text("Remove my approval", "Usuń moje zatwierdzenie"), "remove-trust", reviewOut, async () => {
     const id = participant.value;
     await savePin(id, undefined);
@@ -926,12 +1120,12 @@ async function signingDialog(request) {
   input.accept = ".json,application/json";
   input.multiple = true;
   const ownOut = feedback(own), ownActions = node("div", "", own, "signing-actions");
-  add(ownActions, text("🔒 Step 3. Unlock the key", "🔒 Krok 3. Odblokuj klucz"), "unlock", ownOut, async () => {
-    C.require(input.files.length > 0 && input.files.length <= 32, "Select 1–32 explicit private JWK files");
+  // The one unlock path, also used by the own-key check in the review task. Signing turns on after it.
+  const unlockFiles = async (files) => {
     unlocking = true;
-    const epoch = signingProvider.generation, before = new Set(signingProvider.catalog().map((p) => p.participant));
+    const epoch = signingProvider.generation;
     try {
-      for (const f of [...input.files]) {
+      for (const f of files) {
         C.require(f.size <= 16384, "Private key file too large");
         const bytes = new Uint8Array(await f.arrayBuffer());
         active();
@@ -944,9 +1138,14 @@ async function signingDialog(request) {
     } finally {
       unlocking = false;
     }
-    input.value = "";
     signingMode = "signed";
     signingComposerNote = null;
+  };
+  add(ownActions, text("🔒 Step 3. Unlock the key", "🔒 Krok 3. Odblokuj klucz"), "unlock", ownOut, async () => {
+    C.require(input.files.length > 0 && input.files.length <= 32, "Select 1–32 explicit private JWK files");
+    const before = new Set(signingProvider.catalog().map((p) => p.participant));
+    await unlockFiles([...input.files]);
+    input.value = "";
     const me = currentUser(), name = signingPersonaName(me), catalog = signingProvider.catalog();
     if (catalog.some((p) => p.participant === me)) return text(`Unlocked. New messages are signed as ${name}. There is no unsigned fallback.`, `Odblokowano. Nowe wiadomości są podpisywane jako ${name}. Nie ma automatycznego przejścia na brak podpisu.`);
     const owners = catalog.filter((p) => !before.has(p.participant)).map((p) => signingPersonaName(p.participant)).join(", ") || catalog.map((p) => signingPersonaName(p.participant)).join(", ");
@@ -954,6 +1153,19 @@ async function signingDialog(request) {
   }, () => !!base && !!model.signingContext && !model.signingError);
   const unlockNote = node("p", "", own, "signing-help");
   unlockNote.id = "signingUnlockNote";
+  // The owner's own fingerprint, derived from the unlocked key file on this device, not read from the board.
+  const mine = node("div", "", own, "signing-key-card signing-mine");
+  mine.id = "signingMyFingerprint";
+  mine.hidden = true;
+  node("strong", text("Your key fingerprint", "Odcisk Twojego klucza"), mine);
+  node("p", text("Read from your unlocked key file on this device, not from the board. Send it to people who review your key, through a channel they already trust.", "Odczytany z odblokowanego pliku klucza na tym urządzeniu, nie z tablicy. Wyślij go osobom, które sprawdzają Twój klucz, kanałem, któremu już ufają."), mine, "signing-help");
+  let mineValue = node("code", "", mine), mineShown = null;
+  const myFingerprint = () => signingProvider.catalog().find((p) => p.participant === currentUser())?.fingerprint || "";
+  const mineActions = node("div", "", mine, "signing-actions");
+  add(mineActions, text("Copy my fingerprint", "Kopiuj mój odcisk"), "copy-my-fingerprint", ownOut, async () => {
+    await signingClipboardWrite(myFingerprint(), text);
+    return text("Your fingerprint is copied. Send it to the person reviewing your key.", "Skopiowano Twój odcisk. Wyślij go osobie, która sprawdza Twój klucz.");
+  }, () => !!myFingerprint());
   node("p", text("Unlocking proves you hold the key; it does not approve it. Messages are signed as the persona selected in “I am”: switching persona switches the signer, and posting waits while that persona's key is locked.", "Odblokowanie potwierdza, że masz klucz; nie zatwierdza go. Wiadomości są podpisywane jako persona wybrana w „Jestem”: zmiana persony zmienia podpisującego, a wysyłanie czeka, dopóki klucz tej persony jest zablokowany."), own, "signing-help");
   const lockActions = node("div", "", own, "signing-actions");
   // The Provider holds all unlocked keys under one generation, so locking is always all keys.
@@ -982,6 +1194,55 @@ async function signingDialog(request) {
   const technical = node("details", "", advanced);
   node("summary", text("Technical message evidence", "Techniczne dane wiadomości"), technical);
   const list = node("pre", "", technical);
+  // The review steps follow the selected participant and the field; only changed text is written.
+  function syncReview() {
+    const put = (el, value) => { if (el.textContent !== value) el.textContent = value; };
+    const id = participant.value, name = reviewName(), board = reviewBoard(), value = fingerprint.value, result = signingFingerprintCompare(board, value), echo = reviewEcho();
+    put(s1.title, text("Get their fingerprint from them.", "Poproś o odcisk klucza."));
+    put(s1Body, text(`Ask ${name} to send you their fingerprint through a channel you already trust: in person, a phone call, or a chat app you already use with them. Not this board.`, `Poproś uczestnika ${name} o odcisk klucza. Niech prześle go kanałem, któremu już ufasz: osobiście, telefonicznie lub przez komunikator, którego już razem używacie. Nie przez tę tablicę.`));
+    put(findSummary, text(`How ${name} finds it`, `Gdzie ${name} go znajdzie`));
+    put(findViewer, text("In the viewer: Tools → Signing → Sign as me → Copy my fingerprint (after unlocking their key file).", "W przeglądarce: Narzędzia → Podpisy → Podpisuj jako ja → Kopiuj mój odcisk (po odblokowaniu swojego pliku klucza)."));
+    put(findCliLead, text("On the command line: ", "W wierszu poleceń: "));
+    put(findCliCode, signingOwnFingerprintCommand(id || "<id>", text));
+    put(findCliTail, text(" The “key file matches current profile” line shows the fingerprint of that key file.", " Wiersz „key file matches current profile” pokazuje odcisk tego pliku klucza."));
+    ownCheck.hidden = !id || id !== currentUser() || !board;
+    put(ownCheckHelp, text("Reviewing your own key? Your key file is on this device, so it can confirm the board lists your key.", "Sprawdzasz własny klucz? Twój plik klucza jest na tym urządzeniu, więc może potwierdzić, że tablica pokazuje Twój klucz."));
+    put(s2.title, text("Paste what they sent you.", "Wklej otrzymany odcisk."));
+    put(fpTitle, text(`Fingerprint ${name} sent you`, `Odcisk przesłany przez: ${name}`));
+    // The accessible name stays the earlier English label; Polish uses the visible label.
+    const aria = text("Independently verified fingerprint", `Odcisk przesłany przez: ${name}`);
+    if (fingerprint.getAttribute("aria-label") !== aria) fingerprint.setAttribute("aria-label", aria);
+    put(s3.title, text("Compare.", "Porównaj."));
+    put(s4.title, text("Approve.", "Zatwierdź."));
+    put(approve, text(`Approve ${name}'s key`, `Zatwierdź klucz: ${name}`));
+    put(copyRequest, text("Copy what to send them", "Kopiuj tekst do wysłania"));
+    put(paste, text("Paste", "Wklej"));
+    put(checkOwn, text("Check with my key file", "Sprawdź moim plikiem klucza"));
+    const key = JSON.stringify([board, value, result, name, S.lang]);
+    if (key !== compareKey) {
+      compareKey = key;
+      compare.dataset.state = result.state;
+      const parts = [];
+      if (result.state === "match") parts.push(node("strong", "✓ " + text("Matches the key on this board", "Zgadza się z kluczem na tej tablicy")));
+      else if (result.state === "partial") parts.push(node("p", text("Paste the full fingerprint, including the prefix", "Wklej cały odcisk, łącznie z prefiksem")));
+      else if (result.state === "mismatch") {
+        parts.push(node("strong", "✗ " + text("Does not match", "Nie zgadza się")));
+        parts.push(node("p", text(`The first difference is at character ${result.index + 1}, marked below. Do not approve. Ask ${name} to read it again on their own device.`, `Pierwsza różnica jest na znaku ${result.index + 1}, zaznaczona niżej. Nie zatwierdzaj. Poproś uczestnika ${name} o ponowne odczytanie na własnym urządzeniu.`), null, "signing-help"));
+        const dl = node("dl", "", null, "signing-compare-values");
+        node("dt", text("On this board", "Na tej tablicy"), dl);
+        node("dd", "", dl).append(signingFingerprintNode(board, result.index));
+        node("dt", text(`Sent by ${name}`, `Przesłany przez: ${name}`), dl);
+        node("dd", "", dl).append(signingFingerprintNode(value, result.index));
+        parts.push(dl);
+      }
+      compare.replaceChildren(...parts);
+    }
+    echoBox.hidden = !echo;
+    put(echoText, text(`This is the value shown on this board. Paste the one ${name} sent you from their own device.`, `To wartość pokazana na tej tablicy. Wklej odcisk przesłany przez: ${name}, odczytany na urządzeniu tej osoby.`));
+    put(echoConfirmText, text(`I confirmed it with ${name} outside this board`, `Potwierdzono z: ${name} poza tą tablicą`));
+    const entry = actions.find((a) => a.b === approve);
+    approve.disabled = busy || !entry.available();
+  }
   function refresh() {
     const ready = !!model.signingContext && !model.signingError;
     status.textContent = model.signingError ? text("Signing unavailable: ", "Podpisy niedostępne: ") + model.signingError : !model.signingContext ? text("Signing requires a native board with valid signing configuration. Continue reading, or open a native board.", "Podpisy wymagają natywnej tablicy z poprawną konfiguracją. Kontynuuj czytanie lub otwórz natywną tablicę.") : !base ? text("Read-only board: approval lasts for this open session. Signed posting requires a writable folder; unsigned replies may download where rules allow.", "Tablica tylko do odczytu: zatwierdzenie obowiązuje w tej otwartej sesji. Podpisywanie wymaga zapisywalnego folderu; odpowiedzi bez podpisu można pobrać, jeśli reguły pozwalają.") : text("Your approvals are private to this browser and board location.", "Twoje zatwierdzenia są prywatne dla tej przeglądarki i lokalizacji tablicy.");
@@ -1001,6 +1262,7 @@ async function signingDialog(request) {
     keyState.textContent = signingParticipantSummary(id, model);
     key.textContent = (reviewed?.id === id ? reviewed.fingerprint : f?.fingerprint) || text("No current fingerprint available", "Brak bieżącego odcisku");
     keyHelp.textContent = f?.error || (f?.revoked ? text("Revoked keys must not be used. Approval cannot restore them.", "Unieważnionych kluczy nie wolno używać. Zatwierdzenie ich nie przywróci.") : f?.changed ? text("This differs from your approved key. Check with the participant before approving a replacement.", "Różni się od zatwierdzonego klucza. Skontaktuj się z uczestnikiem przed zatwierdzeniem zamiennika.") : text("Compare the entire fingerprint, including its prefix, not just the ending.", "Porównaj cały odcisk, łącznie z prefiksem, nie tylko końcówkę."));
+    syncReview();
     const catalog = signingProvider.catalog(), me = currentUser();
     const options = [...($("#me")?.options || [])].filter((o) => o.value).map((o) => [o.value, o.textContent]), nextPersonaStamp = JSON.stringify(options);
     if (personaStamp !== nextPersonaStamp && document.activeElement !== persona) {
@@ -1009,6 +1271,14 @@ async function signingDialog(request) {
     }
     if (document.activeElement !== persona) persona.value = me;
     ownState.textContent = signingMode === "unsigned" ? text("Unsigned mode: follow steps 1–3 to sign new messages.", "Tryb bez podpisu: wykonaj kroki 1–3, aby podpisywać nowe wiadomości.") : catalog.some((p) => p.participant === me) ? text("Signing new messages as: ", "Podpisujesz nowe wiadomości jako: ") + `${signingPersonaName(me)} (${me})` : text(`Signed sending paused — unlock the key of ${signingPersonaName(me)}. No unsigned fallback.`, `Wysyłanie z podpisem wstrzymane — odblokuj klucz: ${signingPersonaName(me)}. Brak przejścia na brak podpisu.`);
+    const mineFp = myFingerprint();
+    mine.hidden = !mineFp;
+    if (mineShown !== mineFp) {
+      mineShown = mineFp;
+      const next = signingFingerprintNode(mineFp);
+      mineValue.replaceWith(next);
+      mineValue = next;
+    }
     persona.disabled = busy || !ready;
     participant.disabled = busy || !ready;
     fingerprint.disabled = busy || !ready;

@@ -79,7 +79,11 @@ test('participant review rejects a mismatched fingerprint, explains approval and
   await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
   await act(page,'inspect-profile');
   await expect(page.locator('#signing-review')).toContainText(peer.fingerprint);
-  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint+'wrong');await act(page,'trust');
+  await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint+'wrong');
+  // SPEC-002-071: a mismatch keeps Approve disabled and says so; a forced click still meets the action's own check.
+  await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');await expect(page.locator('#signingCompare')).toContainText('Does not match');
+  await expect(page.locator('#signingDialog [data-action="trust"]')).toBeDisabled();
+  await page.locator('#signingDialog [data-action="trust"]').evaluate(b=>{b.disabled=false;b.click();});
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Fingerprint does not match');
   await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key not approved by you');
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint);await act(page,'trust');
