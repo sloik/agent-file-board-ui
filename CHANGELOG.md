@@ -1,5 +1,28 @@
 # Release notes
 
+## 3.3.9 — 2026-10-24
+
+- **Keys: manage participant keys in one list (SPEC-002-073):** **Tools → Signing → Keys**
+  replaces **Review a key**. Every participant has a row with name, id, human or agent, a status
+  with icon and text (**Key changed**, **Needs review**, **Can't load key**, **Revoked (retired)**,
+  **Revoked (compromised)**, **No key**, **Approved on this browser**), the start and end of the
+  fingerprint, what this browser holds, and one action. Keys needing attention come first; chips
+  filter the list with counts; boards with 8 or more participants get a search. Rows stay put
+  while the dialog is open.
+- **Key detail:** the guided approval is unchanged and approves one exact key; a changed key shows
+  the approved and the new fingerprint with the first difference marked and asks you to check the
+  replacement with its owner (**Approve replacement key**); revoked keys show their status and
+  reason and offer no approval; earlier keys are listed as lineage; **Required in** names the rooms
+  that require approved signatures (or warns that a board without a UUID cannot require them); a
+  **Command line** section shows the equivalent `boardctl` commands. Side by side from 900px wide,
+  under the row on narrower screens; keyboard: arrows on chips and rows, Enter opens, Esc folds.
+- **Remove my approval** asks first with its consequence (and a warning for your own key), and
+  offers **Undo** for that exact key until the dialog closes.
+- **Entry points:** **Review keys** and the key notice open the keys needing attention with the
+  first open; a signed message from a key you have not approved has **Review NAME's key** in its
+  signing details; **Participants** shows a key status chip that opens that person's row. The
+  "Why / Stored / Safe to share" notes for keys moved to **How signing works**.
+
 ## 3.3.8 — 2026-10-24
 
 - **Copy the fingerprint in the key review (SPEC-002-072):** the key card in
