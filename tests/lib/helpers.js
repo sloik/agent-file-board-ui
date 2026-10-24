@@ -78,8 +78,7 @@ function layoutShuffled(tmp) {
 function fakeFsScript(tree, rootName) {
   const rootIdentity=require("node:crypto").randomUUID();
   return `(() => {
-  // The substitute belongs to the board document only: indexedDB.open throws in a Firefox about:blank document
-  // (seen on CI around reloads), and the rejected promise surfaced as a page error.
+  // The substitute belongs to the board document only.
   if(location.protocol==="about:")return;
   const dbReady=new Promise((resolve,reject)=>{
     const r=indexedDB.open("agent-file-board-ui-test-fs",1);
@@ -98,6 +97,11 @@ function fakeFsScript(tree, rootName) {
     if(!root){root=${JSON.stringify(tree)};await value("root",true,root);}
     permission=await value("permission",false)||"granted";
   })();
+  // Firefox (Juggler) also runs init scripts in a transient document before board.html commits, where IndexedDB
+  // is "insecure" (CI trace: page.url() about:blank, stack in this ready promise). Nothing awaits ready there,
+  // so its rejection surfaced as a page error. The board document still awaits it (openPage, settled()), so a
+  // failure there still fails the test.
+  ready.catch(()=>{});
   const mutate=action=>{
     const next=changes.then(async()=>{await ready;const copy=structuredClone(root);action(copy);await value("root",true,copy);root=copy;});
     changes=next.catch(()=>{});return next;
