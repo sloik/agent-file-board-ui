@@ -161,7 +161,10 @@ async function openPage(browser, opts = {}) {
     acceptDownloads: true, locale: "en-US", permissions: [], ...(opts.context || {}) });
   // Existing offline/security fixtures explicitly opt out of the newly optional
   // daily public-metadata check. Update tests exercise the enabled default.
+  // The opt-out belongs to the board document only. Firefox CI reported "IDBFactory.open: The operation is
+  // insecure" from this script, which is what indexedDB.open throws in an about:blank document there.
   if (!opts.updateChecks) await ctx.addInitScript(() => {
+    if (location.protocol === 'about:') return;
     const r=indexedDB.open('agent-file-board-ui',1);
     r.onupgradeneeded=()=>r.result.createObjectStore('kv');
     r.onsuccess=()=>{const db=r.result,tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({auto:false},'viewer-updates-v1');tx.oncomplete=()=>db.close();};
