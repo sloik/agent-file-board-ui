@@ -110,13 +110,18 @@ No VoiceOver/screen-reader checks (owner policy).
 
 - Baseline workflow run 40065881118 (`update_visual_baselines`): determinism step passed (all scenes rendered
   twice, zero difference); the 30 Linux PNGs from its `visual-baselines` artifact are committed (AC3, AC6).
-- PR #25 CI at a27b185: test job green. All 30 layout and pixel scenes, the non-vacuity tests, the version-bump
-  test and journeys 1-7 (Chromium) plus 1, 2 without peek and 4 (Firefox) pass (AC1-AC5).
+- PR #25 CI at 03af9d6, run three times (40070649295, 40070647386, 40070645475): all green. All 30 layout and
+  pixel scenes, the non-vacuity tests, the version-bump test, journeys 1-7 (Chromium) and 1, 2 without peek
+  and 4 (Firefox) pass (AC1-AC5). An earlier green run at a27b185 was luck: the next runs failed again.
 - Text-width deviation: four landmarks whose size depends only on fonts compare their anchored edge,
   visibility and label instead of width or height (#title, #verbar, the signing notice label, the last feed
   message); the #send 20px mutation still fails (AC2).
-- Firefox: the fake file system and update opt-out init scripts skip about: documents, where Firefox
-  refuses IndexedDB; no page errors are filtered.
+- Firefox: a page-error trace (URL, stack, navigations) showed the fake file system init script opening
+  IndexedDB in the transient about:blank document Juggler initializes before board.html commits; its startup
+  promise rejected unhandled there. Fix: that promise gets a no-op rejection handler, while openPage and
+  every fake file operation still await it, so a real failure in the board document still fails. No page
+  errors are filtered. board.html was not in any stack. Firefox's console CSP note about a blocked eval is
+  Zod's allowsEval probe, which falls back to non-JIT validation.
 - Added time on macOS is within run-to-run variation (about 8 s at most); visual tests about 10 s alone (AC8).
 - Formal: test.yml repinned with a review note; TLC and trace conformance exit 0.
 
