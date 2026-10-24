@@ -72,7 +72,7 @@ test('SDK1.3 declarative and approved worker components render source and diffs 
 test('source presentation stays legible in all themes and on a Polish phone without page overflow',async()=>{
  const {ctx,page,article,log}=await boot(markdown);try{
   for(const theme of ['light','dark','dracula']){
-   await page.locator('#gear').click();await page.selectOption('#sTheme',theme);await page.selectOption('#sLang','pl');await page.locator('#settingsClose').click();await page.setViewportSize({width:390,height:844});
+   await page.locator('#gear').click();await page.selectOption('#sTheme',theme);await page.selectOption('#sLang','pl');await page.locator('#sClose').click();await page.setViewportSize({width:390,height:844});
    const diff=article.locator('.source-diff');await diff.getByRole('button',{name:'Obok siebie',exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await diff.evaluate(el=>el.scrollWidth<=el.clientWidth),true);assert.ok(await diff.locator('.source-added').evaluateAll(els=>els.length===2&&els.every(el=>getComputedStyle(el).backgroundColor!=='rgba(0, 0, 0, 0)')));await diff.screenshot({path:'/tmp/afb-source-'+theme+'-phone.png'});
   }
   assert.deepEqual(log.pageErrors,[]);

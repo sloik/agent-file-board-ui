@@ -42,7 +42,7 @@ test('40 rendered participants have unique bubble colors in every theme and reta
   await h.openBoardViaUi(page);await page.mouse.move(0,0);
   const messagesBefore=await page.evaluate(()=>window.__fakefs.dump().filter(f=>f.path.endsWith('.txt')));
   const snapshot=()=>page.locator('#feed article.msg').evaluateAll(els=>Object.fromEntries(els.map(el=>{const s=getComputedStyle(el);return [el.dataset.author,{ink:getComputedStyle(el.querySelector('.who')).color,background:s.backgroundColor,border:s.borderColor,mention:getComputedStyle(el.querySelector('.mention')).color}];})));
-  async function theme(name){await page.click('#gear');await page.selectOption('#sTheme',name);await page.click('#settingsClose');await page.mouse.move(0,0);}
+  async function theme(name){await page.click('#gear');await page.selectOption('#sTheme',name);await page.click('#sClose');await page.mouse.move(0,0);}
   const byTheme={};
   for(const name of ['light','dark','dracula']){
    await theme(name);const colors=byTheme[name]=await snapshot();assert.equal(Object.keys(colors).length,40);

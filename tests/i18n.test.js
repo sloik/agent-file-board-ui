@@ -51,7 +51,7 @@ test("AC7 English is the default; switching to Polish translates all UI chrome a
   assert.equal(await page.textContent("#open"), pl.change_folder);
   assert.match(await page.textContent(".tree-root"), /Wszystkie wiadomości/);
   assert.match(await page.textContent("#feed .day >> nth=0"), /26 września 2026/);
-  assert.match(await page.textContent("#verbar"), /Przeglądarka v3\.3\.9/);
+  assert.match(await page.textContent("#verbar"), /Przeglądarka v3\.3\.10/);
   assert.match(await page.textContent("#verbar"), /Tablica v3\.3\.1/);
   // message content is never translated
   assert.match(await page.textContent("#feed"), /Czy ten wątek może domyślnie używać polskiego/);
@@ -70,9 +70,9 @@ async function boardWithVersion(versionLine) {
   return s;
 }
 test("AC12 viewer and board versions are displayed together", async () => {
-  assert.match(SRC, /const VIEWER_VERSION = "3\.3\.9";/);
+  assert.match(SRC, /const VIEWER_VERSION = "3\.3\.10";/);
   const { ctx, page } = await boardWithVersion("Version: 3.3.9");
-  assert.match(await page.textContent("#verbar"), /Viewer v3\.3\.9 · Board v3\.3\.9/);
+  assert.match(await page.textContent("#verbar"), /Viewer v3\.3\.10 · Board v3\.3\.9/);
   assert.equal(await page.isVisible("#verwarn"), false);       // same MAJOR.MINOR: no warning
   await ctx.close();
 });
@@ -85,7 +85,7 @@ test("AC12 'unknown' when the board has no Version line", async () => {
 test("AC12 MAJOR.MINOR mismatch warns but never blocks (reading and posting still work)", async () => {
   const { ctx, page, tmp } = await boardWithVersion("Version: 1.3.0");
   assert.equal(await page.isVisible("#verwarn"), true);
-  assert.match(await page.textContent("#verwarn"), /v3\.3\.9.*v1\.3\.0/);
+  assert.match(await page.textContent("#verwarn"), /v3\.3\.10.*v1\.3\.0/);
   assert.equal((await h.feedOrder(page)).length, 10);
   await h.openView(page, "room:product|T003");
   await page.fill("#cBody", "Still can post");

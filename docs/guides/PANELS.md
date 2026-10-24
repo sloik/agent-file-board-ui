@@ -1,5 +1,27 @@
 # Dialogs and Settings
 
+## One layout for every dialog
+
+Since viewer 3.3.10 every dialog you open from **Tools**, the header, the topic or room menu or
+the composer has the same layout:
+
+- **Wide panel:** up to 1200 px wide (always 48 px narrower than the window) and at most 88% of
+  the window height (960 px at most). Long content scrolls inside the dialog. **Keys** in
+  **Signing** uses the extra width for its list and detail.
+- **Header (pinned):** the title on the left and **Close** at the top right. Task buttons, such as
+  the four in **Signing**, sit directly under the title and stay pinned with it.
+- **Footer (pinned, optional):** the dialog's own actions at the bottom right, for example
+  **Insert into draft** in **Voice input**, **Reload installed viewer** in **Viewer updates**,
+  **Review change…** in **Room history and signing**. A footer never has a Close.
+- **Compact:** only the confirmation that writes `config.json` is a smaller panel (560 px).
+- **Phones** (600 px wide or less, or 480 px tall or less): every dialog fills the screen, with
+  room for the notch and the home indicator.
+
+Escape still closes a dialog (Keys first folds an open detail), and focus returns to the control
+that opened it.
+
+## Long dialogs
+
 In UI2.4.8, long dialogs keep their title and **Close** in an opaque pinned
 header. This applies to **Structured message**, saved drafts, recent locations,
 protocol upgrades, board vocabulary, participants/presence, message repairs,
@@ -8,6 +30,8 @@ there is no need to scroll back to the beginning. Existing Escape behavior stays
 available. Closing Structured message retains its unfinished JSON as before.
 
 ![Structured message scrolled to the end, Close still visible](../images/board-dialog-scroll.png)
+
+## Settings
 
 Open **Settings** and drag the grip on its **left edge** to change its width.
 Drag left to widen and right to narrow. Focus the edge with Tab and use
@@ -19,8 +43,10 @@ using the existing [browser settings store](../reference/STORAGE.md). A smaller 
 phone clamps the displayed width; returning to a larger window restores the
 saved desktop width. Older/missing/invalid width preferences display340px.
 
-Settings has **Close** at the top and **Reset/Done** at the bottom. Both rows stay
-visible while the controls in between scroll. The width handle stays reachable
+Settings has **Close** at the top right and **Send feedback** and **Reset to defaults** at the
+bottom right; since viewer 3.3.10 there is no separate **Done** (settings apply as you change
+them). Settings stays a side panel next to the board, so you see a new theme or text size while
+you choose it. Both rows stay visible while the controls in between scroll. The width handle stays reachable
 along the entire left edge, including after scrolling.
 
 ![Wider Settings on desktop](../images/board-settings-wide.png)
@@ -33,6 +59,8 @@ Try the [fictional offline demo](DEMO.md). Reproduce captures with
 `npm run screenshots:panels`. Layout tests use real preview/report rendering,
 long-content fixtures for all dialog headers, hit-tested close clicks and
 pointer/keyboard resize with committed reload/reset checks.
+
+## Toolbar
 
 Refresh status no longer takes a toolbar line (SPEC-002-068): the refresh
 button's tooltip and a small dot carry it, and Tools repeats it. Countdown

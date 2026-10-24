@@ -46,7 +46,7 @@ async function main() {
     await capture("board-presence.png");
     await page.click("#presenceClose");
     await page.selectOption("#me", "human-owner-01");
-    await page.click("#guidanceOpen");
+    await h.topicAction(page,'guidanceOpen');
     await page.waitForFunction(()=>document.querySelectorAll("#guidanceDocs h1").length===2);
     await page.fill("#guidanceFolder", "/Users/you/canonical-example/.agent-board");
     await page.setViewportSize({ width: 1440, height: 1440 });
@@ -54,7 +54,7 @@ async function main() {
     await page.setViewportSize({ width: 1440, height: 1120 });
     await page.click("#guidanceClose");
     await page.click(".tcard[data-tk='room:product|T003']");
-    await page.click("#guidanceOpen");
+    await h.topicAction(page,'guidanceOpen');
     await page.fill("#guidanceFolder", "/Users/you/canonical-example/.agent-board");
     await page.setViewportSize({ width: 1440, height: 1440 });
     await capture("board-guidance-create.png");
@@ -183,7 +183,7 @@ async function main() {
     h.fs.writeFileSync(h.path.join(project,broken),raw);
     const repairs=await h.openPage(browser,{tree:h.readTree(project),rootName:"canonical-example",clock:AT});
     await repairs.page.setViewportSize({width:1440,height:1120});await h.openBoardViaUi(repairs.page);
-    await repairs.page.click("#repairsOpen");await repairs.page.selectOption("#repairSelect",broken.replace(".agent-board/",""));
+    await h.topicAction(repairs.page,'repairsOpen');await repairs.page.selectOption("#repairSelect",broken.replace(".agent-board/",""));
     await repairs.page.fill("#repairReason","Agent emitted an unsupported status; preserve the original and post a valid correction.");
     await repairs.page.fill("#repairText",raw.replace("STATUS: INVALID","STATUS: INFO"));
     await repairs.page.screenshot({path:h.path.join(OUT,"board-message-repairs.png"),animations:"disabled"});

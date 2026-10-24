@@ -408,8 +408,10 @@ Dracula styles interface chrome only. Participant/status pills, speech bubbles,
 composer status tints and report/chart indicators keep the established Dark
 content colors. See the [theme guide](docs/guides/THEMES.md).
 
-Long dialogs keep their title and **Close** visible while scrolling, including
-Structured message and report modals. Settings has a saved, resizable width:
+Every dialog shares one layout (viewer 3.3.10): a wide panel with the title and
+**Close** at the top right, the dialog's own actions at the bottom right, and the
+full screen on phones. Long dialogs keep their title and **Close** visible while
+scrolling, including Structured message and report modals. Settings has a saved, resizable width:
 drag its left edge or use Left/Right arrows; double-click/Home resets it. Its
 header and bottom actions stay visible. See the [panel guide](docs/guides/PANELS.md).
 

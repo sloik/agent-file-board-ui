@@ -110,7 +110,7 @@ test('canonical CLI start and release records are rendered and historical messag
   assert.equal(start.code,0,start.err);
   const {ctx,page,log}=await open(proj);
   assert.match(await marker(page).getAttribute('class'),/presence-active/);
-  await page.click('#gear');await page.check('#showPresenceNotices');await page.click('#settingsClose');
+  await page.click('#gear');await page.check('#showPresenceNotices');await page.click('#sClose');
   assert.match(await page.textContent('#feed'),/Session start: identifier research-agent-01/);
   const release=h.boardctl(['session','release',ID,'--announce','--path',proj,'--session','session-integration','--summary','Parser complete; review is still needed.','--at','2026-10-15T10:30:10Z']);
   assert.equal(release.code,0,release.err);
@@ -133,7 +133,7 @@ test('unregistered presence directories and stray root files make absence uncert
 
 const HUMAN='human-owner-01';
 const humanRecords=page=>page.evaluate(id=>window.__fakefs.dump().filter(f=>f.path.startsWith(`.agent-board/presence/${id}/`)).map(f=>JSON.parse(f.text)),HUMAN);
-async function enableAnnouncements(page){await page.click('#gear');await page.check('#presenceAnnouncements');await page.check('#showPresenceNotices');await page.click('#settingsClose');}
+async function enableAnnouncements(page){await page.click('#gear');await page.check('#presenceAnnouncements');await page.check('#showPresenceNotices');await page.click('#sClose');}
 async function selectHuman(page){
   await page.selectOption('#me',HUMAN);
   await page.waitForFunction(()=>document.querySelector('#browserPresence').textContent.includes('Browser session active'));

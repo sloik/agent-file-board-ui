@@ -9,7 +9,7 @@ function wirePanelLayout(){
  const pane=$('#settings'),handle=$('#settingsResize');
  const resize=width=>{const {min,max}=settingsWidthBounds();S.settingsW=Math.round(Math.max(min,Math.min(max,width)));applySettingsWidth();};
  const reset=()=>{S.settingsW=340;saveSettings();};
- $('#settingsClose').onclick=()=>{pane.classList.remove('show');$('#gear').focus();};
+ $('#sClose').onclick=()=>{pane.classList.remove('show');$('#gear').focus();};
  handle.onpointerdown=e=>{
   if(e.button!==0)return;e.preventDefault();const x=e.clientX,width=pane.getBoundingClientRect().width;
   handle.setPointerCapture(e.pointerId);document.body.classList.add('resizing');
