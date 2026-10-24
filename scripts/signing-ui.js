@@ -851,9 +851,11 @@ async function signingDialog(request) {
     o.value = id;
   }
   const keyCard = node("div", "", review, "signing-key-card"), keyName = node("strong", "", keyCard), keyState = node("p", "", keyCard), key = node("code", "", keyCard), keyHelp = node("p", "", keyCard, "signing-help");
+  const keyActions = node("div", "", keyCard, "signing-actions");
   const inspectActions = node("div", "", review, "signing-actions");
   // Guided steps (SPEC-002-071): get the fingerprint from its owner, paste it, compare, approve.
-  // Approval stays a deliberate paste; the board's own value is never offered as a copy button.
+  // Approval stays a deliberate paste. The board's value can be copied to send to its owner (SPEC-002-072),
+  // and pasting it back counts as an echo, so Approve then needs the outside-this-board confirmation.
   const stepList = node("ol", "", review, "signing-review-steps");
   stepList.id = "signingReviewSteps";
   const step = () => {
@@ -968,6 +970,13 @@ async function signingDialog(request) {
     ownKeyFile.click();
     return text("Choose your private key file. It is read in this tab only.", "Wybierz swój plik klucza prywatnego. Jest czytany tylko w tej karcie.");
   }, () => participant.value === currentUser() && !!reviewBoard() && (!!unlockedOwn() || (!!base && !!model.signingContext && !model.signingError)));
+  const copyFingerprint = add(keyActions, text("Copy fingerprint", "Kopiuj odcisk"), "copy-fingerprint", reviewOut, async () => {
+    const value = reviewBoard(), name = reviewName();
+    copied.add(value);
+    await signingClipboardWrite(value, text);
+    return text(`Copied ${name}'s fingerprint as this board lists it. Send it to ${name} through a channel you already trust and ask them to compare it with the one on their own device. When they confirm it matches, paste it in step 2.`, `Skopiowano odcisk klucza (${name}) z tej tablicy. Wyślij go kanałem, któremu już ufasz, i poproś o porównanie z odciskiem na urządzeniu tej osoby. Gdy potwierdzi, że się zgadza, wklej go w kroku 2.`);
+  }, () => !!reviewBoard());
+  copyFingerprint.id = "signingCopyFingerprint";
   copyRequest.id = "signingCopyRequest";
   paste.id = "signingPaste";
   checkOwn.id = "signingCheckOwnKey";
@@ -1201,8 +1210,8 @@ async function signingDialog(request) {
   function syncReview() {
     const put = (el, value) => { if (el.textContent !== value) el.textContent = value; };
     const id = participant.value, name = reviewName(), board = reviewBoard(), value = fingerprint.value, result = signingFingerprintCompare(board, value), echo = reviewEcho();
-    put(s1.title, text("Get their fingerprint from them.", "Poproś o odcisk klucza."));
-    put(s1Body, text(`Ask ${name} to send you their fingerprint through a channel you already trust: in person, a phone call, or a chat app you already use with them. Not this board.`, `Poproś uczestnika ${name} o odcisk klucza. Niech prześle go kanałem, któremu już ufasz: osobiście, telefonicznie lub przez komunikator, którego już razem używacie. Nie przez tę tablicę.`));
+    put(s1.title, text("Check the fingerprint with them.", "Sprawdź odcisk z tą osobą."));
+    put(s1Body, text(`Check it with ${name} through a channel you already trust: in person, a phone call, or a chat app you already use with them. Not this board. Either copy the fingerprint above and ask ${name} to compare it with the one on their device, or ask them to send you theirs.`, `Sprawdź go z uczestnikiem ${name} kanałem, któremu już ufasz: osobiście, telefonicznie lub przez komunikator, którego już razem używacie. Nie przez tę tablicę. Skopiuj odcisk powyżej i poproś o porównanie z odciskiem na urządzeniu tej osoby albo poproś o przesłanie własnego.`));
     put(findSummary, text(`How ${name} finds it`, `Gdzie ${name} go znajdzie`));
     put(findViewer, text("In the viewer: Tools → Signing → Sign as me → Copy my fingerprint (after unlocking their key file).", "W przeglądarce: Narzędzia → Podpisy → Podpisuj jako ja → Kopiuj mój odcisk (po odblokowaniu swojego pliku klucza)."));
     put(findCliLead, text("On the command line: ", "W wierszu poleceń: "));
@@ -1218,6 +1227,7 @@ async function signingDialog(request) {
     put(s3.title, text("Compare.", "Porównaj."));
     put(s4.title, text("Approve.", "Zatwierdź."));
     put(approve, text(`Approve ${name}'s key`, `Zatwierdź klucz: ${name}`));
+    put(copyFingerprint, text("Copy fingerprint", "Kopiuj odcisk"));
     put(copyRequest, text("Copy what to send them", "Kopiuj tekst do wysłania"));
     put(paste, text("Paste", "Wklej"));
     put(checkOwn, text("Check with my key file", "Sprawdź moim plikiem klucza"));
@@ -1241,7 +1251,7 @@ async function signingDialog(request) {
       compare.replaceChildren(...parts);
     }
     echoBox.hidden = !echo;
-    put(echoText, text(`This is the value shown on this board. Paste the one ${name} sent you from their own device.`, `To wartość pokazana na tej tablicy. Wklej odcisk przesłany przez: ${name}, odczytany na urządzeniu tej osoby.`));
+    put(echoText, text(`This is the value copied from this board. Approve only after ${name} confirmed, outside this board, that it matches the fingerprint on their own device.`, `To wartość skopiowana z tej tablicy. Zatwierdź dopiero, gdy ${name} potwierdzi poza tą tablicą, że zgadza się z odciskiem na urządzeniu tej osoby.`));
     put(echoConfirmText, text(`I confirmed it with ${name} outside this board`, `Potwierdzono z: ${name} poza tą tablicą`));
     const entry = actions.find((a) => a.b === approve);
     approve.disabled = busy || !entry.available();

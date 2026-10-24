@@ -68,7 +68,7 @@ async function echo(page,identity,timeout=5000){
   await expect(field).toHaveValue(identity.fingerprint,{timeout});
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match',{timeout});
   await expect(warning).toBeVisible({timeout});
-  await expect(warning).toContainText(`This is the value shown on this board. Paste the one ${identity.participant} sent you from their own device.`,{timeout});
+  await expect(warning).toContainText(`This is the value copied from this board. Approve only after ${identity.participant} confirmed, outside this board, that it matches the fingerprint on their own device.`,{timeout});
   await expect(approve(page)).toBeDisabled({timeout});
   await page.getByLabel(`I confirmed it with ${identity.participant} outside this board`).check();
   await expect(approve(page)).toBeEnabled({timeout});
@@ -111,8 +111,8 @@ test('comparison, grouping, echo and request helpers',()=>{
 test('AC1: the review task shows four numbered steps with the way the owner finds the fingerprint, in English and Polish',async t=>{
   const f=await boot(t),{page,peer}=f;await review(page,peer.participant);
   const steps=page.locator('#signingReviewSteps > li > strong');
-  await expect(steps).toHaveText(['Get their fingerprint from them.','Paste what they sent you.','Compare.','Approve.']);
-  await expect(page.locator('#signingReviewSteps > li').first()).toContainText(`Ask ${peer.participant} to send you their fingerprint through a channel you already trust: in person, a phone call, or a chat app you already use with them. Not this board.`);
+  await expect(steps).toHaveText(['Check the fingerprint with them.','Paste what they sent you.','Compare.','Approve.']);
+  await expect(page.locator('#signingReviewSteps > li').first()).toContainText(`Check it with ${peer.participant} through a channel you already trust: in person, a phone call, or a chat app you already use with them. Not this board. Either copy the fingerprint above and ask ${peer.participant} to compare it with the one on their device, or ask them to send you theirs.`);
   await expect(page.locator('label[for="signingFingerprint"]')).toContainText(`Fingerprint ${peer.participant} sent you`);
   await expect(approve(page)).toHaveText(`Approve ${peer.participant}'s key`);
   await page.locator('.signing-find summary').click();
@@ -131,8 +131,8 @@ test('AC1: the review task shows four numbered steps with the way the owner find
   assert.equal(row.detail,`key file fingerprint ${peer.fingerprint}`);
   await expect(page.locator('.signing-find')).toContainText('key file matches current profile');
   await choose(page,'#sLang','pl');
-  await expect(steps).toHaveText(['Poproś o odcisk klucza.','Wklej otrzymany odcisk.','Porównaj.','Zatwierdź.'],{timeout:10000});
-  await expect(page.locator('#signingReviewSteps > li').first()).toContainText(`Poproś uczestnika ${peer.participant} o odcisk klucza. Niech prześle go kanałem, któremu już ufasz`);
+  await expect(steps).toHaveText(['Sprawdź odcisk z tą osobą.','Wklej otrzymany odcisk.','Porównaj.','Zatwierdź.'],{timeout:10000});
+  await expect(page.locator('#signingReviewSteps > li').first()).toContainText(`Sprawdź go z uczestnikiem ${peer.participant} kanałem, któremu już ufasz: osobiście, telefonicznie lub przez komunikator, którego już razem używacie. Nie przez tę tablicę. Skopiuj odcisk powyżej i poproś o porównanie z odciskiem na urządzeniu tej osoby albo poproś o przesłanie własnego.`);
   await expect(page.locator('.signing-find summary')).toHaveText(`Gdzie ${peer.participant} go znajdzie`);
   await expect(page.locator('.signing-find')).toContainText('Narzędzia → Podpisy → Podpisuj jako ja → Kopiuj mój odcisk');
   await expect(page.locator('.signing-find code')).toHaveText(`boardctl signing check --path <tablica> --from ${peer.participant} --scope rooms/<pokój> --signing-key-file ~/private/afb/example-project/${peer.participant}.json`);
@@ -145,8 +145,8 @@ test('AC1: the review task shows four numbered steps with the way the owner find
   await page.locator('#signingFingerprint').fill(peer.fingerprint.slice(0,-1));
   await expect(page.locator('#signingCompare')).toHaveText('Wklej cały odcisk, łącznie z prefiksem');
   await choose(page,'#sLang','en');
-  // The board value is shown, never offered as a copy button.
-  assert.deepEqual(await page.locator('#signing-review button').evaluateAll(bs=>bs.map(b=>b.dataset.action).filter(a=>/copy/.test(a))),['copy-request']);
+  // SPEC-002-072: the board value can be copied to send to its owner; the request text stays the shortened one.
+  assert.deepEqual(await page.locator('#signing-review button').evaluateAll(bs=>bs.map(b=>b.dataset.action).filter(a=>/copy/.test(a))),['copy-fingerprint','copy-request']);
 });
 
 test('AC2: Copy what to send them puts a request with the board, the participant and only a shortened fingerprint on the clipboard',async t=>{
@@ -160,6 +160,27 @@ test('AC2: Copy what to send them puts a request with the board, the participant
   assert.ok(!sent.includes(peer.fingerprint),'never the full fingerprint');
   assert.ok(!sent.includes(peer.fingerprint.slice(-9)),'no more than the last 8 characters');
   assert.match(sent,/Sign as me → Copy my fingerprint/);assert.match(sent,/boardctl signing check/);
+});
+
+test('SPEC-002-072: Copy fingerprint copies the board value; pasting it back needs the outside-this-board confirmation before Approve',async t=>{
+  const {page,peer}=await boot(t);await review(page,peer.participant);
+  const copy=page.locator('#signingCopyFingerprint');
+  await expect(copy).toHaveText('Copy fingerprint');await expect(copy).toBeEnabled();
+  await copy.click();
+  await expect(page.locator('#signing-review .signing-feedback')).toContainText(`Copied ${peer.participant}'s fingerprint as this board lists it.`);
+  assert.equal(await clipboard(page),peer.fingerprint,'the full board value');
+  await page.locator('#signingPaste').click();
+  await expect(page.locator('#signingFingerprint')).toHaveValue(peer.fingerprint);
+  await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match');
+  await expect(page.locator('#signingEcho')).toBeVisible();
+  await expect(page.locator('#signingEcho')).toContainText(`Approve only after ${peer.participant} confirmed, outside this board`);
+  await expect(approve(page)).toBeDisabled();
+  assert.deepEqual(await page.evaluate(()=>B.signingContext.state.pins),{},'copying and pasting approves nothing');
+  await page.getByLabel(`I confirmed it with ${peer.participant} outside this board`).check();
+  await expect(approve(page)).toBeEnabled();
+  await approve(page).click();
+  await expect(page.locator('#signing-review .signing-feedback')).toContainText('Exact key approved locally');
+  assert.equal((await page.evaluate(()=>B.signingContext.state.pins))[peer.participant],peer.fingerprint);
 });
 
 test('AC3: Paste fills the field from the clipboard without whitespace; with clipboard reading denied it shows the keyboard hint',async t=>{
