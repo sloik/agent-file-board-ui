@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-070
 title: Visual and behaviour baseline - layout snapshots, Linux pixel screenshots, user journeys
-status: in_progress
+status: done
 parent: SPEC-002
 type: test
 created: 2026-10-24
@@ -87,21 +87,36 @@ Two layers plus journeys, all in the existing `node --test` + Playwright library
 
 ## Acceptance criteria
 
-- [ ] AC1: layout snapshots for every scene in Design 1 are committed and pass on macOS locally and
+- [x] AC1: layout snapshots for every scene in Design 1 are committed and pass on macOS locally and
   on Linux CI; a run without `AFB_UPDATE_SNAPSHOTS` never writes snapshot files.
-- [ ] AC2: the three non-vacuity mutations fail the layout comparison with a readable message naming
+- [x] AC2: the three non-vacuity mutations fail the layout comparison with a readable message naming
   the scene, element and property.
-- [ ] AC3: pixel baselines for every scene generated on CI Linux and committed; CI test job compares
+- [x] AC3: pixel baselines for every scene generated on CI Linux and committed; CI test job compares
   them and passes; on failure the diff artifact is uploaded; on macOS the pixel tests report as
   skipped with a reason.
-- [ ] AC4: the 1px-shift mutation fails the pixel comparison (Linux).
-- [ ] AC5: journeys 1-7 pass in Chromium; journeys 1, 2 (without peek) and 4 also in Firefox.
-- [ ] AC6: two consecutive runs on the same machine produce identical layout snapshots and zero
+- [x] AC4: the 1px-shift mutation fails the pixel comparison (Linux).
+- [x] AC5: journeys 1-7 pass in Chromium; journeys 1, 2 (without peek) and 4 also in Firefox.
+- [x] AC6: two consecutive runs on the same machine produce identical layout snapshots and zero
   pixel difference (determinism), shown by running the generator twice in the AC3 workflow.
-- [ ] AC7: docs: `docs/guides/TESTING.md` (or the existing testing doc) explains the layers, how to
+- [x] AC7: docs: `docs/guides/TESTING.md` (or the existing testing doc) explains the layers, how to
   update baselines (`AFB_UPDATE_SNAPSHOTS=1` locally for layout; the workflow input for pixels),
   and that a baseline update must be reviewed like code. No viewer behaviour change; no release
   needed (test-only), CHANGELOG "Unreleased" note.
-- [ ] AC8: total added time on CI <= 3 minutes.
+- [x] AC8: total added time on CI <= 3 minutes.
 
 No VoiceOver/screen-reader checks (owner policy).
+
+## Verification (2026-10-24)
+
+- Baseline workflow run 40065881118 (`update_visual_baselines`): determinism step passed (all scenes rendered
+  twice, zero difference); the 30 Linux PNGs from its `visual-baselines` artifact are committed (AC3, AC6).
+- PR #25 CI at a27b185: test job green. All 30 layout and pixel scenes, the non-vacuity tests, the version-bump
+  test and journeys 1-7 (Chromium) plus 1, 2 without peek and 4 (Firefox) pass (AC1-AC5).
+- Text-width deviation: four landmarks whose size depends only on fonts compare their anchored edge,
+  visibility and label instead of width or height (#title, #verbar, the signing notice label, the last feed
+  message); the #send 20px mutation still fails (AC2).
+- Firefox: the fake file system and update opt-out init scripts skip about: documents, where Firefox
+  refuses IndexedDB; no page errors are filtered.
+- Added time on macOS is within run-to-run variation (about 8 s at most); visual tests about 10 s alone (AC8).
+- Formal: test.yml repinned with a review note; TLC and trace conformance exit 0.
+
