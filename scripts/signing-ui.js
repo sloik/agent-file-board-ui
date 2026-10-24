@@ -968,6 +968,9 @@ async function signingDialog(request) {
     ownKeyFile.click();
     return text("Choose your private key file. It is read in this tab only.", "Wybierz swój plik klucza prywatnego. Jest czytany tylko w tej karcie.");
   }, () => participant.value === currentUser() && !!reviewBoard() && (!!unlockedOwn() || (!!base && !!model.signingContext && !model.signingError)));
+  copyRequest.id = "signingCopyRequest";
+  paste.id = "signingPaste";
+  checkOwn.id = "signingCheckOwnKey";
   ownKeyFile.onchange = () => {
     const file = ownKeyFile.files[0];
     ownKeyFile.value = "";

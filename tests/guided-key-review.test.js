@@ -138,8 +138,8 @@ test('AC1: the review task shows four numbered steps with the way the owner find
   await expect(page.locator('.signing-find code')).toHaveText(`boardctl signing check --path <tablica> --from ${peer.participant} --scope rooms/<pokój> --signing-key-file ~/private/afb/example-project/${peer.participant}.json`);
   await expect(page.locator('label[for="signingFingerprint"]')).toContainText(`Odcisk przesłany przez: ${peer.participant}`);
   await expect(approve(page)).toHaveText(`Zatwierdź klucz: ${peer.participant}`);
-  await expect(page.locator('#signingDialog [data-action="copy-request"]')).toHaveText('Kopiuj tekst do wysłania');
-  await expect(page.locator('#signingDialog [data-action="paste"]')).toHaveText('Wklej');
+  await expect(page.locator('#signingCopyRequest')).toHaveText('Kopiuj tekst do wysłania');
+  await expect(page.locator('#signingPaste')).toHaveText('Wklej');
   await page.locator('#signingFingerprint').fill(peer.fingerprint);
   await expect(page.locator('#signingCompare')).toHaveText('✓ Zgadza się z kluczem na tej tablicy');
   await page.locator('#signingFingerprint').fill(peer.fingerprint.slice(0,-1));
@@ -151,7 +151,7 @@ test('AC1: the review task shows four numbered steps with the way the owner find
 
 test('AC2: Copy what to send them puts a request with the board, the participant and only a shortened fingerprint on the clipboard',async t=>{
   const {page,peer}=await boot(t);await review(page,peer.participant);
-  await page.locator('#signingDialog [data-action="copy-request"]').click();
+  await page.locator('#signingCopyRequest').click();
   await expect(page.locator('#signing-review .signing-feedback')).toContainText(`Copied. Send it to ${peer.participant}`);
   const sent=await clipboard(page),boardId=await page.evaluate(()=>B.signingContext.boardId);
   assert.match(sent,/Example project/);assert.ok(sent.includes(boardId),'board ID');
@@ -166,7 +166,7 @@ test('AC3: Paste fills the field from the clipboard without whitespace; with cli
   const {page,peer}=await boot(t);await review(page,peer.participant);
   const fp=peer.fingerprint,spaced=` ${fp.slice(0,30)}\n${fp.slice(30,50)} \t${fp.slice(50)}\n`;
   await page.evaluate(v=>navigator.clipboard.writeText(v),spaced);
-  await page.locator('#signingDialog [data-action="paste"]').click();
+  await page.locator('#signingPaste').click();
   await expect(page.locator('#signingFingerprint')).toHaveValue(fp);
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match');
   await expect(page.locator('#signingEcho')).toBeHidden();
@@ -176,7 +176,7 @@ test('AC3: Paste fills the field from the clipboard without whitespace; with cli
   await expect(page.locator('#signingFingerprint')).toHaveValue(fp);
   await closeSigning(page);
   const denied=await boot(t,{clipboard:false});await review(denied.page,denied.peer.participant);
-  await denied.page.locator('#signingDialog [data-action="paste"]').click();
+  await denied.page.locator('#signingPaste').click();
   await expect(denied.page.locator('#signingPasteHint')).toHaveText('Press Cmd+V / Ctrl+V in the field');
   await expect(denied.page.locator('#signingFingerprint')).toBeFocused();
   await expect(denied.page.locator('#signingFingerprint')).toHaveValue('');
@@ -199,7 +199,7 @@ test('AC5: pasting the board value copied inside the dialog warns and needs the 
   // A new dialog session; the value arrives on the clipboard from outside the dialog.
   await review(page,peer.participant);
   await page.evaluate(v=>navigator.clipboard.writeText(v),peer.fingerprint);
-  await page.locator('#signingDialog [data-action="paste"]').click();
+  await page.locator('#signingPaste').click();
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match');
   await expect(page.locator('#signingEcho')).toBeHidden();
   await expect(approve(page)).toBeEnabled();
@@ -233,7 +233,7 @@ test('AC6: after unlocking, Sign as me shows and copies the fingerprint derived 
   // Copying it is not an echo of the board when the owner then checks their own key.
   await page.locator('[data-signing-task=review]').click();
   await page.locator('#signingParticipant').selectOption(owner.participant);
-  await page.locator('#signingDialog [data-action="paste"]').click();
+  await page.locator('#signingPaste').click();
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match');
   await expect(page.locator('#signingEcho')).toBeHidden();
   await page.locator('[data-action="lock"]').click();
@@ -245,7 +245,7 @@ test('AC7: Check with my key file matches the unlocked own key; a different key 
   await unlock(page,owner);await review(page,owner.participant);
   await expect(page.locator('#signingOwnCheck')).toBeVisible();
   await expect(page.locator('#signingOwnCheck')).toContainText('Your key file is on this device, so it can confirm the board lists your key.');
-  await page.locator('#signingDialog [data-action="check-own-key"]').click();
+  await page.locator('#signingCheckOwnKey').click();
   await expect(page.locator('#signingFingerprint')).toHaveValue(owner.fingerprint);
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match');
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Your key file matches the key this board lists for you');
@@ -261,7 +261,7 @@ test('AC7: Check with my key file matches the unlocked own key; a different key 
   const other=await boot(t),p2=other.page;
   await choose(p2,'#me',other.owner.participant);await review(p2,other.owner.participant);
   const chooser=p2.waitForEvent('filechooser');
-  await p2.locator('#signingDialog [data-action="check-own-key"]').click();
+  await p2.locator('#signingCheckOwnKey').click();
   await (await chooser).setFiles(other.peer.key);
   await expect(p2.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');
   await expect(p2.locator('#signing-review .signing-feedback')).toContainText('Your key file does not match the key this board lists for you');
@@ -269,7 +269,7 @@ test('AC7: Check with my key file matches the unlocked own key; a different key 
   assert.deepEqual(await p2.evaluate(()=>signingProvider.catalog()),[],'a different key file is not unlocked');
   // The right file, while locked: the existing unlock runs first, then the comparison matches.
   const again=p2.waitForEvent('filechooser');
-  await p2.locator('#signingDialog [data-action="check-own-key"]').click();
+  await p2.locator('#signingCheckOwnKey').click();
   await (await again).setFiles(other.owner.key);
   await expect(p2.locator('#signingCompare')).toHaveAttribute('data-state','match');
   await expect(approve(p2)).toBeEnabled();

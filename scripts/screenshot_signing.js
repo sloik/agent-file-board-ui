@@ -40,12 +40,12 @@ async function main(){
     await page.locator('[data-signing-task=review]').click();
     await shot(review,'signing-review');
     await page.locator('.signing-find summary').click();
-    await page.locator('#signingDialog [data-action="copy-request"]').click();
+    await page.locator('#signingCopyRequest').click();
     await page.locator('#signing-review .signing-feedback').filter({hasText:'Copied.'}).waitFor();
     await stepShot(steps.nth(0),'signing-review-step1');
     // The value the owner sent arrives from outside the dialog.
     await page.evaluate(v=>navigator.clipboard.writeText(v+'\n'),f.peer.fingerprint);
-    await page.locator('#signingDialog [data-action="paste"]').click();
+    await page.locator('#signingPaste').click();
     await page.locator('#signingCompare[data-state="match"]').waitFor();
     await stepShot(steps.nth(1),'signing-review-step2');
     await stepShot(steps.nth(2),'signing-review-step3');
@@ -75,7 +75,7 @@ async function main(){
     await shot(page.locator('#signingMyFingerprint'),'signing-my-fingerprint');
     await page.locator('#signingParticipant').selectOption(f.owner.participant);
     await page.locator('[data-signing-task=review]').click();
-    await page.locator('#signingDialog [data-action="check-own-key"]').click();
+    await page.locator('#signingCheckOwnKey').click();
     await page.locator('#signingCompare[data-state="match"]').waitFor();
     await stepShot(steps.nth(0).locator('xpath=..'),'signing-review-own-key');
     await signing.closeSigning(page);
