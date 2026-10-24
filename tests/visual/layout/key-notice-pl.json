@@ -1,0 +1,857 @@
+{
+ "scene": "key-notice-pl",
+ "viewport": {
+  "width": 1280,
+  "height": 800
+ },
+ "elements": {
+  ".top": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 0,
+    "y": 0,
+    "w": 1280,
+    "h": 51
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48) rgb(28, 34, 48) rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#menu": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 14,
+    "y": 8,
+    "w": 86,
+    "h": 34
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "Ukryj panel boczny",
+   "text": "Pokoje",
+   "textBearing": true
+  },
+  "#folderName": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 104,
+    "y": 23,
+    "w": 63,
+    "h": 22
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgba(0, 0, 0, 0)",
+    "box-shadow": "none",
+    "font-weight": "500"
+   },
+   "name": "",
+   "text": "Folder:",
+   "textBearing": true
+  },
+  "#q": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 219,
+    "y": 5,
+    "w": 170,
+    "h": 40
+   },
+   "style": {
+    "display": "inline-block",
+    "background-color": "rgb(250, 251, 252)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "",
+   "textBearing": true
+  },
+  "#verbar": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 405,
+    "y": 16,
+    "w": 152,
+    "h": 18
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(107, 114, 128)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "Przeglądarka X.Y.Z · Tablica X.Y.Z · Dialekt: natywny (.agent-board)",
+   "textBearing": true
+  },
+  "#me": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 634,
+    "y": 16,
+    "w": 138,
+    "h": 18
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(59, 111, 224)",
+    "border-color": "rgb(59, 111, 224)",
+    "box-shadow": "none",
+    "font-weight": "600"
+   },
+   "name": "",
+   "text": "👤 human-owner-01 👻",
+   "textBearing": true
+  },
+  "#reload": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 793,
+    "y": 8,
+    "w": 33,
+    "h": 34
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "↻",
+   "textBearing": true
+  },
+  "#toolbarToolsToggle": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 834,
+    "y": 8,
+    "w": 96,
+    "h": 34
+   },
+   "style": {
+    "display": "list-item",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "Narzędzia",
+   "textBearing": true
+  },
+  "#gear": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 1236,
+    "y": 8,
+    "w": 30,
+    "h": 34
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "⚙",
+   "textBearing": true
+  },
+  "#keyNotice": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 0,
+    "y": 54,
+    "w": 1280,
+    "h": 39
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "color(srgb 0.907765 0.932235 0.985412)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48) rgb(28, 34, 48) rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#keyNoticeText": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 40,
+    "y": 63,
+    "w": 371,
+    "h": 20
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "3 klucze uczestników nie są zatwierdzone na tym urządzeniu.",
+   "textBearing": true
+  },
+  "#keyNoticeReview": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 421,
+    "y": 59,
+    "w": 121,
+    "h": 28
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(59, 111, 224)",
+    "color": "rgb(255, 255, 255)",
+    "border-color": "rgb(59, 111, 224)",
+    "box-shadow": "none",
+    "font-weight": "600"
+   },
+   "name": "",
+   "text": "Sprawdź klucze",
+   "textBearing": true
+  },
+  "#keyNoticeLater": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 552,
+    "y": 59,
+    "w": 76,
+    "h": 28
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "Nie teraz",
+   "textBearing": true
+  },
+  "#toolbarToolsPanel": {
+   "present": true,
+   "visible": false
+  },
+  "#vocabularyOpen": {
+   "present": true,
+   "visible": false
+  },
+  "#presenceOpen": {
+   "present": true,
+   "visible": false
+  },
+  "#signingTools": {
+   "present": true,
+   "visible": false
+  },
+  "#reviewKeysTool": {
+   "present": true,
+   "visible": false
+  },
+  "#sidebarToggleTool": {
+   "present": true,
+   "visible": false
+  },
+  "#toolbarVersion": {
+   "present": true,
+   "visible": false
+  },
+  ".side": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 0,
+    "y": 94,
+    "w": 270,
+    "h": 706
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48) rgb(229, 231, 235) rgb(28, 34, 48) rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#sideHide": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 223,
+    "y": 120,
+    "w": 28,
+    "h": 24
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "Ukryj panel boczny",
+   "text": "«",
+   "textBearing": true
+  },
+  "#sideScrim": {
+   "present": true,
+   "visible": false
+  },
+  "#tree .tree-root": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 10,
+    "y": 150,
+    "w": 249,
+    "h": 36
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgb(250, 251, 252)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "rgb(59, 111, 224) 3px 0px 0px 0px inset",
+    "font-weight": "600"
+   },
+   "name": "",
+   "text": "🗂 Wszystkie wiadomości 10",
+   "textBearing": true
+  },
+  "#tree .posting": {
+   "present": false
+  },
+  "#tree .posting-mark": {
+   "present": false
+  },
+  ".feed-head": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 276,
+    "y": 94,
+    "w": 1004,
+    "h": 34
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgb(250, 251, 252)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48) rgb(28, 34, 48) rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#title": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 100,
+    "w": 176,
+    "h": 21
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "700"
+   },
+   "name": "",
+   "text": "Wszystkie wiadomości",
+   "textBearing": true
+  },
+  "#topicMenuToggle": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 1233,
+    "y": 99,
+    "w": 33,
+    "h": 23
+   },
+   "style": {
+    "display": "list-item",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "Więcej akcji",
+   "text": "⋯",
+   "textBearing": true
+  },
+  "#topicMenuPanel": {
+   "present": true,
+   "visible": false
+  },
+  "#topicRename": {
+   "present": true,
+   "visible": false
+  },
+  "#repairsOpen": {
+   "present": true,
+   "visible": false
+  },
+  "#guidanceOpen": {
+   "present": true,
+   "visible": false
+  },
+  ".feed": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 276,
+    "y": 128,
+    "w": 1004,
+    "h": 430
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#feed article.msg": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": -1521,
+    "w": 845,
+    "h": 213
+   },
+   "style": {
+    "display": "grid",
+    "background-color": "color(srgb 0.961725 0.905255 0.846274)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "color(srgb 0.836275 0.681765 0.52451)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#composer": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 276,
+    "y": 566,
+    "w": 1004,
+    "h": 234
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235) rgb(28, 34, 48) rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#replying": {
+   "present": true,
+   "visible": false
+  },
+  "#composerTargetRow": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 575,
+    "w": 960,
+    "h": 27
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#composerTarget": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 575,
+    "w": 233,
+    "h": 27
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgb(255, 244, 229)",
+    "color": "rgb(138, 75, 0)",
+    "border-color": "rgb(138, 75, 0)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "Wybierz, gdzie wysłać — Zmień",
+   "text": "Wybierz, gdzie wysłać Zmień",
+   "textBearing": true
+  },
+  "#composerPin": {
+   "present": true,
+   "visible": false
+  },
+  "#composerTargetMenu": {
+   "present": true,
+   "visible": false
+  },
+  "#composerTargetList button": {
+   "present": false
+  },
+  "#composerOptions": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 608,
+    "w": 960,
+    "h": 19
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#composerOptionsSummary": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 422,
+    "y": 609,
+    "w": 93,
+    "h": 15
+   },
+   "style": {
+    "display": "inline",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(107, 114, 128)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "Zwykły tekst · pl",
+   "textBearing": true
+  },
+  "#cStatus": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 411,
+    "y": 627,
+    "w": 12,
+    "h": 25
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(250, 251, 252)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "INFO",
+   "textBearing": true
+  },
+  "#composerAdvanced": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 647,
+    "y": 629,
+    "w": 169,
+    "h": 19
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(107, 114, 128)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": false
+  },
+  "#cWhere": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 693,
+    "y": 656,
+    "w": 12,
+    "h": 25
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(250, 251, 252)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "Wybierz, gdzie wysłać",
+   "textBearing": true
+  },
+  "#cNewThread": {
+   "present": true,
+   "visible": false
+  },
+  "#signingNotice": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 633,
+    "w": 960,
+    "h": 62
+   },
+   "style": {
+    "display": "flex",
+    "background-color": "rgb(250, 251, 252)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": null,
+   "textBearing": true
+  },
+  "#signingNotice .signing-notice-label": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 339,
+    "y": 640,
+    "w": 196,
+    "h": 19
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(28, 34, 48)",
+    "box-shadow": "none",
+    "font-weight": "700"
+   },
+   "name": "",
+   "text": "Zostanie wysłana bez podpisu",
+   "textBearing": true
+  },
+  "#signingNotice .signing-notice-action": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 312,
+    "y": 665,
+    "w": 309,
+    "h": 23
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(59, 111, 224)",
+    "border-color": "rgb(59, 111, 224)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "🔒 Odblokuj klucz: human-owner-01, aby podpisać",
+   "textBearing": true
+  },
+  "#signingNotice .signing-notice-alt": {
+   "present": true,
+   "visible": false
+  },
+  "#cBody": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 700,
+    "w": 842,
+    "h": 67
+   },
+   "style": {
+    "display": "block",
+    "background-color": "color(srgb 0.952353 0.967059 0.994706)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(201, 217, 245)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "",
+   "textBearing": true
+  },
+  "#composerTargetChange": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 1150,
+    "y": 733,
+    "w": 34,
+    "h": 34
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(255, 255, 255)",
+    "color": "rgb(28, 34, 48)",
+    "border-color": "rgb(229, 231, 235)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "Zmień cel",
+   "text": "",
+   "textBearing": false
+  },
+  "#send": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 1194,
+    "y": 731,
+    "w": 64,
+    "h": 36
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgb(59, 111, 224)",
+    "color": "rgb(255, 255, 255)",
+    "border-color": "rgb(59, 111, 224)",
+    "box-shadow": "none",
+    "font-weight": "600"
+   },
+   "name": "",
+   "text": "Wyślij",
+   "textBearing": true
+  },
+  "#cInfo": {
+   "present": true,
+   "visible": true,
+   "box": {
+    "x": 298,
+    "y": 771,
+    "w": 960,
+    "h": 19
+   },
+   "style": {
+    "display": "block",
+    "background-color": "rgba(0, 0, 0, 0)",
+    "color": "rgb(107, 114, 128)",
+    "border-color": "rgb(107, 114, 128)",
+    "box-shadow": "none",
+    "font-weight": "400"
+   },
+   "name": "",
+   "text": "Wybierz, gdzie wysłać: wskaż pokój lub wątek w panelu bocznym albo użyj „Zmień cel”.",
+   "textBearing": true
+  },
+  "#signingDialog": {
+   "present": false
+  },
+  "#signingPendingSummary": {
+   "present": false
+  },
+  "#signingParticipant": {
+   "present": false
+  },
+  "#signing-review h3": {
+   "present": false
+  },
+  "#signingFingerprint": {
+   "present": false
+  }
+ }
+}

@@ -180,6 +180,9 @@ async function openPage(browser, opts = {}) {
     await page.clock.pauseAt(new Date(opts.clock.getTime() + 86400000));
     await page.clock.setSystemTime(opts.clock);
   }
+  // SPEC-002-070: Date stays at fixedTime while the viewer's own timers keep running (hover delays, debounces).
+  if (opts.fixedTime) await page.clock.setFixedTime(opts.fixedTime);
+  for (const script of opts.init || []) await page.addInitScript(script);
   await page.goto(pathToFileURL(opts.html || BOARD_HTML).href);
   try{ await page.evaluate(async()=>{await window.__fakefs?.ready;await window.__boardTest?.ready;}); }catch(e){ log.pageErrors.push("Startup: "+e.message); }
   return { ctx, page, log };
