@@ -109,13 +109,14 @@ test('journey 5 (Chromium): key notice, Review keys, paste the fingerprint, appr
  for(const left of [1,0]){
   if(left===1)await page.click('#keyNoticeReview');else await h.openToolbarTool(page,'reviewKeysTool');
   await expect(page.locator('#signingDialog')).toBeVisible();
-  const first=await page.locator('#signingParticipant').inputValue();
-  assert.equal(first,await page.locator('#signingParticipant option').first().getAttribute('value'),'the first key needing review is selected');
-  await expect(page.locator('#signingParticipant option:checked')).toContainText('needs review');
+  // SPEC-002-073: Keys opens filtered to the keys needing attention with the first row open.
+  const first=await native.selectedKey(page);
+  assert.equal(first,await page.locator('#signingKeys [data-key-row]:not([hidden])').first().getAttribute('data-key-row'),'the first key needing review is selected');
+  await expect(page.locator(`#signingKeys [data-key-row="${first}"] .signing-key-badge`)).toContainText('Needs review');
   await page.locator('#signingFingerprint').fill(byId[first].fingerprint);
   await native.action(page,'Trust exact fingerprint');
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Exact key approved locally');
-  await expect(page.locator('#signingPendingSummary')).toHaveText(left?'1 key needs review':'All registered keys are approved on this device');
+  await expect(page.locator('#signingPendingSummary')).toHaveText(left?'1 of 2 keys needs your review · 1 approved on this browser':'All keys reviewed · 2 approved on this browser');
   await native.closeSigning(page);
   if(left)await expect(page.locator('#keyNoticeText')).toHaveText('1 participant key is not approved on this device.');
   else await expect(notice).toBeHidden();

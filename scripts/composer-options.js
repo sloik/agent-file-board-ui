@@ -262,7 +262,7 @@ function wireComposerTarget(){
  feed.addEventListener('scroll',()=>{following=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;},{passive:true});
  if(typeof ResizeObserver==='function')new ResizeObserver(()=>{if(following)feed.scrollTop=feed.scrollHeight;}).observe($('#composer'));
  $('#tree').addEventListener('click',e=>{if(e.target.closest('[data-message-participant]')){e.preventDefault();closeSidebarDrawer(false);composerMenuOpen('participant',composerAnchor());}});
- $('#presenceList').addEventListener('click',e=>{const b=e.target.closest('[data-message-participant]');if(b){$('#presenceDialog').close();messageParticipant(b.dataset.messageParticipant);}});
+ $('#presenceList').addEventListener('click',e=>{if(e.target.closest('[data-signing-open]'))$('#presenceDialog').close();const b=e.target.closest('[data-message-participant]');if(b){$('#presenceDialog').close();messageParticipant(b.dataset.messageParticipant);}});
  composerTargetRender();
 }
 function applyComposerOptions(){

@@ -20,7 +20,8 @@ async function language(page,value){await page.click('#gear');await page.selectO
 async function fits(page){
   const overflow=await page.locator('#signingDialog').evaluate(dialog=>{
     const bounds=dialog.getBoundingClientRect();return {dialog:dialog.scrollWidth>dialog.clientWidth,viewport:bounds.left<0||bounds.right>innerWidth+1,
-      fields:[...dialog.querySelectorAll('input,select,button')].filter(el=>el.getClientRects().length).filter(el=>{const b=el.getBoundingClientRect();return b.left<bounds.left||b.right>bounds.right+1;}).map(el=>el.id||el.textContent)};
+      // SPEC-002-073: the Keys filter chips scroll sideways inside their own row, which itself must fit.
+      fields:[...dialog.querySelectorAll('input,select,button,.signing-key-filters')].filter(el=>el.getClientRects().length&&!el.closest('.signing-key-filters>*')).filter(el=>{const b=el.getBoundingClientRect();return b.left<bounds.left||b.right>bounds.right+1;}).map(el=>el.id||el.textContent)};
   });
   assert.deepEqual(overflow,{dialog:false,viewport:false,fields:[]},'task controls and long fingerprints fit the dialog');
 }
@@ -76,7 +77,7 @@ test('the signer is the persona in "I am": unlocking several keys signs only as 
 
 test('participant review rejects a mismatched fingerprint, explains approval and does not unlock a key',async t=>{
   const {page,peer}=await boot(t);await native.openSigning(page);
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
+  await native.selectKey(page,peer.participant);
   await act(page,'inspect-profile');
   await expect(page.locator('#signing-review')).toContainText(peer.fingerprint);
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint+'wrong');
@@ -137,13 +138,15 @@ test('a paused key read cannot unlock or report success after switching to anoth
 
 test('an idle signing dialog can review and approve a key after an ordinary same-board refresh',async t=>{
   const {page,peer}=await boot(t);await native.openSigning(page);
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
-  const fingerprint=page.getByLabel('Independently verified fingerprint',{exact:true}),input=await fingerprint.elementHandle(),participant=await page.locator('#signingParticipant').elementHandle();
+  await native.selectKey(page,peer.participant);
+  // SPEC-002-073: the participant is the open row in Keys; the row and the detail survive the refresh like the select did.
+  const fingerprint=page.getByLabel('Independently verified fingerprint',{exact:true}),input=await fingerprint.elementHandle(),participant=await page.locator(`#signingKeys [data-key-row="${peer.participant}"]`).elementHandle(),detail=await page.locator('#signingKeyDetail').elementHandle();
   await fingerprint.fill(peer.fingerprint);await fingerprint.focus();
   assert.equal(await page.evaluate(async()=>{const previous=B;await readFromHandle(true);return previous!==B;}),true,'the refresh replaces the model while retaining this board');
   await expect(fingerprint).toHaveValue(peer.fingerprint);await expect(fingerprint).toBeFocused();
   assert.equal(await input.evaluate(el=>el===document.querySelector('#signingFingerprint')),true);
-  assert.equal(await participant.evaluate(el=>el===document.querySelector('#signingParticipant')),true);
+  assert.equal(await participant.evaluate((el,id)=>el===document.querySelector(`#signingKeys [data-key-row="${id}"]`)&&el.getAttribute('aria-selected')==='true',peer.participant),true);
+  assert.equal(await detail.evaluate(el=>el===document.querySelector('#signingKeyDetail')&&!el.hidden),true);
   await act(page,'inspect-profile');await expect(page.locator('#signing-review')).toContainText(peer.fingerprint);
   await expect(page.locator('#signing-review .signing-feedback')).not.toContainText('Reopen Signing');
   await expect(fingerprint).toHaveValue(peer.fingerprint);
@@ -193,7 +196,7 @@ test('read-only exact-key approval and removal immediately reverify message elig
   assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'eligible');
   await native.closeSigning(page);await page.locator('.tcard[data-tk="room:architecture|T001"]').click();
   await expect(page.locator(`article[data-file="${h.path.basename(path)}"] .signing-facts summary`)).toContainText('Signing key trusted by you');
-  await native.openSigning(page);await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);await act(page,'remove-trust');
+  await native.openSigning(page);await native.selectKey(page,peer.participant);await act(page,'remove-trust');
   assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.trust,path),'unfamiliar');
   assert.equal(await page.evaluate(path=>B.byPath.get(path).signing.eligibility,path),'excluded');
   assert.deepEqual(await page.evaluate(()=>signingProvider.catalog()),[],'approval and re-verification never unlock a private key');
@@ -202,7 +205,8 @@ test('read-only exact-key approval and removal immediately reverify message elig
 
 test('Refresh key details reads a changed native profile while preserving the comparison draft and prior approval',async t=>{
   const f=await boot(t),{page,owner}=f;await native.openSigning(page);await native.trust(page,owner);
-  const input=page.getByLabel('Independently verified fingerprint',{exact:true});await input.fill(owner.fingerprint);
+  // The comparison draft is the value the approval left in the field (SPEC-002-073 folds the steps of an approved key).
+  const input=page.getByLabel('Independently verified fingerprint',{exact:true});await expect(input).toHaveValue(owner.fingerprint);
   const rotated=f.rotate();await native.importBoard(page,f.proj);
   // No model refresh here: the visible action must read the new physical files.
   assert.equal(await page.evaluate(id=>B.signingParticipants[id].fingerprint,owner.participant),owner.fingerprint);
@@ -216,7 +220,7 @@ test('Refresh key details reads a changed native profile while preserving the co
 
 test('failed approval persistence preserves the previous key status for both approve and remove',async t=>{
   const {page,peer}=await boot(t);await native.openSigning(page);
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(peer.participant);
+  await native.selectKey(page,peer.participant);
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(peer.fingerprint);
   await page.evaluate(()=>{window.workingSigningSave=signingSave;signingSave=async()=>{throw Error('Approval storage failure');};});
   await act(page,'trust');await expect(page.locator('#signing-review .signing-feedback')).toHaveText('Approval storage failure');

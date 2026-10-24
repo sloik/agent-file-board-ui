@@ -135,7 +135,7 @@ test('composer unlock: one step for the persona, approval only through the finge
   await expect(page.locator('#cBody')).toHaveValue('Signed from the composer');
   await notice(page).locator('.signing-notice-action').click();
   await expect(page.locator('#signingDialog')).toBeVisible();
-  assert.deepEqual(await page.evaluate(()=>[document.activeElement.id,document.querySelector('#signingParticipant').value,B.signingContext.state.pins]),['signingFingerprint',owner.participant,{}],'the button opens the review; it never approves');
+  assert.deepEqual(await page.evaluate(()=>[document.activeElement.id,document.querySelector('#signingKeys [data-key-row][aria-selected="true"]')?.dataset.keyRow,B.signingContext.state.pins]),['signingFingerprint',owner.participant,{}],'the button opens the review; it never approves');
   await page.fill('#signingFingerprint',owner.fingerprint);await action(page,'Trust exact fingerprint');await closeSigning(page);
   await status(page,'signed',{emoji:'🔏',label:`Will be signed as ${maya}`,action:`🔒 Lock ${maya}'s key`,alt:null});
   await page.click('#send');await expect(page.locator('#cBody')).toHaveValue('');
