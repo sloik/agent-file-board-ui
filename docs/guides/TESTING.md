@@ -7,8 +7,10 @@ layers here lock in how the page *looks* and how a person *moves through it* (SP
 
 `tests/visual.test.js` renders the named scenes in `tests/visual/scenes.js` in headless Chromium: topic,
 All messages, room, direct conversation, hidden sidebar, hover peek, phone drawer, Tools menu, topic "..."
-menu, destination popover, Message options, key notice with 3 pending keys (also in Polish), the Signing
-review task (empty, with a matching and with a mismatching pasted fingerprint) and the signing-board composer with its unlock offer. The composer scenes are also taken at
+menu, destination popover, Message options, key notice with 3 pending keys (also in Polish), the key
+review opened from that notice (with a matching and with a mismatching pasted fingerprint), the Keys list on
+a board with a key in every state (the list, a detail with the review steps, a changed key, and the phone
+accordion at 390x640) and the signing-board composer with its unlock offer. The composer scenes are also taken at
 1280x460, 390x640 and 320x360, the topic view in the dark and Dracula themes and in Polish.
 
 Each scene is deterministic: a fixed board, persona, view, draft, clock (`2026-10-20 10:00 UTC`),
