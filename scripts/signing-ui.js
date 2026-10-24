@@ -716,6 +716,7 @@ async function signingDialog(request) {
   const origin = dirHandle, base = baseHandle, location = signingLocation, boardId = B.signingContext?.boardId, C = SigningContract, text = exText;
   const dialog = document.createElement("dialog");
   dialog.id = "signingDialog";
+  dialog.className = "afb-dialog";
   const node = (tag, content, parent, cls) => {
     const n = document.createElement(tag);
     if (content) n.textContent = content;
@@ -723,9 +724,11 @@ async function signingDialog(request) {
     if (parent) parent.append(n);
     return n;
   };
-  const head = node("div", "", dialog, "vocabulary-head signing-head");
+  const head = node("div", "", dialog, "vocabulary-head afb-dialog-head signing-head");
   node("h2", text("Message signing", "Podpisywanie wiadomości"), head);
-  const close = node("button", text("Close", "Zamknij"), head, "btn");
+  const close = node("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+  close.id = "signingClose";
+  close.type = "button";
   close.dataset.action = "close";
   const taskNav = node("nav", "", head, "signing-nav");
   taskNav.setAttribute("aria-label", text("Signing tasks", "Zadania podpisów"));

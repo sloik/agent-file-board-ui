@@ -247,6 +247,7 @@ function historyDialog() {
   document.getElementById("historyDialog")?.remove();
   const dialog = document.createElement("dialog");
   dialog.id = "historyDialog";
+  dialog.className = "afb-dialog";
   dialog.setAttribute("aria-labelledby", "historyDialogTitle");
   const node = (tag, content, parent, cls) => {
     const n = document.createElement(tag);
@@ -255,10 +256,12 @@ function historyDialog() {
     if (parent) parent.append(n);
     return n;
   };
-  const head = node("div", "", dialog, "vocabulary-head");
+  const head = node("div", "", dialog, "vocabulary-head afb-dialog-head");
   const title = node("h2", text("Missing-message check", "Kontrola brakujących wiadomości"), head);
   title.id = "historyDialogTitle";
-  const close = node("button", text("Close", "Zamknij"), head, "btn");
+  const close = node("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+  close.id = "historyClose";
+  close.type = "button";
   close.dataset.action = "close";
   close.onclick = () => dialog.close();
   const body = node("div", "", dialog, "history-body");
@@ -446,9 +449,16 @@ function historyReview(plan, summary, weakenText) {
     document.getElementById("historyReviewDialog")?.remove();
     const dialog = document.createElement("dialog"), text = exText;
     dialog.id = "historyReviewDialog";
+    dialog.className = "afb-dialog afb-dialog-compact";
     dialog.setAttribute("aria-labelledby", "historyReviewTitle");
     const add = (tag, content, parent = dialog, cls = "") => { const n = document.createElement(tag); if (content) n.textContent = content; if (cls) n.className = cls; parent.append(n); return n; };
-    add("h2", text("Review the change to config.json", "Sprawdź zmianę w config.json")).id = "historyReviewTitle";
+    const head = add("div", "", dialog, "vocabulary-head afb-dialog-head");
+    add("h2", text("Review the change to config.json", "Sprawdź zmianę w config.json"), head).id = "historyReviewTitle";
+    // Close answers "no", like Cancel and Esc.
+    const close = add("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+    close.id = "historyReviewClose";
+    close.type = "button";
+    close.dataset.action = "close";
     for (const line of summary) add("p", line, dialog, "history-review-line");
     add("p", text("This writes the shared board setting in .agent-board/config.json, exactly as shown. It is refused if the file changes before you confirm. Review it in Git like any other config change.", "To zapisze wspólne ustawienie tablicy w .agent-board/config.json dokładnie tak, jak pokazano. Zapis zostanie odrzucony, jeśli plik zmieni się przed potwierdzeniem. Przejrzyj go w Git jak każdą zmianę konfiguracji."), dialog, "history-note");
     const diff = add("pre", historyDiff(plan.before, plan.after), dialog, "history-diff");
@@ -464,7 +474,7 @@ function historyReview(plan, summary, weakenText) {
       confirm.id = "historyWeakenConfirm";
       label.append(confirm, " " + weakenText);
     }
-    const actions = add("div", "", dialog, "history-review-actions");
+    const actions = add("div", "", dialog, "history-review-actions afb-dialog-foot");
     const cancel = add("button", text("Cancel", "Anuluj"), actions, "btn");
     const ok = add("button", text("Write config.json", "Zapisz config.json"), actions, "btn primary");
     cancel.type = ok.type = "button";
@@ -472,7 +482,7 @@ function historyReview(plan, summary, weakenText) {
     ok.dataset.action = "confirm";
     let answer = false;
     if (confirm) { ok.disabled = true; confirm.onchange = () => { ok.disabled = !confirm.checked; }; }
-    cancel.onclick = () => dialog.close();
+    cancel.onclick = close.onclick = () => dialog.close();
     ok.onclick = () => { answer = true; dialog.close(); };
     dialog.addEventListener("close", () => { dialog.remove(); resolve(answer); }, { once: true });
     document.body.append(dialog);
@@ -659,11 +669,13 @@ function historySettingsDialog(kind, key, message = "") {
   document.getElementById("historySettingsDialog")?.remove();
   const dialog = document.createElement("dialog");
   dialog.id = "historySettingsDialog";
+  dialog.className = "afb-dialog";
   dialog.setAttribute("aria-labelledby", "historySettingsTitle");
   const add = (tag, content, parent = dialog, cls = "") => { const n = document.createElement(tag); if (content) n.textContent = content; if (cls) n.className = cls; parent.append(n); return n; };
-  const head = add("div", "", dialog, "vocabulary-head");
+  const head = add("div", "", dialog, "vocabulary-head afb-dialog-head");
   add("h2", text("Room history and signing", "Historia i podpisy pokoju"), head).id = "historySettingsTitle";
-  const close = add("button", text("Close", "Zamknij"), head, "btn");
+  const close = add("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+  close.id = "historySettingsClose";
   close.type = "button";
   close.dataset.action = "close";
   close.onclick = () => dialog.close();
@@ -698,7 +710,7 @@ function historySettingsDialog(kind, key, message = "") {
   if (!writable) add("p", text("Open the board folder with write access to change these settings.", "Otwórz folder tablicy z zapisem, aby zmienić te ustawienia."), dialog, "history-note");
   const result = add("p", message, dialog, "history-settings-result");
   result.setAttribute("role", "status");
-  const apply = add("button", text("Review change…", "Przejrzyj zmianę…"), dialog, "btn primary");
+  const apply = add("button", text("Review change…", "Przejrzyj zmianę…"), add("div", "", dialog, "afb-dialog-foot"), "btn primary");
   apply.type = "button";
   apply.dataset.action = "apply";
   apply.disabled = !writable;
@@ -728,7 +740,12 @@ function historySettingsDialog(kind, key, message = "") {
       if (dialog.open) { dialog.close(); historySettingsDialog(kind, key, text("Saved in config.json.", "Zapisano w config.json.")); }
     } catch (error) {
       result.textContent = text("Not changed: ", "Nie zmieniono: ") + (error?.message || String(error));
-    } finally { apply.disabled = !writable; }
+    } finally {
+      apply.disabled = !writable;
+      // The review dialog returns focus to Review change, which was disabled while it was open.
+      const lost = !document.activeElement || document.activeElement === document.body || document.activeElement === dialog;
+      if (dialog.open && lost && !apply.disabled) apply.focus();
+    }
   };
   dialog.addEventListener("close", () => dialog.remove(), { once: true });
   document.body.append(dialog);

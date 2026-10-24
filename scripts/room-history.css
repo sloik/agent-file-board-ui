@@ -2,7 +2,6 @@
 .history-check[hidden]{display:none}
 .history-check[data-tier="neutral"]{border-style:dashed}
 .history-check[data-tier="warning"]{background:var(--warn-bg);color:var(--warn-ink)}
-#historyDialog{width:min(720px,calc(100vw - 32px));box-sizing:border-box;overflow-wrap:anywhere}
 .history-body{display:grid;gap:10px;line-height:1.5;min-width:0}
 .history-body>*{margin:0;min-width:0}
 .history-scope{color:var(--muted);font-size:.9em}
@@ -18,20 +17,18 @@
 .history-command{display:block;padding:10px;background:var(--panel2);border-radius:7px;font-size:.85em;user-select:all;overflow-wrap:anywhere}
 .history-more>summary{cursor:pointer;font-weight:650}
 .history-body pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:30vh;overflow:auto;font-size:.8em;padding:10px;background:var(--panel2)}
-@media(max-width:600px){#historyDialog{--dialog-pad:14px;padding:14px}}
 .history-recording{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
 .history-recording>p{margin:0}
 .history-recording-setting{font-weight:650}
 .history-trust-hint{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
 .history-trust-hint .btn{white-space:normal;text-align:left}
-#historyReviewDialog,#historySettingsDialog{width:min(720px,calc(100vw - 32px));box-sizing:border-box;overflow-wrap:anywhere;line-height:1.5}
+#historyReviewDialog,#historySettingsDialog{line-height:1.5}
 #historyReviewDialog pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:40vh;overflow:auto;font-size:.8em;padding:10px;background:var(--panel2)}
 .history-review-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:10px}
 .history-weaken,.history-option{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-weight:600}
 .history-weaken{padding:8px 10px;background:var(--warn-bg);color:var(--warn-ink);border-radius:7px}
 .history-weaken input,.history-option input{margin-top:.25em;flex:none}
 #historySettingsDialog .history-note{color:var(--muted);font-size:.9em;margin:4px 0}
-#historySettingsDialog [data-action="apply"]{margin-top:8px}
 .history-create{grid-column:1/-1;min-width:0}
 .history-create-fold>summary{cursor:pointer;color:var(--muted);font-size:.9em;font-weight:600}
 .history-create-body{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0;margin-top:4px}

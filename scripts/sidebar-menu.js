@@ -51,7 +51,7 @@ function wireSidebarMenu(){
  $("#tree").addEventListener("keydown",event=>{const trigger=event.target.closest("[data-notification-menu]");if(trigger&&["ArrowDown","ArrowUp"].includes(event.key)){event.preventDefault();event.stopImmediatePropagation();openSidebarMenu(trigger,event.key==="ArrowUp");}},true);
  $("#sidebarNotificationToggle").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}const following=menu.state.follows.some(item=>item.kind===menu.kind&&item.key===menu.key);changeNotificationFollow(menu.kind,menu.key,following);closeSidebarMenu(true);};
  $("#sidebarNotificationSettings").onclick=()=>openSidebarNotificationSettings(sidebarMenu);
- $("#sidebarHistorySettings").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}closeSidebarMenu(false);historySettingsDialog(menu.kind,menu.key);};
+ $("#sidebarHistorySettings").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}closeSidebarMenu(true);historySettingsDialog(menu.kind,menu.key);};
  document.addEventListener("pointerdown",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);},true);
  document.addEventListener("focusin",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);});
  $("#sidebarNotificationMenu").addEventListener("keydown",event=>{

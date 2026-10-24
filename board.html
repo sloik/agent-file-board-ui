@@ -210,7 +210,6 @@ body.resizing{cursor:col-resize;user-select:none}
 .signing-state-warning{background:var(--warn-bg);color:var(--warn-ink)}
 .signing-details-label{font-size:.9em;text-decoration:underline;margin-left:3px}
 .signing-state-explanations{line-height:1.5;margin:10px 0}.signing-state-explanations dt{font-weight:650;margin-top:8px}.signing-state-explanations dd{margin:3px 0 8px}
-#signingDialog{width:min(1040px,calc(100vw - 32px));box-sizing:border-box;overflow-wrap:anywhere}
 #signingDialog .signing-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
 .signing-nav{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
 .signing-nav .btn{flex:1 1 80px}
@@ -330,11 +329,11 @@ code.signing-fp{display:flex;flex-wrap:wrap;gap:2px 7px;font-size:.85em;min-widt
 #signing-review .btn{min-height:40px}
 /* The detail's heading already names the participant. */.signing-key-detail .signing-key-card>strong:first-child{display:none}.signing-key-detail .signing-key-card>p:first-of-type{margin-top:0}
 .signing-key-card code.signing-fp{display:block}.signing-key-card code.signing-fp span{display:inline-block;margin-right:.45em}
-@media (min-width:900px){.signing-keys-layout>.signing-key-detail{position:sticky;top:calc(var(--signing-head,120px) + 4px);max-height:calc(80vh - var(--signing-head,120px) - 52px);overflow:auto}}
+@media (min-width:900px){.signing-keys-layout>.signing-key-detail{position:sticky;top:calc(var(--signing-head,120px) + 4px);max-height:calc(var(--dialog-max-h,80vh) - var(--signing-head,120px) - 52px);overflow:auto}}
 .signing-keys>.signing-key-detail .signing-key-detail-head>:is(h4,.signing-key-detail-facts){display:none}
 @media (max-width:600px){.signing-key-row{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"avatar who" "avatar facts" "action action"}.signing-key-primary{justify-self:stretch;min-height:44px}.signing-key-note{justify-self:start;text-align:left;max-width:none}#signing-review .btn{min-height:44px}.signing-key-filter{min-height:40px}}
 @media(max-width:600px){.signing-compare-values{grid-template-columns:1fr;gap:2px}.signing-compare-values dd{margin-bottom:6px}}
-@media(max-width:600px){#signingDialog{--dialog-pad:14px;padding:14px}.signing-card,.signing-example{padding:12px}.signing-example-steps{grid-template-columns:1fr}.signing-legend{grid-template-columns:1fr;gap:4px}.signing-legend dd{margin-bottom:10px}.signing-actions>.btn{flex:1 1 150px}}
+@media(max-width:600px){.signing-card,.signing-example{padding:12px}.signing-example-steps{grid-template-columns:1fr}.signing-legend{grid-template-columns:1fr;gap:4px}.signing-legend dd{margin-bottom:10px}.signing-actions>.btn{flex:1 1 150px}}
 .choice-form fieldset{border:0;margin:0;padding:0;min-width:0}
 .choice-form legend{font-weight:700;overflow-wrap:anywhere}
 .choice-form label{display:flex;align-items:baseline;gap:8px;padding:5px 0;overflow-wrap:anywhere}
@@ -464,7 +463,7 @@ mark{background:var(--mark);color:inherit;border-radius:3px}
 .hint{font-size:12px;color:var(--muted)}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1f2633;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:.95}
-dialog{color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(800px,calc(100vw - 32px));max-height:80vh;padding:20px}
+dialog{color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
 dialog::backdrop{background:rgba(0,0,0,.4)}
 .vocabulary-head{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .vocabulary-head h2{margin:0;font-size:18px}
@@ -480,7 +479,6 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .presence-active{color:var(--p3)}
 .presence-conflict,.presence-unknown{color:var(--warn-ink)}
 .presence-ghost{opacity:.72}
-#presenceDialog{width:min(700px,calc(100vw - 32px));max-height:85vh;overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px}
 .presence-person{border-top:1px solid var(--line);padding:12px 0;overflow-wrap:anywhere}
 .presence-person h3{font-size:14px;margin:0 0 6px;color:var(--c)}
 .presence-session{margin:8px 0 0 16px;font-size:13px}
@@ -558,7 +556,6 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .board-form .form-error-space{visibility:hidden}.board-form .form-field-error{margin:4px 0;font-size:.9em}.board-form .form-table-scroll tbody th{white-space:nowrap;min-width:72px}
 
 /* Offline authoring, answer review and local draft management. */
-#locationsDialog,#structuredDialog,#draftsDialog{width:min(1050px,94vw);max-height:90vh;box-sizing:border-box;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
 .tool-fields{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:12px 0}.tool-fields label{display:flex;flex-direction:column;gap:5px}
 #structuredJson{display:block;width:100%;box-sizing:border-box;min-height:220px;resize:vertical;font-family:ui-monospace,monospace;padding:10px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px}
 #structuredPreview{margin-top:16px;overflow-wrap:anywhere}#structuredPreview:empty{display:none}.authoring-form .form-storage-status:empty{display:none}.tool-result{white-space:pre-wrap;overflow-wrap:anywhere}.tool-actions,.draft-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
@@ -578,7 +575,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .builder-option,.builder-row,.builder-rule{padding:8px;border-bottom:1px solid var(--line)}
 #formBuilder summary{overflow-wrap:anywhere;cursor:pointer}
 
-#locationsDialog{width:min(650px,94vw)}.location-entry{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.location-entry p{margin:5px 0}
+.location-entry{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.location-entry p{margin:5px 0}
 
 :root[data-theme="dracula"]{color-scheme:dark;--bg:#282a36;--panel:#21222c;--panel2:#303341;--ink:#f8f8f2;--muted:#b3bbd8;--line:#54586f;--hover:#44475a;--accent:#bd93f9;--on-accent:#282a36;--mention:#44475a;--mention-ink:#f1fa8c;--mark:#44475a;--warn-bg:#493c36;--warn-ink:#ffb86c;--shadow:none;--p0:#7aa2ff;--p1:#c39bff;--p2:#ff86b0;--p3:#5fd39a;--p4:#ffb066;--p5:#5fd0e8;--p6:#ff8f78;--p7:#c3d36b;--p-unknown:#7a7f87}
 input{accent-color:var(--accent)}
@@ -605,10 +602,42 @@ input{accent-color:var(--accent)}
 /* Keep exit controls reachable while long dialog content scrolls. */
 dialog{--dialog-pad:20px;overflow:auto;scroll-padding-top:80px}
 .report-modal{--dialog-pad:16px}
-dialog>.vocabulary-head,dialog>.report-modal-toolbar{
+dialog>.report-modal-toolbar{
  position:sticky;top:calc(-1 * var(--dialog-pad));z-index:10;
  margin:calc(-1 * var(--dialog-pad)) calc(-1 * var(--dialog-pad)) 12px;
  padding:12px var(--dialog-pad);background:var(--panel);border-bottom:1px solid var(--line);isolation:isolate
+}
+/* SPEC-002-075: one shell for every tool dialog. Its size tiers are set here and nowhere else; the dialog
+   itself scrolls (scroll restoring code reads dialog.scrollTop), the header with Close top-right and the
+   optional footer with the dialog's own actions stay pinned. Phones get a full-screen sheet. */
+:root{--dialog-wide-w:min(1200px,calc(100vw - 48px));--dialog-wide-h:min(88dvh,960px);--dialog-compact-w:min(560px,calc(100vw - 32px))}
+dialog.afb-dialog{
+ --dialog-w:var(--dialog-wide-w);--dialog-max-h:var(--dialog-wide-h);--dialog-pad-top:var(--dialog-pad);--dialog-pad-bottom:var(--dialog-pad);
+ box-sizing:border-box;width:var(--dialog-w);max-width:none;max-height:var(--dialog-max-h);
+ padding:var(--dialog-pad-top) var(--dialog-pad) var(--dialog-pad-bottom);overflow:auto;overflow-wrap:anywhere;
+ color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px
+}
+dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
+.afb-dialog>.afb-dialog-head{
+ display:flex;gap:12px;align-items:center;justify-content:space-between;
+ position:sticky;top:calc(-1 * var(--dialog-pad-top));z-index:10;
+ margin:calc(-1 * var(--dialog-pad-top)) calc(-1 * var(--dialog-pad)) 12px;
+ padding:calc(var(--dialog-pad-top) - var(--dialog-pad) + 12px) var(--dialog-pad) 12px;background:var(--panel);border-bottom:1px solid var(--line);isolation:isolate
+}
+.afb-dialog-head>h2,.afb-dialog-head h2{margin:0;font-size:18px;min-width:0;overflow-wrap:anywhere}
+.afb-dialog-head>.afb-dialog-close{flex:none;margin-left:auto}
+.afb-dialog>.afb-dialog-foot{
+ display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;
+ position:sticky;bottom:calc(-1 * var(--dialog-pad-bottom));z-index:10;
+ margin:12px calc(-1 * var(--dialog-pad)) calc(-1 * var(--dialog-pad-bottom));
+ padding:12px var(--dialog-pad) calc(var(--dialog-pad-bottom) - var(--dialog-pad) + 12px);background:var(--panel);border-top:1px solid var(--line);isolation:isolate
+}
+@media (max-width:600px),(max-height:480px){
+ dialog.afb-dialog{
+  --dialog-pad:14px;--dialog-max-h:100dvh;--dialog-pad-top:calc(var(--dialog-pad) + env(safe-area-inset-top,0px));--dialog-pad-bottom:calc(var(--dialog-pad) + env(safe-area-inset-bottom,0px));
+  width:100dvw;height:100dvh;max-height:none;margin:0;border:0;border-radius:0;
+  padding-left:calc(var(--dialog-pad) + env(safe-area-inset-left,0px));padding-right:calc(var(--dialog-pad) + env(safe-area-inset-right,0px))
+ }
 }
 .vocabulary-head h2,.report-modal-toolbar h4{min-width:0;overflow-wrap:anywhere}
 .vocabulary-head>button,.report-modal-toolbar>button{flex-shrink:0}
@@ -629,7 +658,6 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 #folderName:hover,#folderName:focus-visible{color:var(--ink);background:var(--hover);border-color:var(--line)}
 .folder-picker-head{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .folder-picker-head button{max-width:100%}
-#notificationsDialog{width:min(680px,94vw);max-height:90vh;box-sizing:border-box;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
 .notification-entry{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.notification-entry p{margin:6px 0}.notification-scope{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.notification-scope select{flex:1;min-width:0;max-width:100%}#notificationsScopes,#notificationsList,#notificationsFollows{min-width:0;overflow-wrap:anywhere}
 .thread-row{position:relative}.thread-row.has-scope-menu>.tcard{padding-right:40px}
 .scope-menu-trigger{flex:none;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted);width:30px;min-height:30px;padding:2px;font-weight:700;font-size:18px;line-height:1;letter-spacing:1px}
@@ -638,7 +666,7 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 #sidebarNotificationMenu{position:fixed;z-index:60;width:max-content;max-width:calc(100vw - 16px);box-sizing:border-box;padding:5px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 24px #0003}
 #sidebarNotificationMenu[hidden]{display:none}#sidebarNotificationMenu button{display:block;width:100%;border:0;border-radius:5px;background:none;color:inherit;padding:9px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere}#sidebarNotificationMenu button:hover,#sidebarNotificationMenu button:focus-visible{background:var(--hover)}
 
-.extensions-dialog{overflow-wrap:anywhere;width:min(800px,92vw);max-height:85vh;overflow:auto;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}.extensions-dialog section{border-top:1px solid var(--line);padding:12px 0}.extensions-dialog pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto}.board-extension select,.board-extension textarea{max-width:100%;width:100%}.board-extension{overflow-wrap:anywhere}.board-extension textarea{font:inherit}.extension-row{display:flex;gap:12px;flex-wrap:wrap}.extension-column{display:grid;gap:8px}.board-extension label{display:grid;gap:4px}.board-extension input[type=checkbox]{width:auto;justify-self:start}.board-extension table{display:block;overflow:auto}
+.extensions-dialog section{border-top:1px solid var(--line);padding:12px 0}.extensions-dialog pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto}.board-extension select,.board-extension textarea{max-width:100%;width:100%}.board-extension{overflow-wrap:anywhere}.board-extension textarea{font:inherit}.extension-row{display:flex;gap:12px;flex-wrap:wrap}.extension-column{display:grid;gap:8px}.board-extension label{display:grid;gap:4px}.board-extension input[type=checkbox]{width:auto;justify-self:start}.board-extension table{display:block;overflow:auto}
 .extension-chrome{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}.extension-chrome small{color:var(--muted);font-size:.8em}.extension-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.extension-controls [hidden]{display:none}.extension-refresh-hint{flex-basis:100%;color:var(--muted);font-size:.85em}.board-extension[data-extension-state]{border-color:var(--warn-ink)}.extension-notice{font-size:.9em}.extensions-dialog [data-extension-artifact]:focus{outline:2px solid var(--accent);outline-offset:3px}.extensions-dialog label{display:flex;align-items:center;gap:6px;margin:12px 0}
 </style>
 <style>
@@ -650,7 +678,6 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 .history-check[hidden]{display:none}
 .history-check[data-tier="neutral"]{border-style:dashed}
 .history-check[data-tier="warning"]{background:var(--warn-bg);color:var(--warn-ink)}
-#historyDialog{width:min(720px,calc(100vw - 32px));box-sizing:border-box;overflow-wrap:anywhere}
 .history-body{display:grid;gap:10px;line-height:1.5;min-width:0}
 .history-body>*{margin:0;min-width:0}
 .history-scope{color:var(--muted);font-size:.9em}
@@ -666,20 +693,18 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 .history-command{display:block;padding:10px;background:var(--panel2);border-radius:7px;font-size:.85em;user-select:all;overflow-wrap:anywhere}
 .history-more>summary{cursor:pointer;font-weight:650}
 .history-body pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:30vh;overflow:auto;font-size:.8em;padding:10px;background:var(--panel2)}
-@media(max-width:600px){#historyDialog{--dialog-pad:14px;padding:14px}}
 .history-recording{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
 .history-recording>p{margin:0}
 .history-recording-setting{font-weight:650}
 .history-trust-hint{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
 .history-trust-hint .btn{white-space:normal;text-align:left}
-#historyReviewDialog,#historySettingsDialog{width:min(720px,calc(100vw - 32px));box-sizing:border-box;overflow-wrap:anywhere;line-height:1.5}
+#historyReviewDialog,#historySettingsDialog{line-height:1.5}
 #historyReviewDialog pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:40vh;overflow:auto;font-size:.8em;padding:10px;background:var(--panel2)}
 .history-review-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:10px}
 .history-weaken,.history-option{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-weight:600}
 .history-weaken{padding:8px 10px;background:var(--warn-bg);color:var(--warn-ink);border-radius:7px}
 .history-weaken input,.history-option input{margin-top:.25em;flex:none}
 #historySettingsDialog .history-note{color:var(--muted);font-size:.9em;margin:4px 0}
-#historySettingsDialog [data-action="apply"]{margin-top:8px}
 .history-create{grid-column:1/-1;min-width:0}
 .history-create-fold>summary{cursor:pointer;color:var(--muted);font-size:.9em;font-weight:600}
 .history-create-body{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;min-width:0;margin-top:4px}
@@ -693,7 +718,7 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
 </head>
 <body>
 <div id="sidebarNotificationMenu" role="menu" hidden><button type="button" role="menuitem" id="sidebarNotificationToggle"></button><button type="button" role="menuitem" id="sidebarNotificationSettings" data-i18n="notify_scope_settings"></button><button type="button" role="menuitem" id="sidebarHistorySettings" hidden></button></div>
-<dialog id="notificationsDialog"><div class="vocabulary-head"><h2 data-i18n="notify_title"></h2><button class="btn" id="notificationsClose" data-i18n="vocabulary_close"></button></div>
+<dialog id="notificationsDialog" class="afb-dialog"><div class="vocabulary-head afb-dialog-head"><h2 data-i18n="notify_title"></h2><button class="btn afb-dialog-close" type="button" id="notificationsClose" data-i18n="vocabulary_close"></button></div>
 <p class="hint" data-i18n="notify_explain"></p><p id="notificationsStorage" class="hint"></p>
 <div class="tool-actions"><button class="btn" id="notificationsPermission" data-i18n="notify_enable"></button><button class="btn" id="notificationsDisable" data-i18n="notify_disable"></button><span id="notificationsPermissionState" class="hint" role="status"></span></div>
 <h3 data-i18n="notify_follows"></h3><div id="notificationsScopes"></div><div id="notificationsFollows"></div>
@@ -801,11 +826,11 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
     </div>
   </section>
 </div>
-<dialog id="locationsDialog" aria-labelledby="locationsHeading"><div class="vocabulary-head"><div class="folder-picker-head"><h2 id="locationsHeading" data-i18n="folder_picker"></h2><button class="btn primary" type="button" id="open"></button></div><button class="btn" id="locationsClose" data-i18n="vocabulary_close"></button></div>
+<dialog id="locationsDialog" class="afb-dialog" aria-labelledby="locationsHeading"><div class="vocabulary-head afb-dialog-head"><div class="folder-picker-head"><h2 id="locationsHeading" data-i18n="folder_picker"></h2><button class="btn primary" type="button" id="open"></button></div><button class="btn afb-dialog-close" type="button" id="locationsClose" data-i18n="vocabulary_close"></button></div>
  <p class="hint" data-i18n="locations_note"></p><p id="locationsStorage" class="hint" role="status"></p><p id="locationsResult" class="tool-result" role="status"></p><h3 data-i18n="locations_open"></h3><div id="locationsList"></div><button class="btn" id="locationsClear" data-i18n="locations_clear"></button>
 </dialog>
-<dialog id="structuredDialog" aria-labelledby="structuredHeading">
- <div class="vocabulary-head"><h2 id="structuredHeading" data-i18n="authoring_open"></h2><button class="btn" id="structuredClose" data-i18n="vocabulary_close"></button></div>
+<dialog id="structuredDialog" class="afb-dialog" aria-labelledby="structuredHeading">
+ <div class="vocabulary-head afb-dialog-head"><h2 id="structuredHeading" data-i18n="authoring_open"></h2><button class="btn afb-dialog-close" type="button" id="structuredClose" data-i18n="vocabulary_close"></button></div>
  <p class="hint" data-i18n="authoring_note"></p>
  <div class="tool-fields"><label><span data-i18n="authoring_kind"></span><select id="structuredKind"><option value="report" data-i18n="authoring_report"></option><option value="form" data-i18n="authoring_form"></option></select></label>
  <label><span data-i18n="authoring_example"></span><select id="structuredExample"><option value="report-v1" data-i18n="authoring_report_v1"></option><option value="report-v2" data-i18n="authoring_report_v2"></option><option value="report-v3" data-i18n="authoring_report_v3"></option><option value="form-v2" data-i18n="authoring_form_v2"></option><option value="form-v3" data-i18n="authoring_form_v3"></option></select></label><button class="btn" id="structuredLoad" data-i18n="authoring_load"></button></div>
@@ -821,16 +846,16 @@ dialog>.vocabulary-head,dialog>.report-modal-toolbar{
  <div class="tool-actions"><button class="btn" id="structuredValidate" data-i18n="authoring_validate"></button><button class="btn primary" id="structuredAttach" data-i18n="authoring_attach" disabled></button></div>
  <p id="structuredError" class="tool-result" role="status"></p><div id="structuredPreview"></div>
 </dialog>
-<dialog id="draftsDialog" aria-labelledby="draftsHeading"><div class="vocabulary-head"><h2 id="draftsHeading" data-i18n="draft_open"></h2><button class="btn" id="draftsClose" data-i18n="vocabulary_close"></button></div>
+<dialog id="draftsDialog" class="afb-dialog" aria-labelledby="draftsHeading"><div class="vocabulary-head afb-dialog-head"><h2 id="draftsHeading" data-i18n="draft_open"></h2><button class="btn afb-dialog-close" type="button" id="draftsClose" data-i18n="vocabulary_close"></button></div>
  <p class="hint" data-i18n="draft_note"></p><div class="tool-actions"><button class="btn" id="draftImportPick" data-i18n="draft_import"></button><input id="draftImport" type="file" accept="application/json,.json" hidden></div>
  <p id="draftManagerResult" role="status" class="tool-result"></p><div id="draftManagerList"></div>
 </dialog>
 
-<dialog id="upgradeDialog" aria-labelledby="upgradeHeading"><div class="vocabulary-head"><h2 id="upgradeHeading" data-i18n="upgrade_title"></h2><button class="btn" id="upgradeClose" data-i18n="vocabulary_close"></button></div><p id="upgradeVersions"></p><p id="upgradeFolder"></p><p data-i18n="upgrade_explain"></p><p data-i18n="upgrade_preserve"></p><pre id="upgradeFiles" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p id="upgradeResult" role="status" style="white-space:pre-wrap"></p><div class="row2c"><button class="btn" id="upgradePreview" data-i18n="upgrade_preview"></button><button class="btn primary" id="upgradeApply" data-i18n="upgrade_apply" disabled></button></div><details id="upgradeDetails"><summary data-i18n="upgrade_cli"></summary><pre id="upgradeCommands" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p data-i18n="upgrade_online"></p><p data-i18n="upgrade_viewer"></p><p><a href="https://github.com/sloik/agent-file-board-ui/blob/main/docs/UPGRADING.md" target="_blank" rel="noopener noreferrer" data-i18n="upgrade_guide"></a> · <a href="https://github.com/sloik/agent-file-board-ui/tags" target="_blank" rel="noopener noreferrer" data-i18n="upgrade_download"></a></p></details></dialog>
-<dialog id="vocabulary"><div class="vocabulary-head"><h2 data-i18n="vocabulary_title"></h2><button class="btn" id="vocabularyClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="vocabulary_source"></p><pre id="vocabularyText"></pre></dialog>
-<dialog id="presenceDialog"><div class="vocabulary-head"><h2 data-i18n="presence_title"></h2><button class="btn" id="presenceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="presence_note"></p><p class="hint" id="presenceSnapshot"></p><button class="btn" id="browserPresence" hidden></button><div id="presenceList"></div></dialog>
-<dialog id="repairDialog"><div class="vocabulary-head"><h2 data-i18n="repairs_title"></h2><button class="btn" id="repairClose" data-i18n="vocabulary_close"></button></div><p data-i18n="repairs_note"></p><label class="guidance-root"><span data-i18n="repair_message"></span><select id="repairSelect"></select></label><p id="repairIssue" class="repair-diagnostic"></p><label class="guidance-root"><span data-i18n="repair_reason"></span><input id="repairReason"></label><label class="guidance-root"><span data-i18n="repair_corrected"></span><textarea id="repairText" rows="12"></textarea></label><div class="guidance-actions"><button class="btn" id="repairWithdraw" data-i18n="repair_withdraw"></button><button class="btn primary" id="repairSave" data-i18n="repair_save"></button></div><p id="repairResult" role="status"></p></dialog>
-<dialog id="guidanceDialog"><div class="vocabulary-head"><h2 id="guidanceTitle" data-i18n="guidance_title"></h2><button class="btn" id="guidanceClose" data-i18n="vocabulary_close"></button></div><p data-i18n="guidance_note"></p><p class="hint" data-i18n="guidance_usage"></p><p class="hint" data-i18n="guidance_cli"></p><label class="guidance-root"><span data-i18n="guidance_folder"></span><input id="guidanceFolder" type="text" spellcheck="false" placeholder="/Users/you/project/.agent-board"></label><p class="hint" data-i18n="guidance_editor_note"></p><p><a href="https://github.com/sloik/agent-file-board-ui#open-guidance-in-your-editor" target="_blank" rel="noopener noreferrer" data-i18n="guidance_setup"></a></p><div id="guidanceDocs"></div></dialog>
+<dialog id="upgradeDialog" class="afb-dialog" aria-labelledby="upgradeHeading"><div class="vocabulary-head afb-dialog-head"><h2 id="upgradeHeading" data-i18n="upgrade_title"></h2><button class="btn afb-dialog-close" type="button" id="upgradeClose" data-i18n="vocabulary_close"></button></div><p id="upgradeVersions"></p><p id="upgradeFolder"></p><p data-i18n="upgrade_explain"></p><p data-i18n="upgrade_preserve"></p><pre id="upgradeFiles" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p id="upgradeResult" role="status" style="white-space:pre-wrap"></p><div class="row2c"><button class="btn" id="upgradePreview" data-i18n="upgrade_preview"></button><button class="btn primary" id="upgradeApply" data-i18n="upgrade_apply" disabled></button></div><details id="upgradeDetails"><summary data-i18n="upgrade_cli"></summary><pre id="upgradeCommands" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p data-i18n="upgrade_online"></p><p data-i18n="upgrade_viewer"></p><p><a href="https://github.com/sloik/agent-file-board-ui/blob/main/docs/UPGRADING.md" target="_blank" rel="noopener noreferrer" data-i18n="upgrade_guide"></a> · <a href="https://github.com/sloik/agent-file-board-ui/tags" target="_blank" rel="noopener noreferrer" data-i18n="upgrade_download"></a></p></details></dialog>
+<dialog id="vocabulary" class="afb-dialog"><div class="vocabulary-head afb-dialog-head"><h2 data-i18n="vocabulary_title"></h2><button class="btn afb-dialog-close" type="button" id="vocabularyClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="vocabulary_source"></p><pre id="vocabularyText"></pre></dialog>
+<dialog id="presenceDialog" class="afb-dialog"><div class="vocabulary-head afb-dialog-head"><h2 data-i18n="presence_title"></h2><button class="btn afb-dialog-close" type="button" id="presenceClose" data-i18n="vocabulary_close"></button></div><p class="hint" data-i18n="presence_note"></p><p class="hint" id="presenceSnapshot"></p><button class="btn" id="browserPresence" hidden></button><div id="presenceList"></div></dialog>
+<dialog id="repairDialog" class="afb-dialog"><div class="vocabulary-head afb-dialog-head"><h2 data-i18n="repairs_title"></h2><button class="btn afb-dialog-close" type="button" id="repairClose" data-i18n="vocabulary_close"></button></div><p data-i18n="repairs_note"></p><label class="guidance-root"><span data-i18n="repair_message"></span><select id="repairSelect"></select></label><p id="repairIssue" class="repair-diagnostic"></p><label class="guidance-root"><span data-i18n="repair_reason"></span><input id="repairReason"></label><label class="guidance-root"><span data-i18n="repair_corrected"></span><textarea id="repairText" rows="12"></textarea></label><div class="guidance-actions"><button class="btn" id="repairWithdraw" data-i18n="repair_withdraw"></button><button class="btn primary" id="repairSave" data-i18n="repair_save"></button></div><p id="repairResult" role="status"></p></dialog>
+<dialog id="guidanceDialog" class="afb-dialog"><div class="vocabulary-head afb-dialog-head"><h2 id="guidanceTitle" data-i18n="guidance_title"></h2><button class="btn afb-dialog-close" type="button" id="guidanceClose" data-i18n="vocabulary_close"></button></div><p data-i18n="guidance_note"></p><p class="hint" data-i18n="guidance_usage"></p><p class="hint" data-i18n="guidance_cli"></p><label class="guidance-root"><span data-i18n="guidance_folder"></span><input id="guidanceFolder" type="text" spellcheck="false" placeholder="/Users/you/project/.agent-board"></label><p class="hint" data-i18n="guidance_editor_note"></p><p><a href="https://github.com/sloik/agent-file-board-ui#open-guidance-in-your-editor" target="_blank" rel="noopener noreferrer" data-i18n="guidance_setup"></a></p><div id="guidanceDocs"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 
 <!-- BEGIN BUNDLED RICH LIBRARIES -->
@@ -4647,6 +4672,7 @@ function historyDialog() {
   document.getElementById("historyDialog")?.remove();
   const dialog = document.createElement("dialog");
   dialog.id = "historyDialog";
+  dialog.className = "afb-dialog";
   dialog.setAttribute("aria-labelledby", "historyDialogTitle");
   const node = (tag, content, parent, cls) => {
     const n = document.createElement(tag);
@@ -4655,10 +4681,12 @@ function historyDialog() {
     if (parent) parent.append(n);
     return n;
   };
-  const head = node("div", "", dialog, "vocabulary-head");
+  const head = node("div", "", dialog, "vocabulary-head afb-dialog-head");
   const title = node("h2", text("Missing-message check", "Kontrola brakujących wiadomości"), head);
   title.id = "historyDialogTitle";
-  const close = node("button", text("Close", "Zamknij"), head, "btn");
+  const close = node("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+  close.id = "historyClose";
+  close.type = "button";
   close.dataset.action = "close";
   close.onclick = () => dialog.close();
   const body = node("div", "", dialog, "history-body");
@@ -4846,9 +4874,16 @@ function historyReview(plan, summary, weakenText) {
     document.getElementById("historyReviewDialog")?.remove();
     const dialog = document.createElement("dialog"), text = exText;
     dialog.id = "historyReviewDialog";
+    dialog.className = "afb-dialog afb-dialog-compact";
     dialog.setAttribute("aria-labelledby", "historyReviewTitle");
     const add = (tag, content, parent = dialog, cls = "") => { const n = document.createElement(tag); if (content) n.textContent = content; if (cls) n.className = cls; parent.append(n); return n; };
-    add("h2", text("Review the change to config.json", "Sprawdź zmianę w config.json")).id = "historyReviewTitle";
+    const head = add("div", "", dialog, "vocabulary-head afb-dialog-head");
+    add("h2", text("Review the change to config.json", "Sprawdź zmianę w config.json"), head).id = "historyReviewTitle";
+    // Close answers "no", like Cancel and Esc.
+    const close = add("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+    close.id = "historyReviewClose";
+    close.type = "button";
+    close.dataset.action = "close";
     for (const line of summary) add("p", line, dialog, "history-review-line");
     add("p", text("This writes the shared board setting in .agent-board/config.json, exactly as shown. It is refused if the file changes before you confirm. Review it in Git like any other config change.", "To zapisze wspólne ustawienie tablicy w .agent-board/config.json dokładnie tak, jak pokazano. Zapis zostanie odrzucony, jeśli plik zmieni się przed potwierdzeniem. Przejrzyj go w Git jak każdą zmianę konfiguracji."), dialog, "history-note");
     const diff = add("pre", historyDiff(plan.before, plan.after), dialog, "history-diff");
@@ -4864,7 +4899,7 @@ function historyReview(plan, summary, weakenText) {
       confirm.id = "historyWeakenConfirm";
       label.append(confirm, " " + weakenText);
     }
-    const actions = add("div", "", dialog, "history-review-actions");
+    const actions = add("div", "", dialog, "history-review-actions afb-dialog-foot");
     const cancel = add("button", text("Cancel", "Anuluj"), actions, "btn");
     const ok = add("button", text("Write config.json", "Zapisz config.json"), actions, "btn primary");
     cancel.type = ok.type = "button";
@@ -4872,7 +4907,7 @@ function historyReview(plan, summary, weakenText) {
     ok.dataset.action = "confirm";
     let answer = false;
     if (confirm) { ok.disabled = true; confirm.onchange = () => { ok.disabled = !confirm.checked; }; }
-    cancel.onclick = () => dialog.close();
+    cancel.onclick = close.onclick = () => dialog.close();
     ok.onclick = () => { answer = true; dialog.close(); };
     dialog.addEventListener("close", () => { dialog.remove(); resolve(answer); }, { once: true });
     document.body.append(dialog);
@@ -5059,11 +5094,13 @@ function historySettingsDialog(kind, key, message = "") {
   document.getElementById("historySettingsDialog")?.remove();
   const dialog = document.createElement("dialog");
   dialog.id = "historySettingsDialog";
+  dialog.className = "afb-dialog";
   dialog.setAttribute("aria-labelledby", "historySettingsTitle");
   const add = (tag, content, parent = dialog, cls = "") => { const n = document.createElement(tag); if (content) n.textContent = content; if (cls) n.className = cls; parent.append(n); return n; };
-  const head = add("div", "", dialog, "vocabulary-head");
+  const head = add("div", "", dialog, "vocabulary-head afb-dialog-head");
   add("h2", text("Room history and signing", "Historia i podpisy pokoju"), head).id = "historySettingsTitle";
-  const close = add("button", text("Close", "Zamknij"), head, "btn");
+  const close = add("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+  close.id = "historySettingsClose";
   close.type = "button";
   close.dataset.action = "close";
   close.onclick = () => dialog.close();
@@ -5098,7 +5135,7 @@ function historySettingsDialog(kind, key, message = "") {
   if (!writable) add("p", text("Open the board folder with write access to change these settings.", "Otwórz folder tablicy z zapisem, aby zmienić te ustawienia."), dialog, "history-note");
   const result = add("p", message, dialog, "history-settings-result");
   result.setAttribute("role", "status");
-  const apply = add("button", text("Review change…", "Przejrzyj zmianę…"), dialog, "btn primary");
+  const apply = add("button", text("Review change…", "Przejrzyj zmianę…"), add("div", "", dialog, "afb-dialog-foot"), "btn primary");
   apply.type = "button";
   apply.dataset.action = "apply";
   apply.disabled = !writable;
@@ -5128,7 +5165,12 @@ function historySettingsDialog(kind, key, message = "") {
       if (dialog.open) { dialog.close(); historySettingsDialog(kind, key, text("Saved in config.json.", "Zapisano w config.json.")); }
     } catch (error) {
       result.textContent = text("Not changed: ", "Nie zmieniono: ") + (error?.message || String(error));
-    } finally { apply.disabled = !writable; }
+    } finally {
+      apply.disabled = !writable;
+      // The review dialog returns focus to Review change, which was disabled while it was open.
+      const lost = !document.activeElement || document.activeElement === document.body || document.activeElement === dialog;
+      if (dialog.open && lost && !apply.disabled) apply.focus();
+    }
   };
   dialog.addEventListener("close", () => dialog.remove(), { once: true });
   document.body.append(dialog);
@@ -5506,15 +5548,16 @@ function recordExtensionDiagnostic(meta,entry,origin='host'){
 function clearExtensionDiagnostics(){extensionDiagnosticEntries.length=0;extensionDiagnosticBytes=0;extensionDiagnosticDropped=0;const dialog=document.getElementById('extensionDiagnosticsDialog');if(dialog)dialog.remove();}
 function getExtensionDiagnostics(filter={}){return {dropped:extensionDiagnosticDropped,entries:structuredClone(extensionDiagnosticEntries.filter(x=>(!filter.artifact||x.artifact===filter.artifact)&&(!filter.componentId||x.componentId===filter.componentId)))};}
 function openExtensionDiagnostics(filter={}){
- let dialog=document.getElementById('extensionDiagnosticsDialog');if(dialog)dialog.remove();dialog=document.createElement('dialog');dialog.id='extensionDiagnosticsDialog';dialog.className='extensions-dialog';
- const title=document.createElement('h2'),hint=document.createElement('p'),pre=document.createElement('pre'),controls=document.createElement('div');
+ let dialog=document.getElementById('extensionDiagnosticsDialog');if(dialog)dialog.remove();dialog=document.createElement('dialog');dialog.id='extensionDiagnosticsDialog';dialog.className='afb-dialog extensions-dialog';
+ const head=document.createElement('div'),title=document.createElement('h2'),hint=document.createElement('p'),pre=document.createElement('pre'),controls=document.createElement('div'),close=document.createElement('button');
+ head.className='vocabulary-head afb-dialog-head';close.type='button';close.className='btn afb-dialog-close';close.id='extensionDiagnosticsClose';close.textContent=extensionRuntimeText('Close','Zamknij');close.onclick=()=>dialog.close();head.append(title,close);
  title.textContent=extensionRuntimeText('Extension diagnostics','Diagnostyka rozszerzenia');hint.textContent=extensionRuntimeText('Local diagnostics can contain sensitive information. Inspect this preview before exporting. Nothing is uploaded.','Lokalna diagnostyka może zawierać poufne informacje. Sprawdź podgląd przed eksportem. Nic nie jest wysyłane.');pre.style.whiteSpace='pre-wrap';pre.style.overflowWrap='anywhere';
  const refresh=()=>{pre.textContent=JSON.stringify(getExtensionDiagnostics(filter),null,2);};
  const button=(text,run)=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=text;b.onclick=run;controls.append(b);};
- button(extensionRuntimeText('Close','Zamknij'),()=>dialog.close());button(extensionRuntimeText('Refresh preview','Odśwież podgląd'),refresh);
+ button(extensionRuntimeText('Refresh preview','Odśwież podgląd'),refresh);
  button(extensionRuntimeText('Export preview','Eksportuj podgląd'),()=>{const blob=new Blob([pre.textContent],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='extension-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
  button(extensionRuntimeText('Clear local diagnostics','Wyczyść lokalną diagnostykę'),()=>{extensionDiagnosticEntries.length=0;extensionDiagnosticBytes=0;extensionDiagnosticDropped=0;refresh();});
- dialog.append(title,hint,controls,pre);document.body.append(dialog);refresh();dialog.showModal();
+ dialog.append(head,hint,controls,pre);document.body.append(dialog);refresh();dialog.showModal();
 }
 function extensionRuntimeHidden(){return document.hidden===true;}
 function extensionRuntimeSchedule(){
@@ -5708,7 +5751,7 @@ async function mutateExtensionRegistryImpl(change,expected){ExtensionContract.re
 function checkExtensionConflicts(d){for(const old of extensionCatalog.values()){ExtensionContract.require(!old.error,'repair unavailable retained package before installing');ExtensionContract.require(old.package.id!==d.package.id||old.package.version!==d.package.version||old.artifact===d.artifact,'same package/version has different bytes');for(const a of old.contracts)for(const b of d.contracts)ExtensionContract.require(a.id!==b.id||a.version!==b.version||a.digest===b.digest,'same contract/version has different meaning');}}
 async function importExtensionFile(file,body){ExtensionContract.require(file&&file.size<=ExtensionContract.MAX,'package byte limit');const raw=new Uint8Array(await file.arrayBuffer()),d=await ExtensionContract.decode(raw),origin=dirHandle,key=toolsBoardKey(),expected=structuredClone(extensionRegistry);checkExtensionConflicts(d);ExtensionContract.require(ExtensionContract.compatible(d,B.extensions.version),'package incompatible');body.replaceChildren();const pre=document.createElement('pre');pre.textContent=JSON.stringify({...d.package,files:Object.keys(d.files),artifact:d.artifact},null,2);body.append(pre);const install=exButton(canWrite()?exText('Install and enable','Zainstaluj i włącz'):exText('Download package (read-only board)','Pobierz pakiet (tablica tylko do odczytu)'),async()=>{ExtensionContract.require(dirHandle===origin&&toolsBoardKey()===key,'board changed; inspect again');if(!canWrite()){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));a.href=url;a.download=d.package.id+'.afb-plugin.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}await mutateExtensionRegistry(async(next,dir)=>{const rows=next.packages;ExtensionContract.require(rows.some(r=>r.artifact===d.artifact)||rows.length<32,'package limit');const packages=await dir.getDirectoryHandle('packages',{create:true}),dest=await packages.getDirectoryHandle(d.artifact,{create:true}),prior=await extensionReadText(dest,'package.afb-plugin.json');ExtensionContract.require(prior===null||await ExtensionContract.hash(ExtensionContract.bytes(prior))===d.artifact,'retained bytes differ');if(prior===null)await extensionWriteFile(dest,'package.afb-plugin.json',new TextDecoder('utf-8',{fatal:true}).decode(raw));ExtensionContract.require(await extensionReadText(dest,'package.afb-plugin.json')===new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(raw),'package write verification failed');const row=rows.find(r=>r.artifact===d.artifact);if(row)row.enabled=true;else rows.push({artifact:d.artifact,enabled:true});},expected);openExtensions();});body.append(install);}
 function openExtensions(artifact){
- let dialog=$('#extensionsDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='extensionsDialog';dialog.className='extensions-dialog';document.body.append(dialog);}dialog.dataset.lang=S.lang;dialog.replaceChildren();const heading=document.createElement('h2');heading.textContent=exText('Extensions','Rozszerzenia');const body=document.createElement('div');dialog.append(heading,exButton(exText('Close','Zamknij'),()=>dialog.close()),body);const hint=document.createElement('p');hint.textContent=exText('Local packages extend this board. For more capabilities, open an issue in the project GitHub repository. Code approval stays in this browser profile.','Lokalne pakiety rozszerzają tablicę. Dodatkowe uprawnienia zgłoś jako issue w repozytorium projektu na GitHub. Zgoda na kod pozostaje w profilu przeglądarki.');body.append(hint);if(typeof setExtensionAutomaticRefresh==='function'){const label=document.createElement('label'),automatic=document.createElement('input');automatic.type='checkbox';automatic.checked=extensionAutomaticRefresh;automatic.onchange=()=>{setExtensionAutomaticRefresh(automatic.checked);persistExtensionPreferences();};label.append(automatic,document.createTextNode(exText(' Automatic component updates',' Automatyczne odświeżanie komponentów')));body.append(label);}if(typeof openExtensionDiagnostics==='function')body.append(exButton(exText('Diagnostics','Diagnostyka'),()=>{dialog.close();openExtensionDiagnostics({});}));if(extensionCatalogError){const p=document.createElement('p');p.textContent=extensionCatalogError;body.append(p);}
+ let dialog=$('#extensionsDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='extensionsDialog';dialog.className='afb-dialog extensions-dialog';document.body.append(dialog);}dialog.dataset.lang=S.lang;dialog.replaceChildren();const head=document.createElement('div'),heading=document.createElement('h2'),close=exButton(exText('Close','Zamknij'),()=>dialog.close());head.className='vocabulary-head afb-dialog-head';heading.textContent=exText('Extensions','Rozszerzenia');close.id='extensionsClose';close.classList.add('afb-dialog-close');head.append(heading,close);const body=document.createElement('div');dialog.append(head,body);const hint=document.createElement('p');hint.textContent=exText('Local packages extend this board. For more capabilities, open an issue in the project GitHub repository. Code approval stays in this browser profile.','Lokalne pakiety rozszerzają tablicę. Dodatkowe uprawnienia zgłoś jako issue w repozytorium projektu na GitHub. Zgoda na kod pozostaje w profilu przeglądarki.');body.append(hint);if(typeof setExtensionAutomaticRefresh==='function'){const label=document.createElement('label'),automatic=document.createElement('input');automatic.type='checkbox';automatic.checked=extensionAutomaticRefresh;automatic.onchange=()=>{setExtensionAutomaticRefresh(automatic.checked);persistExtensionPreferences();};label.append(automatic,document.createTextNode(exText(' Automatic component updates',' Automatyczne odświeżanie komponentów')));body.append(label);}if(typeof openExtensionDiagnostics==='function')body.append(exButton(exText('Diagnostics','Diagnostyka'),()=>{dialog.close();openExtensionDiagnostics({});}));if(extensionCatalogError){const p=document.createElement('p');p.textContent=extensionCatalogError;body.append(p);}
  const input=document.createElement('input');input.type='file';input.accept='.json,.afb-plugin.json';input.setAttribute('aria-label',exText('Import extension package','Importuj pakiet rozszerzenia'));const preview=document.createElement('div');input.onchange=()=>importExtensionFile(input.files[0],preview).catch(e=>{preview.textContent=e.message;});body.append(input,preview);
  for(const d of extensionCatalog.values()){const card=document.createElement('section'),title=document.createElement('h3'),info=document.createElement('p');title.textContent=d.error?d.artifact:d.package.name+' '+d.package.version;info.textContent=d.error||[d.package.id,d.artifact,d.enabled?exText('enabled','włączony'):exText('disabled','wyłączony'),d.compatible?exText('compatible','zgodny'):exText('incompatible','niezgodny'),d.conflict?exText('CONFLICT','KONFLIKT'):'',d.package.capabilities.join(', ')].filter(Boolean).join(' · ');card.dataset.extensionArtifact=d.artifact;card.tabIndex=-1;card.append(title,info);if(!d.error){const detail=document.createElement('details'),summary=document.createElement('summary'),pre=document.createElement('pre');summary.textContent=exText('Inspect manifest and source','Sprawdź manifest i źródła');pre.textContent=JSON.stringify(d.package,null,2);detail.append(summary,pre);card.append(detail);if(d.enabled&&d.compatible&&!d.conflict)for(const c of d.contracts)card.append(exButton(exText('Compose example: ','Napisz przykład: ')+c.id,()=>{if(!authoringReplaceAllowed())return;const r=d.package.ui?.renderers.find(r=>ExtensionContract.targets(r,c)),x={version:1,package:d.artifact,contract:c.id,contractVersion:c.version,contractDigest:c.digest,data:d.entry(c.examples[0],true)};if(r)x.renderer={package:d.artifact,id:r.id};dialog.close();$('#structuredKind').value='extension';$('#structuredJson').value=JSON.stringify(x,null,2);showAuthoringJson();invalidateAuthoring();persistAuthoring();openAuthoring();}));if(canWrite()){const expected=structuredClone(extensionRegistry),key=toolsBoardKey();card.append(exButton(d.enabled?exText('Disable','Wyłącz'):exText('Enable','Włącz'),async()=>{ExtensionContract.require(key===toolsBoardKey(),'board changed');if(!d.enabled)ExtensionContract.require(d.compatible&&!d.conflict,'incompatible or conflicting');disposeExtensions();await mutateExtensionRegistry(next=>{next.packages.find(r=>r.artifact===d.artifact).enabled=!d.enabled;},expected);openExtensions();}));}if(d.package.ui?.renderers.some(r=>r.mode==='worker')){const approved=extensionApprovals.has(d.artifact);card.append(exButton(approved?exText('Revoke code approval','Cofnij zgodę na kod'):exText('Approve this exact package','Zatwierdź dokładnie ten pakiet'),async()=>{if(approved)extensionApprovals.delete(d.artifact);else{ExtensionContract.require(extensionApprovals.size<64,'local approval limit');extensionApprovals.add(d.artifact);}disposeExtensions();await persistExtensionPreferences();build({background:true,preserveComposer:true});openExtensions();}));}}body.append(card);}
  if(!dialog.open)dialog.showModal();if(artifact){const card=[...body.querySelectorAll('[data-extension-artifact]')].find(el=>el.dataset.extensionArtifact===artifact);if(card){card.scrollIntoView({block:'nearest'});card.focus({preventScroll:true});}else{const p=document.createElement('p');p.textContent=exText('Referenced extension is unavailable: ','Wskazane rozszerzenie jest niedostępne: ')+artifact;body.prepend(p);p.tabIndex=-1;p.focus();}}
@@ -6236,7 +6279,7 @@ function wireSidebarMenu(){
  $("#tree").addEventListener("keydown",event=>{const trigger=event.target.closest("[data-notification-menu]");if(trigger&&["ArrowDown","ArrowUp"].includes(event.key)){event.preventDefault();event.stopImmediatePropagation();openSidebarMenu(trigger,event.key==="ArrowUp");}},true);
  $("#sidebarNotificationToggle").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}const following=menu.state.follows.some(item=>item.kind===menu.kind&&item.key===menu.key);changeNotificationFollow(menu.kind,menu.key,following);closeSidebarMenu(true);};
  $("#sidebarNotificationSettings").onclick=()=>openSidebarNotificationSettings(sidebarMenu);
- $("#sidebarHistorySettings").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}closeSidebarMenu(false);historySettingsDialog(menu.kind,menu.key);};
+ $("#sidebarHistorySettings").onclick=()=>{const menu=sidebarMenu;if(!sidebarMenuCurrent(menu)){closeSidebarMenu(false);return;}closeSidebarMenu(true);historySettingsDialog(menu.kind,menu.key);};
  document.addEventListener("pointerdown",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);},true);
  document.addEventListener("focusin",event=>{if(sidebarMenu&&!$("#sidebarNotificationMenu").contains(event.target)&&!event.target.closest("[data-notification-menu]"))closeSidebarMenu(false);});
  $("#sidebarNotificationMenu").addEventListener("keydown",event=>{
@@ -7853,6 +7896,7 @@ async function signingDialog(request) {
   const origin = dirHandle, base = baseHandle, location = signingLocation, boardId = B.signingContext?.boardId, C = SigningContract, text = exText;
   const dialog = document.createElement("dialog");
   dialog.id = "signingDialog";
+  dialog.className = "afb-dialog";
   const node = (tag, content, parent, cls) => {
     const n = document.createElement(tag);
     if (content) n.textContent = content;
@@ -7860,9 +7904,11 @@ async function signingDialog(request) {
     if (parent) parent.append(n);
     return n;
   };
-  const head = node("div", "", dialog, "vocabulary-head signing-head");
+  const head = node("div", "", dialog, "vocabulary-head afb-dialog-head signing-head");
   node("h2", text("Message signing", "Podpisywanie wiadomości"), head);
-  const close = node("button", text("Close", "Zamknij"), head, "btn");
+  const close = node("button", text("Close", "Zamknij"), head, "btn afb-dialog-close");
+  close.id = "signingClose";
+  close.type = "button";
   close.dataset.action = "close";
   const taskNav = node("nav", "", head, "signing-nav");
   taskNav.setAttribute("aria-label", text("Signing tasks", "Zadania podpisów"));
@@ -9096,8 +9142,9 @@ let voiceWorkPending=false;
 function wireVoiceInput(){
   const button=document.createElement('button');button.id='voiceTools';button.className='btn';button.textContent=exText('Voice input','Wprowadzanie głosowe');$('#toolbarToolsPanel').append(button);
   button.onclick=()=>{
-    const dialog=document.createElement('dialog');dialog.id='voiceDialog';dialog.style='width:min(560px,90vw);max-height:85vh;overflow:auto';
-    const heading=document.createElement('h2');heading.textContent=exText('Voice input','Wprowadzanie głosowe');dialog.append(heading);
+    const dialog=document.createElement('dialog');dialog.id='voiceDialog';dialog.className='afb-dialog';
+    const head=document.createElement('div'),heading=document.createElement('h2'),close=document.createElement('button');head.className='vocabulary-head afb-dialog-head';heading.textContent=exText('Voice input','Wprowadzanie głosowe');
+    close.type='button';close.className='btn afb-dialog-close';close.id='voiceClose';close.textContent=exText('Close','Zamknij');close.onclick=()=>dialog.close();head.append(heading,close);dialog.append(head);
     const help=document.createElement('p');help.textContent=exText('Native dictation: close this window, focus the message draft and use your system dictation shortcut (Mac: configured Dictation key; Windows: Win+H). System dictation may use online services. Voice text still needs review and Send.','Dyktowanie systemowe: zamknij okno, wybierz szkic i użyj skrótu dyktowania (Mac: skonfigurowany klawisz; Windows: Win+H). Usługa może działać online. Sprawdź tekst i wybierz Wyślij.');dialog.append(help);
     const field=(label,id,tag='input')=>{const wrap=document.createElement('label');wrap.style='display:block;margin:10px 0';wrap.textContent=label+' ';const el=document.createElement(tag);el.id=id;el.style.maxWidth='100%';el.style.minWidth='0';wrap.append(el);dialog.append(wrap);return el;};
     const provider=field(exText('Provider','Dostawca'),'voiceProvider','select');
@@ -9109,7 +9156,7 @@ function wireVoiceInput(){
     const status=document.createElement('p');status.id='voiceStatus';status.setAttribute('role','status');dialog.append(status);
     const interim=document.createElement('p');interim.id='voiceInterim';dialog.append(interim);
     const review=field(exText('Review transcript','Sprawdź transkrypcję'),'voiceReview','textarea');review.rows=5;review.style='width:100%;box-sizing:border-box';review.maxLength=VoiceInput.limit;
-    const row=document.createElement('div');row.style='display:flex;flex-wrap:wrap;gap:8px';dialog.append(row);
+    const row=document.createElement('div');row.className='afb-dialog-foot';dialog.append(row);
     const add=(id,en,pl,fn)=>{const b=document.createElement('button');b.className='btn';b.id=id;b.textContent=exText(en,pl);b.onclick=fn;row.append(b);return b;};
     let stop=()=>{},selection;
     const context=()=>JSON.stringify([boardStorageId,dirHandle!==null,S.me,signingMode,signingDraftStamp(),replyTo]);
@@ -9134,7 +9181,6 @@ function wireVoiceInput(){
       if(provider.value!=='browser')return;session.cancel();const id=session.id;
       try{const available=await VoiceInput.browserStatus(window,language.value);if(available==='unavailable')throw Error('No on-device pack for this language.');const R=window.SpeechRecognition;if(typeof R.install!=='function')throw Error('Language-pack installation unavailable.');status.textContent='Installing language pack…';const ok=await R.install({langs:[language.value],processLocally:true});if(dialog.open&&id===session.id)status.textContent=ok?'Language pack ready.':'Language pack installation failed.';}catch(error){if(id===session.id)status.textContent=error.message;}
     });
-    add('voiceClose','Close','Zamknij',()=>dialog.close());
     const update=()=>{session.cancel(exText('Ready','Gotowe'));url.parentElement.hidden=token.parentElement.hidden=info.hidden=provider.value!=='local';};provider.onchange=update;language.oninput=()=>session.cancel();
     const check=()=>{if(['listening','review'].includes(session.state))session.valid(session.id);};
     document.addEventListener('input',check);document.addEventListener('change',check);
@@ -9244,9 +9290,10 @@ function wireViewerUpdates(){
   }
   tool.onclick=notice.onclick=()=>{
     if(dialog){dialog.showModal();return;}
-    dialog=document.createElement('dialog');dialog.id='viewerUpdatesDialog';dialog.style='width:min(560px,90vw);max-height:85vh;overflow:auto;overflow-wrap:anywhere;box-sizing:border-box';
-    const add=(tag,text,id)=>{const e=document.createElement(tag);e.textContent=text;if(id)e.id=id;dialog.append(e);return e;};
-    add('h2',exText('Viewer updates','Aktualizacje przeglądarki tablic'));
+    dialog=document.createElement('dialog');dialog.id='viewerUpdatesDialog';dialog.className='afb-dialog';
+    const add=(tag,text,id,parent=dialog)=>{const e=document.createElement(tag);e.textContent=text;if(id)e.id=id;parent.append(e);return e;};
+    const head=add('div','');head.className='vocabulary-head afb-dialog-head';add('h2',exText('Viewer updates','Aktualizacje przeglądarki tablic'),'',head);
+    const close=add('button',exText('Close','Zamknij'),'viewerUpdatesClose',head);close.type='button';close.className='btn afb-dialog-close';close.onclick=()=>dialog.close();
     add('p',exText('Running viewer: ','Uruchomiona wersja: ')+VIEWER_VERSION);add('p','','viewerLatestVersion');
     add('p','', 'viewerUpdateStatus').setAttribute('role','status');
     const label=add('label',exText('Check daily while this viewer is open ','Sprawdzaj codziennie, gdy przeglądarka tablic jest otwarta ')),auto=document.createElement('input');auto.id='viewerUpdateAuto';auto.type='checkbox';label.append(auto);
@@ -9259,8 +9306,8 @@ function wireViewerUpdates(){
     add('p',exText('Reopen or reload after copying. Verify the running version here; open tabs retain their old code. Restart optional helpers separately. The app does not install files or confirm that your download was installed. Shared folders update through their normal sync.','Po skopiowaniu otwórz ponownie lub przeładuj. Sprawdź wersję tutaj; otwarte karty zachowują stary kod. Uruchom ponownie opcjonalne pomocniki. Aplikacja nie instaluje plików ani nie potwierdza instalacji. Foldery współdzielone używają zwykłej synchronizacji.'));
     add('p',exText('Checks contact the fixed hosted checker and GitHub for public release metadata only. No board contents or signing keys are sent. Disable daily checks above to stay offline.','Sprawdzanie łączy się ze stałym serwisem i GitHub wyłącznie po publiczne informacje. Treść tablic i klucze podpisów nie są wysyłane. Wyłącz codzienne sprawdzanie, aby pracować offline.'));
     const result=add('p','','viewerReloadResult');result.setAttribute('role','status');
-    const reload=add('button',exText('Reload installed viewer','Przeładuj zainstalowaną przeglądarkę'),'viewerReload');reload.className='btn';reload.onclick=()=>{const reasons=viewerReload();if(reasons.length)result.textContent=exText('Finish or discard unfinished work before reloading: ','Dokończ lub odrzuć pracę przed przeładowaniem: ')+reasons.join(', ');};
-    const close=add('button',exText('Close','Zamknij'),'viewerUpdatesClose');close.className='btn';close.onclick=()=>dialog.close();
+    const foot=add('div','');foot.className='afb-dialog-foot';
+    const reload=add('button',exText('Reload installed viewer','Przeładuj zainstalowaną przeglądarkę'),'viewerReload',foot);reload.className='btn';reload.onclick=()=>{const reasons=viewerReload();if(reasons.length)result.textContent=exText('Finish or discard unfinished work before reloading: ','Dokończ lub odrzuć pracę przed przeładowaniem: ')+reasons.join(', ');};
     dialog.addEventListener('close',()=>{dialog.remove();dialog=null;},{once:true});document.body.append(dialog);render();dialog.showModal();
   };
   viewerUpdateState().then(s=>{state=s;render();check();}).catch(()=>{storage=false;status=exText('Automatic checks unavailable; use Check now.','Automatyczne sprawdzanie niedostępne; użyj Sprawdź teraz.');render();});

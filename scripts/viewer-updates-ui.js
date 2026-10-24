@@ -50,9 +50,10 @@ function wireViewerUpdates(){
   }
   tool.onclick=notice.onclick=()=>{
     if(dialog){dialog.showModal();return;}
-    dialog=document.createElement('dialog');dialog.id='viewerUpdatesDialog';dialog.style='width:min(560px,90vw);max-height:85vh;overflow:auto;overflow-wrap:anywhere;box-sizing:border-box';
-    const add=(tag,text,id)=>{const e=document.createElement(tag);e.textContent=text;if(id)e.id=id;dialog.append(e);return e;};
-    add('h2',exText('Viewer updates','Aktualizacje przeglądarki tablic'));
+    dialog=document.createElement('dialog');dialog.id='viewerUpdatesDialog';dialog.className='afb-dialog';
+    const add=(tag,text,id,parent=dialog)=>{const e=document.createElement(tag);e.textContent=text;if(id)e.id=id;parent.append(e);return e;};
+    const head=add('div','');head.className='vocabulary-head afb-dialog-head';add('h2',exText('Viewer updates','Aktualizacje przeglądarki tablic'),'',head);
+    const close=add('button',exText('Close','Zamknij'),'viewerUpdatesClose',head);close.type='button';close.className='btn afb-dialog-close';close.onclick=()=>dialog.close();
     add('p',exText('Running viewer: ','Uruchomiona wersja: ')+VIEWER_VERSION);add('p','','viewerLatestVersion');
     add('p','', 'viewerUpdateStatus').setAttribute('role','status');
     const label=add('label',exText('Check daily while this viewer is open ','Sprawdzaj codziennie, gdy przeglądarka tablic jest otwarta ')),auto=document.createElement('input');auto.id='viewerUpdateAuto';auto.type='checkbox';label.append(auto);
@@ -65,8 +66,8 @@ function wireViewerUpdates(){
     add('p',exText('Reopen or reload after copying. Verify the running version here; open tabs retain their old code. Restart optional helpers separately. The app does not install files or confirm that your download was installed. Shared folders update through their normal sync.','Po skopiowaniu otwórz ponownie lub przeładuj. Sprawdź wersję tutaj; otwarte karty zachowują stary kod. Uruchom ponownie opcjonalne pomocniki. Aplikacja nie instaluje plików ani nie potwierdza instalacji. Foldery współdzielone używają zwykłej synchronizacji.'));
     add('p',exText('Checks contact the fixed hosted checker and GitHub for public release metadata only. No board contents or signing keys are sent. Disable daily checks above to stay offline.','Sprawdzanie łączy się ze stałym serwisem i GitHub wyłącznie po publiczne informacje. Treść tablic i klucze podpisów nie są wysyłane. Wyłącz codzienne sprawdzanie, aby pracować offline.'));
     const result=add('p','','viewerReloadResult');result.setAttribute('role','status');
-    const reload=add('button',exText('Reload installed viewer','Przeładuj zainstalowaną przeglądarkę'),'viewerReload');reload.className='btn';reload.onclick=()=>{const reasons=viewerReload();if(reasons.length)result.textContent=exText('Finish or discard unfinished work before reloading: ','Dokończ lub odrzuć pracę przed przeładowaniem: ')+reasons.join(', ');};
-    const close=add('button',exText('Close','Zamknij'),'viewerUpdatesClose');close.className='btn';close.onclick=()=>dialog.close();
+    const foot=add('div','');foot.className='afb-dialog-foot';
+    const reload=add('button',exText('Reload installed viewer','Przeładuj zainstalowaną przeglądarkę'),'viewerReload',foot);reload.className='btn';reload.onclick=()=>{const reasons=viewerReload();if(reasons.length)result.textContent=exText('Finish or discard unfinished work before reloading: ','Dokończ lub odrzuć pracę przed przeładowaniem: ')+reasons.join(', ');};
     dialog.addEventListener('close',()=>{dialog.remove();dialog=null;},{once:true});document.body.append(dialog);render();dialog.showModal();
   };
   viewerUpdateState().then(s=>{state=s;render();check();}).catch(()=>{storage=false;status=exText('Automatic checks unavailable; use Check now.','Automatyczne sprawdzanie niedostępne; użyj Sprawdź teraz.');render();});

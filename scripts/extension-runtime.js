@@ -25,15 +25,16 @@ function recordExtensionDiagnostic(meta,entry,origin='host'){
 function clearExtensionDiagnostics(){extensionDiagnosticEntries.length=0;extensionDiagnosticBytes=0;extensionDiagnosticDropped=0;const dialog=document.getElementById('extensionDiagnosticsDialog');if(dialog)dialog.remove();}
 function getExtensionDiagnostics(filter={}){return {dropped:extensionDiagnosticDropped,entries:structuredClone(extensionDiagnosticEntries.filter(x=>(!filter.artifact||x.artifact===filter.artifact)&&(!filter.componentId||x.componentId===filter.componentId)))};}
 function openExtensionDiagnostics(filter={}){
- let dialog=document.getElementById('extensionDiagnosticsDialog');if(dialog)dialog.remove();dialog=document.createElement('dialog');dialog.id='extensionDiagnosticsDialog';dialog.className='extensions-dialog';
- const title=document.createElement('h2'),hint=document.createElement('p'),pre=document.createElement('pre'),controls=document.createElement('div');
+ let dialog=document.getElementById('extensionDiagnosticsDialog');if(dialog)dialog.remove();dialog=document.createElement('dialog');dialog.id='extensionDiagnosticsDialog';dialog.className='afb-dialog extensions-dialog';
+ const head=document.createElement('div'),title=document.createElement('h2'),hint=document.createElement('p'),pre=document.createElement('pre'),controls=document.createElement('div'),close=document.createElement('button');
+ head.className='vocabulary-head afb-dialog-head';close.type='button';close.className='btn afb-dialog-close';close.id='extensionDiagnosticsClose';close.textContent=extensionRuntimeText('Close','Zamknij');close.onclick=()=>dialog.close();head.append(title,close);
  title.textContent=extensionRuntimeText('Extension diagnostics','Diagnostyka rozszerzenia');hint.textContent=extensionRuntimeText('Local diagnostics can contain sensitive information. Inspect this preview before exporting. Nothing is uploaded.','Lokalna diagnostyka może zawierać poufne informacje. Sprawdź podgląd przed eksportem. Nic nie jest wysyłane.');pre.style.whiteSpace='pre-wrap';pre.style.overflowWrap='anywhere';
  const refresh=()=>{pre.textContent=JSON.stringify(getExtensionDiagnostics(filter),null,2);};
  const button=(text,run)=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=text;b.onclick=run;controls.append(b);};
- button(extensionRuntimeText('Close','Zamknij'),()=>dialog.close());button(extensionRuntimeText('Refresh preview','Odśwież podgląd'),refresh);
+ button(extensionRuntimeText('Refresh preview','Odśwież podgląd'),refresh);
  button(extensionRuntimeText('Export preview','Eksportuj podgląd'),()=>{const blob=new Blob([pre.textContent],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='extension-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
  button(extensionRuntimeText('Clear local diagnostics','Wyczyść lokalną diagnostykę'),()=>{extensionDiagnosticEntries.length=0;extensionDiagnosticBytes=0;extensionDiagnosticDropped=0;refresh();});
- dialog.append(title,hint,controls,pre);document.body.append(dialog);refresh();dialog.showModal();
+ dialog.append(head,hint,controls,pre);document.body.append(dialog);refresh();dialog.showModal();
 }
 function extensionRuntimeHidden(){return document.hidden===true;}
 function extensionRuntimeSchedule(){

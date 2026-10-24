@@ -2,8 +2,9 @@ let voiceWorkPending=false;
 function wireVoiceInput(){
   const button=document.createElement('button');button.id='voiceTools';button.className='btn';button.textContent=exText('Voice input','Wprowadzanie głosowe');$('#toolbarToolsPanel').append(button);
   button.onclick=()=>{
-    const dialog=document.createElement('dialog');dialog.id='voiceDialog';dialog.style='width:min(560px,90vw);max-height:85vh;overflow:auto';
-    const heading=document.createElement('h2');heading.textContent=exText('Voice input','Wprowadzanie głosowe');dialog.append(heading);
+    const dialog=document.createElement('dialog');dialog.id='voiceDialog';dialog.className='afb-dialog';
+    const head=document.createElement('div'),heading=document.createElement('h2'),close=document.createElement('button');head.className='vocabulary-head afb-dialog-head';heading.textContent=exText('Voice input','Wprowadzanie głosowe');
+    close.type='button';close.className='btn afb-dialog-close';close.id='voiceClose';close.textContent=exText('Close','Zamknij');close.onclick=()=>dialog.close();head.append(heading,close);dialog.append(head);
     const help=document.createElement('p');help.textContent=exText('Native dictation: close this window, focus the message draft and use your system dictation shortcut (Mac: configured Dictation key; Windows: Win+H). System dictation may use online services. Voice text still needs review and Send.','Dyktowanie systemowe: zamknij okno, wybierz szkic i użyj skrótu dyktowania (Mac: skonfigurowany klawisz; Windows: Win+H). Usługa może działać online. Sprawdź tekst i wybierz Wyślij.');dialog.append(help);
     const field=(label,id,tag='input')=>{const wrap=document.createElement('label');wrap.style='display:block;margin:10px 0';wrap.textContent=label+' ';const el=document.createElement(tag);el.id=id;el.style.maxWidth='100%';el.style.minWidth='0';wrap.append(el);dialog.append(wrap);return el;};
     const provider=field(exText('Provider','Dostawca'),'voiceProvider','select');
@@ -15,7 +16,7 @@ function wireVoiceInput(){
     const status=document.createElement('p');status.id='voiceStatus';status.setAttribute('role','status');dialog.append(status);
     const interim=document.createElement('p');interim.id='voiceInterim';dialog.append(interim);
     const review=field(exText('Review transcript','Sprawdź transkrypcję'),'voiceReview','textarea');review.rows=5;review.style='width:100%;box-sizing:border-box';review.maxLength=VoiceInput.limit;
-    const row=document.createElement('div');row.style='display:flex;flex-wrap:wrap;gap:8px';dialog.append(row);
+    const row=document.createElement('div');row.className='afb-dialog-foot';dialog.append(row);
     const add=(id,en,pl,fn)=>{const b=document.createElement('button');b.className='btn';b.id=id;b.textContent=exText(en,pl);b.onclick=fn;row.append(b);return b;};
     let stop=()=>{},selection;
     const context=()=>JSON.stringify([boardStorageId,dirHandle!==null,S.me,signingMode,signingDraftStamp(),replyTo]);
@@ -40,7 +41,6 @@ function wireVoiceInput(){
       if(provider.value!=='browser')return;session.cancel();const id=session.id;
       try{const available=await VoiceInput.browserStatus(window,language.value);if(available==='unavailable')throw Error('No on-device pack for this language.');const R=window.SpeechRecognition;if(typeof R.install!=='function')throw Error('Language-pack installation unavailable.');status.textContent='Installing language pack…';const ok=await R.install({langs:[language.value],processLocally:true});if(dialog.open&&id===session.id)status.textContent=ok?'Language pack ready.':'Language pack installation failed.';}catch(error){if(id===session.id)status.textContent=error.message;}
     });
-    add('voiceClose','Close','Zamknij',()=>dialog.close());
     const update=()=>{session.cancel(exText('Ready','Gotowe'));url.parentElement.hidden=token.parentElement.hidden=info.hidden=provider.value!=='local';};provider.onchange=update;language.oninput=()=>session.cancel();
     const check=()=>{if(['listening','review'].includes(session.state))session.valid(session.id);};
     document.addEventListener('input',check);document.addEventListener('change',check);
