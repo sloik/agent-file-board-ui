@@ -181,7 +181,7 @@ test('keyboard: Enter opens the chip, arrows and Enter pick, Escape returns focu
 test('phone 390px: one-line chip, bottom-sheet popover, Polish strings, no horizontal scroll (AC14)',async()=>{
  const {ctx,page,log}=await boot();try{
   await page.setViewportSize({width:390,height:844});
-  await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#settingsClose');
+  await page.click('#gear');await page.selectOption('#sLang','pl');await page.click('#sClose');
   // SPEC-002-068: the chip row shows when the destination differs from the view (here All messages).
   await page.evaluate(()=>{sel={scope:null,dir:null,thread:null};rememberView();build();setComposerTarget({scope:'room',dir:'architecture',thread:'room:architecture|T004'});});
   await page.evaluate(()=>{const th=threadsOf()['room:architecture|T004'];th.title='A very long topic title that must not wrap the destination chip onto a second line';updateComposerSummary();});

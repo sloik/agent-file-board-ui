@@ -44,8 +44,8 @@ test('settings width drag and keyboard persist, viewport clamps preserve saved w
   await page.locator('#settingsResize').focus();await page.keyboard.press('ArrowLeft');assert.equal(await width(),540);await page.keyboard.press('ArrowRight');assert.equal(await width(),520);
   await page.selectOption('#sLang','pl');await page.selectOption('#sTheme','dracula');await page.setViewportSize({width:375,height:700});assert.equal(await width(),343);assert.equal(await page.evaluate(()=>window.__boardTest.getSettings().settingsW),520);
   await page.locator('#settingsScroll').evaluate(el=>el.scrollTop=el.scrollHeight);
-  for(const selector of ['#settingsClose','#sClose','#settingsResize'])assert.equal(await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),true);
-  await page.click('#settingsClose');assert.equal(await page.locator('#settings').isVisible(),false);await page.setViewportSize({width:1280,height:800});await page.click('#gear');assert.equal(await width(),520);
+  for(const selector of ['#sClose','#settingsResize'])assert.equal(await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),true);
+  await page.click('#sClose');assert.equal(await page.locator('#settings').isVisible(),false);await page.setViewportSize({width:1280,height:800});await page.click('#gear');assert.equal(await width(),520);
   await page.locator('#settingsResize').focus();await page.keyboard.press('Home');assert.equal(await width(),340);await page.keyboard.press('ArrowLeft');await page.locator('#settingsResize').dblclick();assert.equal(await width(),340);
   await page.locator('#settingsResize').focus();for(let i=0;i<35;i++)await page.keyboard.press('ArrowLeft');assert.equal(await width(),900);for(let i=0;i<40;i++)await page.keyboard.press('ArrowRight');assert.equal(await width(),280);await page.click('#sReset');assert.equal(await width(),340);clean(log);
  }finally{await ctx.close();}

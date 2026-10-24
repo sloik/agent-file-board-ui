@@ -210,3 +210,22 @@ test('AC6: moving a Close into the body or footer, or restoring an 800px width, 
   assert.ok((await shellViolations(page,'vocabulary','vocabularyClose')).some(v=>v.includes('second "Close"')));
   assert.deepEqual(log.pageErrors,[]);
 });
+
+// Settings stays a resizable popover (not a modal), but follows the same header/footer rule: one Close
+// at the top right (#sClose, which was Done), only Feedback and Reset at the bottom.
+test('Settings: Close is the right-most header control, the footer has no Close, and focus returns to the gear',async t=>{
+  const proj=h.layoutExample(h.tmpDir());
+  const {ctx,page,log}=await h.openPage(browser,{tree:h.readTree(proj)});t.after(()=>ctx.close());
+  await h.openBoardViaUi(page);
+  for(const viewport of [{width:1280,height:800},{width:390,height:640}]){
+    await page.setViewportSize(viewport);await page.click('#gear');await expect(page.locator('#settings')).toBeVisible();
+    const g=await page.evaluate(()=>{const head=document.querySelector('#settings .afb-dialog-head'),foot=document.querySelector('#settings .afb-dialog-foot'),close=document.getElementById('sClose'),b=close.getBoundingClientRect();
+      return {inHead:head.contains(close),rightMost:[...head.querySelectorAll('button,a')].every(c=>c===close||c.getBoundingClientRect().right<=b.right+1),
+        footClose:[...foot.querySelectorAll('button,a')].some(c=>c===close||/^(Close|Zamknij|Done|Gotowe)$/.test(c.textContent.trim())),label:close.textContent.trim(),
+        onScreen:b.top>=0&&b.bottom<=innerHeight&&b.left>=0&&b.right<=innerWidth};});
+    assert.deepEqual(g,{inHead:true,rightMost:true,footClose:false,label:'Close',onScreen:true},`${viewport.width}x${viewport.height}`);
+    await page.click('#sClose');await expect(page.locator('#settings')).toBeHidden();
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),'gear');
+  }
+  assert.deepEqual(log.pageErrors,[]);
+});

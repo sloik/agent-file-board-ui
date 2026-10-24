@@ -646,7 +646,7 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
 .settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;flex:none;border-bottom:1px solid var(--line)}
 .settings-head h3{margin:0;min-width:0;overflow-wrap:anywhere}.settings-head>button{flex:none}
 .settings-scroll{overflow:auto;min-height:0;padding:0 16px;scroll-padding-block:12px;overscroll-behavior:contain}
-.settings-feedback{text-decoration:none;display:inline-flex;align-items:center;overflow-wrap:anywhere}.settings-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;flex:none;padding:12px 16px;border-top:1px solid var(--line)}
+.settings-feedback{text-decoration:none;display:inline-flex;align-items:center;overflow-wrap:anywhere}.settings-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;flex:none;padding:12px 16px;border-top:1px solid var(--line)}
 #settingsResize{position:absolute;left:0;top:0;bottom:0;width:9px;cursor:col-resize;touch-action:none;z-index:12;border-left:3px solid transparent}
 #settingsResize:hover,#settingsResize:focus-visible{border-left-color:var(--accent);outline:none}
 #settingsResize::after{content:"";position:absolute;top:calc(50% - 24px);left:1px;width:3px;height:48px;border-radius:3px;background:var(--line)}
@@ -747,7 +747,7 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
 <div class="banner warn" id="verwarn" role="status"><span id="verwarnText"></span><button class="btn" id="upgradeOpen" data-i18n="upgrade_title"></button></div>
 <div class="banner key-notice" id="keyNotice" role="status"><span aria-hidden="true">&#128273;</span><span id="keyNoticeText"></span><button class="btn primary" type="button" id="keyNoticeReview"></button><button class="btn" type="button" id="keyNoticeLater"></button></div>
 <div class="settings" id="settings">
-  <div class="settings-head"><h3 data-i18n="settings_h"></h3><button class="btn" id="settingsClose" data-i18n="vocabulary_close"></button></div>
+  <div class="settings-head afb-dialog-head"><h3 data-i18n="settings_h"></h3><button class="btn afb-dialog-close" type="button" id="sClose" data-i18n="vocabulary_close"></button></div>
   <div id="settingsResize" role="separator" aria-orientation="vertical" aria-controls="settings" tabindex="0" data-i18n-aria="settings_resize" data-i18n-title="settings_resize"></div>
   <div class="settings-scroll" id="settingsScroll">
   <div class="set"><span data-i18n="s_language"></span><select id="sLang"><option value="en">English</option><option value="pl">Polski</option></select></div>
@@ -774,7 +774,7 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
     <div class="row2c"><span data-i18n="s_from"></span> <input type="time" id="rFrom"> <span data-i18n="s_to"></span> <input type="time" id="rTo"></div></div>
   <div class="set" data-i18n="s_refresh_note"></div>
   </div>
-  <div class="settings-actions"><a class="btn settings-feedback" id="feedbackOpen" href="https://github.com/sloik/agent-file-board-ui/issues/new/choose" target="_blank" rel="noopener noreferrer" data-i18n="s_feedback"></a><button class="btn" id="sReset" data-i18n="s_reset"></button><button class="btn primary" id="sClose" data-i18n="s_done"></button></div>
+  <div class="settings-actions afb-dialog-foot"><a class="btn settings-feedback" id="feedbackOpen" href="https://github.com/sloik/agent-file-board-ui/issues/new/choose" target="_blank" rel="noopener noreferrer" data-i18n="s_feedback"></a><button class="btn" id="sReset" data-i18n="s_reset"></button></div>
 </div>
 <div class="side-scrim" id="sideScrim"></div><div id="sidePeekZone" aria-hidden="true"></div>
 <div class="app">
@@ -1849,7 +1849,7 @@ const STRINGS = {
   s_days:"On days", preset_weekdays:"Mon-Fri", preset_everyday:"every day", preset_weekend:"weekend",
   s_window:"only during hours", s_from:"from", s_to:"to",
   s_refresh_note:"The bar under the top menu shows time to the next refresh. Outside the chosen days and hours refreshing pauses.",
-  s_reset:"Reset to defaults", s_done:"Done", full_width:"full",
+  s_reset:"Reset to defaults", full_width:"full",
   tree_h:"Rooms and threads", direct_h:"Direct conversations", all_messages:"All messages",
   closed_group:"closed ({n})", empty_room:"empty room - no threads", no_title:"(untitled)", fold_title:"collapse / expand",
   feed_empty_h:"Open a board folder",
@@ -2161,7 +2161,7 @@ const STRINGS = {
   s_days:"W dni", preset_weekdays:"pn-pt", preset_everyday:"codziennie", preset_weekend:"weekend",
   s_window:"tylko w godzinach", s_from:"od", s_to:"do",
   s_refresh_note:"Pasek pod menu pokazuje czas do następnego odświeżenia. Poza wybranymi dniami i godzinami odświeżanie się wstrzymuje.",
-  s_reset:"Przywróć domyślne", s_done:"Gotowe", full_width:"pełna",
+  s_reset:"Przywróć domyślne", full_width:"pełna",
   tree_h:"Pokoje i wątki", direct_h:"Rozmowy bezpośrednie", all_messages:"Wszystkie wiadomości",
   closed_group:"zamknięte ({n})", empty_room:"pusty pokój - brak wątków", no_title:"(bez nazwy)", fold_title:"zwiń / rozwiń",
   feed_empty_h:"Otwórz folder tablicy",
@@ -6795,7 +6795,7 @@ function wirePanelLayout(){
  const pane=$('#settings'),handle=$('#settingsResize');
  const resize=width=>{const {min,max}=settingsWidthBounds();S.settingsW=Math.round(Math.max(min,Math.min(max,width)));applySettingsWidth();};
  const reset=()=>{S.settingsW=340;saveSettings();};
- $('#settingsClose').onclick=()=>{pane.classList.remove('show');$('#gear').focus();};
+ $('#sClose').onclick=()=>{pane.classList.remove('show');$('#gear').focus();};
  handle.onpointerdown=e=>{
   if(e.button!==0)return;e.preventDefault();const x=e.clientX,width=pane.getBoundingClientRect().width;
   handle.setPointerCapture(e.pointerId);document.body.classList.add('resizing');
@@ -9346,7 +9346,6 @@ function wire(){
   $("#guidanceFolder").addEventListener("input",()=>{ if(B){ lsSet(guidanceRootKey(),$("#guidanceFolder").value); renderGuidance(); } });
   $("#guidanceClose").onclick=()=>$("#guidanceDialog").close();
   $("#gear").onclick = ()=>$("#settings").classList.toggle("show");
-  $("#sClose").onclick = ()=>$("#settings").classList.remove("show");
   $("#sReset").onclick = ()=>{ S = {...DEF, collapsed:{}, closedGroups:{}}; saveSettings(); refreshAll(); };
   [["#sLh","lh"],["#sFs","fs"],["#sBubble","bubble"],["#sFeed","feed"]].forEach(([id,k])=>$(id).oninput=()=>{ S[k]=parseFloat($(id).value); saveSettings(); });
   $("#sThreadOrder").onchange=()=>{ S.threadOrder=$("#sThreadOrder").value; saveSettings(); build({preserveComposer:true}); };
