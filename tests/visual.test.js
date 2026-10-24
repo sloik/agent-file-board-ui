@@ -88,3 +88,21 @@ test('non-vacuity: a 1px shift of the page fails the pixel comparison',async()=>
   assert.ok(shifted.diff>limit,`a 1px shift must exceed the limit: ${shifted.diff} of ${shifted.total} pixels differ, limit ${limit}`);
  }finally{await s.ctx.close();s.cleanup();}
 });
+
+// A release bump changes only the version text, which is normalized in labels and masked in pixels.
+test('a viewer version bump changes neither the layout snapshot nor the pixels of a scene',{skip:UPDATE&&'snapshots are being rewritten'},async()=>{
+ const html=h.fs.readFileSync(h.BOARD_HTML,'utf8'),version=require('../package.json').version,literal=JSON.stringify(version);
+ // A later patch release with a wider number (3.3.6 -> 3.3.17): same minor, so no compatibility notice appears.
+ const [major,minor,patch]=version.split('.').map(Number),bump=`${major}.${minor}.${patch+11}`;
+ assert.equal(html.split(literal).length,2,'the viewer version literal exists once');
+ const file=h.path.join(h.tmpDir('afb-visual-bump-'),'board.html');h.fs.writeFileSync(file,html.replace(literal,JSON.stringify(bump)));
+ const shot=V.GROUPS.find(g=>g.name==='topic').shots[0],expected=JSON.parse(h.fs.readFileSync(V.layoutFile(shot.name),'utf8'));
+ const capture=async opts=>{const s=await V.bootExample(browser,opts);try{
+  await V.topicDraft(s.page);await V.rest(s.page);
+  return {text:await s.page.locator('#verbar').textContent(),layout:await V.layoutOf(s.page,shot.name,shot.viewport),png:await V.screenshot(s.page)};
+ }finally{await s.ctx.close();s.cleanup();}};
+ const real=await capture({}),bumped=await capture({html:file});
+ assert.ok(bumped.text.includes(bump),'the bumped copy shows '+bump);assert.ok(!real.text.includes(bump));
+ assert.deepEqual(V.compareLayout(shot.name,expected,bumped.layout),[]);
+ const c=await V.comparePixels(browser,real.png,bumped.png);assert.equal(c.diff,0,`${c.diff} pixels differ after a version bump`);
+});

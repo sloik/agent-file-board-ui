@@ -90,9 +90,15 @@ function compareLayout(scene,expected,actual){
  return out;
 }
 
-// One shot: a stable page (fonts, layout, no pending animation frames), then its snapshot.
+// One shot: the once-a-second refresh tick has run (its status dot on #reload otherwise depends on timing),
+// version text frozen (a release bump must not move or repaint anything), fonts loaded, two frames.
 async function settle(page){
- await page.evaluate(async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});
+ await page.evaluate(async()=>{
+  tick();
+  for(const el of document.querySelectorAll('#verbar,#toolbarVersion'))
+   for(const n of [...el.childNodes].filter(n=>n.nodeType===3))n.textContent=n.textContent.replace(/\d+\.\d+\.\d+/g,'9.9.9');
+  await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+ });
 }
 async function layoutOf(page,scene,viewport){await settle(page);return {scene,viewport,elements:await snapshot(page)};}
 async function screenshot(page){
@@ -131,9 +137,9 @@ function exampleBoard(){
 }
 // The shortcut label follows navigator.platform; pin it so macOS and Linux render the same page.
 const PLATFORM=()=>{Object.defineProperty(Navigator.prototype,'platform',{configurable:true,get:()=>'Linux x86_64'});};
-async function bootExample(browser,{viewport={width:1280,height:800}}={}){
+async function bootExample(browser,{viewport={width:1280,height:800},html}={}){
  const project=exampleBoard();
- const s=await h.openPage(browser,{tree:h.readTree(project),dialog:'accept',viewport,fixedTime:AT,init:[PLATFORM],context:{...CONTEXT,viewport}});
+ const s=await h.openPage(browser,{html,tree:h.readTree(project),dialog:'accept',viewport,fixedTime:AT,init:[PLATFORM],context:{...CONTEXT,viewport}});
  await h.openBoardViaUi(s.page);
  return {...s,cleanup:()=>h.fs.rmSync(h.path.dirname(project),{recursive:true,force:true})};
 }

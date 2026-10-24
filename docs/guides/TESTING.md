@@ -16,7 +16,9 @@ timezone, reduced motion and platform shortcut label. For a fixed list of landma
 `#menu`, `#sideHide`, the sidebar, the feed, `#title`, `#topicMenu`, the destination row, `#signingNotice`,
 `#cBody`, `#send`, `#keyNotice`, `.posting`, Tools lines, ...) the snapshot records whether it is present
 and visible, its box, `display`, background, text and border colours, `box-shadow`, `font-weight` and its
-label. Release versions, key fingerprints and board ids are normalized.
+label. The viewer and board version text is frozen before every shot, so a release bump moves and
+repaints nothing (a test proves it with a patch-bumped copy of `board.html`); key fingerprints and board
+ids are normalized in labels and masked in pixels.
 
 The comparison allows for fonts, not for design changes:
 
