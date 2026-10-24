@@ -179,12 +179,25 @@ async function peek(page){
  await expect.poll(()=>page.evaluate(()=>document.body.classList.contains('side-peek')&&document.querySelector('#side').getBoundingClientRect().width>100),{timeout:3000}).toBe(true);
  await page.mouse.move(60,200);
 }
+// Scrolls the signing dialog deterministically (SPEC-002-075): the selected key row's top is put 8px under the
+// pinned header by setting scrollTop from measured boxes, and, when a detail anchor is given, the detail's own
+// scroller puts that anchor a fixed distance below the detail's top. scrollIntoView ('center'/'nearest') left the
+// result to text heights, so platform fonts decided which landmarks were in view.
+async function placeKeys(page,detailAnchor=null,offset=0){
+ await page.evaluate(({detailAnchor,offset})=>{
+  const d=document.querySelector('#signingDialog'),head=d.querySelector('.afb-dialog-head'),row=d.querySelector('#signingKeys [aria-selected="true"]');
+  const detail=d.querySelector('#signingKeyDetail');if(detail)detail.scrollTop=0;
+  d.scrollTop+=row.getBoundingClientRect().top-head.getBoundingClientRect().bottom-8;
+  if(detailAnchor){const a=d.querySelector(detailAnchor);detail.scrollTop+=a.getBoundingClientRect().top-detail.getBoundingClientRect().top-offset;}
+ },{detailAnchor,offset});
+ await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+}
 // Types a value derived from the selected participant's board fingerprint and shows the comparison.
 async function reviewValue(page,derive){
  const fp=await page.evaluate(()=>B.signingParticipants[document.querySelector('#signingKeys [aria-selected="true"]').dataset.keyRow].fingerprint);
  await page.locator('#signingFingerprint').fill(derive(fp));
  await page.locator('#signingFingerprint').blur();
- await page.locator('#signingCompare').evaluate(el=>el.scrollIntoView({block:'center'}));
+ await placeKeys(page,'#signingCompare',200);
 }
 const S=(name,width=1280,height=800)=>({name,viewport:{width,height}});
 const COMPOSER_SIZES=name=>[S(name),S(name+'-1280x460',1280,460),S(name+'-390x640',390,640),S(name+'-320x360',320,360)];
@@ -219,10 +232,10 @@ const GROUPS=[
  // SPEC-002-073: the Keys list with a key in every state, a detail with the guided steps, a changed key, the phone accordion.
  {name:'keys',signing:true,keys:true,setup:async p=>{await openSigning(p);await p.locator('[data-signing-task=review]').click();await expect(p.locator('#signingKeys [data-key-row]')).toHaveCount(8);},shots:[
   S('keys-list'),
-  {...S('keys-detail'),step:async p=>{await selectKey(p,'ada-reviewer');await p.locator('#signingKeyDetail').evaluate(el=>el.scrollIntoView({block:'start'}));await expect(p.locator('#signingReviewSteps')).toBeVisible();}},
-  {...S('keys-changed'),step:async p=>{await selectKey(p,'build-agent-02');await p.locator('#signingKeyChanged').evaluate(el=>el.scrollIntoView({block:'center'}));await expect(p.locator('#signingKeyChanged')).toBeVisible();}},
+  {...S('keys-detail'),step:async p=>{await selectKey(p,'ada-reviewer');await placeKeys(p);await expect(p.locator('#signingReviewSteps')).toBeVisible();}},
+  {...S('keys-changed'),step:async p=>{await selectKey(p,'build-agent-02');await placeKeys(p,'#signingKeyChanged',60);await expect(p.locator('#signingKeyChanged')).toBeVisible();}},
   {...S('keys-phone',390,640),step:async p=>{await closeSigning(p);await p.setViewportSize({width:390,height:640});await h.openToolbarTool(p,'reviewKeysTool');await expect(p.locator('#signingDialog')).toBeVisible();
-   await expect(p.locator('#signingKeyDetail')).toBeVisible();await p.locator('#signingKeys [aria-selected="true"]').evaluate(el=>el.scrollIntoView({block:'center'}));}}]},
+   await expect(p.locator('#signingKeyDetail')).toBeVisible();await placeKeys(p);}}]},
 ];
 const SCENES=GROUPS.flatMap(g=>g.shots.map(s=>s.name));
 
