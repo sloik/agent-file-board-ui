@@ -104,7 +104,7 @@ test('key-file errors stay with the signing task and leave the user in control',
 
 test('read-only boards explain that signing a new message needs a writable folder',async t=>{
   const f=await boot(t),{page}=f;
-  await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();
+  await page.reload();await page.setInputFiles('#fallback',f.proj);await expect(page.locator('#me')).toBeVisible();await page.waitForFunction(()=>window.__boardTest.getModel()!==null);
   assert.equal(await page.evaluate(()=>baseHandle),null);
   await native.openSigning(page);await expect(page.locator('#signing-own')).toContainText(/writable|zapis/i);
   await fits(page);

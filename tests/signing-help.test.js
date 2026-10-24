@@ -223,7 +223,7 @@ test('removing the UUID of a board you already opened is reported as a changed i
 test('read-only upload in a required room offers the writable folder', async t => {
   const f = await boot(t), {page} = f;
   requireSigning(f);
-  await page.reload(); await page.setInputFiles('#fallback',f.proj); await expect(page.locator('#me')).toBeVisible();
+  await page.reload(); await page.setInputFiles('#fallback',f.proj); await expect(page.locator('#me')).toBeVisible();await page.waitForFunction(()=>window.__boardTest.getModel()!==null);
   await room(page);
   await expectStatus(page,'read-only','Open the writable folder','this board is open read-only');
   await button(page).click();
@@ -392,7 +392,7 @@ test('requirements are listed, the guide opens offline, and disabled controls sa
   await closeSigning(page);
   // Read-only: Unlock is off and says so; the advice is the writable folder, never "unlock".
   await page.evaluate(()=>{});
-  await page.reload(); await page.setInputFiles('#fallback',f.proj); await expect(page.locator('#me')).toBeVisible();
+  await page.reload(); await page.setInputFiles('#fallback',f.proj); await expect(page.locator('#me')).toBeVisible();await page.waitForFunction(()=>window.__boardTest.getModel()!==null);
   await openSigning(page);
   await expect(page.locator('#signingUnlockNote')).toContainText('Unlock is off because this folder is read-only');
   await expect(page.locator('#signingDialog [data-action="unlock"]')).toBeDisabled();
