@@ -4,7 +4,7 @@
 const assert=require('node:assert/strict');
 const {expect}=require('playwright/test');
 const h=require('../lib/helpers');
-const {importBoard}=require('../lib/signing-browser');
+const {importBoard,openSigning,closeSigning,trust,selectKey}=require('../lib/signing-browser');
 const {fixture:signingFixture}=require('../lib/signing-fixture');
 
 const DIR=__dirname,LAYOUT_DIR=h.path.join(DIR,'layout'),PIXEL_DIR=h.path.join(DIR,'pixels','linux'),RESULTS=h.path.join(h.ROOT,'test-results','visual');
@@ -32,7 +32,7 @@ const LANDMARKS=[
  ['#composerOptions',{box:true}],['#composerOptionsSummary',{flow:true}],['#cStatus',{flow:true}],['#composerAdvanced',{flow:true,box:true}],['#cWhere',{flow:true}],['#cNewThread',{flow:true}],
  ['#signingNotice',{box:true}],['#signingNotice .signing-notice-label',{flow:true,intrinsic:'w'}],['#signingNotice .signing-notice-action',{flow:true}],['#signingNotice .signing-notice-alt',{flow:true}],
  ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
- ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingParticipant',{flow:true}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
+ ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingKeys',{flow:true,box:true,intrinsic:'h'}],['#signingKeyDetail',{flow:true,box:true,intrinsic:'h'}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
  ['#signingCompare',{flow:true}],['#signingDialog [data-action="trust"]',{flow:true}],
 ];
 const STYLES=['display','background-color','color','border-color','box-shadow','font-weight'];
@@ -149,14 +149,23 @@ async function bootExample(browser,{viewport={width:1280,height:800},html}={}){
 }
 // Signing scenes run on the native OPFS path over http, like tests/key-approval-visibility.test.js, but in a
 // context with the scene options (the shared signing boot uses a bare context).
-async function bootSigning(browser,url){
+async function bootSigning(browser,url,{keys=false}={}){
  // Seeded keys and board ID (SPEC-002-071): a pasted fingerprint in the review scenes renders the same every run.
- const f=signingFixture({seed:'visual'});f.register('implementation-agent-01');
+ // The Keys scenes (SPEC-002-073) use the board with a key in every state instead.
+ const f=signingFixture({seed:'visual'});if(keys)f.ids=f.keys();else f.register('implementation-agent-01');
  const ctx=await browser.newContext({...CONTEXT,viewport:{width:1280,height:800}}),page=await ctx.newPage(),log={pageErrors:[]};
  page.on('pageerror',e=>log.pageErrors.push(e.message));
  await page.clock.setFixedTime(AT);
  await page.addInitScript(()=>{window.showDirectoryPicker=()=>navigator.storage.getDirectory();});await page.addInitScript(PLATFORM);
  await page.goto(url);await importBoard(page,f.proj);await h.openBoardViaUi(page);
+ if(keys){
+  // Three keys approved through the real review, then one of them replaced on the board: every state at once.
+  await choose(page,'#me','human-owner-01');await openSigning(page);
+  for(const identity of [f.owner,f.peer,f.ids['build-agent-02']])await trust(page,identity);
+  await closeSigning(page);f.rotate('build-agent-02');await importBoard(page,f.proj);await page.evaluate(()=>readFromHandle(true));
+  await expect.poll(()=>page.evaluate(()=>signingKeyState('build-agent-02'))).toBe('changed');
+  await page.click('#keyNoticeLater');await expect(page.locator('#keyNotice')).toBeHidden();
+ }
  return {ctx,page,log,cleanup:f.clean};
 }
 // The pointer rests on the topic title, away from hover effects on messages and the sidebar edge.
@@ -172,7 +181,7 @@ async function peek(page){
 }
 // Types a value derived from the selected participant's board fingerprint and shows the comparison.
 async function reviewValue(page,derive){
- const fp=await page.evaluate(()=>B.signingParticipants[document.querySelector('#signingParticipant').value].fingerprint);
+ const fp=await page.evaluate(()=>B.signingParticipants[document.querySelector('#signingKeys [aria-selected="true"]').dataset.keyRow].fingerprint);
  await page.locator('#signingFingerprint').fill(derive(fp));
  await page.locator('#signingFingerprint').blur();
  await page.locator('#signingCompare').evaluate(el=>el.scrollIntoView({block:'center'}));
@@ -198,21 +207,29 @@ const GROUPS=[
  {name:'signing',signing:true,setup:async p=>{await expect(p.locator('#keyNotice')).toBeVisible();await expect(p.locator('#keyNoticeText')).toHaveText('3 participant keys are not approved on this device.');},shots:[
   S('key-notice'),
   {...S('key-notice-pl'),step:async p=>{await choose(p,'#sLang','pl');await expect(p.locator('#keyNoticeReview')).not.toHaveText('Review keys');}},
-  {...S('signing-review'),step:async p=>{await choose(p,'#sLang','en');await p.click('#keyNoticeReview');await expect(p.locator('#signingDialog')).toBeVisible();await expect(p.locator('#signingPendingSummary')).toHaveText('3 keys need review');}},
   // SPEC-002-071: the guided review with the participant's value pasted, then with one character changed.
-  {...S('signing-review-match'),step:async p=>{await reviewValue(p,fp=>fp);await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','match');}},
+  // The key notice opens Keys on the first key needing review (SPEC-002-073; the plain list is the keys-list scene).
+  {...S('signing-review-match'),step:async p=>{await choose(p,'#sLang','en');await p.click('#keyNoticeReview');await expect(p.locator('#signingDialog')).toBeVisible();await expect(p.locator('#signingPendingSummary')).toHaveText('3 of 3 need your attention · 0 approved on this browser');
+   await reviewValue(p,fp=>fp);await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','match');}},
   {...S('signing-review-mismatch'),step:async p=>{await reviewValue(p,fp=>{const i=fp.length-12;return fp.slice(0,i)+(fp[i]==='A'?'B':'A')+fp.slice(i+1);});await expect(p.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');}},
   {...S('signing-composer'),step:async p=>{await p.locator('#signingDialog [data-action="close"]').click();await expect(p.locator('#signingDialog')).toBeHidden();
    await p.click('#keyNoticeLater');await expect(p.locator('#keyNotice')).toBeHidden();await topicDraft(p);
    await expect(p.locator('#signingNotice')).toHaveAttribute('data-signing-status','unsigned');await expect(p.locator('#signingNotice .signing-notice-action')).toContainText('Unlock');}},
   ...COMPOSER_SIZES('signing-composer').slice(1)]},
+ // SPEC-002-073: the Keys list with a key in every state, a detail with the guided steps, a changed key, the phone accordion.
+ {name:'keys',signing:true,keys:true,setup:async p=>{await openSigning(p);await p.locator('[data-signing-task=review]').click();await expect(p.locator('#signingKeys [data-key-row]')).toHaveCount(8);},shots:[
+  S('keys-list'),
+  {...S('keys-detail'),step:async p=>{await selectKey(p,'ada-reviewer');await p.locator('#signingKeyDetail').evaluate(el=>el.scrollIntoView({block:'start'}));await expect(p.locator('#signingReviewSteps')).toBeVisible();}},
+  {...S('keys-changed'),step:async p=>{await selectKey(p,'build-agent-02');await p.locator('#signingKeyChanged').evaluate(el=>el.scrollIntoView({block:'center'}));await expect(p.locator('#signingKeyChanged')).toBeVisible();}},
+  {...S('keys-phone',390,640),step:async p=>{await closeSigning(p);await p.setViewportSize({width:390,height:640});await h.openToolbarTool(p,'reviewKeysTool');await expect(p.locator('#signingDialog')).toBeVisible();
+   await expect(p.locator('#signingKeyDetail')).toBeVisible();await p.locator('#signingKeys [aria-selected="true"]').evaluate(el=>el.scrollIntoView({block:'center'}));}}]},
 ];
 const SCENES=GROUPS.flatMap(g=>g.shots.map(s=>s.name));
 
 // Runs every group (or the named ones), calling onShot(shot, page) after each shot's step and viewport.
 async function run(browser,{url,groups=GROUPS,onShot}){
  for(const group of groups){
-  const s=group.signing?await bootSigning(browser,url):await bootExample(browser,{viewport:group.viewport});
+  const s=group.signing?await bootSigning(browser,url,{keys:!!group.keys}):await bootExample(browser,{viewport:group.viewport});
   try{
    await group.setup(s.page);
    for(const shot of group.shots){

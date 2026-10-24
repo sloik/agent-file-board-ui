@@ -76,7 +76,8 @@ test('AC1/AC2/AC6: a room the CLI created with recording shows its setting, who 
   await hint.getByRole('button',{name:`Review ${owner_}'s fingerprint`}).click();
   await expect(panel(page)).toHaveCount(0);
   await expect(page.locator('#signingDialog')).toBeVisible();
-  await expect(page.getByLabel('Trust participant',{exact:true})).toHaveValue(owner.participant);
+  // SPEC-002-073: the owner's row is the open one in Keys (was the participant select's value).
+  await expect(page.locator(`#signingKeys [data-key-row="${owner.participant}"]`)).toHaveAttribute('aria-selected','true');
   await trust(page,owner);await closeSigning(page);
   await expect(page.locator('#historyOpen')).toContainText('available');
   await openPanel(page);

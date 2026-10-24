@@ -8,7 +8,7 @@ const http=require('node:http');
 const {expect}=require('playwright/test');
 const h=require('./lib/helpers');
 const native=require('./lib/signing-browser');
-const {importBoard,openSigning,closeSigning,trust}=native;
+const {importBoard,openSigning,closeSigning,trust,selectedKey,keyRows}=native;
 let browser,server,url;
 before(async()=>{
   browser=await h.launch();
@@ -85,9 +85,10 @@ test('AC2: revoked, unregistered and error states are not counted; a changed key
   await counted(page,2);
   const names=await page.evaluate(()=>Object.fromEntries(Object.entries(B.people).map(([id,p])=>[id,p.name||id])));
   await openSigning(page);
-  const options=await page.locator('#signingParticipant option').allTextContents();
-  assert.equal(options[0],`${names[f.owner.participant]} (${f.owner.participant}) - key changed`);
-  assert.equal(options[2],`${names['implementation-agent-01']} (implementation-agent-01) - no key`);
+  // SPEC-002-073: the Keys rows (formerly the select's options) in list order, each with its badge.
+  const options=await keyRows(page);
+  assert.equal(options[0],`${names[f.owner.participant]} (${f.owner.participant}) - Key changed`);
+  assert.equal(options[2],`${names['implementation-agent-01']} (implementation-agent-01) - No key`);
 });
 
 test('AC3: the review list names each state, puts keys needing review first; Signing opens as before and "Review keys (N)" opens the first pending key',async t=>{
@@ -100,10 +101,12 @@ test('AC3: the review list names each state, puts keys needing review first; Sig
   assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollTop),0,'Signing opens at the top');
   await closeSigning(page);
   await h.openToolbarTool(page,'reviewKeysTool');await expect(page.locator('#signingDialog')).toBeVisible();
-  await expect(page.locator('#signingParticipant')).toHaveValue(ids[0]);
-  await expect(page.locator('#signingPendingSummary')).toHaveText('2 keys need review');
-  assert.deepEqual(await page.locator('#signingParticipant option').allTextContents(),
-    [...ids.map(id=>`${names[id]} (${id}) - needs review`),`${names['implementation-agent-01']} (implementation-agent-01) - no key`]);
+  // SPEC-002-073: "Review keys" opens Keys filtered to the keys needing attention, the first of them open.
+  await expect.poll(()=>selectedKey(page)).toBe(ids[0]);
+  await expect(page.locator('#signingDialog [data-key-filter="attention"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 3 need your attention · 0 approved on this browser');
+  assert.deepEqual(await keyRows(page),
+    [...ids.map(id=>`${names[id]} (${id}) - Needs review`),`${names['implementation-agent-01']} (implementation-agent-01) - No key`]);
   // The dialog opened on the review task: its heading is in view under the dialog header.
   const view=await page.locator('#signing-review h3').evaluate(el=>{const r=el.getBoundingClientRect(),d=document.querySelector('#signingDialog').getBoundingClientRect();return r.top>=d.top&&r.top<d.bottom;});
   assert.equal(view,true,'review task in view');
@@ -115,13 +118,13 @@ test('AC3: the review list names each state, puts keys needing review first; Sig
   await page.locator('#signingDialog [data-action="trust"]').evaluate(b=>{b.disabled=false;b.click();});
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Fingerprint does not match');
   await trust(page,ids[0]===f.owner.participant?f.owner:f.peer);
-  await expect(page.locator('#signingPendingSummary')).toHaveText('1 key needs review');
-  await expect(page.locator('#signingParticipant option').first()).toHaveText(`${names[ids[0]]} (${ids[0]}) - approved`);
-  await choose(page,'#sLang','pl');await expect(page.locator('#signingPendingSummary')).toHaveText('1 klucz wymaga sprawdzenia',{timeout:10000});
-  await expect(page.locator('#signingParticipant option').first()).toHaveText(`${names[ids[0]]} (${ids[0]}) - zatwierdzony`,{timeout:10000});
+  await expect(page.locator('#signingPendingSummary')).toHaveText('1 of 3 needs your attention · 1 approved on this browser');
+  await expect.poll(async()=>(await keyRows(page))[0]).toBe(`${names[ids[0]]} (${ids[0]}) - Approved on this browser`);
+  await choose(page,'#sLang','pl');await expect(page.locator('#signingPendingSummary')).toHaveText('1 z 3 wymaga Twojej uwagi · 1 zatwierdzony w tej przeglądarce',{timeout:10000});
+  await expect.poll(async()=>(await keyRows(page))[0],{timeout:10000}).toBe(`${names[ids[0]]} (${ids[0]}) - Zatwierdzony w tej przeglądarce`);
   await choose(page,'#sLang','en');await closeSigning(page);
   await approve(page,ids[0]===f.owner.participant?f.peer:f.owner);
-  await openSigning(page);await expect(page.locator('#signingPendingSummary')).toHaveText('All registered keys are approved on this device');
+  await openSigning(page);await expect(page.locator('#signingPendingSummary')).toHaveText('All keys reviewed · 2 approved on this browser');
 });
 
 test('AC4: the first-open notice opens the review, "Not now" survives reload, a new or changed key shows it again',async t=>{
@@ -129,7 +132,7 @@ test('AC4: the first-open notice opens the review, "Not now" survives reload, a 
   await expect(notice(page)).toBeVisible();await expect(page.locator('#keyNoticeText')).toHaveText('2 participant keys are not approved on this device.');
   const first=(await pending(page))[0];
   await page.click('#keyNoticeReview');await expect(page.locator('#signingDialog')).toBeVisible();
-  await expect(page.locator('#signingParticipant')).toHaveValue(first);
+  await expect.poll(()=>selectedKey(page)).toBe(first);
   assert.deepEqual(await page.evaluate(()=>B.signingContext.state.pins),{},'opening the review approves nothing');
   await closeSigning(page);
   await page.click('#keyNoticeLater');await expect(notice(page)).toBeHidden();await counted(page,2);

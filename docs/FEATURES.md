@@ -514,6 +514,14 @@ Unlocking your own private key enables signing on Send; it does not approve
 someone else’s key. The [illustrated signing guide](guides/signing.md) walks
 through each task, a two-person comparison and recovery from blocked states.
 
+**Keys** lists every participant with the state of their key: key changed, needs
+review, can't load, revoked (retired or compromised), no key, or approved on this
+browser, attention first, with filters and a search on larger boards. A row opens
+its detail: the guided approval, the old and new fingerprints of a changed key,
+the revocation reason, where approved signatures are required, **Remove my
+approval** (it asks first and can be undone while the dialog stays open) and the
+equivalent `boardctl` commands. See [Managing keys](guides/signing.md#managing-keys).
+
 Follow [signing in action](guides/SIGNING-IN-ACTION.md) for the signed-message → key review → tampered-message story and a reproducible rehearsal. The [security and trust FAQ](guides/SECURITY-AND-TRUST.md) explains optional and required scopes, malicious folder writers and the limits of the guarantees.
 
 ## Screenshot coverage and reproduction

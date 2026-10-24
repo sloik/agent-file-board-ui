@@ -45,7 +45,9 @@ async function boot(t, browser, url, prepare = null, fixtureOptions = {}) {
 async function openSigning(page) { await h.openToolbarTool(page,'signingTools');await expect(page.locator('#signingDialog')).toBeVisible(); }
 const actions={'Unlock selected keys':'unlock','Lock':'lock','Use unsigned mode':'unsigned','Inspect current profile':'inspect-profile','Trust exact fingerprint':'trust','Remove trust':'remove-trust','Adopt current policy floor':'policy-floor','Inspect excluded messages':'inspect-excluded','Verify older messages':'verify-older'};
 async function action(page,label) {
-  const button=page.locator(`#signingDialog [data-action="${actions[label]||label}"]`);
+  const name=actions[label]||label,button=page.locator(`#signingDialog [data-action="${name}"]`);
+  // SPEC-002-073: removing an approval asks first; the write is the confirmation's Remove (still "remove-trust").
+  if(name==='remove-trust'&&!await button.isVisible())await page.locator('#signingDialog [data-action="remove-trust-ask"]').click();
   if(!await button.isVisible()){
     const details=button.locator('xpath=ancestor::details[1]');
     if(await details.count())await details.locator(':scope > summary').click();
@@ -68,10 +70,21 @@ async function unlock(page,identity) {
   await expect(page.locator('#signingMode')).toContainText(`(${identity.participant})`);
   await closeSigning(page);
 }
+// SPEC-002-073: the Keys list replaced the participant select; choosing a participant opens their row.
+// A row hidden by the current filter is reached through "All"; an open row is left as it is.
+async function selectKey(page,id) {
+  const row=page.locator(`#signingKeys [data-key-row="${id}"]`),detail=page.locator('#signingKeyDetail');
+  if(!await row.isVisible())await page.locator('#signingDialog [data-key-filter="all"]').click();
+  if(await row.getAttribute('aria-selected')!=='true'||!await detail.isVisible())await row.locator('.signing-key-name').click();
+  await expect(row).toHaveAttribute('aria-selected','true');await expect(detail).toBeVisible();
+}
+const selectedKey=page=>page.locator('#signingKeys [data-key-row][aria-selected="true"]').getAttribute('data-key-row');
+// The rows in list order as "Name (id) - badge" (what the select's options said, now the row's badge).
+const keyRows=page=>page.locator('#signingKeys [data-key-row]').evaluateAll(rows=>rows.map(r=>`${r.querySelector('.signing-key-name').textContent} (${r.dataset.keyRow}) - ${r.querySelector('.signing-key-badge span:last-child').textContent}`));
 async function trust(page,identity) {
-  await page.getByLabel('Trust participant',{exact:true}).selectOption(identity.participant);
+  await selectKey(page,identity.participant);
   await page.getByLabel('Independently verified fingerprint',{exact:true}).fill(identity.fingerprint);
   await action(page,'Trust exact fingerprint');await expect(page.locator('#signing-review .signing-feedback')).not.toContainText('Fingerprint does not match');
 }
 
-module.exports={boot,importBoard,exportBoard,openSigning,action,closeSigning,unlock,trust};
+module.exports={boot,importBoard,exportBoard,openSigning,action,closeSigning,unlock,trust,selectKey,selectedKey,keyRows};

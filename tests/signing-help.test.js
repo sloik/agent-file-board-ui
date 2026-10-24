@@ -54,7 +54,7 @@ const personName = (page,id) => page.evaluate(id=>B.people[id].name,id);
 const openerState = page => page.evaluate(() => ({
   open: document.querySelector('#signingDialog')?.open,
   focus: document.activeElement?.id || document.activeElement?.textContent?.slice(0,40),
-  participant: document.querySelector('#signingParticipant')?.value
+  participant: document.querySelector('#signingKeys [data-key-row][aria-selected="true"]')?.dataset.keyRow
 }));
 
 test('every blocked reason has a specific EN and PL message, one next step and a place in the decision flow', () => {
@@ -353,12 +353,15 @@ test('diagrams follow light, dark and dracula themes with readable contrast', as
 test('help copy: each task says why, where things are stored and what is safe to share; the help is keyboard reachable', async t => {
   const {page} = await boot(t);
   await openSigning(page);
-  for (const id of ['check','review','own']) {
+  // SPEC-002-073: the Keys task's block moved to How signing works; Keys keeps the one line about where approvals live.
+  for (const id of ['check','howto','own']) {
     const plain = page.locator(`#signing-${id} .signing-plain`);
     await expect(plain).toContainText('Why'); await expect(plain).toContainText('Stored'); await expect(plain).toContainText('Safe to share');
   }
   await expect(page.locator('#signing-own .signing-plain')).toContainText('never saved, uploaded or put in the board folder');
-  await expect(page.locator('#signing-review .signing-plain')).toContainText('not written to the board and not sent to anyone');
+  await expect(page.locator('#signing-howto .signing-plain')).toContainText('not written to the board and not sent to anyone');
+  await expect(page.locator('#signing-review > .signing-help').first()).toHaveText('Approvals live only in this browser, for this board folder. The command line (boardctl) keeps its own.');
+  await expect(page.locator('#signing-review .signing-plain')).toHaveCount(0);
   // Keyboard: the help summary opens with Enter and Escape still closes the dialog.
   await page.locator('[data-signing-task="howto"]').focus(); await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(()=>document.activeElement.tagName),'SUMMARY');

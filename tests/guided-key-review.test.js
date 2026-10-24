@@ -9,7 +9,7 @@ const {expect}=require('playwright/test');
 const h=require('./lib/helpers');
 const vm=require('node:vm');
 const native=require('./lib/signing-browser');
-const {openSigning,closeSigning,unlock}=native;
+const {openSigning,closeSigning,unlock,selectKey}=native;
 let browser,server,url;
 before(async()=>{
   browser=await h.launch();
@@ -26,7 +26,8 @@ async function boot(t,{clipboard=true}={}){
 const choose=(page,id,value)=>page.evaluate(([id,value])=>{const el=document.querySelector(id);el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));},[id,value]);
 async function review(page,participant){
   await openSigning(page);
-  await page.locator('#signingParticipant').selectOption(participant);
+  // SPEC-002-073: the participant is chosen by opening their row in Keys (was the participant select).
+  await selectKey(page,participant);
   await expect(page.locator('#signingReviewSteps')).toBeVisible();
 }
 const approve=page=>page.locator('#signingDialog [data-action="trust"]');
@@ -253,7 +254,7 @@ test('AC6: after unlocking, Sign as me shows and copies the fingerprint derived 
   await expect(page.locator('#signing-own .signing-feedback')).toContainText('Your fingerprint is copied');
   // Copying it is not an echo of the board when the owner then checks their own key.
   await page.locator('[data-signing-task=review]').click();
-  await page.locator('#signingParticipant').selectOption(owner.participant);
+  await selectKey(page,owner.participant);
   await page.locator('#signingPaste').click();
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','match');
   await expect(page.locator('#signingEcho')).toBeHidden();
@@ -275,7 +276,7 @@ test('AC7: Check with my key file matches the unlocked own key; a different key 
   await approve(page).click();
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Exact key approved locally');
   // Not offered for someone else's key.
-  await page.locator('#signingParticipant').selectOption(peer.participant);
+  await selectKey(page,peer.participant);
   await expect(page.locator('#signingOwnCheck')).toBeHidden();
   await closeSigning(page);
 
@@ -300,10 +301,11 @@ test('AC7: Check with my key file matches the unlocked own key; a different key 
 test('AC8: approving after the guided steps keeps the pins, counts and composer status of the existing flow',async t=>{
   const {page,owner,peer}=await boot(t);
   await review(page,peer.participant);
-  await expect(page.locator('#signingPendingSummary')).toHaveText('2 keys need review');
+  // SPEC-002-073 summary line: keys needing attention (the chip's set) of all participants, and what this browser approved.
+  await expect(page.locator('#signingPendingSummary')).toHaveText('2 of 3 need your attention · 0 approved on this browser');
   await page.locator('#signingFingerprint').fill(peer.fingerprint);await approve(page).click();
   await expect(page.locator('#signing-review .signing-feedback')).toContainText('Exact key approved locally');
-  await expect(page.locator('#signingPendingSummary')).toHaveText('1 key needs review');
+  await expect(page.locator('#signingPendingSummary')).toHaveText('1 of 3 needs your attention · 1 approved on this browser');
   await expect(page.locator(`[data-signing-participant="${peer.participant}"]`)).toContainText('Current key trusted by you');
   assert.deepEqual(await page.evaluate(()=>B.signingContext.state.pins),{[peer.participant]:peer.fingerprint});
   await expect(page.locator('#signingTools .key-badge-count')).toHaveText('1');
@@ -337,6 +339,8 @@ test('phone width: the guided steps and a mismatch fit 390 pixels without horizo
   await expect(page.locator('#signingCompare')).toHaveAttribute('data-state','mismatch');
   await page.locator('.signing-find summary').click();
   assert.equal(await page.locator('#signingDialog').evaluate(d=>d.scrollWidth<=d.clientWidth),true,'no horizontal scroll');
-  const overflow=await page.locator('#signing-review').evaluate(s=>{const box=s.getBoundingClientRect();return [...s.querySelectorAll('*')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>box.right+1;}).map(el=>el.className||el.tagName);});
+  // SPEC-002-073: the filter chips scroll sideways inside their own row by design; that row itself must fit.
+  const overflow=await page.locator('#signing-review').evaluate(s=>{const box=s.getBoundingClientRect();return [...s.querySelectorAll('*')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>box.right+1&&!el.closest('.signing-key-filters>*');}).map(el=>el.className||el.tagName);});
   assert.deepEqual(overflow,[]);
+  assert.equal(await page.locator('.signing-key-filters').evaluate(el=>getComputedStyle(el).overflowX),'auto','the chip row scrolls on its own');
 });

@@ -248,6 +248,11 @@ function signingParticipantSummary(id,model=B) {
   if(f.trusted) return exText("Current key trusted by you","Ufasz bieżącemu kluczowi");
   return f.changed?exText("Key changed — review needed","Klucz zmieniony — wymaga sprawdzenia"):exText("Current key not approved by you","Nie zatwierdzono bieżącego klucza");
 }
+// The key status chip in Participants: the same badge as the Keys row, and it opens that row (SPEC-002-073).
+function signingKeyChipHtml(id, model = B) {
+  const badge = signingKeyBadge(signingKeyState(id, model)), summary = signingParticipantSummary(id, model);
+  return `<p class="hint participant-key-trust"><button type="button" class="signing-key-chip-button" data-signing-open="review" data-signing-for="${esc(id)}" title="${esc(exText("Open in Keys", "Otwórz w Kluczach"))}"><span class="signing-key-badge" data-tone="${badge.tone}"><span aria-hidden="true">${badge.icon}</span> <span>${esc(badge.label)}</span></span></button> ${esc(summary)}</p>`;
+}
 // Keys waiting for approval (SPEC-002-069): a current, unrevoked fingerprint that is not the one
 // approved on this device. Approval is read from the pins, which an upload's approval updates
 // without rebuilding signingParticipants. Changed keys first, then by display name.
@@ -268,20 +273,123 @@ function signingCount(n, en1, en, one, few, many) {
   return form === "one" ? one : form === "few" ? few : many;
 }
 const signingKeysToReview = (n) => signingCount(n, `${n} key to review`, `${n} keys to review`, `${n} klucz do sprawdzenia`, `${n} klucze do sprawdzenia`, `${n} kluczy do sprawdzenia`);
-// The state after each name in the review list, from the same data as signingParticipantSummary.
-function signingParticipantState(id, model = B) {
-  const f = model?.signingParticipants?.[id];
-  if (f?.unregistered) return exText("no key", "brak klucza");
-  if (!f?.fingerprint) return exText("key unavailable", "klucz niedostępny");
-  if (f.revoked) return exText("revoked", "unieważniony");
-  if (!signingNeedsReview(id, model)) return exText("approved", "zatwierdzony");
-  return model.signingContext?.state?.pins?.[id] ? exText("key changed", "klucz zmieniony") : exText("needs review", "wymaga sprawdzenia");
+// Key management (SPEC-002-073): one state per participant, from the same facts and pins as the count above.
+// List groups in order; both kinds of revoked key share one group.
+const SIGNING_KEY_GROUPS = ["changed", "review", "error", "revoked", "none", "approved"];
+const SIGNING_KEY_FILTERS = ["all", "attention", "approved", "none", "revoked"];
+function signingKeyState(id, model = B) {
+  const f = model?.signingParticipants?.[id], pin = model?.signingContext?.state?.pins?.[id];
+  if (!f || f.unregistered) return "none";
+  if (!f.fingerprint) return "error";
+  if (f.revoked) return f.revoked === "compromised" ? "compromised" : "retired";
+  if (pin === f.fingerprint) return "approved";
+  return pin ? "changed" : "review";
 }
-const signingParticipantOption = (id, model = B) => `${model.people[id]?.name || id} (${id}) - ${signingParticipantState(id, model)}`;
-function signingPendingSummary(model = B) {
-  const n = signingPendingReview(model).length;
-  if (n) return signingCount(n, "1 key needs review", `${n} keys need review`, "1 klucz wymaga sprawdzenia", `${n} klucze wymagają sprawdzenia`, `${n} kluczy wymaga sprawdzenia`);
-  return Object.values(model?.signingParticipants || {}).some((f) => f?.fingerprint) ? exText("All registered keys are approved on this device", "Wszystkie zarejestrowane klucze są zatwierdzone na tym urządzeniu") : exText("No participant has a registered key yet", "Żaden uczestnik nie ma jeszcze zarejestrowanego klucza");
+const signingKeyGroup = (state) => state === "retired" || state === "compromised" ? "revoked" : state;
+const signingKeyAttention = (state) => state === "changed" || state === "review" || state === "error";
+function signingKeyMatches(filter, state) {
+  if (filter === "attention") return signingKeyAttention(state);
+  if (filter === "revoked") return signingKeyGroup(state) === "revoked";
+  return filter === "all" || filter === state;
+}
+// Icon and text, never colour alone; the tone picks theme tokens. A changed key never gets the success tone.
+function signingKeyBadge(state, text = exText) {
+  return ({
+    changed: { icon: "⚠", tone: "danger", label: text("Key changed", "Klucz zmieniony") },
+    review: { icon: "●", tone: "warn", label: text("Needs review", "Wymaga sprawdzenia") },
+    error: { icon: "⚠", tone: "neutral", label: text("Can't load key", "Nie można wczytać klucza") },
+    retired: { icon: "⛔", tone: "revoked", label: text("Revoked (retired)", "Unieważniony (wycofany)") },
+    compromised: { icon: "⛔", tone: "compromised", label: text("Revoked (compromised)", "Unieważniony (przejęty)") },
+    none: { icon: "○", tone: "muted", label: text("No key", "Brak klucza") },
+    approved: { icon: "✓", tone: "ok", label: text("Approved on this browser", "Zatwierdzony w tej przeglądarce") }
+  })[state];
+}
+function signingKeyGroupLabel(group, text = exText) {
+  return ({ changed: text("Key changed", "Klucz zmieniony"), review: text("Needs review", "Wymaga sprawdzenia"), error: text("Can't load key", "Nie można wczytać klucza"),
+    revoked: text("Revoked", "Unieważnione"), none: text("No key", "Brak klucza"), approved: text("Approved", "Zatwierdzone") })[group];
+}
+function signingKeyFilterLabel(filter, text = exText) {
+  return ({ all: text("All", "Wszystkie"), attention: text("Needs attention", "Wymaga uwagi"), approved: text("Approved", "Zatwierdzone"), none: text("No key", "Brak klucza"), revoked: text("Revoked", "Unieważnione") })[filter];
+}
+// What this browser holds for the participant, next to the board's current key.
+function signingKeyBrowser(id, model = B, text = exText) {
+  const f = model?.signingParticipants?.[id], pin = model?.signingContext?.state?.pins?.[id];
+  if (!f?.fingerprint) return pin ? text("A key approved earlier", "Wcześniej zatwierdzony klucz") : "—";
+  if (pin === f.fingerprint) return text("Approved", "Zatwierdzony");
+  return pin ? text("A different key approved", "Zatwierdzony inny klucz") : text("Not approved", "Niezatwierdzony");
+}
+// The one primary action of a row. Revoked and missing keys have none: there is nothing to approve.
+// Approval itself is never a row action; it is the guided review in the detail.
+function signingKeyAction(state, own = false, text = exText) {
+  if (state === "changed") return { kind: "review", label: text("Review again", "Sprawdź ponownie") };
+  if (state === "review") return { kind: "review", label: text("Review", "Sprawdź") };
+  if (state === "error") return { kind: "retry", label: text("Retry", "Spróbuj ponownie") };
+  if (state === "approved") return own ? { kind: "mine", label: text("Show my fingerprint", "Pokaż mój odcisk") } : { kind: "details", label: text("Details", "Szczegóły") };
+  if (state === "none") return { kind: null, note: text("Their messages show as unsigned", "Ich wiadomości są pokazywane jako niepodpisane") };
+  return { kind: null, note: text("Do not use", "Nie używaj") };
+}
+// Attention first, then alphabetical by name and id. The dialog keeps this order while it stays open.
+function signingKeyOrder(model = B) {
+  const name = (id) => model?.people?.[id]?.name || id, rank = (id) => SIGNING_KEY_GROUPS.indexOf(signingKeyGroup(signingKeyState(id, model)));
+  return Object.keys(model?.signingParticipants || {}).sort((a, b) => rank(a) - rank(b) || name(a).localeCompare(name(b)) || (a < b ? -1 : a > b ? 1 : 0));
+}
+// Display only: the first and last 6 characters after the prefix. The full value stays in the title and the detail.
+function signingFingerprintBrief(value) {
+  const v = String(value || ""), rest = v.startsWith(SIGNING_FP_PREFIX) ? v.slice(SIGNING_FP_PREFIX.length) : v;
+  return rest.length > 14 ? rest.slice(0, 6) + "…" + rest.slice(-6) : rest;
+}
+// The line above the list: the same set and total as the "Needs attention" and "All" chips (changed, needs review
+// and can't-load keys, out of every participant). No all-clear while a key needs attention or is revoked.
+function signingPendingSummary(model = B, text = exText) {
+  const states = Object.keys(model?.signingParticipants || {}).map((id) => signingKeyState(id, model));
+  const count = (test) => states.filter(test).length, total = states.length, attention = count(signingKeyAttention);
+  const approved = count((s) => s === "approved"), revoked = count((s) => signingKeyGroup(s) === "revoked");
+  if (!count((s) => s !== "none")) return { tone: "", text: text("No participant has a registered key yet", "Żaden uczestnik nie ma jeszcze zarejestrowanego klucza") };
+  const here = signingCount(approved, "1 approved on this browser", `${approved} approved on this browser`, "1 zatwierdzony w tej przeglądarce", `${approved} zatwierdzone w tej przeglądarce`, `${approved} zatwierdzonych w tej przeglądarce`);
+  if (attention) return { tone: "warn", text: text(`${attention} of ${total} ${attention === 1 ? "needs" : "need"} your attention`,
+    `${attention} z ${total} ${signingCount(attention, "", "", "wymaga", "wymagają", "wymaga")} Twojej uwagi`) + " · " + here };
+  if (revoked) return { tone: "", text: [text("Nothing needs your attention", "Nic nie wymaga Twojej uwagi"), text(`${revoked} revoked`, `unieważnione: ${revoked}`), here].join(" · ") };
+  return { tone: "ok", text: text("All keys reviewed", "Wszystkie klucze sprawdzone") + " · " + here };
+}
+// The facts kept per participant from the resolver: the current key, its approval and lifecycle, the profile
+// hash, the key history and a revocation reason. No new board data and no change to the pins.
+function signingParticipantFacts(r, pin) {
+  const fingerprint = r.head.fingerprint, revoked = r.revoked[fingerprint] || null;
+  const events = (r.events || []).filter((s) => s.keyId === fingerprint && s.status), event = events.find((s) => s.status === revoked) || events[0];
+  return { fingerprint, trusted: pin === fingerprint, changed: !!pin && pin !== fingerprint, revoked, profile: r.head.digest,
+    chain: r.chain.map((p) => p.fingerprint), reason: typeof event?.reason === "string" ? event.reason : "" };
+}
+// Undo of a removed approval: offered only in the dialog session that removed it, and only for that exact
+// fingerprint. A reopened dialog has a new session, so the record no longer applies.
+const signingUndo = new Map();
+let signingDialogSession = 0;
+function signingUndoFor(id, session) {
+  const record = signingUndo.get(id);
+  return record && record.session === session ? record.fingerprint : null;
+}
+// Command-line equivalents, in the pinned canonical boardctl. The fingerprint is never filled in: approving in
+// the command line needs the same comparison outside this board. Nothing here writes to the board.
+function signingKeyCommands(id, state, facts = {}, text = exText) {
+  const board = text("<board>", "<tablica>"), key = signingKeyFolder() + id + ".json", profileFile = signingKeyFolder() + id + "-profile.json";
+  const hash = facts.profile || text("<profile-sha256>", "<skrót-profilu>"), fp = text("<fingerprint>", "<odcisk>"), room = text("rooms/<room>", "rooms/<pokój>");
+  const check = { title: text("Check posting", "Sprawdź wysyłanie"), commands: [`boardctl signing check --path ${board} --from ${id} --scope ${room}`] };
+  if (state === "none") return [
+    { title: text("Register a key", "Zarejestruj klucz"), note: text("The participant makes the key and profile on their own device; the board owner imports the profile with the hash it printed.", "Uczestnik tworzy klucz i profil na własnym urządzeniu; właściciel tablicy importuje profil ze skrótem, który został wypisany."),
+      commands: [`boardctl signing keygen --path ${board} --participant ${id}`,
+        `boardctl signing profile --path ${board} --participant ${id} --key-file ${key} --output ${profileFile}`,
+        `boardctl identity import ${id} --path ${board} --profile-file ${profileFile} --sha256 ${text("<profile-sha256>", "<skrót-profilu>")}`] }, check];
+  const inspect = `boardctl identity inspect ${id} --path ${board}`;
+  if (signingKeyGroup(state) === "revoked") return [
+    { title: text("Inspect", "Sprawdź"), note: text("A revoked key cannot be approved or rotated. A replacement is registered after an independent review; see the canonical signing guide, “Changing a key: rotation and revocation”.", "Unieważnionego klucza nie można zatwierdzić ani wymienić. Następcę rejestruje się po niezależnym sprawdzeniu; zobacz kanoniczny przewodnik podpisów, „Changing a key: rotation and revocation”."), commands: [inspect] }, check];
+  return [
+    { title: text("Approve in the command line", "Zatwierdź w wierszu poleceń"), note: text("The command line keeps its own approvals. Compare the fingerprint with its owner outside this board first.", "Wiersz poleceń ma własne zatwierdzenia. Najpierw porównaj odcisk z właścicielem poza tą tablicą."),
+      commands: [inspect, `boardctl signing trust --path ${board} --participant ${id} --fingerprint ${fp} --profile ${hash}`] },
+    { title: text("Remove a command-line approval", "Usuń zatwierdzenie w wierszu poleceń"), commands: [`boardctl signing untrust --path ${board} --participant ${id}`] },
+    { title: text("Rotate or revoke", "Wymień lub unieważnij"), note: text("Needs the participant's private key file. Full steps: the canonical signing guide, “Changing a key: rotation and revocation”.", "Wymaga pliku klucza prywatnego uczestnika. Pełne kroki: kanoniczny przewodnik podpisów, „Changing a key: rotation and revocation”."),
+      commands: [`boardctl signing transition --path ${board} --participant ${id} --key-file ${key} --new-key-file ${text("<new-key.json>", "<nowy-klucz.json>")} --profile-file ${text("<new-profile.json>", "<nowy-profil.json>")} --sha256 ${text("<new-profile-sha256>", "<skrót-nowego-profilu>")} --output ${text("<transition.json>", "<przejście.json>")}`,
+        `boardctl signing update --path ${board} --participant ${id} --expect-profile ${hash} --profile-file ${text("<new-profile.json>", "<nowy-profil.json>")} --sha256 ${text("<new-profile-sha256>", "<skrót-nowego-profilu>")} --event-file ${text("<transition.json>", "<przejście.json>")}`,
+        `boardctl signing revoke --path ${board} --participant ${id} --key-file ${key} --expect-profile ${hash} --status retired`] },
+    check];
 }
 // The first-open notice is dismissed per board for the exact pending (participant, fingerprint)
 // pairs: a new or changed key shows it again. Storage may throw; the session copy still hides it.
@@ -345,7 +453,10 @@ function signingMessageHtml(m) {
   const f=m.signing || {}, facts=signingMessageFacts(m), reason=f.reason && f.reason!=="verified" && f.reason!=="unsigned"?f.reason:"";
   const badges=facts.map(fact=>`<span class="signing-state${fact.warning?' signing-state-warning':''}" data-signing-state="${fact.id}" title="${esc(fact.label+': '+fact.explanation)}"><span aria-hidden="true">${fact.emoji}</span><span>${esc(fact.label)}</span></span>`).join("");
   const explanations=facts.map(fact=>`<dt>${esc(fact.label)}</dt><dd>${esc(fact.explanation)}</dd>`).join("");
-  return `<details class="signing-facts"><summary aria-label="${esc(signingMessageSummary(m))}">${badges}<span class="signing-details-label">${esc(exText("Details","Szczegóły"))}</span></summary><dl class="signing-state-explanations">${explanations}</dl><p>${esc(exText("A verified signature proves these message bytes match the signing key. Your local key approval is separate; neither proves the claims in the message are true.","Zweryfikowany podpis potwierdza zgodność bajtów wiadomości z kluczem podpisu. Twoje lokalne zatwierdzenie klucza jest osobne; żadne nie potwierdza prawdziwości treści."))}</p>${f.fingerprint?`<p>${esc(exText("Signing key fingerprint","Odcisk klucza podpisu"))}: <code>${esc(f.fingerprint)}</code></p>`:""}${reason?`<p>${esc(reason)}</p>`:""}<p>${esc(exText("Open Signing in Tools to review keys or verify older messages.","Otwórz Podpisy w Narzędziach, aby sprawdzić klucze lub zweryfikować starsze wiadomości."))}</p></details>`;
+  // A verified signature from a key not approved here opens that sender's row in Keys (SPEC-002-073).
+  const who=f.signature==="valid"&&f.trust!=="trusted"&&typeof m.author==="string"&&m.author?m.author:"";
+  const open=who?`<p><button type="button" class="btn signing-review-key" data-signing-open="review" data-signing-for="${esc(who)}">${esc(exText(`Review ${signingPersonaName(who)}'s key`,`Sprawdź klucz: ${signingPersonaName(who)}`))}</button></p>`:"";
+  return `<details class="signing-facts"><summary aria-label="${esc(signingMessageSummary(m))}">${badges}<span class="signing-details-label">${esc(exText("Details","Szczegóły"))}</span></summary><dl class="signing-state-explanations">${explanations}</dl>${open}<p>${esc(exText("A verified signature proves these message bytes match the signing key. Your local key approval is separate; neither proves the claims in the message are true.","Zweryfikowany podpis potwierdza zgodność bajtów wiadomości z kluczem podpisu. Twoje lokalne zatwierdzenie klucza jest osobne; żadne nie potwierdza prawdziwości treści."))}</p>${f.fingerprint?`<p>${esc(exText("Signing key fingerprint","Odcisk klucza podpisu"))}: <code>${esc(f.fingerprint)}</code></p>`:""}${reason?`<p>${esc(reason)}</p>`:""}<p>${esc(exText("Open Signing in Tools to review keys or verify older messages.","Otwórz Podpisy w Narzędziach, aby sprawdzić klucze lub zweryfikować starsze wiadomości."))}</p></details>`;
 }
 // In signed mode the author and signer are the persona selected in "I am" at the moment of sending.
 // A locked persona key refuses (the draft stays); it never falls back to unsigned or to another key.
@@ -468,10 +579,11 @@ async function prepareSigning(model, files, base = null) {
     for(const p of registry.participants || []) {
       if(!p.identity){model.signingParticipants[p.id]={unregistered:true};continue;}
       try {
-        const r=await context.resolve(p.id), fingerprint=r.head.fingerprint, pin=context.state.pins[p.id];
-        model.signingParticipants[p.id]={fingerprint,trusted:pin===fingerprint,changed:!!pin && pin!==fingerprint,revoked:r.revoked[fingerprint] || null};
+        const r=await context.resolve(p.id);
+        model.signingParticipants[p.id]=signingParticipantFacts(r,context.state.pins[p.id]);
       } catch(e) { model.signingParticipants[p.id]={error:e.message}; }
     }
+    model.signingReadAt=Date.now();
     signingNoteCatalog();
     await signingProvider.reconcile(context);
     await signingSave(model);
@@ -625,12 +737,13 @@ async function signingDialog(request) {
     let landing = target.querySelector("h3") || target.querySelector("summary");
     if (task === "howto" && req.anchor) landing = dialog.querySelector({ owner: "#signing-setup-owner", keys: "#signing-setup-you" }[req.anchor] || "#signing-fig-" + req.anchor) || landing;
     const control = req.focus && dialog.querySelector(req.focus);
-    if (control && !control.disabled) landing = control;
+    // A control in a folded part (an approved key has no steps) is skipped for the task's heading.
+    if (control && !control.disabled && control.checkVisibility?.() !== false) landing = control;
     landing.scrollIntoView({ block: "start" });
     dialog.scrollTop = Math.max(0, dialog.scrollTop - head.getBoundingClientRect().height - 12);
     landing.focus({ preventScroll: true });
   };
-  for (const [task, label] of [["check", text("Check messages", "Sprawdź wiadomości")], ["review", text("Review a key", "Sprawdź klucz")], ["own", text("Sign as me", "Podpisuj jako ja")], ["howto", text("How signing works", "Jak działają podpisy")]]) {
+  for (const [task, label] of [["check", text("Check messages", "Sprawdź wiadomości")], ["review", text("Keys", "Klucze")], ["own", text("Sign as me", "Podpisuj jako ja")], ["howto", text("How signing works", "Jak działają podpisy")]]) {
     const jump = node("button", label, taskNav, "btn");
     jump.dataset.signingTask = task;
     jump.onclick = () => goTo(task);
@@ -676,6 +789,13 @@ async function signingDialog(request) {
     style.textContent = SIGNING_DIAGRAM_CSS;
     document.head.append(style);
   }
+  const plain = (s, why, stored, shared) => {
+    const dl = node("dl", "", s, "signing-plain");
+    for (const [k, v] of [[text("Why", "Po co"), why], [text("Stored", "Gdzie zapisane"), stored], [text("Safe to share", "Co można udostępnić"), shared]]) {
+      node("dt", k, dl);
+      node("dd", v, dl);
+    }
+  };
   const howto = node("details", "", dialog, "signing-card");
   howto.id = "signing-howto";
   node("summary", text("How signing works: pictures and plain answers", "Jak działają podpisy: obrazki i proste odpowiedzi"), howto);
@@ -699,6 +819,10 @@ async function signingDialog(request) {
     text("If a requirement is set before the board has an identity UUID, every message shows as waiting for verification until the owner adds one.", "Jeśli wymóg ustawiono, zanim tablica dostała identyfikator UUID, każda wiadomość czeka na weryfikację, aż właściciel go doda."),
     text("Read-only folders and uploads can check messages but cannot unlock keys or save signed messages.", "Foldery i wczytane pliki tylko do odczytu pozwalają sprawdzać wiadomości, ale nie odblokowywać kluczy ani zapisywać podpisanych wiadomości.")
   ]) node("li", item, know);
+  // The Keys task's why / stored / safe-to-share block lives here, so Keys opens on the list (SPEC-002-073).
+  const approvals = node("h4", text("Approving keys", "Zatwierdzanie kluczy"), howto);
+  approvals.id = "signing-howto-keys";
+  plain(howto, text("a signature only says “this key signed it”. Your approval tells this device which key really belongs to which person.", "podpis mówi tylko „ten klucz to podpisał”. Twoje zatwierdzenie mówi temu urządzeniu, który klucz naprawdę należy do której osoby."), text("your approval stays in this browser, for this board folder only. It is not written to the board and not sent to anyone. The command line (boardctl) keeps its own approvals.", "zatwierdzenie zostaje w tej przeglądarce, tylko dla tego folderu tablicy. Nie jest zapisywane na tablicy ani nikomu wysyłane. Wiersz poleceń (boardctl) ma własne zatwierdzenia."), text("a fingerprint. Never share a private key.", "odcisk klucza. Nigdy nie udostępniaj klucza prywatnego."));
   node("h4", text("What is safe to share", "Co można bezpiecznie udostępniać"), howto);
   const shared = node("dl", "", howto, "signing-legend");
   for (const [name, meaning] of [
@@ -718,7 +842,7 @@ async function signingDialog(request) {
     text(`Make a key with boardctl signing keygen --path <board> --participant <your id>. It saves the private key as ${signingKeyFolder()}<your id>.json and prints the next steps; ask the board owner to register its public half. The viewer cannot create or register keys.`, `Utwórz klucz poleceniem boardctl signing keygen --path <tablica> --participant <twój id>. Zapisze klucz prywatny jako ${signingKeyFolder()}<twój id>.json i wypisze kolejne kroki; poproś właściciela tablicy o zarejestrowanie części publicznej. Przeglądarka nie tworzy ani nie rejestruje kluczy.`),
     text(`Keep the private key file in ${signingKeyFolder()} on this device: never in the board folder, a repository or a synced folder such as Dropbox or iCloud Drive. Each person and each agent holds only its own key.`, `Trzymaj plik klucza prywatnego w ${signingKeyFolder()} na tym urządzeniu: nigdy w folderze tablicy, repozytorium ani folderze synchronizowanym, takim jak Dropbox czy iCloud Drive. Każda osoba i każdy agent ma tylko własny klucz.`),
     text("Task 3, Sign as me: pick your persona, choose its private key file and press Unlock. The padlock button next to Send does the same for the persona in “I am”.", "Zadanie 3, Podpisuj jako ja: wybierz personę, wybierz jej plik klucza prywatnego i naciśnij Odblokuj. Przycisk z kłódką obok Wyślij robi to samo dla persony z „Jestem”."),
-    text("Task 2, Review a key: select yourself, press Check with my key file, then Approve. You do this once per device.", "Zadanie 2, Sprawdź klucz: wybierz siebie, naciśnij Sprawdź moim plikiem klucza, potem Zatwierdź. Robisz to raz na urządzenie."),
+    text("Task 2, Keys: open your own row (marked You), press Check with my key file, then Approve. You do this once per device.", "Zadanie 2, Klucze: otwórz własny wiersz (oznaczony Ty), naciśnij Sprawdź moim plikiem klucza, potem Zatwierdź. Robisz to raz na urządzenie."),
     text("Write your message and press Post.", "Napisz wiadomość i naciśnij Wyślij.")
   ]) node("li", step, youSteps);
   const setupOwner = node("h4", text("Board owner: require signatures for a room", "Właściciel tablicy: wymaganie podpisów w pokoju"), howto);
@@ -741,13 +865,6 @@ async function signingDialog(request) {
     s.setAttribute("aria-labelledby", h.id);
     node("p", help, s, "signing-help");
     return s;
-  };
-  const plain = (s, why, stored, shared) => {
-    const dl = node("dl", "", s, "signing-plain");
-    for (const [k, v] of [[text("Why", "Po co"), why], [text("Stored", "Gdzie zapisane"), stored], [text("Safe to share", "Co można udostępnić"), shared]]) {
-      node("dt", k, dl);
-      node("dd", v, dl);
-    }
   };
   const feedback = (s) => {
     const p = node("p", "", s, "signing-feedback");
@@ -776,7 +893,7 @@ async function signingDialog(request) {
   };
   const actions = [];
   const run = async (out, fn) => {
-    if (busy) return;
+    if (busy) return false;
     busy = true;
     refresh();
     out.textContent = text("Working…", "Pracuję…");
@@ -789,19 +906,26 @@ async function signingDialog(request) {
       active();
       refresh();
       out.textContent = result || text("Done.", "Gotowe.");
+      return true;
     } catch (e) {
       out.textContent = e.message;
       out.classList.add("signing-error");
+      return false;
     } finally {
       busy = false;
       refresh();
     }
   };
-  const add = (s, label, action, out, fn, available = () => true) => {
+  // `after` runs once the action has succeeded and the dialog has refreshed, with the participant it acted on.
+  const add = (s, label, action, out, fn, available = () => true, after = null) => {
     const b = node("button", label, s, "btn");
+    b.type = "button";
     b.dataset.action = action;
     actions.push({ b, available });
-    b.onclick = () => run(out, fn);
+    b.onclick = async () => {
+      const id = selected;
+      if (await run(out, fn) && after) after(id);
+    };
     return b;
   };
   const check = section("signing-check", text("1. Check received messages", "1. Sprawdź otrzymane wiadomości"), text("A verified signature checks message integrity. Your approval of its key is a separate decision. Neither proves that the message is true.", "Zweryfikowany podpis sprawdza integralność wiadomości. Zatwierdzenie jej klucza jest osobną decyzją. Żadne nie dowodzi prawdziwości treści."));
@@ -839,24 +963,64 @@ async function signingDialog(request) {
     return signingInspect ? text("Excluded messages are visible for inspection only. They remain blocked.", "Wykluczone wiadomości są widoczne tylko do podglądu. Nadal są zablokowane.") : text("Excluded messages are hidden again.", "Wykluczone wiadomości są ponownie ukryte.");
   });
   node("p", text("The newest 200 messages are checked on opening. Checking older messages does not approve keys or modify shared message files.", "Po otwarciu sprawdzanych jest 200 najnowszych wiadomości. Sprawdzanie starszych nie zatwierdza kluczy ani nie zmienia wspólnych plików wiadomości."), check, "signing-help");
-  const review = section("signing-review", text("2. Review a participant key", "2. Sprawdź klucz uczestnika"), text("Compare the full fingerprint with the participant through a separate channel you already trust, such as an in-person conversation. A message on this board alone is not enough.", "Porównaj cały odcisk z uczestnikiem przez osobny zaufany kanał, np. podczas osobistej rozmowy. Sama wiadomość na tej tablicy nie wystarcza."));
-  plain(review, text("a signature only says “this key signed it”. Your approval tells this device which key really belongs to which person.", "podpis mówi tylko „ten klucz to podpisał”. Twoje zatwierdzenie mówi temu urządzeniu, który klucz naprawdę należy do której osoby."), text("your approval stays in this browser, for this board folder only. It is not written to the board and not sent to anyone.", "zatwierdzenie zostaje w tej przeglądarce, tylko dla tego folderu tablicy. Nie jest zapisywane na tablicy ani nikomu wysyłane."), text("a fingerprint. Never share a private key.", "odcisk klucza. Nigdy nie udostępniaj klucza prywatnego."));
-  // Keys that need review come first, each option names its state (SPEC-002-069).
+  // Keys (SPEC-002-073): every participant in one list with its state, one detail at a time. The guided approval of
+  // SPEC-002-071/072 lives in the detail, unchanged; nothing approves more than one key or skips the comparison.
+  const review = section("signing-review", text("2. Keys", "2. Klucze"), text("Approvals live only in this browser, for this board folder. The command line (boardctl) keeps its own.", "Zatwierdzenia są tylko w tej przeglądarce, dla tego folderu tablicy. Wiersz poleceń (boardctl) ma własne."));
   const pendingSummary = node("p", "", review, "signing-pending-summary");
   pendingSummary.id = "signingPendingSummary";
-  const participant = field(review, text("Participant to review", "Uczestnik do sprawdzenia"), "select", "signingParticipant", "Trust participant");
-  const pendingIds = signingPendingReview(model), registered = (model.signingContext?.registry.participants || []).map((p) => p.id);
-  for (const id of [...pendingIds, ...registered.filter((id) => !pendingIds.includes(id))]) {
-    const o = node("option", signingParticipantOption(id, model), participant);
-    o.value = id;
-  }
-  const keyCard = node("div", "", review, "signing-key-card"), keyName = node("strong", "", keyCard), keyState = node("p", "", keyCard), key = node("code", "", keyCard), keyHelp = node("p", "", keyCard, "signing-help");
+  const filterBar = node("div", "", review, "signing-key-filters");
+  filterBar.setAttribute("role", "toolbar");
+  filterBar.setAttribute("aria-label", text("Show keys", "Pokaż klucze"));
+  let filter = "all", query = "", selected = "", detailOpen = false, confirmOpen = false, order = [], focusRow = "";
+  const session = ++signingDialogSession, refreshedAt = {};
+  const filterButtons = SIGNING_KEY_FILTERS.map((name) => {
+    const b = node("button", "", filterBar, "signing-key-filter");
+    b.type = "button";
+    b.dataset.keyFilter = name;
+    b.onclick = () => { filter = name; refresh(); };
+    return b;
+  });
+  // Arrow keys move between the chips; one of them is in the tab order.
+  filterBar.addEventListener("keydown", (event) => {
+    const at = filterButtons.indexOf(event.target), step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    if (at < 0 || !step) return;
+    event.preventDefault();
+    const next = filterButtons[(at + step + filterButtons.length) % filterButtons.length];
+    filterButtons.forEach((b) => { b.tabIndex = b === next ? 0 : -1; });
+    next.focus();
+  });
+  const searchLabel = node("label", text("Find a participant by name or id", "Znajdź uczestnika po nazwie lub id"), review, "signing-field signing-key-search");
+  const search = node("input", "", searchLabel);
+  search.id = "signingKeySearch";
+  search.type = "search";
+  search.autocomplete = "off";
+  search.oninput = () => { query = search.value.trim().toLowerCase(); refresh(); };
+  const layout = node("div", "", review, "signing-keys-layout");
+  const keyList = node("div", "", layout, "signing-keys");
+  keyList.id = "signingKeys";
+  keyList.setAttribute("role", "listbox");
+  keyList.setAttribute("aria-label", text("Participant keys", "Klucze uczestników"));
+  const detail = node("div", "", layout, "signing-key-detail");
+  detail.id = "signingKeyDetail";
+  detail.setAttribute("role", "region");
+  const placeholder = node("p", "", layout, "signing-help signing-key-placeholder");
+  const wide = window.matchMedia("(min-width: 900px)");
+  const detailHead = node("div", "", detail, "signing-key-detail-head"), detailTitle = node("h4", "", detailHead), detailFacts = node("p", "", detailHead, "signing-key-detail-facts");
+  detailTitle.tabIndex = -1;
+  const asOf = node("p", "", detailHead, "signing-help signing-key-asof");
+  const inspectActions = node("div", "", detail, "signing-actions");
+  const keyCard = node("div", "", detail, "signing-key-card"), keyName = node("strong", "", keyCard), keyState = node("p", "", keyCard), key = node("code", "", keyCard), keyHelp = node("p", "", keyCard, "signing-help");
   const keyActions = node("div", "", keyCard, "signing-actions");
-  const inspectActions = node("div", "", review, "signing-actions");
+  const changedBox = node("div", "", detail, "signing-key-changed");
+  changedBox.id = "signingKeyChanged";
+  const lineage = node("p", "", detail, "signing-help signing-key-lineage");
+  lineage.id = "signingKeyLineage";
+  const revocation = node("div", "", detail, "signing-key-revocation");
+  revocation.id = "signingKeyRevocation";
   // Guided steps (SPEC-002-071): get the fingerprint from its owner, paste it, compare, approve.
   // Approval stays a deliberate paste. The board's value can be copied to send to its owner (SPEC-002-072),
   // and pasting it back counts as an echo, so Approve then needs the outside-this-board confirmation.
-  const stepList = node("ol", "", review, "signing-review-steps");
+  const stepList = node("ol", "", detail, "signing-review-steps");
   stepList.id = "signingReviewSteps";
   const step = () => {
     const li = node("li", "", stepList);
@@ -895,8 +1059,30 @@ async function signingDialog(request) {
   const echoText = node("p", "", echoBox), echoLabel = node("label", "", echoBox, "signing-echo-confirm"), echoConfirm = node("input", "", echoLabel), echoConfirmText = node("span", "", echoLabel);
   echoConfirm.type = "checkbox";
   echoConfirm.id = "signingEchoConfirm";
-  const reviewOut = feedback(review), reviewActions = node("div", "", review, "signing-actions");
-  let reviewed = null, compareKey = "";
+  // An approved key: the steps fold to one line with Remove my approval, which asks first and can be undone.
+  const approvedBox = node("p", "", detail, "signing-key-approved");
+  approvedBox.id = "signingKeyApproved";
+  const removeBox = node("div", "", detail, "signing-key-remove");
+  const removeAsk = node("button", "", removeBox, "btn");
+  removeAsk.type = "button";
+  removeAsk.dataset.action = "remove-trust-ask";
+  const confirmBox = node("div", "", removeBox, "signing-key-confirm");
+  confirmBox.id = "signingRemoveConfirm";
+  confirmBox.setAttribute("role", "group");
+  const confirmText = node("p", "", confirmBox), confirmActions = node("div", "", confirmBox, "signing-actions");
+  const undoBox = node("div", "", detail, "signing-key-undo");
+  undoBox.id = "signingUndo";
+  undoBox.setAttribute("role", "status");
+  const undoText = node("span", "", undoBox), undoActions = node("span", "", undoBox, "signing-actions");
+  const reviewOut = feedback(detail);
+  const requiredBox = node("div", "", detail, "signing-key-required");
+  requiredBox.id = "signingKeyRequired";
+  const requiredTitle = node("strong", "", requiredBox), requiredText = node("p", "", requiredBox), requiredWarn = node("p", "", requiredBox, "signing-key-warn");
+  const cli = node("details", "", detail, "signing-key-cli");
+  cli.id = "signingKeyCli";
+  const cliSummary = node("summary", "", cli), cliBody = node("div", "", cli);
+  const detailNote = node("p", "", detail, "signing-help");
+  let reviewed = null, compareKey = "", changedKey = "", cliKey = "";
   // Strings this dialog put on the clipboard: the request text and any selection copied here, except the
   // owner's own fingerprint from Sign as me and text copied out of input fields.
   const copied = new Set();
@@ -906,10 +1092,10 @@ async function signingDialog(request) {
     if (value) copied.add(value);
   });
   const reviewBoard = () => {
-    const id = participant.value;
+    const id = selected;
     return (reviewed?.id === id ? reviewed.fingerprint : model.signingParticipants?.[id]?.fingerprint) || "";
   };
-  const reviewName = () => model.people?.[participant.value]?.name || participant.value;
+  const reviewName = () => model.people?.[selected]?.name || selected;
   const reviewEcho = () => signingFingerprintEcho(copied, fingerprint.value, reviewBoard());
   const setFingerprint = (value) => {
     fingerprint.value = signingStripSpace(value);
@@ -929,16 +1115,166 @@ async function signingDialog(request) {
     syncReview();
   });
   echoConfirm.onchange = () => syncReview();
-  participant.onchange = () => {
-    reviewed = null;
-    fingerprint.value = "";
-    echoConfirm.checked = false;
-    reviewOut.textContent = "";
-    pasteOut.textContent = "";
+  // Choosing another participant resets the review exactly as the earlier participant select did, so the
+  // echo guard and a typed value never carry over from one key to the next.
+  const selectKey = (id, open = true) => {
+    if (selected !== id) {
+      selected = id;
+      reviewed = null;
+      fingerprint.value = "";
+      echoConfirm.checked = false;
+      reviewOut.textContent = "";
+      pasteOut.textContent = "";
+      confirmOpen = false;
+    }
+    detailOpen = open && !!id;
+    focusRow = id;
     refresh();
   };
+  const rows = new Map();
+  const rowOf = (id) => rows.get(id);
+  // Rows are built once and updated in place; their order is fixed for this dialog (no jumping after an action).
+  const makeRow = (id) => {
+    const row = node("div", "", null, "signing-key-row");
+    row.dataset.keyRow = id;
+    row.setAttribute("role", "option");
+    row.tabIndex = -1;
+    row.onclick = (event) => {
+      if (event.target.closest("button")) return;
+      // In the narrow layout a second click on the open row folds it, so one accordion is open at a time.
+      if (selected === id && detailOpen && !wide.matches) { detailOpen = false; refresh(); return; }
+      selectKey(id);
+    };
+    rows.set(id, row);
+    return row;
+  };
+  const buildRows = () => {
+    order = signingKeyOrder(model);
+    const parts = [];
+    let group = null;
+    for (const id of order) {
+      const g = signingKeyGroup(signingKeyState(id, model));
+      if (g !== group) {
+        group = g;
+        const h = node("div", "", null, "signing-key-group");
+        h.dataset.keyGroup = g;
+        h.setAttribute("role", "presentation");
+        parts.push(h);
+      }
+      parts.push(rowOf(id) || makeRow(id));
+    }
+    keyList.replaceChildren(...parts);
+  };
+  // A participant registered while the dialog is open joins at the end; one that left is dropped.
+  const syncOrder = () => {
+    const ids = Object.keys(model.signingParticipants || {});
+    const added = signingKeyOrder(model).filter((id) => !order.includes(id)), gone = order.filter((id) => !ids.includes(id));
+    for (const id of gone) { rowOf(id)?.remove(); rows.delete(id); }
+    order = order.filter((id) => ids.includes(id)).concat(added);
+    for (const id of added) keyList.append(makeRow(id));
+    if (selected && !ids.includes(selected)) { selected = ""; detailOpen = false; }
+  };
+  const visibleRows = () => order.map(rowOf).filter((row) => row && !row.hidden);
+  keyList.addEventListener("keydown", (event) => {
+    const row = event.target.closest?.("[data-key-row]");
+    if (!row || event.target !== row) return;
+    const list = visibleRows(), at = list.indexOf(row);
+    let next = null;
+    if (event.key === "ArrowDown") next = list[Math.min(list.length - 1, at + 1)];
+    else if (event.key === "ArrowUp") next = list[Math.max(0, at - 1)];
+    else if (event.key === "Home") next = list[0];
+    else if (event.key === "End") next = list.at(-1);
+    else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      const id = row.dataset.keyRow;
+      if (selected === id && detailOpen && !wide.matches) { detailOpen = false; refresh(); }
+      else selectKey(id);
+      return;
+    } else return;
+    event.preventDefault();
+    if (next) { focusRow = next.dataset.keyRow; syncTabStops(); next.focus(); }
+  });
+  // Roving tabindex: the selected row, else the last focused one, else the first visible row is the tab stop.
+  const syncTabStops = () => {
+    const list = visibleRows(), stop = list.find((r) => r.dataset.keyRow === focusRow) || list.find((r) => r.dataset.keyRow === selected) || list[0];
+    for (const row of rows.values()) { const t = row === stop ? 0 : -1; if (row.tabIndex !== t) row.tabIndex = t; }
+  };
+  const focusKeyRow = (id) => { const row = rowOf(id); if (!row || row.hidden) return; focusRow = id; syncTabStops(); row.focus(); };
+  // The next row needing attention after an approval, in list order (wrapping), never the one just approved.
+  const nextAttention = (id) => {
+    const list = visibleRows().map((r) => r.dataset.keyRow), at = list.indexOf(id);
+    return [...list.slice(at + 1), ...list.slice(0, Math.max(0, at))].find((other) => other !== id && signingKeyAttention(signingKeyState(other, model)));
+  };
+  const rowAction = (id, kind) => {
+    if (kind === "mine") { goTo("own"); return; }
+    selectKey(id);
+    if (kind === "retry") { refreshKey.click(); return; }
+    detail.scrollIntoView({ block: "nearest" });
+    // The accordion shows the name in the row itself; its detail starts below it.
+    if (detailTitle.checkVisibility?.() !== false) detailTitle.focus({ preventScroll: true }); else focusKeyRow(id);
+  };
+  const syncRow = (row, id) => {
+    const state = signingKeyState(id, model), f = model.signingParticipants?.[id] || {}, person = model.people?.[id], own = id === currentUser();
+    const badge = signingKeyBadge(state, text), act = signingKeyAction(state, own, text), browser = signingKeyBrowser(id, model, text);
+    const name = person?.name || id, kind = person?.kind === "human" || person?.kind === "agent" ? person.kind : "";
+    const shown = signingKeyMatches(filter, state) && (!query || name.toLowerCase().includes(query) || id.toLowerCase().includes(query));
+    if (row.hidden === shown) row.hidden = !shown;
+    if (row.dataset.keyState !== state) row.dataset.keyState = state;
+    const isSelected = String(id === selected);
+    if (row.getAttribute("aria-selected") !== isSelected) row.setAttribute("aria-selected", isSelected);
+    row.classList.toggle("is-open", id === selected && detailOpen);
+    const stamp = JSON.stringify([state, f.fingerprint, name, kind, own, browser, act, badge, S.lang]);
+    if (row.keyStamp === stamp) return;
+    row.keyStamp = stamp;
+    const avatar = node("span", (name.match(/[\p{L}\p{N}]/u)?.[0] || "?").toUpperCase(), null, "signing-key-avatar");
+    avatar.setAttribute("aria-hidden", "true");
+    if (typeof colorOf === "function") avatar.style.setProperty("--c", colorOf(id));
+    const who = node("span", "", null, "signing-key-who");
+    node("strong", name, who, "signing-key-name");
+    if (name !== id) node("code", id, who, "signing-key-id");
+    if (kind) node("span", kind === "human" ? text("human", "człowiek") : text("agent", "agent"), who, "signing-key-chip");
+    if (own) node("span", text("You", "Ty"), who, "signing-key-chip signing-key-you");
+    const facts = node("span", "", null, "signing-key-facts");
+    const b = node("span", "", facts, "signing-key-badge");
+    b.dataset.tone = badge.tone;
+    node("span", badge.icon, b).setAttribute("aria-hidden", "true");
+    node("span", badge.label, b);
+    if (f.fingerprint) {
+      const short = node("code", signingFingerprintBrief(f.fingerprint), facts, "signing-key-short");
+      short.title = f.fingerprint;
+    }
+    node("span", text("This browser: ", "Ta przeglądarka: ") + browser, facts, "signing-key-browser");
+    let primary;
+    if (act.kind) {
+      primary = node("button", act.label, null, "btn signing-key-primary");
+      primary.type = "button";
+      primary.tabIndex = -1;
+      primary.dataset.keyAction = act.kind;
+      primary.onclick = () => rowAction(id, act.kind);
+    } else primary = node("span", act.note, null, "signing-key-note");
+    row.replaceChildren(avatar, who, facts, primary);
+    row.title = `${name} (${id}): ${badge.label}`;
+  };
+  // Wide windows show the detail beside the list; narrower ones open it under the selected row.
+  const placeDetail = () => {
+    const row = rowOf(selected);
+    if (wide.matches || !row) { if (detail.parentElement !== layout || detail.nextElementSibling !== placeholder) layout.insertBefore(detail, placeholder); }
+    else if (row.nextElementSibling !== detail) row.after(detail);
+    const show = detailOpen && !!selected && !!row && !row.hidden;
+    if (detail.hidden === show) detail.hidden = !show;
+    placeholder.hidden = show || !wide.matches || !order.length;
+  };
+  wide.addEventListener("change", () => refresh());
+  // Esc folds an open detail before it closes the dialog; focus returns to its row.
+  dialog.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !detailOpen || !selected || !review.contains(document.activeElement)) return;
+    event.preventDefault();
+    detailOpen = false;
+    refresh();
+    focusKeyRow(selected);
+  });
   const copyRequest = add(s1Actions, text("Copy what to send them", "Kopiuj tekst do wysłania"), "copy-request", reviewOut, async () => {
-    const id = participant.value, name = reviewName(), project = model.cfg?.project;
+    const id = selected, name = reviewName(), project = model.cfg?.project;
     const message = signingReviewRequest({ name, id, board: project?.name || project?.id || text("this board", "ta tablica"), boardId: model.signingContext?.boardId, fingerprint: reviewBoard() }, text);
     copied.add(signingStripSpace(message));
     await signingClipboardWrite(message, text);
@@ -957,7 +1293,7 @@ async function signingDialog(request) {
   }, () => !!model.signingContext && !model.signingError);
   // Own key shortcut: the key file on this device confirms what the board lists. It fills the field with
   // the value derived from that file; approval is still the Approve button below.
-  const unlockedOwn = () => signingProvider.catalog().find((p) => p.participant === participant.value && p.participant === currentUser());
+  const unlockedOwn = () => signingProvider.catalog().find((p) => p.participant === selected && p.participant === currentUser());
   const ownMatch = (fp) => fp === reviewBoard() ? text("Your key file matches the key this board lists for you. Approve it in step 4.", "Twój plik klucza zgadza się z kluczem, który ta tablica pokazuje dla Ciebie. Zatwierdź go w kroku 4.") :
     text("Your key file does not match the key this board lists for you. Do not approve it; ask the board owner which key is registered.", "Twój plik klucza nie zgadza się z kluczem, który ta tablica pokazuje dla Ciebie. Nie zatwierdzaj go; zapytaj właściciela tablicy, który klucz jest zarejestrowany.");
   const checkOwn = add(ownCheckActions, text("Check with my key file", "Sprawdź moim plikiem klucza"), "check-own-key", reviewOut, () => {
@@ -969,7 +1305,7 @@ async function signingDialog(request) {
     ownKeyFile.value = "";
     ownKeyFile.click();
     return text("Choose your private key file. It is read in this tab only.", "Wybierz swój plik klucza prywatnego. Jest czytany tylko w tej karcie.");
-  }, () => participant.value === currentUser() && !!reviewBoard() && (!!unlockedOwn() || (!!base && !!model.signingContext && !model.signingError)));
+  }, () => selected === currentUser() && !!reviewBoard() && (!!unlockedOwn() || (!!base && !!model.signingContext && !model.signingError)));
   const copyFingerprint = add(keyActions, text("Copy fingerprint", "Kopiuj odcisk"), "copy-fingerprint", reviewOut, async () => {
     const value = reviewBoard(), name = reviewName();
     copied.add(value);
@@ -985,7 +1321,7 @@ async function signingDialog(request) {
     ownKeyFile.value = "";
     if (!file) return;
     run(reviewOut, async () => {
-      const id = participant.value;
+      const id = selected;
       C.require(id === currentUser(), "Participant changed; review again");
       C.require(file.size <= 16384, "Private key file too large");
       const bytes = new Uint8Array(await file.arrayBuffer());
@@ -998,15 +1334,15 @@ async function signingDialog(request) {
         throw Error("Invalid private JWK");
       }
       active();
-      C.require(id === participant.value, "Participant changed; review again");
+      C.require(id === selected, "Participant changed; review again");
       // Unlock through the existing flow only for the key the board lists: that also proves the file holds it.
       if (fp === reviewBoard() && !unlockedOwn()) await unlockFiles([file]);
       setFingerprint(fp);
       return ownMatch(fp);
     });
   };
-  add(inspectActions, text("Refresh key details", "Odśwież dane klucza"), "inspect-profile", reviewOut, async () => {
-    const id = participant.value;
+  const refreshKey = add(inspectActions, text("Refresh key details", "Odśwież dane klucza"), "inspect-profile", reviewOut, async () => {
+    const id = selected;
     let context;
     if (base) {
       // A native board can change on disk while this dialog remains open.
@@ -1022,17 +1358,15 @@ async function signingDialog(request) {
     }
     const r = await context.resolve(id);
     active();
-    C.require(id === participant.value, "Participant changed; review again");
+    C.require(id === selected, "Participant changed; review again");
     reviewed = { id, fingerprint: r.head.fingerprint, revoked: r.revoked[r.head.fingerprint] };
-    const pin = model.signingContext.state.pins[id];
-    model.signingParticipants[id] = { fingerprint: r.head.fingerprint,
-      trusted: pin === r.head.fingerprint, changed: !!pin && pin !== r.head.fingerprint,
-      revoked: r.revoked[r.head.fingerprint] || null };
+    model.signingParticipants[id] = signingParticipantFacts(r, model.signingContext.state.pins[id]);
+    refreshedAt[id] = Date.now();
     const source = base ? text("Key details refreshed from the board folder. No approval changed.", "Dane klucza odświeżono z folderu tablicy. Zatwierdzenie nie zmieniło się.") :
       text("Uploaded key evidence rechecked. This is a fixed snapshot; reopen the folder to see newer keys or revocations. No approval changed.", "Ponownie sprawdzono wczytane dane klucza. To stała kopia; otwórz folder ponownie, aby zobaczyć nowsze klucze lub unieważnienia. Zatwierdzenie nie zmieniło się.");
     return source + " " + (reviewed.revoked ? text("This key is revoked. Do not approve or use it. Ask the participant about recovery.", "Klucz jest unieważniony. Nie zatwierdzaj go ani nie używaj. Zapytaj uczestnika o odzyskanie dostępu.") :
       text("Compare the full fingerprint independently before approving.", "Przed zatwierdzeniem porównaj cały odcisk niezależnie."));
-  }, () => !!model.signingContext && !!participant.value);
+  }, () => !!model.signingContext && !!selected);
   const reload = async (participantId) => {
     if (base) {
       active();
@@ -1083,30 +1417,58 @@ async function signingDialog(request) {
       throw error;
     }
   };
+  // After an approval, focus moves on to the next key needing attention; the rows stay where they are.
   const approve = add(s4Actions, text("Approve this exact key", "Zatwierdź ten konkretny klucz"), "trust", reviewOut, async () => {
-    const id = participant.value, typed = fingerprint.value, confirmed = echoConfirm.checked, r = await model.signingContext.resolve(id);
+    const id = selected, typed = fingerprint.value, confirmed = echoConfirm.checked, r = await model.signingContext.resolve(id);
     active();
-    C.require(id === participant.value && typed === fingerprint.value, "Key review changed; review again");
+    C.require(id === selected && typed === fingerprint.value, "Key review changed; review again");
     C.require(typed === r.head.fingerprint, "Fingerprint does not match verified current profile");
     C.require(!signingFingerprintEcho(copied, typed, r.head.fingerprint) || confirmed, text("This is the value shown on this board. Confirm you checked it with the participant outside this board.", "To wartość pokazana na tej tablicy. Potwierdź, że sprawdzono ją z uczestnikiem poza tą tablicą."));
     C.require(!r.revoked[r.head.fingerprint], "Signing key revoked");
     await signingFresh(model, base, model.signingContext, model.signingExpected);
     active();
-    C.require(id === participant.value && typed === fingerprint.value, "Key review changed; review again");
+    C.require(id === selected && typed === fingerprint.value, "Key review changed; review again");
     await savePin(id, typed);
     active();
     await reload(id);
     return text("Exact key approved locally. This does not approve message content or share your decision with others.", "Konkretny klucz zatwierdzono lokalnie. Nie oznacza to zatwierdzenia treści ani udostępnienia tej decyzji innym.");
-  }, () => !!model.signingContext && !!model.signingParticipants?.[participant.value]?.fingerprint && !model.signingParticipants[participant.value].revoked &&
-    signingReviewApprovable(reviewBoard(), fingerprint.value, reviewEcho(), echoConfirm.checked));
-  add(reviewActions, text("Remove my approval", "Usuń moje zatwierdzenie"), "remove-trust", reviewOut, async () => {
-    const id = participant.value;
+  }, () => !!model.signingContext && !!model.signingParticipants?.[selected]?.fingerprint && !model.signingParticipants[selected].revoked &&
+    signingReviewApprovable(reviewBoard(), fingerprint.value, reviewEcho(), echoConfirm.checked), (id) => { const next = nextAttention(id); if (next) focusKeyRow(next); });
+  removeAsk.onclick = () => { confirmOpen = !confirmOpen; refresh(); if (confirmOpen) confirmActions.querySelector("button")?.focus(); };
+  // The write is unchanged: it deletes this browser's pin only. Undo is recorded for this dialog session.
+  add(confirmActions, text("Remove", "Usuń"), "remove-trust", reviewOut, async () => {
+    const id = selected, removed = model.signingContext.state.pins[id];
     await savePin(id, undefined);
     active();
+    signingUndo.set(id, { session, fingerprint: removed });
+    confirmOpen = false;
     await reload(id);
     return text("Local approval removed. No shared files were deleted. Stricter rules may now block affected messages.", "Usunięto lokalne zatwierdzenie. Nie usunięto wspólnych plików. Ostrzejsze reguły mogą teraz blokować te wiadomości.");
-  }, () => !!model.signingContext?.state.pins[participant.value]);
-  node("p", text("Approval belongs to this browser and board location. A changed key needs a new review. Removing approval does not revoke the participant's key.", "Zatwierdzenie dotyczy tej przeglądarki i lokalizacji tablicy. Zmieniony klucz wymaga nowego sprawdzenia. Usunięcie zatwierdzenia nie unieważnia klucza uczestnika."), review, "signing-help");
+  }, () => !!model.signingContext?.state.pins[selected], (id) => focusKeyRow(id));
+  const keep = node("button", text("Keep", "Zostaw"), confirmActions, "btn");
+  keep.type = "button";
+  keep.dataset.action = "remove-keep";
+  keep.onclick = () => { confirmOpen = false; refresh(); removeAsk.focus(); };
+  // Undo re-pins only the exact fingerprint removed in this dialog session, with the same checks as Approve
+  // apart from the paste: the current key must still be that fingerprint and not revoked.
+  add(undoActions, text("Undo", "Cofnij"), "undo-remove", reviewOut, async () => {
+    const id = selected, fp = signingUndoFor(id, session), name = reviewName();
+    C.require(fp, text("Undo is no longer available. Review the key again.", "Cofnięcie nie jest już dostępne. Sprawdź klucz ponownie."));
+    const r = await model.signingContext.resolve(id);
+    active();
+    C.require(id === selected && signingUndoFor(id, session) === fp, "Key review changed; review again");
+    C.require(r.head.fingerprint === fp, text("The key changed since you removed the approval. Review it again.", "Klucz zmienił się od usunięcia zatwierdzenia. Sprawdź go ponownie."));
+    C.require(!r.revoked[fp], "Signing key revoked");
+    await signingFresh(model, base, model.signingContext, model.signingExpected);
+    active();
+    C.require(id === selected && signingUndoFor(id, session) === fp, "Key review changed; review again");
+    await savePin(id, fp);
+    active();
+    signingUndo.delete(id);
+    await reload(id);
+    return text(`Approval of ${name}'s key restored on this browser.`, `Przywrócono zatwierdzenie klucza (${name}) w tej przeglądarce.`);
+  }, () => !!selected && !!signingUndoFor(selected, session) && model.signingContext?.state.pins[selected] !== signingUndoFor(selected, session) &&
+    model.signingParticipants?.[selected]?.fingerprint === signingUndoFor(selected, session), (id) => focusKeyRow(id));
   const own = section("signing-own", text("3. Sign your messages", "3. Podpisuj własne wiadomości"), text("You need a private JWK key matching a current registered participant profile. Ask the board administrator to register your public key first. Never share your private key or put it in the board folder.", "Potrzebujesz prywatnego klucza JWK pasującego do bieżącego profilu uczestnika. Najpierw poproś administratora o rejestrację klucza publicznego. Nigdy nie udostępniaj prywatnego klucza ani nie zapisuj go w folderze tablicy."));
   plain(own, text("only your own private key can sign as you. That makes your messages hard to fake. Rooms that require signatures also need your own key approved once, in task 2.", "tylko Twój klucz prywatny może podpisywać jako Ty. Dzięki temu Twoich wiadomości trudno podrobić. Pokoje wymagające podpisów potrzebują też jednorazowego zatwierdzenia Twojego klucza w zadaniu 2."), text("your private key stays in this tab's memory after you unlock it. It is never saved, uploaded or put in the board folder, and is forgotten when you lock, reload or wait 15 minutes.", "klucz prywatny zostaje w pamięci tej karty po odblokowaniu. Nigdy nie jest zapisywany, wysyłany ani umieszczany w folderze tablicy i znika po zablokowaniu, przeładowaniu lub 15 minutach."), text("nothing here. The key file is secret. Share only your public fingerprint.", "nic z tego. Plik klucza jest tajny. Udostępniaj tylko publiczny odcisk."));
   const ownState = node("p", "", own, "signing-mode");
@@ -1209,7 +1571,7 @@ async function signingDialog(request) {
   // The review steps follow the selected participant and the field; only changed text is written.
   function syncReview() {
     const put = (el, value) => { if (el.textContent !== value) el.textContent = value; };
-    const id = participant.value, name = reviewName(), board = reviewBoard(), value = fingerprint.value, result = signingFingerprintCompare(board, value), echo = reviewEcho();
+    const id = selected, name = reviewName(), board = reviewBoard(), value = fingerprint.value, result = signingFingerprintCompare(board, value), echo = reviewEcho();
     put(s1.title, text("Check the fingerprint with them.", "Sprawdź odcisk z tą osobą."));
     put(s1Body, text(`Check it with ${name} through a channel you already trust: in person, a phone call, or a chat app you already use with them. Not this board. Either copy the fingerprint above and ask ${name} to compare it with the one on their device, or ask them to send you theirs.`, `Sprawdź go z uczestnikiem ${name} kanałem, któremu już ufasz: osobiście, telefonicznie lub przez komunikator, którego już razem używacie. Nie przez tę tablicę. Skopiuj odcisk powyżej i poproś o porównanie z odciskiem na urządzeniu tej osoby albo poproś o przesłanie własnego.`));
     put(findSummary, text(`How ${name} finds it`, `Gdzie ${name} go znajdzie`));
@@ -1226,7 +1588,8 @@ async function signingDialog(request) {
     if (fingerprint.getAttribute("aria-label") !== aria) fingerprint.setAttribute("aria-label", aria);
     put(s3.title, text("Compare.", "Porównaj."));
     put(s4.title, text("Approve.", "Zatwierdź."));
-    put(approve, text(`Approve ${name}'s key`, `Zatwierdź klucz: ${name}`));
+    // A changed key is approved as the replacement it claims to be, after the same comparison.
+    put(approve, signingKeyState(id, model) === "changed" ? text("Approve replacement key", "Zatwierdź nowy klucz") : text(`Approve ${name}'s key`, `Zatwierdź klucz: ${name}`));
     put(copyFingerprint, text("Copy fingerprint", "Kopiuj odcisk"));
     put(copyRequest, text("Copy what to send them", "Kopiuj tekst do wysłania"));
     put(paste, text("Paste", "Wklej"));
@@ -1256,25 +1619,166 @@ async function signingDialog(request) {
     const entry = actions.find((a) => a.b === approve);
     approve.disabled = busy || !entry.available();
   }
+  // The Keys list and the selected key's detail. Only changed text or nodes are written, so the 3-second
+  // refresh never moves focus, a row or the cursor.
+  let built = false, headKey = "", revocationKey = "";
+  function syncKeys() {
+    const put = (el, value) => { if (el.textContent !== value) el.textContent = value; };
+    const hide = (el, value) => { if (el.hidden !== value) el.hidden = value; };
+    const summary = signingPendingSummary(model, text);
+    put(pendingSummary, summary.text);
+    if (pendingSummary.dataset.tone !== summary.tone) pendingSummary.dataset.tone = summary.tone;
+    if (!built) { built = true; buildRows(); } else syncOrder();
+    const states = Object.fromEntries(order.map((id) => [id, signingKeyState(id, model)]));
+    const inBar = filterBar.contains(document.activeElement);
+    for (const b of filterButtons) {
+      const name = b.dataset.keyFilter, n = order.filter((id) => signingKeyMatches(name, states[id])).length;
+      put(b, `${signingKeyFilterLabel(name, text)} ${n}`);
+      if (b.getAttribute("aria-pressed") !== String(filter === name)) b.setAttribute("aria-pressed", String(filter === name));
+      b.classList.toggle("is-empty", !n);
+      if (!inBar) b.tabIndex = filter === name ? 0 : -1;
+    }
+    // Search only helps on larger boards.
+    hide(searchLabel, order.length < 8);
+    if (order.length < 8 && query) { query = ""; search.value = ""; }
+    for (const id of order) syncRow(rowOf(id), id);
+    let header = null, any = false;
+    const close = () => { if (header) hide(header, !any); };
+    for (const el of keyList.children) {
+      if (el.dataset.keyGroup) { close(); header = el; any = false; put(el, signingKeyGroupLabel(el.dataset.keyGroup, text)); }
+      else if (el.dataset.keyRow && !el.hidden) any = true;
+    }
+    close();
+    const id = selected, f = model.signingParticipants?.[id], state = id ? signingKeyState(id, model) : "", pin = model.signingContext?.state.pins[id];
+    const name = reviewName(), own = !!id && id === currentUser(), person = model.people?.[id];
+    if (f?.fingerprint) {
+      f.trusted = pin === f.fingerprint;
+      f.changed = !!pin && pin !== f.fingerprint;
+    }
+    if (detail.dataset.keyState !== state) detail.dataset.keyState = state;
+    put(detailTitle, name && name !== id ? `${name} (${id})` : id);
+    const badge = state ? signingKeyBadge(state, text) : null, browser = signingKeyBrowser(id, model, text);
+    const headStamp = JSON.stringify([id, state, person?.kind, own, browser, badge, S.lang]);
+    if (headStamp !== headKey) {
+      headKey = headStamp;
+      const parts = [];
+      if (person?.kind === "human" || person?.kind === "agent") parts.push(node("span", person.kind === "human" ? text("human", "człowiek") : text("agent", "agent"), null, "signing-key-chip"));
+      if (own) parts.push(node("span", text("You", "Ty"), null, "signing-key-chip signing-key-you"));
+      if (badge) {
+        const b = node("span", "", null, "signing-key-badge");
+        b.dataset.tone = badge.tone;
+        node("span", badge.icon, b).setAttribute("aria-hidden", "true");
+        node("span", badge.label, b);
+        parts.push(b);
+      }
+      parts.push(node("span", text("This browser: ", "Ta przeglądarka: ") + browser, null, "signing-key-browser"));
+      detailFacts.replaceChildren(...parts);
+    }
+    const at = refreshedAt[id] || model.signingReadAt;
+    put(asOf, at ? text("Key details as of ", "Dane klucza z godziny ") + new Date(at).toLocaleTimeString(S.lang === "pl" ? "pl-PL" : "en-GB", { hour: "2-digit", minute: "2-digit" }) +
+      text(". Refreshing reads the board folder again; no approval changes.", ". Odświeżenie czyta folder tablicy ponownie; żadne zatwierdzenie się nie zmienia.") : "");
+    keyCard.dataset.signingParticipant = id;
+    keyName.textContent = model.people[id] ? `${model.people[id].name} (${id})` : id || text("No registered participants", "Brak zarejestrowanych uczestników");
+    keyState.textContent = signingParticipantSummary(id, model);
+    // The full fingerprint in groups of 4; textContent and a copied selection stay the exact value.
+    const keyValue = (reviewed?.id === id ? reviewed.fingerprint : f?.fingerprint) || "", keyShown = keyValue || text("No current fingerprint available", "Brak bieżącego odcisku");
+    if (key.keyShown !== keyShown) {
+      key.keyShown = keyShown;
+      key.className = keyValue ? "signing-fp" : "";
+      key.replaceChildren(...(keyValue ? [...signingFingerprintNode(keyValue).childNodes] : [document.createTextNode(keyShown)]));
+    }
+    keyHelp.textContent = f?.error || (f?.unregistered ? text(`No signing key is registered for ${name}. Their messages show as unsigned. A key is made and registered on the command line, below.`, `Dla: ${name} nie zarejestrowano klucza podpisu. Wiadomości tej osoby są pokazywane jako niepodpisane. Klucz tworzy się i rejestruje w wierszu poleceń, niżej.`) :
+      f?.revoked ? text("Revoked keys must not be used. Approval cannot restore them.", "Unieważnionych kluczy nie wolno używać. Zatwierdzenie ich nie przywróci.") : f?.changed ? text("This differs from your approved key. Check with the participant before approving a replacement.", "Różni się od zatwierdzonego klucza. Skontaktuj się z uczestnikiem przed zatwierdzeniem zamiennika.") : text("Compare the entire fingerprint, including its prefix, not just the ending.", "Porównaj cały odcisk, łącznie z prefiksem, nie tylko końcówkę."));
+    hide(keyActions, !f?.fingerprint);
+    // Key changed: the approved (old) and the current (new) fingerprint, the first differing group marked.
+    const changed = JSON.stringify([state === "changed" ? [pin, f.fingerprint] : null, name, S.lang]);
+    if (changed !== changedKey) {
+      changedKey = changed;
+      const parts = [];
+      if (state === "changed") {
+        const diff = signingFingerprintCompare(f.fingerprint, pin), index = diff.state === "mismatch" ? diff.index : -1;
+        parts.push(node("strong", "⚠ " + text("This key changed since you approved it", "Ten klucz zmienił się od Twojego zatwierdzenia")));
+        const dl = node("dl", "", null, "signing-compare-values");
+        node("dt", text("Approved on this browser (old)", "Zatwierdzony w tej przeglądarce (stary)"), dl);
+        node("dd", "", dl).append(signingFingerprintNode(pin, index));
+        node("dt", text("On the board now (new)", "Teraz na tablicy (nowy)"), dl);
+        node("dd", "", dl).append(signingFingerprintNode(f.fingerprint, index));
+        parts.push(dl);
+        parts.push(node("p", text(`Ask ${name}, outside this board, whether they replaced their key. A replacement and a swapped key look the same until they confirm.`, `Zapytaj: ${name}, poza tą tablicą, czy wymienia klucz. Wymiana i podmieniony klucz wyglądają tak samo, dopóki ta osoba tego nie potwierdzi.`), null, "signing-help"));
+      }
+      changedBox.replaceChildren(...parts);
+    }
+    hide(changedBox, state !== "changed");
+    // Lineage: earlier keys of this participant on the board, from the resolver's profile chain.
+    const chain = f?.chain || [], keys = chain.filter((fp, i) => i === 0 || fp !== chain[i - 1]);
+    put(lineage, chain.length < 2 ? "" : keys.length < 2 ? text(`${chain.length} profiles on this board, all with the current key.`, `Profile na tej tablicy: ${chain.length}, wszystkie z bieżącym kluczem.`) :
+      text("Replaced ", "Zastąpione: ") + keys.slice(0, -1).map((fp) => "…" + fp.slice(-8)).join(" → ") + " → " + text("current", "bieżący") + " …" + keys.at(-1).slice(-8));
+    hide(lineage, !lineage.textContent);
+    const revokedKey = JSON.stringify([f?.revoked ? [state, f.reason] : null, name, S.lang]);
+    if (revokedKey !== revocationKey) {
+      revocationKey = revokedKey;
+      const parts = [];
+      if (f?.revoked) {
+        parts.push(node("strong", signingKeyBadge(state, text).label));
+        parts.push(node("p", f.reason ? text("Reason given: ", "Podany powód: ") + f.reason : text("No reason was given.", "Nie podano powodu.")));
+        parts.push(node("p", text(`Do not approve or use this key. Messages signed with it are blocked in rooms that require approved signatures. Ask ${name}, outside this board, about a replacement.`, `Nie zatwierdzaj tego klucza ani go nie używaj. Podpisane nim wiadomości są blokowane w pokojach wymagających zatwierdzonych podpisów. Zapytaj: ${name}, poza tą tablicą, o nowy klucz.`), null, "signing-help"));
+      }
+      revocation.replaceChildren(...parts);
+    }
+    hide(revocation, !f?.revoked);
+    // The guided approval is for a current, unrevoked key that this browser has not approved; nothing else offers Approve.
+    hide(stepList, !(state === "review" || state === "changed"));
+    hide(approvedBox, state !== "approved");
+    put(approvedBox, "✓ " + text("Approved on this browser, for this board folder.", "Zatwierdzony w tej przeglądarce, dla tego folderu tablicy.") + (own ? " " + text("Rooms that require approved signatures accept your signed posts here.", "Pokoje wymagające zatwierdzonych podpisów przyjmą tu Twoje podpisane wiadomości.") : ""));
+    hide(removeBox, !pin);
+    put(removeAsk, text("Remove my approval", "Usuń moje zatwierdzenie"));
+    if (removeAsk.getAttribute("aria-expanded") !== String(confirmOpen && !!pin)) removeAsk.setAttribute("aria-expanded", String(confirmOpen && !!pin));
+    hide(confirmBox, !confirmOpen || !pin);
+    const req = model.signingContext ? signingRequirementList([model.signingContext.shared, model.signingContext.floor]) : null;
+    const scopes = !req ? [] : req.board ? [text("the whole board", "cała tablica")] : [...req.scopes, ...req.threads.map((x) => x.replace(" ", " / "))];
+    put(confirmText, text(`Remove? Messages from ${name} will show as not approved here${scopes.length ? " and rooms that require approved signatures will refuse them" : ""}. Removing approval does not revoke their key.`,
+      `Usunąć? Wiadomości od: ${name} będą tu pokazywane jako niezatwierdzone${scopes.length ? ", a pokoje wymagające zatwierdzonych podpisów je odrzucą" : ""}. Usunięcie zatwierdzenia nie unieważnia klucza.`) +
+      (own ? " " + text("This is your own key: your posts in rooms that require approved signatures will be blocked until you approve it again.", "To Twój klucz: Twoje wiadomości w pokojach wymagających zatwierdzonych podpisów będą blokowane, dopóki go znowu nie zatwierdzisz.") : ""));
+    // Undo only for the exact key removed: once the board lists another key, a full review is the way back.
+    const undoFp = id ? signingUndoFor(id, session) : null;
+    hide(undoBox, !undoFp || pin === undoFp || f?.fingerprint !== undoFp);
+    put(undoText, text(`Approval removed — ${name} now needs review. `, `Usunięto zatwierdzenie — ${name} wymaga teraz sprawdzenia. `));
+    // Required in: where approved signatures are required, from the shared policy and the local floor.
+    const noUuid = !!model.signingContext && !model.signingContext.boardId;
+    hide(requiredBox, !scopes.length && !noUuid);
+    put(requiredTitle, text("Required in", "Wymagane w"));
+    put(requiredText, scopes.length ? text("Approved signatures are required in: ", "Zatwierdzone podpisy są wymagane w: ") + scopes.join(", ") + "." : "");
+    hide(requiredText, !scopes.length);
+    put(requiredWarn, noUuid ? text("This board has no identity UUID, so no room can require approved signatures yet. The board owner runs boardctl identity enable --path <board>.", "Ta tablica nie ma identyfikatora UUID, więc żaden pokój nie może jeszcze wymagać zatwierdzonych podpisów. Właściciel tablicy uruchamia boardctl identity enable --path <tablica>.") : "");
+    hide(requiredWarn, !noUuid);
+    put(cliSummary, text("Command line", "Wiersz poleceń"));
+    const cliStamp = JSON.stringify([id, state, f?.profile, S.lang, signingKeyFolder()]);
+    if (cliStamp !== cliKey) {
+      cliKey = cliStamp;
+      const parts = [];
+      if (id) for (const group of signingKeyCommands(id, state, f || {}, text)) {
+        parts.push(node("strong", group.title, null, "signing-key-cli-title"));
+        if (group.note) parts.push(node("p", group.note, null, "signing-help"));
+        for (const command of group.commands) { const pre = node("pre", "", null, "signing-key-command"); node("code", command, pre); parts.push(pre); }
+      }
+      cliBody.replaceChildren(...parts);
+    }
+    put(detailNote, text("Approval belongs to this browser and board location. A changed key needs a new review. Removing approval does not revoke the participant's key.", "Zatwierdzenie dotyczy tej przeglądarki i lokalizacji tablicy. Zmieniony klucz wymaga nowego sprawdzenia. Usunięcie zatwierdzenia nie unieważnia klucza uczestnika."));
+    put(placeholder, visibleRows().length ? text("Select a key to see its details.", "Wybierz klucz, aby zobaczyć szczegóły.") : text("No key matches.", "Żaden klucz nie pasuje."));
+    syncTabStops();
+    placeDetail();
+    if (!visibleRows().length) placeholder.hidden = false;
+    // The side-by-side detail stays in view under the pinned dialog header.
+    const headHeight = Math.round(head.getBoundingClientRect().height) + "px";
+    if (dialog.style.getPropertyValue("--signing-head") !== headHeight) dialog.style.setProperty("--signing-head", headHeight);
+  }
   function refresh() {
     const ready = !!model.signingContext && !model.signingError;
     status.textContent = model.signingError ? text("Signing unavailable: ", "Podpisy niedostępne: ") + model.signingError : !model.signingContext ? text("Signing requires a native board with valid signing configuration. Continue reading, or open a native board.", "Podpisy wymagają natywnej tablicy z poprawną konfiguracją. Kontynuuj czytanie lub otwórz natywną tablicę.") : !base ? text("Read-only board: approval lasts for this open session. Signed posting requires a writable folder; unsigned replies may download where rules allow.", "Tablica tylko do odczytu: zatwierdzenie obowiązuje w tej otwartej sesji. Podpisywanie wymaga zapisywalnego folderu; odpowiedzi bez podpisu można pobrać, jeśli reguły pozwalają.") : text("Your approvals are private to this browser and board location.", "Twoje zatwierdzenia są prywatne dla tej przeglądarki i lokalizacji tablicy.");
     unlockNote.textContent = base ? "" : text("Unlock is off because this folder is read-only. Open the board folder with write access to sign.", "Odblokowanie jest wyłączone, bo ten folder jest tylko do odczytu. Otwórz folder tablicy z zapisem, aby podpisywać.");
     requires.textContent = model.signingContext ? signingRequirementText(signingRequirementList([model.signingContext.shared, model.signingContext.floor])) : "";
     counts.textContent = [text("Verified", "Zweryfikowane") + ": " + model.msgs.filter((m) => m.signing?.signature === "valid").length, text("Unsigned", "Bez podpisu") + ": " + model.msgs.filter((m) => m.signing?.signature === "unsigned").length, text("Pending / blocked", "Oczekujące / zablokowane") + ": " + model.msgs.filter((m) => !signingEligible(m)).length].join(" · ");
-    pendingSummary.textContent = signingPendingSummary(model);
-    for (const o of participant.options) { const label = signingParticipantOption(o.value, model); if (o.textContent !== label) o.textContent = label; }
-    const id = participant.value, f = model.signingParticipants?.[id];
-    if (f?.fingerprint) {
-      const pin = model.signingContext?.state.pins[id];
-      f.trusted = pin === f.fingerprint;
-      f.changed = !!pin && pin !== f.fingerprint;
-    }
-    keyCard.dataset.signingParticipant = id;
-    keyName.textContent = model.people[id] ? `${model.people[id].name} (${id})` : id || text("No registered participants", "Brak zarejestrowanych uczestników");
-    keyState.textContent = signingParticipantSummary(id, model);
-    key.textContent = (reviewed?.id === id ? reviewed.fingerprint : f?.fingerprint) || text("No current fingerprint available", "Brak bieżącego odcisku");
-    keyHelp.textContent = f?.error || (f?.revoked ? text("Revoked keys must not be used. Approval cannot restore them.", "Unieważnionych kluczy nie wolno używać. Zatwierdzenie ich nie przywróci.") : f?.changed ? text("This differs from your approved key. Check with the participant before approving a replacement.", "Różni się od zatwierdzonego klucza. Skontaktuj się z uczestnikiem przed zatwierdzeniem zamiennika.") : text("Compare the entire fingerprint, including its prefix, not just the ending.", "Porównaj cały odcisk, łącznie z prefiksem, nie tylko końcówkę."));
+    syncKeys();
     syncReview();
     const catalog = signingProvider.catalog(), me = currentUser();
     const options = [...($("#me")?.options || [])].filter((o) => o.value).map((o) => [o.value, o.textContent]), nextPersonaStamp = JSON.stringify(options);
@@ -1293,7 +1797,6 @@ async function signingDialog(request) {
       mineValue = next;
     }
     persona.disabled = busy || !ready;
-    participant.disabled = busy || !ready;
     fingerprint.disabled = busy || !ready;
     input.disabled = busy || !ready;
     for (const { b, available } of actions) b.disabled = busy || !available();
@@ -1318,11 +1821,14 @@ async function signingDialog(request) {
     updateSigningNotice();
   }, { once: true });
   if (go) {
-    // Without a requested participant the review lands on the first key that needs review.
-    const wanted = go.task === "review" ? go.participant || signingPendingReview(model)[0] : null;
-    if (wanted && [...participant.options].some((o) => o.value === wanted)) {
-      participant.value = wanted;
-      participant.onchange();
+    if (go.task === "review") {
+      const wanted = go.participant && rows.has(go.participant) ? go.participant : null;
+      if (wanted) selectKey(wanted);
+      else {
+        // Tools "Review keys" and the key notice: the keys needing attention, the first of them open.
+        const first = order.find((id) => signingKeyAttention(signingKeyState(id, model)));
+        if (first) { filter = "attention"; selectKey(first); }
+      }
     }
     goTo(go.task, go);
   }

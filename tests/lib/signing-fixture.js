@@ -41,10 +41,26 @@ elif sys.argv[3]=='register':
  key,path=keyfile(participant);reg=json.loads((board/'participants.json').read_bytes());person=next(p for p in reg['participants'] if p['id']==participant)
  source,digest=profile(person,key,None);ctl('identity','import',participant,'--profile-file',str(source),'--sha256',digest)
  result=info(participant,path)
+elif sys.argv[3]=='keys':
+ # SPEC-002-073: five more participants so the board has a key in every state. Names are the owner's edit of
+ # participants.json; keys, profiles, imports and revocations are the canonical commands.
+ board_id=json.loads((board/'config.json').read_bytes())['identity']['boardId'];result={}
+ for participant,kind,name in [('ada-reviewer','human','Ada Novak'),('build-agent-02','agent','Build agent'),('cache-agent-03','agent','Cache agent'),('docs-agent-04','agent','Docs agent'),('edge-agent-05','agent','Edge agent')]:
+  ctl('join',participant,'--kind',kind,'--language','en')
+  reg=json.loads((board/'participants.json').read_bytes());person=next(p for p in reg['participants'] if p['id']==participant);person['name']=name
+  (board/'participants.json').write_text(json.dumps(reg,indent=2)+'\n')
+  key,path=keyfile(participant);source,digest=profile(person,key,None);ctl('identity','import',participant,'--profile-file',str(source),'--sha256',digest)
+  result[participant]=info(participant,path)
+ for participant,status,reason in [('docs-agent-04','retired','Replaced by a new laptop'),('edge-agent-05','compromised','Key file leaked')]:
+  ctl('signing','revoke','--participant',participant,'--key-file',result[participant]['key'],'--expect-profile',result[participant]['profile'],'--status',status,'--reason',reason)
+ # Last: a profile the board lists but no longer holds, so that one key cannot be loaded.
+ (board/'identity'/'profiles'/(result['cache-agent-03']['profile']+'.json')).unlink()
 else:
- participant='human-owner-01';old=commands.session(root).resolve(participant)['head'];board_id=json.loads((board/'config.json').read_bytes())['identity']['boardId']
- key,path=keyfile('rotated');person=json.loads(old.snapshot);person['name']='Rotated owner';source,digest=profile(person,key,old.envelope_sha256);event=private/'transition.json'
- ctl('signing','transition','--participant',participant,'--profile-file',str(source),'--sha256',digest,'--key-file',str(private/'owner.json'),'--new-key-file',str(path),'--output',str(event))
+ participant=sys.argv[4] if len(sys.argv)>4 else 'human-owner-01';old=commands.session(root).resolve(participant)['head'];board_id=json.loads((board/'config.json').read_bytes())['identity']['boardId']
+ owner=participant=='human-owner-01';key,path=keyfile('rotated' if owner else participant+'-rotated');person=json.loads(old.snapshot)
+ if owner:person['name']='Rotated owner'
+ source,digest=profile(person,key,old.envelope_sha256);event=private/(participant+'-transition.json')
+ ctl('signing','transition','--participant',participant,'--profile-file',str(source),'--sha256',digest,'--key-file',str(private/({'human-owner-01':'owner','research-agent-01':'peer'}.get(participant,participant)+'.json')),'--new-key-file',str(path),'--output',str(event))
  ctl('signing','update','--participant',participant,'--profile-file',str(source),'--sha256',digest,'--expect-profile',old.envelope_sha256,'--event-file',str(event))
  result=info(participant,path)
 print(json.dumps(result))
@@ -63,7 +79,9 @@ function fixture({seed = ''} = {}) {
   return {tmp,proj,...identities,
     cli: (...args) => run([h.path.join(canonical,'boardctl.py'),...args,'--path',proj]),
     reject: (...args) => run([h.path.join(canonical,'boardctl.py'),...args,'--path',proj],2),
-    rotate: () => JSON.parse(run(['-I','-c',setup,canonical,proj,'rotate'])),
+    rotate: (participant) => JSON.parse(run(['-I','-c',setup,canonical,proj,'rotate',...(participant?[participant]:[])])),
+    // SPEC-002-073: every key state at once (see the 'keys' step); returns the identities by participant id.
+    keys: () => JSON.parse(run(['-I','-c',setup,canonical,proj,'keys'])),
     register: (participant) => JSON.parse(run(['-I','-c',setup,canonical,proj,'register',participant])),
     clean: () => h.fs.rmSync(tmp,{recursive:true,force:true})};
 }
