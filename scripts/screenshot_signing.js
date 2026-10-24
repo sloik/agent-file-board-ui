@@ -17,6 +17,10 @@ async function main(){
     const origin=`http://127.0.0.1:${server.address().port}`;
     const f=await signing.boot({after:fn=>cleanups.push(fn)},browser,origin+'/board.html',null,{seed:'docs'}),{page}=f;
     await f.ctx.grantPermissions(['clipboard-read','clipboard-write'],{origin});
+    // The captures use tall viewports so a whole task fits in the dialog; lift the dialog shell's 960px
+    // height cap for them (SPEC-002-075). Widths keep the shell's wide tier.
+    const tall=p=>p.addStyleTag({content:':root{--dialog-wide-h:calc(100dvh - 48px)}'});
+    await tall(page);
     const out=h.path.join(h.ROOT,'docs/images');h.fs.mkdirSync(out,{recursive:true});
     const written=[];
     const shot=async(locator,name)=>{assert.ok(SHOTS.includes(name),name);await locator.screenshot({path:h.path.join(out,name+'.png'),animations:'disabled'});written.push(name);};
@@ -94,6 +98,7 @@ async function main(){
     // then one of them replaced on the board.
     let ids;
     const k=await signing.boot({after:fn=>cleanups.push(fn)},browser,origin+'/board.html',f=>{ids=f.keys();},{seed:'docs'}),kp=k.page;
+    await tall(kp);
     await kp.selectOption('#me',k.owner.participant);
     await signing.openSigning(kp);
     for(const identity of [k.owner,k.peer,ids['build-agent-02']])await signing.trust(kp,identity);

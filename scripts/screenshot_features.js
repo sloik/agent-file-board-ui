@@ -75,7 +75,7 @@ async function extensions(browser){
  const {ctx,page,log}=await open(browser,root),component=page.locator('[data-extension-path]');
  try{
   await component.locator('input[type=checkbox]').waitFor();await component.scrollIntoViewIfNeeded();await capture(page,'board-extensions-component');
-  await component.locator('select').selectOption({label:'Lifecycle example — worker 1.0.0 / live'});
+  await component.locator('select').selectOption({label:'Lifecycle example — worker 1.0.1 / live'});
   await component.getByRole('button',{name:'Review extension',exact:true}).waitFor();await capture(page,'board-extension-review');
   await component.getByRole('button',{name:'Review extension',exact:true}).click();await capture(page,'board-extensions-manager');
   await page.getByRole('button',{name:'Approve this exact package',exact:true}).click();await page.locator('#extensionsDialog').getByRole('button',{name:'Close',exact:true}).click();
