@@ -11,6 +11,11 @@ on:
         required: false
         default: false
         type: boolean
+      update_visual_baselines:
+        description: Render the Linux pixel baselines twice (must be identical) and upload them as the visual-baselines artifact
+        required: false
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       ref:
@@ -74,9 +79,34 @@ jobs:
         uses: ./.ci-tools/.github/actions/setup-browsers
         timeout-minutes: 14
 
+      # SPEC-002-070: the baselines are rendered before npm test, so the same run also compares against them.
+      - name: Generate visual baselines (rendered twice, must be identical)
+        if: github.event_name == 'workflow_dispatch' && inputs.update_visual_baselines
+        timeout-minutes: 5
+        run: |
+          node tests/visual/generate.js --check-determinism
+          node tests/visual/generate.js --out visual-baselines
+          cp visual-baselines/pixels/*.png tests/visual/pixels/linux/
+
+      - name: Upload visual baselines
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.update_visual_baselines
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines
+          path: visual-baselines/
+          if-no-files-found: error
+
       - name: Test (Playwright viewer tests + release_check unit tests)
         timeout-minutes: 10
         run: npm test
+
+      - name: Upload visual differences
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-results
+          path: test-results/visual/
+          if-no-files-found: ignore
 
       - name: Release consistency check
         run: python3 scripts/release_check.py

@@ -78,6 +78,8 @@ function layoutShuffled(tmp) {
 function fakeFsScript(tree, rootName) {
   const rootIdentity=require("node:crypto").randomUUID();
   return `(() => {
+  // The substitute belongs to the board document only.
+  if(location.protocol==="about:")return;
   const dbReady=new Promise((resolve,reject)=>{
     const r=indexedDB.open("agent-file-board-ui-test-fs",1);
     r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
@@ -95,6 +97,11 @@ function fakeFsScript(tree, rootName) {
     if(!root){root=${JSON.stringify(tree)};await value("root",true,root);}
     permission=await value("permission",false)||"granted";
   })();
+  // Firefox (Juggler) also runs init scripts in a transient document before board.html commits, where IndexedDB
+  // is "insecure" (CI trace: page.url() about:blank, stack in this ready promise). Nothing awaits ready there,
+  // so its rejection surfaced as a page error. The board document still awaits it (openPage, settled()), so a
+  // failure there still fails the test.
+  ready.catch(()=>{});
   const mutate=action=>{
     const next=changes.then(async()=>{await ready;const copy=structuredClone(root);action(copy);await value("root",true,copy);root=copy;});
     changes=next.catch(()=>{});return next;
@@ -161,14 +168,23 @@ async function openPage(browser, opts = {}) {
     acceptDownloads: true, locale: "en-US", permissions: [], ...(opts.context || {}) });
   // Existing offline/security fixtures explicitly opt out of the newly optional
   // daily public-metadata check. Update tests exercise the enabled default.
+  // The opt-out belongs to the board document only. Firefox CI reported "IDBFactory.open: The operation is
+  // insecure" from this script, which is what indexedDB.open throws in an about:blank document there.
   if (!opts.updateChecks) await ctx.addInitScript(() => {
+    if (location.protocol === 'about:') return;
     const r=indexedDB.open('agent-file-board-ui',1);
     r.onupgradeneeded=()=>r.result.createObjectStore('kv');
     r.onsuccess=()=>{const db=r.result,tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({auto:false},'viewer-updates-v1');tx.oncomplete=()=>db.close();};
   });
   const page = await ctx.newPage();
-  const log = { pageErrors: [], consoleErrors: [], requests: [], dialogs: [] };
+  const log = { pageErrors: [], consoleErrors: [], requests: [], dialogs: [], trace: [] };
   page.on("pageerror", e => log.pageErrors.push(String(e && e.message || e)));
+  // Where and when each page error happened, next to the navigations (SPEC-002-070 Firefox diagnosis).
+  const started = Date.now(), mark = entry => log.trace.push({ ms: Date.now() - started, url: page.url(), ...entry });
+  page.on("pageerror", e => mark({ pageerror: String(e && e.message || e), name: e && e.name, stack: String(e && e.stack || "") }));
+  page.on("framenavigated", f => mark({ navigated: f.url(), main: f === page.mainFrame() }));
+  ctx.on("weberror", w => { if (w.page() !== page) mark({ otherPage: w.page() && w.page().url(), weberror: String(w.error().message), stack: String(w.error().stack || "") }); });
+  page.on("console", m => { if (/indexeddb|insecure|security/i.test(m.text())) mark({ console: m.type(), text: m.text(), location: m.location() }); });
   page.on("console", m => { if (m.type() === "error") log.consoleErrors.push(m.text()); });
   page.on("request", r => log.requests.push(r.url()));
   if (opts.dialog) page.on("dialog", async d => { log.dialogs.push({ type: d.type(), message: d.message() }); if (opts.dialog === "accept") await d.accept(); else await d.dismiss(); });
@@ -180,6 +196,9 @@ async function openPage(browser, opts = {}) {
     await page.clock.pauseAt(new Date(opts.clock.getTime() + 86400000));
     await page.clock.setSystemTime(opts.clock);
   }
+  // SPEC-002-070: Date stays at fixedTime while the viewer's own timers keep running (hover delays, debounces).
+  if (opts.fixedTime) await page.clock.setFixedTime(opts.fixedTime);
+  for (const script of opts.init || []) await page.addInitScript(script);
   await page.goto(pathToFileURL(opts.html || BOARD_HTML).href);
   try{ await page.evaluate(async()=>{await window.__fakefs?.ready;await window.__boardTest?.ready;}); }catch(e){ log.pageErrors.push("Startup: "+e.message); }
   return { ctx, page, log };

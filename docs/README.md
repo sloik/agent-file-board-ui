@@ -33,6 +33,7 @@ owns the wire format, CLI and portable contracts.
 - [Extension lifecycle](guides/EXTENSION-LIFECYCLE.md): presentation refresh, local approval and diagnostics.
 - [Browser storage](reference/STORAGE.md): record scoping, transaction behavior, limits and reload evidence.
 - [Screenshot inventory](reference/SCREENSHOTS.md): maintained image coverage and reproduction commands.
+- [Testing](guides/TESTING.md): layout snapshots, Linux pixel baselines, user journeys and how to update baselines.
 - [Copyable OpenUI JSON](examples/openui/README.md) and [fictional draft backups](examples/drafts/README.md).
 - [Package update architecture](design/VIEWER-UPDATES.md): manual installation, daily notices and implementation gates; not a released feature.
 - [Formal signing model](../formal/README.md): bounded interleaving checks, negative controls and implementation limits.

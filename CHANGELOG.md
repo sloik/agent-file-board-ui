@@ -1,5 +1,12 @@
 # Release notes
 
+## Unreleased
+
+- **Tests: the 3.3.6 look and behaviour are locked in (SPEC-002-070):** layout snapshots of 30 named
+  scenes run on every platform, Linux pixel screenshots run in CI (baselines from the
+  `update_visual_baselines` workflow input), and seven user journeys run end to end, three of them in
+  Firefox too. Test-only; the viewer does not change. See [Testing](docs/guides/TESTING.md).
+
 ## 3.3.6 — 2026-10-24
 
 - **Fix: no empty button in Tools when no keys are waiting.** In 3.3.5 the hidden

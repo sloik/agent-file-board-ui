@@ -15,3 +15,6 @@ agent-file-board-demo.zip
 .release-status/
 
 .ci-tools/
+
+# Visual baselines rendered by the CI workflow (SPEC-002-070).
+/visual-baselines/
