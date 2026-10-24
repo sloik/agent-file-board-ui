@@ -121,9 +121,11 @@ keys, participants without a key and unreadable profiles are not counted.
 
 ### Approving a participant key, step by step
 
-The board shows you the key to check. The value you compare it with must come
-from its owner by another route. Copying the value from the board and pasting
-it back would only compare the board with itself.
+The board shows you the key to check. Its owner has to confirm it by another
+route: either they send you their fingerprint, or you send them the board's value
+and they confirm it matches the one on their device. Pasting the board's value
+back without that confirmation would only compare the board with itself, so the
+viewer asks you to confirm it first.
 
 ![Two channels. 1: the board lists Maya’s public fingerprint, and anyone who can write to the board folder could have put it there. 2: Maya reads her fingerprint on her own device and sends it to Sam in person, by phone or in a chat app they already use. Sam pastes it and the viewer compares: the same value means Sam approves Maya’s key on this device; a different value means do not approve and ask Maya to check again.](../images/signing-help/channels.svg)
 
@@ -133,16 +135,22 @@ for them. Below it, the task is four numbered steps:
 
 ![The review task: the participant, the key the board lists, Refresh key details, and steps 1 to 4 with an empty field, a neutral comparison and a disabled Approve button.](../images/signing-review.png)
 
-**1. Get their fingerprint from them.** Ask the person to send you their
-fingerprint through a channel you already trust: in person, a phone call, or a
-chat app you already use with them. Not this board. **How NAME finds it** names
-both ways for the other person:
+**1. Check the fingerprint with them.** Use a channel you already trust: in
+person, a phone call, or a chat app you already use with them. Not this board.
+There are two ways:
 
-- in the viewer: **Tools → Signing → Sign as me → Copy my fingerprint**, after
-  unlocking their key file;
-- on the command line: `boardctl signing check --path <board> --from <their id>
-  --scope rooms/<room> --signing-key-file <their key file>`. The line
-  “key file matches current profile” shows the fingerprint of that key file.
+- **Copy fingerprint** on the key card copies the full value this board lists.
+  Send it to the person and ask them to compare it with the one on their own
+  device. When they confirm it matches, paste it in step 2 (see “Pasting the
+  board’s value back” below).
+- Or ask them to send you theirs. **How NAME finds it** names both ways for the
+  other person:
+
+  - in the viewer: **Tools → Signing → Sign as me → Copy my fingerprint**, after
+    unlocking their key file;
+  - on the command line: `boardctl signing check --path <board> --from <their id>
+    --scope rooms/<room> --signing-key-file <their key file>`. The line
+    “key file matches current profile” shows the fingerprint of that key file.
 
 **Copy what to send them** puts a short request on your clipboard: the board
 name and ID, the participant, both ways to find the fingerprint, and the key as
@@ -196,11 +204,12 @@ board or sent to anyone.
 
 ![After approval: the participant’s current key is marked approved by you.](../images/signing-review-approved.png)
 
-**Pasting the board’s own value back.** The board value is never offered as a
-copy button. If you copy it from the key card inside the dialog and paste it
-into step 2, the dialog warns “This is the value shown on this board. Paste the
-one NAME sent you from their own device.” Approve stays disabled until you tick
-**I confirmed it with NAME outside this board**. Only copies made inside the
+**Pasting the board’s value back.** If you copied the value with **Copy
+fingerprint** (or selected it on the key card) and paste it into step 2, the
+comparison matches, because it is the same value. The dialog then warns “This is
+the value copied from this board. Approve only after NAME confirmed, outside this
+board, that it matches the fingerprint on their own device.” Approve stays
+disabled until you tick **I confirmed it with NAME outside this board**. Only copies made inside the
 open dialog count; the viewer never reads your clipboard unless you press Paste.
 
 ![The warning under step 4 after pasting the board’s own value, with the confirmation box unticked.](../images/signing-review-echo.png)
