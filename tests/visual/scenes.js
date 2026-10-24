@@ -199,7 +199,9 @@ async function serve(){
 }
 const layoutFile=(name,dir=LAYOUT_DIR)=>h.path.join(dir,name+'.json');
 const pixelFile=(name,dir=PIXEL_DIR)=>h.path.join(dir,name+'.png');
-const serialize=snap=>JSON.stringify(snap,null,1)+'\n';
+// One landmark per line, so a reviewed baseline diff shows exactly which elements changed.
+const serialize=snap=>`{"scene":${JSON.stringify(snap.scene)},"viewport":${JSON.stringify(snap.viewport)},"elements":{\n`+
+ Object.entries(snap.elements).map(([sel,v])=>` ${JSON.stringify(sel)}:${JSON.stringify(v)}`).join(',\n')+'\n}}\n';
 
 module.exports={AT,GROUPS,SCENES,LANDMARKS,STYLES,THRESHOLD,MAX_RATIO,LAYOUT_DIR,PIXEL_DIR,RESULTS,
  run,serve,layoutOf,screenshot,compareLayout,comparePixels,layoutFile,pixelFile,serialize,topicDraft,exampleBoard,bootExample,rest,settle};
