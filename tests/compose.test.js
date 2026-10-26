@@ -15,10 +15,12 @@ async function boot(extra = {}) {
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   const s = await h.openPage(browser, { tree: h.readTree(proj), clock: AT, ...extra });
   await s.page.clock.pauseAt(new Date("2026-10-15T10:30:05Z"));
-  await h.openBoardViaUi(s.page);
+  await h.openBoardViaUi(s.page);await h.expandComposer(s.page);
   return { ...s, tmp, proj };
 }
 function validate(dir) { return h.boardctl(["validate", "--path", dir]); }
+async function committed(page){await page.waitForFunction(()=>document.querySelector('#cBody').value==='');}
+
 
 test("baseline: the laid-out example passes boardctl validate", () => {
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
@@ -26,7 +28,7 @@ test("baseline: the laid-out example passes boardctl validate", () => {
   assert.equal(r.code, 0, r.err);
 });
 
-test("AC4: new-thread room post equals `boardctl post` output and validates", async () => {
+test("AC4: new-thread room post matches boardctl byte for byte with precise posting timestamp and validates", async () => {
   const { ctx, page, tmp } = await boot();
   await page.selectOption("#me", "human-owner-01");
   await page.selectOption("#cWhere", "room:architecture");
@@ -37,6 +39,7 @@ test("AC4: new-thread room post equals `boardctl post` output and validates", as
   await page.fill("#cBody", "Check new thing\nSecond line of the body.");
   await page.click("#send");
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /T004_check-new-thing\.txt$/.test(f.path)));
+  await committed(page);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /T004_check-new-thing\.txt$/.test(f.path));
@@ -46,7 +49,7 @@ test("AC4: new-thread room post equals `boardctl post` output and validates", as
   const ref = h.path.join(tmp, "ref"); h.copyDir(h.path.join(tmp, "proj"), ref);
   const p = h.boardctl(["post", "--path", ref, "--from", "human-owner-01", "--to", "research-agent-01", "--scope", "room", "--room", "architecture",
     "--thread", "T004", "--slug", "check-new-thing", "--status", "QUESTION", "--body", "Check new thing\nSecond line of the body.",
-    "--at", "2026-10-15 12:30", "--runtime", "agent-file-board-ui 1.4.0"]);
+    "--at", "2026-10-15 12:30:05.000", "--runtime", "agent-file-board-ui "+require("../package.json").version]);
   assert.equal(p.code, 0, p.err);
   const refText = h.fs.readFileSync(h.path.join(ref, ".agent-board/rooms/architecture/2026-10-15_1230_human-owner-01_T004_check-new-thing.txt"), "utf8");
   assert.equal(msg.text, refText);
@@ -71,10 +74,11 @@ test("AC4: reply in an existing thread keeps THREAD, sets REPLY-TO, validates; c
   await page.selectOption("#cStatus", "REPLY");
   await page.click("#send");
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /human-owner-01_T001_/.test(f.path)));
+  await committed(page);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /human-owner-01_T001_/.test(f.path));
-  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 1\.4\.0\nSTATUS: REPLY\n---\n/);
+  assert.match(msg.text, /^FROM: human-owner-01\nTO: implementation-agent-01\nSCOPE: ROOM\nROOM: architecture\nTHREAD: T001-message-schema\nDATE: 2026-10-15 12:30\nLANGUAGE: pl\nREPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written\.txt\nRUNTIME: agent-file-board-ui 3\.3\.10\nSTATUS: REPLY\nPOSTED-AT: 2026-10-15T10:30:05\.000Z\n---\n/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -88,6 +92,7 @@ test("AC4: direct conversation post lands in direct/<a>--<b>/ and validates", as
   await page.fill("#cBody", "Private question for the researcher.");
   await page.click("#send");
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /^\.agent-board\/direct\/human-owner-01--research-agent-01\//.test(f.path)));
+  await committed(page);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
   const msg = files.find(f => /direct\/human-owner-01--research-agent-01\//.test(f.path));
@@ -106,9 +111,10 @@ test("AC4: agent sender requires confirmation; accepted post validates and is ma
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /research-agent-01_T001_relayed-by-hand/.test(f.path)));
   assert.equal(log.dialogs.length, 1);
   assert.match(log.dialogs[0].message, /research-agent-01.*agent/);
+  await committed(page);
   const out = h.path.join(tmp, "viewer"); h.fs.mkdirSync(out);
   const files = await h.dumpFakeFs(page, out);
-  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 1\.4\.0 \(manual post, sender is an agent\)/);
+  assert.match(files.find(f => /relayed-by-hand/.test(f.path)).text, /RUNTIME: agent-file-board-ui 3\.3\.10 \(manual post, sender is an agent\)/);
   const v = validate(out); assert.equal(v.code, 0, v.err);
   await ctx.close();
 });
@@ -117,8 +123,9 @@ test("AC4: unregistered sender is refused in the UI (empty registry) and nothing
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   h.fs.writeFileSync(h.path.join(proj, ".agent-board", "participants.json"), JSON.stringify({ version: 1, participants: [] }));
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(proj) });
-  await h.openBoardViaUi(page);
+  await h.openBoardViaUi(page);await h.expandComposer(page);
   const before = (await page.evaluate(() => window.__fakefs.dump())).length;
+  await page.selectOption("#cWhere", "room:product");
   await page.fill("#cBody", "I am nobody");
   await page.click("#send");
   await page.waitForSelector(".toast.show");
@@ -132,7 +139,7 @@ test("AC4/R9: read-only upload mode downloads a file that validates once placed"
   const { ctx, page } = await h.openPage(browser, { clock: AT });
   await page.clock.pauseAt(new Date("2026-10-15T10:30:05Z"));
   await page.setInputFiles("#fallback", proj);
-  await page.waitForSelector("#feed article.msg");
+  await page.waitForSelector("#feed article.msg");await h.expandComposer(page);
   assert.match(await page.textContent("#cInfo"), /Read-only mode/);
   await page.selectOption("#cWhere", "room:product");
   await page.fill("#cBody", "Odpowiedź z trybu tylko do odczytu");
@@ -160,4 +167,14 @@ test("AC4: a message that would collide gets a numeric slug suffix and is never 
   assert.notEqual(r[0], r[1]);
   assert.match(r[1], /_T001_same-2\.txt$/);
   await ctx.close();
+});
+test('file creation is not write completion; commit waits and preserves edits made during close',async()=>{
+ const {page,ctx}=await boot();await page.selectOption('#cWhere','room:product');await page.fill('#cBody','Delayed commit');
+ await page.evaluate(async()=>{const proto=Object.getPrototypeOf(await baseHandle.getFileHandle('config.json')),original=proto.createWritable;proto.createWritable=async function(...args){const writer=await original.apply(this,args);if(this.name.endsWith('_delayed-commit.txt')){const close=writer.close;writer.close=async()=>{window.__commitWaiting=true;await new Promise(resolve=>window.__releaseCommit=resolve);await close();};}return writer;};});
+ await page.click('#send');await page.waitForFunction(()=>window.__commitWaiting);
+ assert.equal(await page.evaluate(()=>window.__fakefs.dump().find(f=>f.path.endsWith('_delayed-commit.txt')).text),'');
+ await page.fill('#cBody','Newer draft while closing');await page.evaluate(()=>window.__releaseCommit());
+ await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.path.endsWith('_delayed-commit.txt')&&f.text.includes('\n---\nDelayed commit\n')));
+ await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('newer draft kept'));
+ assert.equal(await page.inputValue('#cBody'),'Newer draft while closing');await ctx.close();
 });

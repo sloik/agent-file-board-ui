@@ -1,0 +1,17 @@
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Delivery checklist",
+  "components": [
+    {
+      "type": "table",
+      "title": "Readiness by owner",
+      "columns": ["Area", "Owner", "State"],
+      "rows": [
+        ["Schema", "Research", "Ready"],
+        ["Viewer", "Implementation", "Ready"],
+        ["Release", "Owner", "Needs decision"]
+      ]
+    }
+  ]
+}

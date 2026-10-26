@@ -100,7 +100,7 @@ class ReleaseCheck(unittest.TestCase):
         self.assertGreaterEqual(len(errs), 3)
 
     def test_this_repository_is_consistent(self):
-        # the real repo: package.json == VIEWER_VERSION and the pinned submodule is at a matching tag
+        # Release integration must pass the unchanged exact-tag gate.
         r = run(ROOT)
         self.assertEqual(r.returncode, 0, r.stderr)
 

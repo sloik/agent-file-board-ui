@@ -25,7 +25,7 @@ test("AC5 tree: root, rooms as folders, threads as cards, closed group, direct s
   // selecting a thread filters the feed
   await card.click();
   assert.deepEqual((await h.feedOrder(page)).map(f => f.split("_")[3]), ["T001", "T001", "T001", "T001"]);
-  assert.match(await page.textContent("#title"), /T001 · Message schema/);
+  assert.match(await page.textContent("#title"), /# architecture › T001 Message schema/);
   // selecting a room filters; direct conversation is its own section
   await page.click(".fname:has-text('product')");
   assert.equal((await h.feedOrder(page)).length, 2);
@@ -144,5 +144,16 @@ test("R7 chat rendering: day separators, kind markers, @mentions, addressed-to-m
   await first.locator("[data-more]").click();
   assert.equal(await first.locator(".body.clamp").count(), 0);
   assert.equal(await page.locator(".receipt").count(), 0);             // receipts hidden by default
+  await ctx.close();
+});
+
+test("search suggestions remain open when focus returns before an earlier blur timeout", async () => {
+  const {ctx,page}=await c.openExample(browser,h.BOARD_HTML,{clock:new Date("2026-10-15T10:30:00Z")});
+  await page.clock.pauseAt(new Date("2026-10-15T10:30:01Z"));
+  await page.fill("#q","schema");await page.focus("#cBody");await page.fill("#q","pro");
+  await page.clock.runFor(200);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),"q");
+  assert.equal(await page.isVisible("#sugg"),true);
+  assert.match(await page.textContent("#sugg"),/Rooms/);
   await ctx.close();
 });

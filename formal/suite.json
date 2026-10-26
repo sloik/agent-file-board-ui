@@ -1,0 +1,115 @@
+{
+  "tool": {
+    "version": "1.7.4",
+    "url": "https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar",
+    "sha256": "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88"
+  },
+  "cases": [
+    {
+      "module": "Signer.tla",
+      "config": "Signer.cfg"
+    },
+    {
+      "module": "Signer.tla",
+      "config": "SignerBadUnlock.cfg",
+      "counterexample": "AtomicUnlock"
+    },
+    {
+      "module": "Signer.tla",
+      "config": "SignerBadEpoch.cfg",
+      "counterexample": "NoStaleReturn"
+    },
+    {
+      "module": "Signer.tla",
+      "config": "SignerBadGuard.cfg",
+      "counterexample": "ValidAuthorization"
+    },
+    {
+      "module": "Signer.tla",
+      "config": "SignerBadDraft.cfg",
+      "counterexample": "KeepNewDraft"
+    },
+    {
+      "module": "Signer.tla",
+      "config": "SignerReachable.cfg",
+      "counterexample": "NeverCompletes"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdate.cfg"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdateBadDaily.cfg",
+      "counterexample": "OneAutomaticClaim"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdateBadReload.cfg",
+      "counterexample": "SafeReload"
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "config": "ViewerUpdateReachable.cfg",
+      "counterexample": "NeverReloads"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptance.cfg"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadConflict.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadFirst.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadTrust.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceReachable.cfg",
+      "counterexample": "NeverResolved"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadAuthority.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigning.cfg"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadSticky.cfg",
+      "counterexample": "SignerIsPersona"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadFallback.cfg",
+      "counterexample": "NoUnsignedWhereRequired"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadStale.cfg",
+      "counterexample": "SendRechecks"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningBadOtherKey.cfg",
+      "counterexample": "OtherKeyNeverBinds"
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "config": "ComposerSigningReachable.cfg",
+      "counterexample": "NeverWitnessesAll"
+    }
+  ]
+}

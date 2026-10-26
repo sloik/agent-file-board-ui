@@ -17,6 +17,9 @@ async function checkNoNetwork(browser, html) {
   for (const scheme of ["light", "dark"]) {
     const { ctx, page, log } = await openExample(browser, html, { colorScheme: scheme });
     await page.fill("#q", "schema");
+    // Search suggestions can cover the wrapped toolbar; dismiss through the real keyboard path.
+    await page.keyboard.press("Escape");
+    if(await page.locator("#sugg").evaluate(el=>el.classList.contains("show"))) problems.push(`${scheme}: search suggestions did not close`);
     await page.click("#gear");
     await page.selectOption("#sLang", "pl");
     await page.waitForTimeout(150);
@@ -28,7 +31,12 @@ async function checkNoNetwork(browser, html) {
 
 async function checkSmoke(browser, html) {
   const problems = [];
-  const { ctx, page, log } = await openExample(browser, html);
+  const proj=h.layoutExample(h.tmpDir());
+  const {ctx,page,log}=await h.openPage(browser,{html,tree:h.readTree(proj)});
+  if(log.pageErrors.length || log.consoleErrors.length){
+    problems.push(...log.pageErrors.map(e=>"pageerror: "+e),...log.consoleErrors.map(e=>"console error: "+e));await ctx.close();return problems;
+  }
+  await h.openBoardViaUi(page);
   await page.click("#tree .fname >> nth=0");
   await page.fill("#q", "schema");
   await page.keyboard.press("ArrowDown");
@@ -97,6 +105,7 @@ async function checkAgentConfirmation(browser, html) {
   if (core !== "e_agent_unconfirmed") problems.push("agent sender not refused by the confirmation guard: " + core);
   // UI: choosing an agent and posting must raise a confirmation; dismissing must not write
   await a.page.selectOption("#me", "research-agent-01");
+  await h.openView(a.page, "room:product|T003");
   await a.page.fill("#cBody", "agent post attempt");
   const before = (await a.page.evaluate(() => window.__fakefs.dump())).length;
   await a.page.click("#send");

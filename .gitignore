@@ -4,3 +4,17 @@ node_modules/
 __pycache__/
 *.pyc
 test-results/
+agent-file-board-demo.zip
+# Session reports and receipts belong outside public documentation.
+/docs/validation/
+
+# Generated formal status is a CI artifact, never source documentation.
+/.formal-status/
+
+# Generated post-publication verification evidence (CI artifacts only).
+.release-status/
+
+.ci-tools/
+
+# Visual baselines rendered by the CI workflow (SPEC-002-070).
+/visual-baselines/

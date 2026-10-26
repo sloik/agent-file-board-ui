@@ -1,0 +1,40 @@
+{
+  "browser": "151.0.7922.34",
+  "date": "2026-10-19",
+  "normal": {
+    "text": "Local custom code 1Approve",
+    "proposals": [
+      {
+        "approved": true
+      }
+    ],
+    "views": 2,
+    "constructors": {
+      "type": "constructors",
+      "worker": "undefined",
+      "shared": "undefined",
+      "rtc": "undefined"
+    },
+    "lastSocket": {
+      "type": "socket-result",
+      "state": 3
+    }
+  },
+  "hostAdmission": [
+    "unknown kind",
+    "unknown property",
+    "event",
+    "children limit"
+  ],
+  "stale": {
+    "unchanged": true,
+    "rejected": [
+      "stale context",
+      "stale context"
+    ],
+    "remainingNodes": 0
+  },
+  "requests": [],
+  "webSockets": [],
+  "evidence_note": "Actual Chromium run; local fixture paths normalized. HTTP(S) attempts intercepted locally. RTC probes contact only an owned loopback UDP listener."
+}

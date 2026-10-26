@@ -1,0 +1,52 @@
+name: Formal models
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1" # Monday 06:17 UTC
+permissions:
+  contents: read
+jobs:
+  bounded-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify alignment, behavior, runtime traces and bounded models
+        run: python3 formal/status.py
+      - name: Publish verification summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f .formal-status/status.md ]]; then
+            cat .formal-status/status.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Formal verification did not produce a report. Setup failed or the run was interrupted; no pass is established." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain verification status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: formal-status-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .formal-status/status.json
+            .formal-status/status.md
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: warn

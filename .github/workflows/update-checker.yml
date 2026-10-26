@@ -1,0 +1,36 @@
+name: Deploy public release checker
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', 'scripts/build_update_checker.py', '.github/workflows/update-checker.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python3 scripts/build_update_checker.py --check
+          mkdir public-checker
+          cp site/update-check.html public-checker/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: public-checker
+      - uses: actions/deploy-pages@v4
+        id: deployment

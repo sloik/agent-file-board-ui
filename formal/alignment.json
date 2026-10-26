@@ -1,0 +1,2455 @@
+{
+  "schemaVersion": 1,
+  "maintenance": "The maintainer changing modeled code owns semantic alignment review. See formal/ALIGNMENT.md; no automatic refresh.",
+  "anchors": {
+    "formal/check.py": {
+      "path": "formal/check.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "f550888a62911e609c47ba0de9c95e9f84193e2cba10cb5e81820ba302e48147"
+    },
+    "formal/check_alignment.py": {
+      "path": "formal/check_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c94835bae7238abe9fdfae183458a2f3d32cee48d7fb8d6caeced8e442161f4f"
+    },
+    "formal/check_traces.py": {
+      "path": "formal/check_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "f6f6d0e09f3e4cf881b0b0c4c7f1d740878615bc60d3fe0ba4e1f6aef7bb0256"
+    },
+    "formal/test_check.py": {
+      "path": "formal/test_check.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "83d5b4bf2cd54769739b4c255a7548574b89bf720bef3d592356fa44ab45ed18"
+    },
+    "formal/test_alignment.py": {
+      "path": "formal/test_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "b6beb29e543f62c2da70fb70a6422692cf6fbad6f881324649bf48eaf4d517af"
+    },
+    "formal/test_traces.py": {
+      "path": "formal/test_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "18acd1257b32fc49acb201d9cc5773a914fce09a581b071607c3ba8cdec1347e"
+    },
+    "formal/suite.json": {
+      "path": "formal/suite.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4c7b1469e5f9273ac74d2be353ebe168412a39ea56aae6ef61cae1c8ba149348"
+    },
+    "formal/README.md": {
+      "path": "formal/README.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "d8b7493c9f5383ea9ffcac19fbc8fdd2e031388568ca3ef518fee4aa52d6ebb5"
+    },
+    "formal/ALIGNMENT.md": {
+      "path": "formal/ALIGNMENT.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ac59ccfe2e768cab34fd5a544f80cbc30476c0389177b880ec72462fddd9ce95"
+    },
+    ".github/workflows/formal.yml": {
+      "path": ".github/workflows/formal.yml",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1c099d80f91008fdd83fff748d9f60a8f7d24d4a8dfac4d29990096a3dbc52d6"
+    },
+    "scripts/signing-contract.js": {
+      "path": "scripts/signing-contract.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "8140266ef11257becfbc868e891023722831f13db423abe26d9ebbbea75f6011"
+    },
+    "scripts/signing-ui.js": {
+      "path": "scripts/signing-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "6f19f9140eaa31743be9930807aee10878e8c3c4428be40790b07555630639e0"
+    },
+    "host-writer": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "let viewerActiveWrites=0;",
+        "end": "/* ===== reading ===== */"
+      },
+      "sha256": "a19fc31e0025ec3cae113fbef7a7ec0184421d6ed0ecda9b7e8b462147694b17"
+    },
+    "host-delivery": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "let viewerActiveDeliveries=0;",
+        "end": "async function setTopicTitle(){"
+      },
+      "sha256": "383c6e854065f6e3096a19105c3ce54a7722cd857b6b787f5abb58637c6e0d8b"
+    },
+    "host-composer": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "let viewerActiveSends=0;",
+        "end": "let viewerActiveDeliveries=0;"
+      },
+      "sha256": "a405050353341399649d493de6a2b45fe6b7986f314313348b990136bce095ee"
+    },
+    "scripts/embed_tools.js": {
+      "path": "scripts/embed_tools.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "5a918475b2dedf38b2979a1035389bd4f8c39238d5ce9db0ddca6940db278971"
+    },
+    "scripts/embed_signing.js": {
+      "path": "scripts/embed_signing.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "b0d81d21147ab2af5cda85ac07170931856500c2b5089a655cf3397547e4704c"
+    },
+    "normal-test-command": {
+      "path": "package.json",
+      "selector": {
+        "kind": "section",
+        "start": "\"test\": \"",
+        "end": "\",\n    \"test:node\""
+      },
+      "sha256": "bed16b661f0fe6c572a8af71ce70c6ecc1f0a1231b30ddc215672a1561cbad1e"
+    },
+    "tests/signing-provider.test.js": {
+      "path": "tests/signing-provider.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1de79f3fa9d9db52ca507f04820d297f7c5ab088174d7c799084b51a5b268719"
+    },
+    "tests/signing-policy.test.js": {
+      "path": "tests/signing-policy.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1eff983f331835a1f0c0326d07acb2e1978cadd7b623b1a6d67e6e302aa933db"
+    },
+    "tests/signing-contract.test.js": {
+      "path": "tests/signing-contract.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "7360b4b1d4346409f1b6fd64af18499184724f0fb47f02dff09cf0ef2e6ea2b6"
+    },
+    "tests/signing-negative.test.js": {
+      "path": "tests/signing-negative.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ebf7e91bc84b4f16cfa3e4665eca4c1531853d8dbdf6a79623bb05a532f5060d"
+    },
+    "tests/signing-budgets.test.js": {
+      "path": "tests/signing-budgets.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "33430abf59884a92c8d62c346389e7c199e71dc757999cb5b419481e016dfe28"
+    },
+    "tests/signing-ui.test.js": {
+      "path": "tests/signing-ui.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "387a6d0bd41258c2c9e13274bbec50ecd565beafdc52c8981b9a801f6c061d0b"
+    },
+    "tests/lib/signing-unit.js": {
+      "path": "tests/lib/signing-unit.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a00a2bfb27c79ca5c8b74936bf7ff2a67c20989bf64f7a07bb5900d4b13daa15"
+    },
+    "formal/Signer.tla": {
+      "path": "formal/Signer.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e1e045c3f3d1cc501086b1643852ed6b4a665f8c2fcf9416fb84e66818cb3acb"
+    },
+    "formal/Signer.cfg": {
+      "path": "formal/Signer.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0614ed2d32be881094ce1d0d95e6dadd5951f1d9e8accf5c6e63cc0b1cafad51"
+    },
+    "formal/SignerBadUnlock.cfg": {
+      "path": "formal/SignerBadUnlock.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "99d1236678f9a5def08265db164db5c6a8783754d9b93f36ae0aa53035648673"
+    },
+    "formal/SignerBadEpoch.cfg": {
+      "path": "formal/SignerBadEpoch.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "3bfa37e21a4acd3dd04da820fe974ab58ec5a9dcb2c68a7912977511f5e5cd67"
+    },
+    "formal/SignerBadGuard.cfg": {
+      "path": "formal/SignerBadGuard.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ff9d3451b97e480e0bacccd70d33b91c12e59a92a22724fbc65618429bea42e6"
+    },
+    "formal/SignerBadDraft.cfg": {
+      "path": "formal/SignerBadDraft.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "023977be49cb56f1cdaff2d6849a3c6353418b1a8f6fab2f1d5426c7cf710921"
+    },
+    "formal/SignerReachable.cfg": {
+      "path": "formal/SignerReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "aa85b4df35c36de0d892d0490d7863fabc86ddda05fc83f118a842112e230a4f"
+    },
+    "scripts/viewer-updates.js": {
+      "path": "scripts/viewer-updates.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "01f8416d064a97e5fdd9ca2502762549ea63641a7e8bc8c0fbbca3c4aec14105"
+    },
+    "scripts/viewer-updates-ui.js": {
+      "path": "scripts/viewer-updates-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "6682a11778762b1cc1bbee0a91b03057281ec0fc7deca3c2ddd26940cc18c852"
+    },
+    "update-idb": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function idb(){",
+        "end": "async function idbSet(k,v){"
+      },
+      "sha256": "df80dacc69b06223c14b3c6f589d74481d2ee78f9bef3daf7300ec0c74584241"
+    },
+    "scripts/form-board.js": {
+      "path": "scripts/form-board.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "5b23b78df5919fb39e694fdeb0f43d668145cd323bd9b75385b6e99414b776f2"
+    },
+    "scripts/extension-ui.js": {
+      "path": "scripts/extension-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "b342654c044887cf3456eec1f865d4913f458052f6e1f55cc1b4b0db5e11eb42"
+    },
+    "scripts/voice-ui.js": {
+      "path": "scripts/voice-ui.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "2c2870f88e30a5b5abdda110a39fa0cf9eb4c2d0c20c6d82a080d8a0e1b164e5"
+    },
+    "scripts/authoring-drafts.js": {
+      "path": "scripts/authoring-drafts.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "710cf31dbc4763ba41065a593179ed877ee826c6f4d8a7d930c68f7adeaa7f9a"
+    },
+    "formal/collect_traces.js": {
+      "path": "formal/collect_traces.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "756bacb9b643ef37c6766aa0a12adc78a05abc8e60d455ac204357808598dfb5"
+    },
+    "tests/viewer-updates-unit.test.js": {
+      "path": "tests/viewer-updates-unit.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "fc1ebca6b26deb7c36ffd604341f8ee1d19920a863270a25c909490e3f96e870"
+    },
+    "tests/viewer-updates.test.js": {
+      "path": "tests/viewer-updates.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0545011484508f66013b9cd4558ce6e371c3c5a769120d42ded0f510d539abe2"
+    },
+    "formal/ViewerUpdate.tla": {
+      "path": "formal/ViewerUpdate.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a89a399bf4af669b38e1ad6a25bedc051e9b1796f243a27d2935a7f2c48610e6"
+    },
+    "formal/ViewerUpdate.cfg": {
+      "path": "formal/ViewerUpdate.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c5f5c5c0d1ecb925177e7b82db0f2e1f64856c8959b4ed0bbab3f65841321584"
+    },
+    "formal/ViewerUpdateBadDaily.cfg": {
+      "path": "formal/ViewerUpdateBadDaily.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "08fd8dfbf04cc9da3f9ff620a7262d1638a7cb53f6ffd4747d16424643a2dde3"
+    },
+    "formal/ViewerUpdateBadReload.cfg": {
+      "path": "formal/ViewerUpdateBadReload.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "324ade55fcceb0d65ae302e17157e06b01d0bfa1865b99082f450cba6a9ec654"
+    },
+    "formal/ViewerUpdateReachable.cfg": {
+      "path": "formal/ViewerUpdateReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c2be8b75f08b76967368d00bf51a84475f9edb134a8334db9c07a9bd64fe4bb4"
+    },
+    "formal/status.py": {
+      "path": "formal/status.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1d32232494d1d75748657fd3067448741eb634373ec9cee88cef4d391cdb306c"
+    },
+    "formal/test_status.py": {
+      "path": "formal/test_status.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "2f4b8838cdfd7b00c8113e93ed9486df4d17c3961d6c4d7267f3cfa9efa51697"
+    },
+    "formal/verification.json": {
+      "path": "formal/verification.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "63fbbf76a49e6315a58e195c0116ef08347f60527e2b1287f1ac1020642c2204"
+    },
+    "formal/STATUS.md": {
+      "path": "formal/STATUS.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4eb4af89dbb82fd6f9d80f7132401ab16e32112b15b7206060086742af516ae6"
+    },
+    "formal/trace_contracts.json": {
+      "path": "formal/trace_contracts.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "93c8103b6a594005c20e340d89e5c0e3c7d132aa1f796264887ddbc8ef2768de"
+    },
+    "formal/collect_signer.js": {
+      "path": "formal/collect_signer.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "f53893b4141ea75c2b26b62a87359635e063eff97a846b03393d577152205c3a"
+    },
+    "package-lock.json": {
+      "path": "package-lock.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "549d481a659b648d2898b6323c1c3ec5ad74d711d0437a15f1deaabe7ba6a698"
+    },
+    "formal/watchdog.py": {
+      "path": "formal/watchdog.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e5aa17191d0bcdf92007e5da7bd030f912e62c21528f174d703d9238631305ff"
+    },
+    "formal/test_watchdog.py": {
+      "path": "formal/test_watchdog.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "67df5a3774f89c92fdb83861a5c6767e1d5d261fc06de8d0df17b8daeb7f4389"
+    },
+    "formal/test_generation.py": {
+      "path": "formal/test_generation.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "deb062e50b528a6311023cff132e226183a8a033779fbb48bd7ad666a2c32308"
+    },
+    ".github/workflows/formal-watchdog.yml": {
+      "path": ".github/workflows/formal-watchdog.yml",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "29adebfbf74636750da3a3716d0cdb10b582423f7288650626bbe230757fb4ef"
+    },
+    "scripts/ci_retry.py": {
+      "path": "scripts/ci_retry.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "552ec02b29c59832df8c7f7a286d1f11a2a8dbd8c154b36bdb0a869cc2a19f51"
+    },
+    "tests/test_ci_retry.py": {
+      "path": "tests/test_ci_retry.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "6ec46df0ca347cca4933e3b3218f0526b7ccb08a7c7655f2d778fdbd429d1a0a"
+    },
+    ".github/workflows/test.yml": {
+      "path": ".github/workflows/test.yml",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "179bb54fa5feca0b8c04af0ad89c58347bbecfbfab66be705bbfccb887099803"
+    },
+    "formal/AnswerAcceptance.tla": {
+      "path": "formal/AnswerAcceptance.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "805fb0e34930b93d37ec48b61c84cda8ca12be52c22fbf1cbe9f11c0b95cb122"
+    },
+    "formal/AnswerAcceptance.cfg": {
+      "path": "formal/AnswerAcceptance.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9d9d1f79d2bad46f1d21af3013e3927cb22479561830d94e5fddc2468bbdd418"
+    },
+    "formal/AnswerAcceptanceBadConflict.cfg": {
+      "path": "formal/AnswerAcceptanceBadConflict.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "eb95687e8c6c3514e6462951d0eb85302963946be667cbd147799acb0336d562"
+    },
+    "formal/AnswerAcceptanceBadFirst.cfg": {
+      "path": "formal/AnswerAcceptanceBadFirst.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0d46e908c1fcf84d2f167ab41963ec52e3da0b8dde1b086cfac7983bb5d0a0ff"
+    },
+    "formal/AnswerAcceptanceBadTrust.cfg": {
+      "path": "formal/AnswerAcceptanceBadTrust.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "df0473a4b09237618d0ecec5b040d3f94c6748dcf613ea4400b4536cbef68c55"
+    },
+    "formal/AnswerAcceptanceReachable.cfg": {
+      "path": "formal/AnswerAcceptanceReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "084804151494255d8bf00e55d06b4898e4615f363357586ad59a3bfeb7bf35fb"
+    },
+    "scripts/answer-state.js": {
+      "path": "scripts/answer-state.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e76504ddcf31d55053ce420e8267d85e110680e5a079552f9ed58078ee41b2f3"
+    },
+    "scripts/embed_forms.js": {
+      "path": "scripts/embed_forms.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "59863bedee88e9ec96929020d0a8ed4cbb9a73e6bea2b2ac579c2d30b1e712ce"
+    },
+    "tests/answer-state-unit.test.js": {
+      "path": "tests/answer-state-unit.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "77cb4f05316a728f82bfe12e62778710e1437ecfc593491269058e04b58b2977"
+    },
+    "tests/answer-state.test.js": {
+      "path": "tests/answer-state.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "334b83a2d1d9b54471fe39b2e05098cf471f4a524c4fe0bcb233c2989e105b7c"
+    },
+    "tests/forms.test.js": {
+      "path": "tests/forms.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1117a99d633a29167c9d7819de6eb56efd79117c0aa734d7a051feaad0d38af0"
+    },
+    "formal/collect_answers.js": {
+      "path": "formal/collect_answers.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "520418381423039f251be670a7158b6f061eacf81a38eeedef9a2e9c8c374347"
+    },
+    "formal/AnswerAcceptanceBadAuthority.cfg": {
+      "path": "formal/AnswerAcceptanceBadAuthority.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9e5e56ab99153dfd35d70a807b1ecbc067c4177b8341781d2774506c84bde69d"
+    },
+    "tests/signing-scenarios.test.js": {
+      "path": "tests/signing-scenarios.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c0e1b2e895f436bce0a418823a7978b6111c3982f7fa638202e5597955c1cae7"
+    },
+    "host-answer-index": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function buildModel(files, dirs, meta){",
+        "end": "function postingTime(value){"
+      },
+      "sha256": "10e780be0eb241f8410d2a0959d866130fa74f0788800652291a60079122c7e5"
+    },
+    "host-answer-read": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "async function readFromHandle(preserve = true){",
+        "end": "function loadBoard(model, background = false){"
+      },
+      "sha256": "078f1d77f83e3f0928cdbf17b6d9bcd6bc77d7fcc9afd7586e48b7aebb44a3a5"
+    },
+    "host-answer-metadata": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function messageMetadata(h, source){",
+        "end": "function richBody(text, q, contentType){"
+      },
+      "sha256": "2b47e0b7753e85a5c6ffed89448d6eeeae2cf9e789ea40e1d4bcb52d23eabcc1"
+    },
+    "host-answer-controls": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function choiceHtml(m){",
+        "end": "function dayLabel(d){"
+      },
+      "sha256": "783f6edb8364eb368a0490332aac49e2ac00d86f7b3396f0ea72fcbf116b5cd7"
+    },
+    "host-answer-compose": {
+      "path": "board.html",
+      "selector": {
+        "kind": "section",
+        "start": "function composeMessage(o){",
+        "end": "/* ===== append-only message write path ===== */"
+      },
+      "sha256": "5bf2e5a5c836b1a6d6972825c729cf3ff32370ab715c447664cb1feae907c454"
+    },
+    "tests/rich.test.js": {
+      "path": "tests/rich.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "8b211c3d4a425e85a8b7c7d076b411dde766dae51d108fef188f16d9de1ff65b"
+    },
+    "tests/offline-tools.test.js": {
+      "path": "tests/offline-tools.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4fa3558b213473f108df85961c17b520ca09eebaf28c382906a883a7e732c0a6"
+    },
+    "tests/demo.test.js": {
+      "path": "tests/demo.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a2fa9d7f3d80c6cf5f4b8ae60496cf848b03cb05a58689e81ba87db7aaf2e9b5"
+    },
+    "tests/viewer-package.test.js": {
+      "path": "tests/viewer-package.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "43b870f8d18d314a8dbd5a54bcdc629eac7c9a1e094be757e57ea04c170b582b"
+    },
+    "tests/i18n.test.js": {
+      "path": "tests/i18n.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "183006c5c4a32c9acaafd1b20c8a7ee44112e706b01cd92b1ffe799d14aa00bb"
+    },
+    "tests/render.test.js": {
+      "path": "tests/render.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "379528c7963439009c580b7da57680ce6db82d089444aad0832ce65cd4040e17"
+    },
+    "tests/upgrades.test.js": {
+      "path": "tests/upgrades.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c82adf4b2dee992d6ecd56ff3a4559b876b9df8ef925572262b1813a580bb03f"
+    },
+    "tests/signing-clarity.test.js": {
+      "path": "tests/signing-clarity.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "47f197e01f89b68f7ad255adcadea38edbc28dbbe17a617e16c4ec27c9a6b104"
+    },
+    "tests/signing-journeys.test.js": {
+      "path": "tests/signing-journeys.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e432d32c5f0821564864dcec93e4584c8cbee6961f2a4323ec7f6987d658bd62"
+    },
+    "tests/lib/signing-browser.js": {
+      "path": "tests/lib/signing-browser.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e24ca66643525834ca662cef77ef5915662ad48d121fc3219a0d347ccb1e638d"
+    },
+    "tests/signing-message-status.test.js": {
+      "path": "tests/signing-message-status.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "931d9cab129e1040bef14d2827f3c0ca7e8368df276ca7aa9f94dd95527bea51"
+    },
+    "formal/ComposerSigning.tla": {
+      "path": "formal/ComposerSigning.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "d8ce604fbeaa58110dfdd50c02c1718e78689db1ca86e9f445e859b9b7b1728e"
+    },
+    "formal/ComposerSigning.cfg": {
+      "path": "formal/ComposerSigning.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "972be287b957be54e5cae2628d93aff54b43d6957bc16cd72192d8f06e7bb939"
+    },
+    "formal/ComposerSigningBadSticky.cfg": {
+      "path": "formal/ComposerSigningBadSticky.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "32fd814fdc3a0bd9881f9350052721e2dc35c7fead0682c99550e6dfb6118e54"
+    },
+    "formal/ComposerSigningBadFallback.cfg": {
+      "path": "formal/ComposerSigningBadFallback.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9da58f2059ecec15e320859bdd8af6082cbce560d705f46113d44d4d86f312aa"
+    },
+    "formal/ComposerSigningBadStale.cfg": {
+      "path": "formal/ComposerSigningBadStale.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ace48499b38b78fe173991f56ae5219bdfd9913932863909cd28bf0da3652397"
+    },
+    "formal/ComposerSigningBadOtherKey.cfg": {
+      "path": "formal/ComposerSigningBadOtherKey.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1916b64732d9ea93b090b7a3c089da468da180919afcc4962fea05599ba1fa9f"
+    },
+    "formal/ComposerSigningReachable.cfg": {
+      "path": "formal/ComposerSigningReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ecbccd5a9d20b23a5595a270bb83a2e0d146b4bd4aa37eb486a076534eca0383"
+    },
+    "formal/collect_composer.js": {
+      "path": "formal/collect_composer.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "35f21f1b4f63298273c52ba5eb6c7d4355f267b5dd9ddf7de17f7445d64ffc63"
+    },
+    "tests/composer-signing-status.test.js": {
+      "path": "tests/composer-signing-status.test.js",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "59bec2de5394f5404c6cc267dde2304793f7123a449035371b050aff57235fb6"
+    },
+    "signing-composer-status": {
+      "path": "scripts/signing-help.js",
+      "selector": {
+        "kind": "section",
+        "start": "// Composer signing status (SPEC-002-061).",
+        "end": "// Reason a received message cannot drive actions"
+      },
+      "sha256": "b419e3648bae0eebf9e944d35a6a0e1d07cd948207a9c77709cf917e03d07833"
+    },
+    "signing-send-decision": {
+      "path": "scripts/signing-ui.js",
+      "selector": {
+        "kind": "section",
+        "start": "// The one send decision (SPEC-002-061)",
+        "end": "// What happens to the message in the composer now, for the composer's destination."
+      },
+      "sha256": "318a8335a19a1b1a9dce18acd17d116c6da4ae43ee7b5fd5438a9c40e2870638"
+    }
+  },
+  "models": [
+    {
+      "module": "Signer.tla",
+      "review": "Reviewed atomic unlock/generation, final host guard/close and draft completion against current signing regressions. Preserve all existing mutations. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Signing journeys review 2026-10-22 (SPEC-002-051): task layout and explicit signer selection preserve Provider atomicity, generation invalidation, delivery guards and no unsigned fallback. Dialogue actions bind location/UUID and current model; awaited actions refuse changed models, while idle same-board refresh safely rebinds. Close during pending private-key import locks the Provider epoch; normal close retains a completed unlock. Exact-key approval now rechecks current disk/private-state evidence before mutation. Native browser regressions cover explicit signer choice, approval separate from possession, stale board operations, canceled import, focused edits and English/Polish geometry. These UI selection/dialogue states are executable-test coverage, outside the bounded Provider model; no universal refinement claim. Reviewed explicit evidence refresh: native reload and fixed-upload fresh Context validation do not approve a replacement; browser rotation regression retains the old approval and comparison draft. Pinned task navigation/focus/geometry is browser-tested presentation, outside the bounded model. Persistence-failure review: approval edits are rolled back only for the exact target state/pin mutation when private storage refuses saving; original errors are preserved and newer different pin changes are retained. Native fault-injection regression checks both approve/remove badges, memory pins and unchanged actual IndexedDB pins. This local UX transaction is executable-test coverage beyond the Provider finite model. SPEC-002-052 display review: one facts formatter supplies emoji/text badges, native title explanations and equivalent expanded descriptions. Signature integrity, local key approval, lifecycle and eligibility are independently projected; no provider, approval or publication decisions change. Native browser cases verify actual signed/unapproved/approved and compromised/blocked messages, keyboard disclosure, Polish/English phone wrapping and hover metadata. Native tooltip OS rendering is supplied by the browser; tests assert declared title content and matching non-hover explanations. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. Composer signing review 2026-10-23 (SPEC-002-061, owner decision signer = persona): the separate signingAs selection is removed. In signed mode signingSender returns the persona from currentUser() only when its key is in the Provider catalog; signingDelivery's author pre-check, post-sign check and both final guards compare h.FROM with currentUser() at each point, so a persona switch during sending refuses with the draft kept. Provider unlock/sign/expire/reconcile source is unchanged; epoch, board, draft-stamp, writer-guard and signingFresh checks and the no-unsigned-fallback branch are unchanged, and the guard-mutant anchor still matches exactly two checks. The composer status row, composer unlock (catalog diff; another participant's key is named, never adopted as signer), numbered dialog steps and the 30 s status tick are browser-tested UI (tests/composer-signing.test.js) outside this bounded model. Tests that encoded explicit signer selection were rewritten to the persona rule without loosening other assertions. node formal/collect_signer.js produced positive and mutant traces; TLC/check_traces were not run in the authoring worktree (no Java) and must pass in CI. Send decision review 2026-10-23 (SPEC-002-061 amendment): signingDelivery takes one decision from signingSendDecision (the production signingComposerStatus for the persona in I am and the message's actual minimum): signed signs as currentUser(), unsigned posts unsigned (still requiring an optional minimum), anything else refuses with the status detail. Every post-await check that compared signingMode now compares the re-derived decision with the one taken at the start; epoch, board, draft stamp, persona, writer guard and signingFresh checks are unchanged, and a required room whose persona key is unlocked and approved now signs instead of refusing what the composer showed as ready. collect_signer.js loads signing-help.js into the sandbox (the decision calls the real status function), supplies canWrite, and drops the unused signingAs assignment; positive and mutant trace JSON is byte-identical to the previous collector output. TLC (formal/check.py) and formal/check_traces.py pass with JDK 17. Composer display follow-up 2026-10-23: the older requirement hint is hidden while the status row shows, and the row marks when it has a note; display only, delivery unchanged. Signing registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. ComposerSigning send-bridge review 2026-10-23: shared README, STATUS and trace contract gained the send-decision bridge and mutants only; this model and its collector are unchanged. Automatic room history review 2026-10-23 (SPEC-002-063): sendImpl may first write a creation-time room/topic policy to config.json (exact reviewed bytes, refused on concurrent change or a CLI write lock) and refresh the board before composing; only then does it compose and call the unchanged deliverMessage, so signingDelivery binds the refreshed board, persona, draft stamp and writer guard exactly as before and signs only when the decision is signed. A failed or cancelled policy write never falls through to an unsigned post. The new topic number is fixed before the policy write and passed to composeMessage. signing-ui.js: signingPostBlock also treats a ticked 'Require trusted signatures' for a room/topic being created as required (display and refusal text only; delivery still derives its minimum from the shared policy, which the creation write has already made trusted), updateSigningNotice refreshes the history composer note, and prepareSigning keeps the config.json bytes for the room-history parser. Provider, unlock generations, signing and publication guards are unchanged; collect_signer.js runs unchanged (history hooks are typeof-guarded). Collector review 2026-10-23 (SPEC-002-063): collect_signer.js stubs the four new host hooks sendImpl calls (historyCreationDeclare returns null: no creation option is ticked in these traces; failure text, reset and post note are no-ops), like its existing host stubs; positive and mutant trace JSON is byte-identical to the previous collector output. TLC (formal/check.py) and formal/check_traces.py pass with JDK 17. Delivery note review 2026-10-23 (SPEC-002-063 AC4): deliverMessageImpl calls historyPostedNote(msg) only after the guarded message write, refresh and sent toast succeed (display only: a toast and the composer note when the scope records history); sendImpl re-anchors that note after its reset without a second toast. Writer guards, signing delivery and publication order are unchanged; the collector replaces deliverMessage and already stubs historyPostedNote, and positive and mutant traces stay byte-identical. 2026-10-23 release 3.3.0 review: package-lock.json change only version strings (viewer 3.3.0, simulated next release 3.3.1); no modeled behavior changes. Composer routing review 2026-10-23 (SPEC-002-064): tests/signing-ui.test.js gains an explicit destination (Advanced Where = room:architecture) before three sends that previously relied on the composer's implicit default room; All messages now has no destination and Send is disabled there. Lock, draft-change and writer-guard assertions are unchanged. sendImpl, signingDelivery, signing-ui.js and voice-ui.js are unchanged (host-composer, host-delivery and host-writer digests unchanged); the destination still reaches signing through the same hidden #cWhere/#cThread/#cTo selects. 2026-10-23 release 3.3.1 review: package-lock.json change only version strings (viewer 3.3.1, simulated next release 3.3.2); no modeled behavior changes. Composer sign opt-in review 2026-10-23 (SPEC-002-065): signingNoticeNote shows the read-only explanation whenever the optional-destination status does not offer unlock (it now offers \"Sign this message\" instead of nothing); display only. signingSendDecision, signingDelivery, Provider and guards are unchanged. 2026-10-23 release 3.3.2 review: package-lock.json change only version strings (viewer 3.3.2, simulated next release 3.3.3); no modeled behavior changes. Phone layout follow-up 2026-10-23 (SPEC-002-065): signingNoticeButton sets data-short from an optional action.short for the compact phone status line; display only. Key folder hint review 2026-10-23 (SPEC-002-067): signing-ui.js gains signingKeyFolder() and renders the composer unlock hint and the New-here help steps with ~/private/afb/<project id>/ (text only); no signing, unlock, update or acceptance semantics changed. 2026-10-23 release 3.3.3 review: version strings only (viewer 3.3.3, simulated next release 3.3.4) in package-lock.json and the update/package fixtures; i18n/render/upgrade fixtures expect the bundled canonical 3.3.1 and add 3.3.0 as an upgrade source. No modeled behavior changes. 2026-10-23 release 3.3.4 review (SPEC-002-068): version strings only (viewer 3.3.4, simulated next release 3.3.5) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.4 with canonical 3.3.1 unchanged. The compact layout in this release changes no host-writer, host-delivery, host-composer or update-idb section and no pinned script. No modeled behavior changes. Key approval visibility review 2026-10-23 (SPEC-002-069): signing-ui.js gains display-only helpers that count keys whose current, unrevoked fingerprint differs from the local pin (badge, Tools dot, a dismissible notice whose dismissal is a localStorage list of participant=fingerprint pairs), labels and orders review-list options by that state, and lets Signing and the notice open the review task with the first such participant selected. Pins are only read; approval still requires the pasted fingerprint through the unchanged trust action, and no signing, unlock, send decision, update or acceptance semantics changed. 2026-10-23 release 3.3.5 review (SPEC-002-069): version strings only (viewer 3.3.5, simulated next release 3.3.6) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.5 with canonical 3.3.1 unchanged. The release's only pinned-code change, signing-ui.js, was reviewed and repinned separately; no host-writer, host-delivery, host-composer or update-idb section changed. No modeled behavior changes. Review-entry and status-tooltip review 2026-10-23 (SPEC-002-069 amendment): Signing opens the dialog as before; a separate Tools item, shown only when N > 0, opens the existing review task; composer status buttons gain their label as a tooltip (signingNoticeButton, display only). No signing, unlock, send decision, approval, update or acceptance semantics changed. 2026-10-24 (viewer 3.3.6, CSS fix for the empty Review keys entry): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. CI review 2026-10-24 (SPEC-002-070): test.yml gains a workflow_dispatch input update_visual_baselines (renders the visual scenes twice, uploads them as an artifact) and uploads test-results/visual on failure; the npm test, release-check and live-checker steps are unchanged. Test-only; no viewer source, model, config or mapped behavior test changed. TLC and trace conformance were not rerun for this CI-only change (no Java on the authoring machine); the formal CI lane reruns them. Guided key review review 2026-10-24 (SPEC-002-071): the dialog's unlock loop moved unchanged into one unlockFiles helper (same per-file size check, read, active(), Provider.unlock, active(), unlocking flag, lock-on-closed-dialog at the same epoch, then signed mode); the Unlock action and the new own-key check both call it, and the own-key check calls it only when the chosen file's public key (SigningContract.publicKey on kty/crv/x) equals the board-listed key, so possession is still proved by the Provider. Sign as me reads the catalog fingerprint for display and copy only. The trust action keeps its exact typed === resolved head check and gains a stricter echo-guard require; Approve's enable predicate adds the live comparison. signing-journeys rewrites a wrong-fingerprint click as disabled-button + forced click with the original assertion; signing-browser boot gains an optional fixture seed. No Provider, generation, sign, delivery or send-decision semantics changed. 2026-10-24 (SPEC-002-071 follow-up): the Copy what to send them, Paste and Check with my key file buttons get the element IDs the spec names (signingCopyRequest, signingPaste, signingCheckOwnKey); IDs only, no behavior change. 2026-10-24 (viewer 3.3.7, guided key review SPEC-002-071): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (PR #26 CI): the read-only journey now waits for the uploaded board model before opening Signing (the #me select is visible before the upload is read); test synchronisation only, no modeled behavior change. 2026-10-24 (viewer 3.3.8, SPEC-002-072): reviewed scripts/signing-ui.js after adding Copy fingerprint to the key review. The button only copies the board-listed fingerprint and adds it to the dialog's copied set, so pasting it back is an echo; signingFingerprintEcho, signingReviewApprovable and the trust action (match plus echo confirmation, then pin) are unchanged, and no pin is written without Approve. Step 1 and echo texts changed only. 2026-10-24 (viewer 3.3.8): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.9, SPEC-002-073): reviewed scripts/signing-ui.js after the Keys list replaced the participant select. The trust and remove-trust writes are unchanged: Approve still resolves the current head and requires the exact pasted match, the echo confirmation when applicable and an unrevoked key, then signingFresh and the pin; remove-trust still deletes only this browser's pin, now behind an inline confirmation. New: Undo re-pins only the exact fingerprint removed in the same dialog session, with Approve's resolve, unrevoked and signingFresh guards apart from the paste; its record is keyed by a per-open session and is not offered after reopening. prepareSigning and Refresh key details also keep the profile hash, key chain and revocation reason (signingParticipantFacts); trusted, changed and revoked are derived as before. Unlock, signing, delivery, the composer status and the pending-key count are untouched. 2026-10-24 (viewer 3.3.9): repinned package-lock.json (version string), tests/signing-journeys.test.js and tests/lib/signing-browser.js (participant chosen by opening its Keys row instead of the select; remove-trust confirms first) after review; assertions and trace semantics unchanged, no modeled behavior changes. 2026-10-24 (viewer 3.3.9, SPEC-002-073 follow-up): reviewed scripts/signing-ui.js after Undo became available only while the board still lists the exact removed fingerprint (so removing a changed key's approval offers no Undo); its guards and the trust/remove-trust writes are unchanged. 2026-10-24 (viewer 3.3.9, SPEC-002-073 review): reviewed scripts/signing-ui.js after the Keys summary line began counting the Needs attention set out of all participants; display text only. signingPendingReview, the badge and notice count, pins and the trust/remove-trust/undo paths are unchanged. 2026-10-24 (viewer 3.3.10, SPEC-002-075 review): reviewed scripts/signing-ui.js after the Signing dialog adopted the shared dialog shell (class afb-dialog, header class afb-dialog-head, Close gains id signingClose and type=button); layout only, no modeled behaviour change. The Close handler still cancels a pending unlock before closing, cancel/close listeners and unlock/lock/generation paths are unchanged. Repinned package-lock.json (version string) after review.",
+      "states": {
+        "catalog": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js",
+            "tests/signing-journeys.test.js",
+            "tests/lib/signing-browser.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "invalidations": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "unlockEpoch": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "unlockPc": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "proved": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "signEpoch": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "signPc": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "returned": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "badReturn": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Provider bindings/generation and awaited proof/sign steps. Crypto outcomes are abstract verified results."
+        },
+        "publishPc": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "deliveryEpoch": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "authorized": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "badAuthorization": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "published": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "completed": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guarded host publication phases; final authorization is an observation boundary, not a metadata transaction."
+        },
+        "board": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "head": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "reviewedBoard": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "reviewedHead": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Board/key snapshots and reconciliation invalidations."
+        },
+        "draft": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Submitted draft stamp versus newer composer content."
+        },
+        "buffer": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Submitted draft stamp versus newer composer content."
+        }
+      },
+      "operators": {
+        "Bindings": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Finite binding/invalidation bounds, not runtime limits."
+        },
+        "Reasons": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Finite binding/invalidation bounds, not runtime limits."
+        },
+        "Epoch": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Finite binding/invalidation bounds, not runtime limits."
+        },
+        "Unlock": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
+        },
+        "UnlockFailure": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
+        },
+        "AtomicUnlock": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "All possession proofs precede atomic binding installation; failure installs no partial set."
+        },
+        "Invalidate": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "StartSign": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "SignStep": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "FinishSign": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "CryptoFailure": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "NoStaleReturn": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Lock/expiry/reconciliation may interleave with async crypto; return rechecks generation and capability."
+        },
+        "WriteStep": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "Guard": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "Close": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "ValidAuthorization": {
+          "anchors": [
+            "scripts/signing-ui.js",
+            "host-writer",
+            "host-delivery",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Guard callbacks and distinct writable close; later changes do not retroactively cancel authorization."
+        },
+        "Complete": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Older send completion must preserve newer draft edits."
+        },
+        "Edit": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Older send completion must preserve newer draft edits."
+        },
+        "KeepNewDraft": {
+          "anchors": [
+            "host-composer",
+            "scripts/signing-ui.js",
+            "tests/signing-ui.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Older send completion must preserve newer draft edits."
+        },
+        "vars": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "Init": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "Next": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "Spec": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        },
+        "NeverCompletes": {
+          "anchors": [
+            "scripts/signing-contract.js",
+            "scripts/signing-ui.js",
+            "tests/signing-provider.test.js",
+            "formal/collect_signer.js"
+          ],
+          "reason": "Bounded composition/initialization and non-vacuity witness over mapped operations."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "scripts/embed_tools.js",
+        "scripts/embed_signing.js",
+        "normal-test-command",
+        "formal/Signer.tla",
+        "formal/Signer.cfg",
+        "formal/SignerBadUnlock.cfg",
+        "formal/SignerBadEpoch.cfg",
+        "formal/SignerBadGuard.cfg",
+        "formal/SignerBadDraft.cfg",
+        "formal/SignerReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_signer.js",
+        "package-lock.json",
+        "formal/collect_traces.js",
+        "formal/watchdog.py",
+        "formal/test_watchdog.py",
+        "formal/test_generation.py",
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml",
+        "tests/signing-clarity.test.js",
+        "tests/signing-journeys.test.js",
+        "tests/lib/signing-browser.js",
+        "tests/signing-message-status.test.js"
+      ],
+      "conformance": [
+        "tests/signing-provider.test.js",
+        "tests/signing-policy.test.js",
+        "tests/signing-contract.test.js",
+        "tests/signing-negative.test.js",
+        "tests/signing-budgets.test.js",
+        "tests/signing-ui.test.js",
+        "tests/lib/signing-unit.js",
+        "formal/collect_traces.js",
+        "tests/signing-journeys.test.js",
+        "tests/signing-message-status.test.js"
+      ],
+      "limits": "Bounded production Provider/delivery/writer/composer observations with Node WebCrypto and DOM/stream doubles. No universal refinement, real browser I/O, crypto arithmetic or native filesystem guarantee."
+    },
+    {
+      "module": "ViewerUpdate.tla",
+      "review": "Reviewed production claim extraction and reload guard. Real-code traces preserve positive witnesses and reject duplicate-claim/reload implementation mutants independently of hashes. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Release 2.12.1 review: only viewer version expectations and future-update fixture 2.12.2 advance; mismatch, missing package, unsafe metadata, browser and read-only assertions are retained. No model or updater behavior changes. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. SPEC-002-061 review 2026-10-23: the voice draft context stamp drops the removed signingAs (persona S.me and signingMode remain); signing-ui composer status changes leave viewer update semantics unchanged. ComposerSigning registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. ComposerSigning send-bridge review 2026-10-23: shared README, STATUS and trace contract gained the send-decision bridge and mutants only; this model and its collector are unchanged. Automatic room history review 2026-10-23 (SPEC-002-063): sendImpl gains a creation-time config.json policy write before composing and a post-send history note; signing-ui composer status ORs a ticked creation requirement and keeps config bytes for room history. Viewer update check, reload guard and daily semantics unchanged. Delivery note review 2026-10-23 (SPEC-002-063 AC4): deliverMessageImpl shows the history not-recorded note after a successful write; display only, reload guard and update semantics unchanged. 2026-10-23 release 3.3.0 review: package-lock.json, tests/viewer-updates.test.js change only version strings (viewer 3.3.0, simulated next release 3.3.1); no modeled behavior changes. 2026-10-23 release 3.3.1 review: package-lock.json, tests/viewer-updates.test.js change only version strings (viewer 3.3.1, simulated next release 3.3.2); no modeled behavior changes. 2026-10-23 release 3.3.2 review: viewer-updates fixture advances the simulated next release to 3.3.3 and package-lock.json changes only version strings; signing-ui.js changed only the read-only note condition (SPEC-002-065, display only). No update semantics changed. Phone layout follow-up 2026-10-23 (SPEC-002-065): signing-ui.js signingNoticeButton gains a display-only data-short label; no update semantics changed. Key folder hint review 2026-10-23 (SPEC-002-067): signing-ui.js gains signingKeyFolder() and renders the composer unlock hint and the New-here help steps with ~/private/afb/<project id>/ (text only); no signing, unlock, update or acceptance semantics changed. 2026-10-23 release 3.3.3 review: version strings only (viewer 3.3.3, simulated next release 3.3.4) in package-lock.json and the update/package fixtures; i18n/render/upgrade fixtures expect the bundled canonical 3.3.1 and add 3.3.0 as an upgrade source. No modeled behavior changes. 2026-10-23 release 3.3.4 review (SPEC-002-068): version strings only (viewer 3.3.4, simulated next release 3.3.5) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.4 with canonical 3.3.1 unchanged. The compact layout in this release changes no host-writer, host-delivery, host-composer or update-idb section and no pinned script. No modeled behavior changes. Key approval visibility review 2026-10-23 (SPEC-002-069): signing-ui.js gains display-only helpers that count keys whose current, unrevoked fingerprint differs from the local pin (badge, Tools dot, a dismissible notice whose dismissal is a localStorage list of participant=fingerprint pairs), labels and orders review-list options by that state, and lets Signing and the notice open the review task with the first such participant selected. Pins are only read; approval still requires the pasted fingerprint through the unchanged trust action, and no signing, unlock, send decision, update or acceptance semantics changed. 2026-10-23 release 3.3.5 review (SPEC-002-069): version strings only (viewer 3.3.5, simulated next release 3.3.6) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.5 with canonical 3.3.1 unchanged. The release's only pinned-code change, signing-ui.js, was reviewed and repinned separately; no host-writer, host-delivery, host-composer or update-idb section changed. No modeled behavior changes. Review-entry and status-tooltip review 2026-10-23 (SPEC-002-069 amendment): Signing opens the dialog as before; a separate Tools item, shown only when N > 0, opens the existing review task; composer status buttons gain their label as a tooltip (signingNoticeButton, display only). No signing, unlock, send decision, approval, update or acceptance semantics changed. 2026-10-24 (viewer 3.3.6, CSS fix for the empty Review keys entry): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. CI review 2026-10-24 (SPEC-002-070): test.yml gains a workflow_dispatch input update_visual_baselines (renders the visual scenes twice, uploads them as an artifact) and uploads test-results/visual on failure; the npm test, release-check and live-checker steps are unchanged. Test-only; no viewer source, model, config or mapped behavior test changed. TLC and trace conformance were not rerun for this CI-only change (no Java on the authoring machine); the formal CI lane reruns them. Guided key review review 2026-10-24 (SPEC-002-071): signing-ui.js changes are the review dialog (steps, clipboard copy/paste, live comparison, echo guard, own fingerprint display, own-key check through the existing unlock path). No viewer update, reload or storage semantics changed. 2026-10-24 (SPEC-002-071 follow-up): the Copy what to send them, Paste and Check with my key file buttons get the element IDs the spec names (signingCopyRequest, signingPaste, signingCheckOwnKey); IDs only, no behavior change. 2026-10-24 (viewer 3.3.7, guided key review SPEC-002-071): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.8, SPEC-002-072): reviewed scripts/signing-ui.js after adding Copy fingerprint to the key review. The button only copies the board-listed fingerprint and adds it to the dialog's copied set, so pasting it back is an echo; signingFingerprintEcho, signingReviewApprovable and the trust action (match plus echo confirmation, then pin) are unchanged, and no pin is written without Approve. Step 1 and echo texts changed only. 2026-10-24 (viewer 3.3.8): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.9, SPEC-002-073): reviewed scripts/signing-ui.js after the Keys list replaced the participant select. The trust and remove-trust writes are unchanged: Approve still resolves the current head and requires the exact pasted match, the echo confirmation when applicable and an unrevoked key, then signingFresh and the pin; remove-trust still deletes only this browser's pin, now behind an inline confirmation. New: Undo re-pins only the exact fingerprint removed in the same dialog session, with Approve's resolve, unrevoked and signingFresh guards apart from the paste; its record is keyed by a per-open session and is not offered after reopening. prepareSigning and Refresh key details also keep the profile hash, key chain and revocation reason (signingParticipantFacts); trusted, changed and revoked are derived as before. Unlock, signing, delivery, the composer status and the pending-key count are untouched. 2026-10-24 (viewer 3.3.9): repinned package-lock.json and tests/viewer-updates.test.js (version strings; simulated next release 3.3.10) after review; assertions and trace semantics unchanged, no modeled behavior changes. 2026-10-24 (viewer 3.3.9, SPEC-002-073 follow-up): reviewed scripts/signing-ui.js after Undo became available only while the board still lists the exact removed fingerprint (so removing a changed key's approval offers no Undo); its guards and the trust/remove-trust writes are unchanged. 2026-10-24 (viewer 3.3.9, SPEC-002-073 review): reviewed scripts/signing-ui.js after the Keys summary line began counting the Needs attention set out of all participants; display text only. signingPendingReview, the badge and notice count, pins and the trust/remove-trust/undo paths are unchanged. 2026-10-24 (viewer 3.3.10, SPEC-002-075 review): reviewed scripts/viewer-updates-ui.js, scripts/extension-ui.js, scripts/voice-ui.js and scripts/signing-ui.js after the dialog shell change: Viewer updates, Extensions and Voice input build a pinned header with Close (ids viewerUpdatesClose, extensionsClose, voiceClose) and Viewer updates/Voice put their own actions in a footer; the inline dialog widths are removed. Layout only, no modeled behaviour change: check scheduling, stored state, reload guards (voiceWorkPending, extension mutations, drafts) and viewerReload are unchanged. Repinned tests/viewer-updates.test.js (simulated next release 3.3.11) and package-lock.json (version string) after review; assertions and trace semantics unchanged.",
+      "states": {
+        "state": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Observable claim/reload projection; each record field is mapped below."
+        },
+        "state.day": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.stamp": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.claims": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.enabled": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.checks": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.manualUsed": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Private persisted attempts, opt-out and observed claim counts. The browser multi-tab case checks transaction serialization."
+        },
+        "state.draft": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        },
+        "state.pending": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        },
+        "state.reloaded": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        },
+        "state.badReload": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "host-writer",
+            "host-delivery",
+            "host-composer",
+            "scripts/signing-ui.js",
+            "scripts/form-board.js",
+            "scripts/extension-ui.js",
+            "scripts/voice-ui.js",
+            "scripts/authoring-drafts.js",
+            "tests/viewer-updates-unit.test.js"
+          ],
+          "reason": "Real aggregate reload blockers and operation counters. Individual categories retain independent regressions."
+        }
+      },
+      "operators": {
+        "AutoClaim": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production synchronous claim callback; explicit manual checks bypass cadence/opt-out and advance the attempt."
+        },
+        "ManualClaim": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production synchronous claim callback; explicit manual checks bypass cadence/opt-out and advance the attempt."
+        },
+        "OneAutomaticClaim": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "update-idb",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production synchronous claim callback; explicit manual checks bypass cadence/opt-out and advance the attempt."
+        },
+        "Reload": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production reload rechecks current blockers; the unsafe flag records the invocation-time decision."
+        },
+        "SafeReload": {
+          "anchors": [
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Production reload rechecks current blockers; the unsafe flag records the invocation-time decision."
+        },
+        "Tick": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "Enable": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "Edit": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "Write": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "tests/viewer-updates-unit.test.js",
+            "tests/viewer-updates.test.js"
+          ],
+          "reason": "Environment/input actions for time, opt-out, editing and pending work."
+        },
+        "vars": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Initial": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Init": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Next": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Spec": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Step": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "Safe": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "TypeOK": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        },
+        "NeverReloads": {
+          "anchors": [
+            "scripts/viewer-updates.js",
+            "scripts/viewer-updates-ui.js",
+            "formal/collect_traces.js"
+          ],
+          "reason": "Model predicates are reused directly by trace wrappers, with a successful reload witness."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "scripts/embed_tools.js",
+        "scripts/embed_signing.js",
+        "normal-test-command",
+        "formal/ViewerUpdate.tla",
+        "formal/ViewerUpdate.cfg",
+        "formal/ViewerUpdateBadDaily.cfg",
+        "formal/ViewerUpdateBadReload.cfg",
+        "formal/ViewerUpdateReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_traces.js",
+        "package-lock.json",
+        "formal/watchdog.py",
+        "formal/test_watchdog.py",
+        "formal/test_generation.py",
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml"
+      ],
+      "conformance": [
+        "tests/viewer-updates-unit.test.js",
+        "tests/viewer-updates.test.js",
+        "formal/collect_traces.js"
+      ],
+      "limits": "Two windows, one manual check, aggregate draft/write flags. HTTP authenticity, API/storage partition rules and clock rollback remain unit/browser tests. No installer or general refinement proof."
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit; browser delivery checks it against reviewed source bytes. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. Reviewed demo/history comparisons and stale-submit regressions for read-only accepted questions, and exact 2.12 release/version/update fixtures; escape, immutable-history and duplicate-refusal assertions remain explicit. Verify older messages explicitly reprojects acceptance after eligibility changes, with current-board guards around the asynchronous refresh and a native 201-message-window regression. Signing clarity review 2026-10-22: readable display separates cryptographic signature integrity, local fingerprint approval, key lifecycle and existing eligibility. Participant inspection resolves existing profile evidence without approving keys or changing policy; display tests are separate from modeled semantics. Per-question pending resolution guard prevents same-tab double submission through stale controls; native browser regression preserves immutable fork/resolution rules. Patch 2.12.1 baseline/version fixtures preserve all upgrade and mismatch assertions. Read-only signing review 2026-10-22: session-local approval/removal re-evaluates already-verified affected messages using actual exact upload bytes and Context.evaluate; pending older evidence remains pending. Acceptance is reprojected from resulting eligibility without promoting history. Native test covers required-policy approval/removal; metadata/crypto/UI I/O remain outside this finite acceptance reducer model. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Release 2.12.2 review: viewer/core version fixtures advance, future-update fixtures remain strictly newer at 2.12.3, and 2.12.1 joins upgrade baseline coverage. Released canonical docs/manifest pin advances without signing/model changes. All mismatch, backup, blocked-input, trace and mutation obligations are preserved. Viewer 3.0.0 release review 2026-10-23: version strings, future-update fixtures (3.0.1), newer-board fixture (4.0.0), 2.12.2 upgrade source, re-released example package labels and the STATUS RoomHistory row only; no model, runtime signing, update or acceptance semantics changed. Signing help review 2026-10-23 (SPEC-002-058): composer notice, delivery refusal text and How signing works help derive from one diagnosis table; the no-signer refusal keeps the identical condition with a specific message; unlock, generation, authorization, guarded writes and draft preservation are unchanged. Test fixtures gained an optional prepare hook and the longer rotated-key message. Room history display review 2026-10-23 (SPEC-002-059): separate room-history modules and embed, render/read hooks and an upload allowlist line for history files; normal test command gains the history embed check; merged with signing help and gallery. Signing authorization, unlock generations, guarded writes, update and acceptance semantics unchanged. Viewer 3.2.0 release review 2026-10-23: version strings, future-update fixtures (3.2.1), 3.1.0 upgrade source, canonical v3.2.0 pin and guide updates for keygen/require only; no model semantics changed. Viewer 3.2.1 review 2026-10-23 (SPEC-002-060): reader disclosure state for message sections is recorded on explicit summary/Show all clicks and reapplied after feed rebuilds and later mounts (outside the generated bundle); version strings and future-update fixture (3.2.2) only otherwise. No signing, update or acceptance semantics changed. SPEC-002-060 test review: the information native-submit test now asserts the opened review section stays open across reload instead of re-opening it. SPEC-002-061 review 2026-10-23: signing test helpers follow the signer = persona rule (unlock through the persona step; browser posts as the persona in I am). Acceptance reducer, eligibility and answer guards are unchanged. ComposerSigning registration review 2026-10-23 (SPEC-002-061 AC6): shared suite, trace contract, verification config, trace aggregator, README and STATUS gained the new model, its configs, collector and regression only; this model and its collector are unchanged. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. ComposerSigning send-bridge review 2026-10-23: shared README, STATUS and trace contract gained the send-decision bridge and mutants only; this model and its collector are unchanged. Automatic room history review 2026-10-23 (SPEC-002-063): signing-ui composer status ORs a ticked creation requirement, refreshes the history composer note and keeps config.json bytes for room history; acceptance reducer, eligibility and answer guards are unchanged. Collector review 2026-10-23 (SPEC-002-063): collect_signer.js stubs the four new host hooks sendImpl calls (historyCreationDeclare returns null: no creation option is ticked in these traces; failure text, reset and post note are no-ops), like its existing host stubs; positive and mutant trace JSON is byte-identical to the previous collector output. TLC (formal/check.py) and formal/check_traces.py pass with JDK 17. 2026-10-23 release 3.3.0 review: render/upgrades tests only change expected viewer/board version strings to 3.3.0 and add 3.2.0 as an upgrade source; no modeled behavior changes. 2026-10-23 release 3.3.0 review: package-lock.json, tests/i18n.test.js, tests/viewer-package.test.js change only version strings (viewer 3.3.0, simulated next release 3.3.1); no modeled behavior changes. Composer routing review 2026-10-23 (SPEC-002-064): tests/i18n.test.js (AC12 posting) and tests/render.test.js (both legacy posting checks) open a topic view before posting, because All messages no longer has an implicit destination; expected headers, paths and bytes are unchanged. Acceptance reducer, eligibility and answer guards are unchanged. 2026-10-23 release 3.3.1 review: package-lock.json, tests/i18n.test.js, tests/render.test.js, tests/viewer-package.test.js change only version strings (viewer 3.3.1, simulated next release 3.3.2); no modeled behavior changes. 2026-10-23 release 3.3.2 review: version strings in i18n/render/viewer-package fixtures (viewer 3.3.2, simulated next 3.3.3) and package-lock.json only; signing-ui.js changed only the read-only note condition (SPEC-002-065, display only). No acceptance semantics changed. Phone layout follow-up 2026-10-23 (SPEC-002-065): signing-ui.js signingNoticeButton gains a display-only data-short label; no acceptance semantics changed. Key folder hint review 2026-10-23 (SPEC-002-067): signing-ui.js gains signingKeyFolder() and renders the composer unlock hint and the New-here help steps with ~/private/afb/<project id>/ (text only); no signing, unlock, update or acceptance semantics changed. 2026-10-23 release 3.3.3 review: version strings only (viewer 3.3.3, simulated next release 3.3.4) in package-lock.json and the update/package fixtures; i18n/render/upgrade fixtures expect the bundled canonical 3.3.1 and add 3.3.0 as an upgrade source. No modeled behavior changes. 2026-10-23 release 3.3.4 review (SPEC-002-068): version strings only (viewer 3.3.4, simulated next release 3.3.5) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.4 with canonical 3.3.1 unchanged. The compact layout in this release changes no host-writer, host-delivery, host-composer or update-idb section and no pinned script. No modeled behavior changes. Key approval visibility review 2026-10-23 (SPEC-002-069): signing-ui.js gains display-only helpers that count keys whose current, unrevoked fingerprint differs from the local pin (badge, Tools dot, a dismissible notice whose dismissal is a localStorage list of participant=fingerprint pairs), labels and orders review-list options by that state, and lets Signing and the notice open the review task with the first such participant selected. Pins are only read; approval still requires the pasted fingerprint through the unchanged trust action, and no signing, unlock, send decision, update or acceptance semantics changed. 2026-10-23 release 3.3.5 review (SPEC-002-069): version strings only (viewer 3.3.5, simulated next release 3.3.6) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.5 with canonical 3.3.1 unchanged. The release's only pinned-code change, signing-ui.js, was reviewed and repinned separately; no host-writer, host-delivery, host-composer or update-idb section changed. No modeled behavior changes. Review-entry and status-tooltip review 2026-10-23 (SPEC-002-069 amendment): Signing opens the dialog as before; a separate Tools item, shown only when N > 0, opens the existing review task; composer status buttons gain their label as a tooltip (signingNoticeButton, display only). No signing, unlock, send decision, approval, update or acceptance semantics changed. 2026-10-24 (viewer 3.3.6, CSS fix for the empty Review keys entry): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. CI review 2026-10-24 (SPEC-002-070): test.yml gains a workflow_dispatch input update_visual_baselines (renders the visual scenes twice, uploads them as an artifact) and uploads test-results/visual on failure; the npm test, release-check and live-checker steps are unchanged. Test-only; no viewer source, model, config or mapped behavior test changed. TLC and trace conformance were not rerun for this CI-only change (no Java on the authoring machine); the formal CI lane reruns them. Guided key review review 2026-10-24 (SPEC-002-071): approval still pins only the exact typed fingerprint after the unchanged resolve/revocation/freshness checks, now also refusing an unconfirmed echo of the board value; Approve is enabled only on a live match. signing-scenarios and signing-journeys rewrite wrong-fingerprint clicks as a disabled button plus a forced click that keeps the original refusal assertion; signing-browser boot gains an optional fixture seed. No acceptance, eligibility or answer semantics changed. 2026-10-24 (SPEC-002-071 follow-up): the Copy what to send them, Paste and Check with my key file buttons get the element IDs the spec names (signingCopyRequest, signingPaste, signingCheckOwnKey); IDs only, no behavior change. 2026-10-24 (viewer 3.3.7, guided key review SPEC-002-071): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (PR #26 CI): the read-only journey now waits for the uploaded board model before opening Signing (the #me select is visible before the upload is read); test synchronisation only, no modeled behavior change. 2026-10-24 (viewer 3.3.8, SPEC-002-072): reviewed scripts/signing-ui.js after adding Copy fingerprint to the key review. The button only copies the board-listed fingerprint and adds it to the dialog's copied set, so pasting it back is an echo; signingFingerprintEcho, signingReviewApprovable and the trust action (match plus echo confirmation, then pin) are unchanged, and no pin is written without Approve. Step 1 and echo texts changed only. 2026-10-24 (viewer 3.3.8): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.9, SPEC-002-073): reviewed scripts/signing-ui.js after the Keys list replaced the participant select. The trust and remove-trust writes are unchanged: Approve still resolves the current head and requires the exact pasted match, the echo confirmation when applicable and an unrevoked key, then signingFresh and the pin; remove-trust still deletes only this browser's pin, now behind an inline confirmation. New: Undo re-pins only the exact fingerprint removed in the same dialog session, with Approve's resolve, unrevoked and signingFresh guards apart from the paste; its record is keyed by a per-open session and is not offered after reopening. prepareSigning and Refresh key details also keep the profile hash, key chain and revocation reason (signingParticipantFacts); trusted, changed and revoked are derived as before. Unlock, signing, delivery, the composer status and the pending-key count are untouched. 2026-10-24 (viewer 3.3.9): repinned package-lock.json and the viewer-package, i18n and render tests (version strings), tests/signing-scenarios.test.js, tests/signing-journeys.test.js and tests/lib/signing-browser.js (participant chosen by opening its Keys row instead of the select; remove-trust confirms first) after review; assertions and trace semantics unchanged, no modeled behavior changes. 2026-10-24 (viewer 3.3.9, SPEC-002-073 follow-up): reviewed scripts/signing-ui.js after Undo became available only while the board still lists the exact removed fingerprint (so removing a changed key's approval offers no Undo); its guards and the trust/remove-trust writes are unchanged. 2026-10-24 (viewer 3.3.9, SPEC-002-073 review): reviewed scripts/signing-ui.js after the Keys summary line began counting the Needs attention set out of all participants; display text only. signingPendingReview, the badge and notice count, pins and the trust/remove-trust/undo paths are unchanged. 2026-10-24 (viewer 3.3.10, SPEC-002-075 review): reviewed scripts/signing-ui.js (dialog shell classes and the signingClose id; layout only, no modeled behaviour change). Repinned package-lock.json and the viewer-package, i18n and render tests after review; version strings only, no modeled behaviour changes.",
+      "states": {
+        "state": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Shared immutable snapshot and actual resolver result; no viewer-local winner cache."
+        },
+        "state.denied": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Eligibility exclusion of first claim; production resolver must block rather than promote history."
+        },
+        "state.status": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-index",
+            "host-answer-read",
+            "host-answer-controls"
+          ],
+          "reason": "Observed none/legacy/accepted/conflict/blocked projection of shared records."
+        },
+        "state.visible": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-index",
+            "host-answer-read",
+            "host-answer-controls"
+          ],
+          "reason": "Named normalized messages/claims/resolutions supplied to the production resolver in all orders."
+        },
+        "state.winner": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-index",
+            "host-answer-read",
+            "host-answer-controls"
+          ],
+          "reason": "Observed exact referenced answer, abstracted to a bounded message symbol."
+        }
+      },
+      "operators": {
+        "Claims": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "History is excluded from acceptance heads and cannot displace an accepted answer."
+        },
+        "FirstWins": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Safety checks later history cannot overwrite a recorded winner and offline forks remain visible."
+        },
+        "Heads": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "A state record supersedes only its explicitly referenced parents; unrelated offline claims survive."
+        },
+        "Init": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Faithful initial shared-snapshot projection."
+        },
+        "Initial": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "No evidence, no recorded acceptance; legacy replies alone do not invent a historical winner."
+        },
+        "Missing": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Missing referenced parent/winner evidence blocks acceptance, with no timestamp fallback."
+        },
+        "NeverResolved": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Reachability control requires an accepted choice after explicit merge of concurrent resolutions."
+        },
+        "Next": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "The same arrival/trust transition relation is used by TLC and actual observed trace checks."
+        },
+        "Nodes": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Three roots, one history reply and its explicit owner anchor, two concurrent owner resolutions, one merge and unauthorized evidence."
+        },
+        "Observe": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Arrival/reload schedule adds one immutable record; timestamp and arrival order do not arbitrate."
+        },
+        "Parents": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Exact-byte parent references validated and traversed by the resolver; missing evidence blocks."
+        },
+        "Projection": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js",
+            "host-answer-metadata",
+            "host-answer-compose"
+          ],
+          "reason": "Independent bounded specification of the production DAG projection and eligibility rules."
+        },
+        "Safe": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Actual status/winner must equal the faithful projection, including blocked and conflict states."
+        },
+        "Spec": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Bounded safety over shared-snapshot transitions; no claim of distributed online linearizability."
+        },
+        "Step": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "One observed arrival or trust change; repeated snapshots are permitted stuttering in trace checks."
+        },
+        "Trust": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Changed local eligibility reruns projection; it cannot promote later ordinary history."
+        },
+        "TypeOK": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Finite message identities, trust flag, statuses and winner symbols constrain the explored abstraction."
+        },
+        "Winner": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Root self claims and author resolutions inherit an eligible claimed answer."
+        },
+        "Winners": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "Distinct inherited head answers expose conflict; identical concurrent choices converge."
+        },
+        "vars": {
+          "anchors": [
+            "scripts/answer-state.js",
+            "scripts/form-board.js",
+            "formal/collect_answers.js"
+          ],
+          "reason": "All modeled shared projection fields are observed by runtime trace collectors."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "scripts/embed_tools.js",
+        "scripts/embed_signing.js",
+        "normal-test-command",
+        "formal/Signer.tla",
+        "formal/Signer.cfg",
+        "formal/SignerBadUnlock.cfg",
+        "formal/SignerBadEpoch.cfg",
+        "formal/SignerBadGuard.cfg",
+        "formal/SignerBadDraft.cfg",
+        "formal/SignerReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_signer.js",
+        "package-lock.json",
+        "formal/collect_traces.js",
+        "formal/watchdog.py",
+        "formal/test_watchdog.py",
+        "formal/test_generation.py",
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml",
+        "formal/AnswerAcceptance.tla",
+        "formal/AnswerAcceptance.cfg",
+        "formal/AnswerAcceptanceBadConflict.cfg",
+        "formal/AnswerAcceptanceBadFirst.cfg",
+        "formal/AnswerAcceptanceBadTrust.cfg",
+        "formal/AnswerAcceptanceReachable.cfg",
+        "scripts/answer-state.js",
+        "scripts/form-board.js",
+        "scripts/embed_forms.js",
+        "tests/answer-state-unit.test.js",
+        "tests/answer-state.test.js",
+        "tests/forms.test.js",
+        "formal/collect_answers.js",
+        "formal/AnswerAcceptanceBadAuthority.cfg",
+        "tests/signing-scenarios.test.js",
+        "scripts/signing-ui.js",
+        "host-answer-index",
+        "host-answer-read",
+        "host-answer-metadata",
+        "host-answer-controls",
+        "host-answer-compose",
+        "tests/rich.test.js",
+        "tests/offline-tools.test.js",
+        "tests/demo.test.js",
+        "tests/viewer-package.test.js",
+        "tests/i18n.test.js",
+        "tests/render.test.js",
+        "tests/upgrades.test.js",
+        "tests/signing-clarity.test.js",
+        "tests/signing-journeys.test.js",
+        "tests/lib/signing-browser.js"
+      ],
+      "conformance": [
+        "tests/answer-state-unit.test.js",
+        "tests/answer-state.test.js",
+        "formal/collect_traces.js",
+        "tests/signing-scenarios.test.js"
+      ],
+      "limits": "Nine named immutable records, three root answers, one ordinary history message, one explicit legacy anchor, two concurrent resolutions and one merge; one reversible eligibility flag. Crypto, parsing/hash/source binding, UI/storage writes, arbitrary graph depth and general implementation refinement remain executable tests. Equal complete snapshots plus eligibility converge; disconnected first acceptance has explicit forks, never a global lock."
+    },
+    {
+      "module": "ComposerSigning.tla",
+      "review": "2026-10-23 (SPEC-002-061 AC6): reviewed signingComposerStatus precedence (unavailable, unsigned when signed mode is off and the destination is optional, read-only, not-registered, key-revoked, key-rotated, needs-unlock, needs-approval for required destinations, signed) against the Status operator with real production traces. The unavailable id does not depend on the delegated signingDiagnose/signingBlockInfo text. Signer is the selected persona (owner decision); Send in the collector gates on the production status because the host send path is being rewritten under the same spec and is not yet anchored. Rotation and revocation are assumed to drop the key from the provider catalog, as in Signer key reconciliation. Contract amendment review 2026-10-23 (54d2af0..d65b9e4): added no-persona (after unsigned, before read-only), key-changed (approval of an older fingerprint) before needs-approval, the composer sign action (TurnSigningOn) and explicit review-only approval; collector gained a changed-key mutant. Trace cap review 2026-10-23: check_traces.py per-run trace cap raised from 50 to 100 (MAX_TRACES) after the positive inventory reached 50; test_traces.py gains a cap refusal/headroom test. No model or collector semantics changed. 2026-10-23 integration review: the merged UI branch passes `required` to signingBlockInfo(\"not-registered\") so an optional room in signed mode reads \"You chose to sign\"; detail wording only, no status id, emoji, action, alt or precedence change; composer status unit tests and traces rerun. Send-bridge review 2026-10-23 (after integration e5a878f): collect_composer.js now loads signing-help.js and signing-ui.js and records the real signingSendDecision for the composer row and at Send (kind signed/unsigned/refused, signer currentUser()); stubs only for the provider catalog, canWrite and currentUser. Section anchor signing-send-decision added. Three send mutants (mode instead of status, refused falls back to unsigned, decision ignores persona) must be rejected. Model unchanged. 2026-10-23 release 3.3.0 review: package-lock.json change only version strings (viewer 3.3.0, simulated next release 3.3.1); no modeled behavior changes. 2026-10-23 release 3.3.1 review: package-lock.json change only version strings (viewer 3.3.1, simulated next release 3.3.2); no modeled behavior changes. Sign opt-in review 2026-10-23 (SPEC-002-065): the optional unsigned status now offers action sign (\"Sign this message\") when the persona key cannot be unlocked here (no registered key, revoked, read-only, no persona) instead of no action. Status ids, emoji, precedence, alt and the send decision are unchanged; the model's ChooseSigned already allows signed mode from any unsigned state, so signed mode then shows not-registered/key-revoked/read-only/no-persona with the unsigned alt. Unit tests replace the two 'no action' assertions with that rule on purpose. 2026-10-23 release 3.3.2 review: package-lock.json change only version strings; no modeled behavior changes. Phone layout follow-up 2026-10-23 (SPEC-002-065): the sign offer carries an optional short label (Sign / Podpisz) used only by the compact phone status line; id, kind, label and precedence unchanged. 2026-10-23 release 3.3.3 review: version strings only (viewer 3.3.3, simulated next release 3.3.4) in package-lock.json and the update/package fixtures; i18n/render/upgrade fixtures expect the bundled canonical 3.3.1 and add 3.3.0 as an upgrade source. No modeled behavior changes. 2026-10-23 release 3.3.4 review (SPEC-002-068): version strings only (viewer 3.3.4, simulated next release 3.3.5) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.4 with canonical 3.3.1 unchanged. The compact layout in this release changes no host-writer, host-delivery, host-composer or update-idb section and no pinned script. No modeled behavior changes. 2026-10-23 release 3.3.5 review (SPEC-002-069): version strings only (viewer 3.3.5, simulated next release 3.3.6) in package-lock.json and the update/package fixtures; i18n/render/compose fixtures expect viewer 3.3.5 with canonical 3.3.1 unchanged. The release's only pinned-code change, signing-ui.js, was reviewed and repinned separately; no host-writer, host-delivery, host-composer or update-idb section changed. No modeled behavior changes. 2026-10-24 (viewer 3.3.6, CSS fix for the empty Review keys entry): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.7, guided key review SPEC-002-071): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.8): repinned package-lock.json and the viewer-updates, viewer-package, i18n and render tests after review; version strings only, no modeled behavior changes. 2026-10-24 (viewer 3.3.9): repinned package-lock.json (version string) after review; assertions and trace semantics unchanged, no modeled behavior changes. 2026-10-24 (viewer 3.3.10): repinned package-lock.json (version string) after review; assertions and trace semantics unchanged, no modeled behavior changes.",
+      "states": {
+        "state": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "One composer observation: host inputs passed to signingComposerStatus plus the status it returned."
+        },
+        "state.catalog": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Participants whose keys are unlocked in the provider (catalog ids)."
+        },
+        "state.error": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Signing evidence or private state unavailable (board UUID, another tab, error)."
+        },
+        "state.known": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Participants with a fingerprint recorded at unlock time (known)."
+        },
+        "state.mode": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Signed or unsigned sending mode."
+        },
+        "state.oldPins": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Own keys whose approval is for an older fingerprint (key-changed), as opposed to no approval (needs-approval)."
+        },
+        "state.persona": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "The \"I am\" persona (#me) passed as persona, or none (no-persona); the signer is always this persona (owner decision)."
+        },
+        "state.pins": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Own keys approved for their current fingerprint."
+        },
+        "state.post": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "The post made by the last action: persona, signer (currentUser at decision), mode, destination, the decision status and the verdict Send acted on."
+        },
+        "state.progress": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Reachability ghost; stays 0 outside the Reach control and in collected traces."
+        },
+        "state.required": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Destination policy requires trusted signatures (room, topic, new room or recipient)."
+        },
+        "state.revoked": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Board lists the participant key as revoked or retired."
+        },
+        "state.rotated": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Known fingerprint differs from the board fingerprint (key-rotated input)."
+        },
+        "state.shown": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Status id from signingSendDecision (the composer row), as returned by production."
+        },
+        "state.signer": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Who Send signs as: currentUser() when signingSendDecision says signed (delivery requires the author to equal it). StickySigner control keeps an old one."
+        },
+        "state.stale": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Timer expiry happened and the composer has not re-rendered yet."
+        },
+        "state.unlock": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "The composer unlock made by the last action: key, persona before, and whether it bound signed mode."
+        },
+        "state.writable": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Folder opened with write access."
+        }
+      },
+      "operators": {
+        "Approve": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Explicit review approval of the persona own key for the current fingerprint; never implied by unlock."
+        },
+        "ChooseSigned": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Signing dialog turns signed mode on."
+        },
+        "ChooseUnsigned": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Post unsigned instead, offered only where the destination allows it."
+        },
+        "ComposerUnlock": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Composer key-file unlock; binds signed mode only for the persona own key; another key never switches persona."
+        },
+        "DestinationChange": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Changing room, topic, new room or recipient toggles whether trusted signatures are required."
+        },
+        "Expire": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Inactivity expiry clears the catalog without a re-render (learned on the next tick)."
+        },
+        "Fault": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Signing context becomes unavailable or is restored."
+        },
+        "Init": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Initial composer states."
+        },
+        "Initial": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Fresh composer: nothing unlocked, any persona, mode, destination, folder access, error flag and earlier approvals."
+        },
+        "Keys": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Personas with a registered signing key; only these key files unlock."
+        },
+        "Lock": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Explicit lock clears the provider catalog."
+        },
+        "Modes": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Signed and unsigned sending modes."
+        },
+        "NeverWitnessesAll": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Reachability control: every status and both post kinds occur in one behavior."
+        },
+        "Next": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "The same transition relation used by TLC and collected trace checks."
+        },
+        "NoPost": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "No post in this step."
+        },
+        "NoUnlock": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "No composer unlock in this step."
+        },
+        "NoUnsignedWhereRequired": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Named invariant; UnsignedFallback control must violate it."
+        },
+        "NoUnsignedWhereRequiredIn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "No unsigned post where signatures are required or signed mode is on."
+        },
+        "Observe": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Every observed event re-renders the composer status."
+        },
+        "OtherKeyNeverBinds": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Named invariant; OtherKeyBinds control must violate it."
+        },
+        "OtherKeyNeverBindsIn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Only the persona own key binds signed mode."
+        },
+        "Personas": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Two registered personas, one without a registered key, and none selected."
+        },
+        "Plain": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Per-step post and unlock records are cleared by other actions."
+        },
+        "Ready": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Statuses that allow posting."
+        },
+        "Reopen": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Folder reopened read-only or writable; a board change locks the provider."
+        },
+        "Revoke": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Board refresh shows the key revoked; provider drops it."
+        },
+        "Rotate": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Board refresh shows a new key; provider drops the old one and its approval becomes an approval of an older fingerprint."
+        },
+        "Safe": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Conjunction of the five composer safety predicates, checked on every collected record."
+        },
+        "SelectPersona": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Changing \"I am\" changes the signer and re-derives the status."
+        },
+        "Send": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Production signingSendDecision taken at send time: signed signs as the persona (currentUser), unsigned posts unsigned, anything else refuses."
+        },
+        "SendRechecks": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Named invariant; StaleReady control must violate it."
+        },
+        "SendRechecksIn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Send consults the recomputed status, not the shown one."
+        },
+        "ShownMatchesStatus": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Named invariant; production mutants that change ids are rejected by it in traces."
+        },
+        "ShownMatchesStatusIn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Shown status equals Status except after an unobserved expiry."
+        },
+        "SignerIsPersona": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Named invariant; StickySigner control must violate it."
+        },
+        "SignerIsPersonaIn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "A signed post is signed as the persona selected at send time."
+        },
+        "Spec": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Bounded safety over composer events; no liveness claim."
+        },
+        "Status": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Independent bounded mirror of signingComposerStatus precedence; collected production ids must equal it."
+        },
+        "Statuses": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "SIGNING_COMPOSER_ORDER."
+        },
+        "Step": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "One composer event; repeated snapshots are stuttering in trace checks."
+        },
+        "Tag": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Reachability label of a state: a post kind or the shown status."
+        },
+        "Tick": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Periodic 30-second re-render."
+        },
+        "TurnSigningOn": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Composer action kind sign: turns signing on when the persona key is unlocked in an optional destination."
+        },
+        "TypeOK": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Finite personas, keys, modes and statuses."
+        },
+        "Witness": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "Feasible reachability order covering every SIGNING_COMPOSER_ORDER id plus a signed and an unsigned post."
+        },
+        "vars": {
+          "anchors": [
+            "signing-composer-status",
+            "formal/collect_composer.js",
+            "tests/composer-signing-status.test.js",
+            "signing-send-decision"
+          ],
+          "reason": "All modelled fields are observed by the composer trace collector."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        "formal/STATUS.md",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/trace_contracts.json",
+        "formal/collect_traces.js",
+        ".github/workflows/formal.yml",
+        "package-lock.json",
+        "formal/ComposerSigning.tla",
+        "formal/ComposerSigning.cfg",
+        "formal/ComposerSigningBadSticky.cfg",
+        "formal/ComposerSigningBadFallback.cfg",
+        "formal/ComposerSigningBadStale.cfg",
+        "formal/ComposerSigningBadOtherKey.cfg",
+        "formal/ComposerSigningReachable.cfg",
+        "formal/collect_composer.js",
+        "tests/composer-signing-status.test.js",
+        "signing-composer-status",
+        "signing-send-decision"
+      ],
+      "conformance": [
+        "tests/composer-signing-status.test.js",
+        "formal/collect_traces.js"
+      ],
+      "limits": "Three personas (two registered keys, one unregistered) plus no persona, two key files, two modes, one destination flag, folder access and signing-error toggles, approvals, revocation and rotation per key. Status ids only: labels, emoji, actions and Polish text are unit-tested. The collector drives the production signingSendDecision (and through it signingComposerStatus) with host-shaped inputs and stubbed provider catalog, folder access and persona; cryptographic signing, the post-await signingDelivery guards, key-file parsing and composer rendering are Signer traces and unit/browser tests. No liveness or timing claim: expiry is one event and the 30-second tick another."
+    }
+  ]
+}

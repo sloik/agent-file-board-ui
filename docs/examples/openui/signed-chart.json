@@ -1,0 +1,13 @@
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Tasks versus plan",
+  "components": [
+    {
+      "type": "bar-chart",
+      "title": "Difference in completed tasks",
+      "labels": ["Design", "Implementation", "Review"],
+      "values": [3, -2, 0]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "canonicalVersion": "2.4.0",
+  "case": "Unknown top-level EXTENSION header with readable core message",
+  "exitCode": 0,
+  "meaning": "Old validator acceptance only; no extension semantic validation."
+}

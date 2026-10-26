@@ -3,17 +3,58 @@ name: test
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      live_checker:
+        description: Verify the deployed public checker in both browsers
+        required: false
+        default: false
+        type: boolean
+      update_visual_baselines:
+        description: Render the Linux pixel baselines twice (must be identical) and upload them as the visual-baselines artifact
+        required: false
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      ref:
+        description: Source ref to test (defaults to the triggering commit)
+        required: false
+        type: string
+      tag:
+        description: Optional exact version tag to validate
+        required: false
+        type: string
+    outputs:
+      commit:
+        description: Exact source commit that passed the test suite
+        value: ${{ jobs.test.outputs.commit }}
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
     steps:
       - uses: actions/checkout@v4
+        id: source
         with:
+          ref: ${{ inputs.ref || github.sha }}
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
+
+      # Keep current CI setup available when testing historical source tags.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: .ci-tools
+          persist-credentials: false
 
       # The pinned standard must be resolvable as an exact tag (release_check uses git describe).
       - name: Fetch tags of the pinned standard
@@ -28,18 +69,54 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
-
       - name: Install dependencies
-        run: npm ci
+        run: |
+          python3 .ci-tools/scripts/ci_retry.py --seconds 180 -- npm ci --ignore-scripts --fetch-retries=1 --fetch-timeout=30000
+          python3 .ci-tools/scripts/ci_retry.py --seconds 120 -- python3 -m pip install --timeout 15 --retries 1 -r vendor/agent-file-board/requirements-signing.txt
+
+      # After npm ci so the browser matches the pinned playwright version.
+      - name: Install Chromium and Firefox for Playwright
+        uses: ./.ci-tools/.github/actions/setup-browsers
+        timeout-minutes: 14
+
+      # SPEC-002-070: the baselines are rendered before npm test, so the same run also compares against them.
+      - name: Generate visual baselines (rendered twice, must be identical)
+        if: github.event_name == 'workflow_dispatch' && inputs.update_visual_baselines
+        timeout-minutes: 5
+        run: |
+          node tests/visual/generate.js --check-determinism
+          node tests/visual/generate.js --out visual-baselines
+          cp visual-baselines/pixels/*.png tests/visual/pixels/linux/
+
+      - name: Upload visual baselines
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.update_visual_baselines
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines
+          path: visual-baselines/
+          if-no-files-found: error
 
       - name: Test (Playwright viewer tests + release_check unit tests)
+        timeout-minutes: 10
         run: npm test
+
+      - name: Upload visual differences
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-results
+          path: test-results/visual/
+          if-no-files-found: ignore
 
       - name: Release consistency check
         run: python3 scripts/release_check.py
 
-      - name: Release consistency check against the pushed tag
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: python3 scripts/release_check.py --tag "$GITHUB_REF_NAME"
+      - name: Release consistency check against the requested tag
+        if: inputs.tag != ''
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: python3 scripts/release_check.py --tag "$RELEASE_TAG"
+
+      - name: Verify deployed release checker in both browsers
+        if: github.event_name == 'workflow_dispatch' && inputs.live_checker
+        run: node scripts/check_live_updates.js

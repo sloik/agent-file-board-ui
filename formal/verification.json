@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "traceModels": [
+    "Signer.tla",
+    "ViewerUpdate.tla",
+    "AnswerAcceptance.tla",
+    "ComposerSigning.tla"
+  ],
+  "phases": [
+    {
+      "name": "prepare",
+      "commands": [
+        [
+          "{python}",
+          "scripts/ci_retry.py",
+          "--seconds",
+          "60",
+          "--",
+          "npm",
+          "ci",
+          "--ignore-scripts",
+          "--fetch-retries=1",
+          "--fetch-timeout=30000"
+        ]
+      ],
+      "timeout": 180
+    },
+    {
+      "name": "harness",
+      "commands": [
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "formal",
+          "-p",
+          "test_*.py"
+        ]
+      ],
+      "timeout": 60
+    },
+    {
+      "name": "regressions",
+      "commands": [
+        [
+          "node",
+          "scripts/embed_tools.js",
+          "--check"
+        ],
+        [
+          "node",
+          "scripts/embed_signing.js",
+          "--check"
+        ],
+        [
+          "node",
+          "--test",
+          "tests/signing-provider.test.js",
+          "tests/signing-policy.test.js",
+          "tests/signing-contract.test.js",
+          "tests/signing-negative.test.js",
+          "tests/signing-budgets.test.js",
+          "tests/viewer-updates-unit.test.js"
+        ],
+        [
+          "node",
+          "scripts/embed_forms.js",
+          "--check"
+        ],
+        [
+          "node",
+          "--test",
+          "tests/answer-state-unit.test.js"
+        ],
+        [
+          "node",
+          "--test",
+          "tests/composer-signing-status.test.js"
+        ]
+      ],
+      "timeout": 180
+    },
+    {
+      "name": "traces",
+      "commands": [
+        [
+          "{python}",
+          "formal/check_traces.py"
+        ]
+      ],
+      "timeout": 360
+    },
+    {
+      "name": "models",
+      "commands": [
+        [
+          "{python}",
+          "formal/check.py"
+        ]
+      ],
+      "timeout": 360
+    }
+  ]
+}

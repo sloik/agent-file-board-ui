@@ -37,7 +37,7 @@ test("AC2: example (bare root, uploaded read-only) renders every room and direct
 test("AC2: example laid out as proj/.agent-board renders in DATE order with kinds and names from participants.json", async () => {
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(proj) });
-  await h.openBoardViaUi(page);
+  await h.openBoardViaUi(page);await h.expandComposer(page);
   assert.deepEqual(await h.feedOrder(page), expectedOrder(h.path.join(proj, ".agent-board")));
   const people = await page.$$eval("#feed article.msg", els => els.map(e => [e.querySelector(".who").textContent, e.querySelector(".kind").textContent]));
   const seen = Object.fromEntries(people);
@@ -48,9 +48,9 @@ test("AC2: example laid out as proj/.agent-board renders in DATE order with kind
   const direct = await page.textContent("#tree h3:has-text('Direct')");
   assert.match(direct, /Direct conversations/i);
   assert.ok(await page.isVisible("#tree .folder:has-text('implementation-agent-01 \u2194 research-agent-01')"));
-  // versions: viewer 1.4.0 and board 1.4.0 (from CONVENTION.md); no mismatch warning
+  // versions: viewer 3.3.10 and board 3.3.1 (from CONVENTION.md); no mismatch warning
   const bar = await page.textContent("#verbar");
-  assert.match(bar, /Viewer v1\.4\.0/); assert.match(bar, /Board v1\.4\.0/);
+  assert.match(bar, /Viewer v3\.3\.10/); assert.match(bar, /Board v3\.3\.1/);
   assert.equal(await page.isVisible("#verwarn"), false);
   await ctx.close();
 });
@@ -58,7 +58,7 @@ test("AC2: example laid out as proj/.agent-board renders in DATE order with kind
 test("AC2: ordering follows DATE, not filename", async () => {
   const tmp = h.tmpDir(); const proj = h.layoutShuffled(tmp);
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(proj) });
-  await h.openBoardViaUi(page);
+  await h.openBoardViaUi(page);await h.expandComposer(page);
   const order = await h.feedOrder(page);
   assert.deepEqual(order.map(f => f.split("_")[4].split(".")[0].slice(0, 3)), ["ccc", "aaa", "bbb"]);
   assert.deepEqual(order, expectedOrder(h.path.join(proj, ".agent-board")));
@@ -99,6 +99,7 @@ test("AC3: legacy dialect fixture opens read-only with mapping and time correcti
   // closed thread (ZAMKNIETY) is grouped
   assert.match(await page.textContent("#tree"), /closed \(1\)/i);
   // read-only: posting downloads a legacy-format file and never touches a folder
+  await h.openView(page, "room:00_ogolne|T001");
   await page.fill("#cBody", "Odpowiedź testowa");
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#send")]);
   const saved = h.path.join(h.tmpDir(), dl.suggestedFilename()); await dl.saveAs(saved);
@@ -113,15 +114,16 @@ test("AC3: writing to a legacy board uses the legacy dialect under pokoje/ and n
   const dir = h.path.join(__dirname, "fixtures", "legacy-board");
   const { ctx, page } = await h.openPage(browser, { tree: h.readTree(dir), rootName: "legacy-board", clock: new Date("2026-03-04T09:00:00Z") });
   await page.clock.pauseAt(new Date("2026-03-04T09:00:05Z"));
-  await h.openBoardViaUi(page);
+  await h.openBoardViaUi(page);await h.expandComposer(page);
   await page.selectOption("#me", "ada");
+  await h.openView(page, "room:00_ogolne|T001");
   await page.selectOption("#cStatus", "DECISION-NEEDED");
   await page.fill("#cBody", "Decyzja potrzebna w sprawie lata");
   await page.click("#send");
   await page.waitForFunction(() => window.__fakefs.dump().some(f => /^pokoje\/00_ogolne\/2026-03-04_1000_ada_T001_/.test(f.path)));
   const files = await page.evaluate(() => window.__fakefs.dump());
   const f = files.find(x => /^pokoje\/00_ogolne\/2026-03-04_1000_ada_T001_/.test(x.path));
-  assert.match(f.text, /^OD: Ada\nDO: wszyscy\nPOKOJ: 00_ogolne\nWATEK: T001-plan-lata\nDATA: 2026-03-04 10:00\nODPOWIEDZ-NA: -\nRUNTIME: .*\nSTATUS: DECYZJA-MISI\nPRZECZYTANE-DO: 2026-03-02_2300_kit_T001_zrobione.txt\n---\nDecyzja potrzebna w sprawie lata\n$/);
+  assert.match(f.text, /^OD: Ada\nDO: wszyscy\nPOKOJ: 00_ogolne\nWATEK: T001-plan-lata\nDATA: 2026-03-04 10:00\nODPOWIEDZ-NA: -\nRUNTIME: .*\nSTATUS: DECYZJA-MISI\nPRZECZYTANE-DO: 2026-03-02_2300_kit_T001_zrobione.txt\nPOSTED-AT: 2026-03-04T09:00:05\.000Z\n---\nDecyzja potrzebna w sprawie lata\n$/);
   // legacy registry file (01_POKOJE.txt) is an existing file: untouched
   assert.equal(files.find(x => x.path === "01_POKOJE.txt").text, h.fs.readFileSync(h.path.join(dir, "01_POKOJE.txt"), "utf8"));
   // the legacy board refuses native paths

@@ -101,7 +101,7 @@ test("AC6 sidebar resize by dragging; double-click resets; width survives reload
   assert.equal(await width(), 190);
   const b4 = await page.locator("#resizer").boundingBox();
   await page.mouse.move(b4.x + 3, y); await page.mouse.down(); await page.mouse.move(b4.x + 203, y, { steps: 5 }); await page.mouse.up();
-  await page.reload();
+  await h.reloadSettled(ctx, page, { setting: ["sideW", 390] });
   assert.equal(await width(), 390);
   await page.dblclick("#resizer");
   assert.equal(await width(), 270);
@@ -129,7 +129,7 @@ test("AC6/R11 preferences survive reload; reset restores defaults", async () => 
     collapsed: s.collapsed, closedGroups: Object.keys(s.closedGroups).length, lastScope: s.lastScope, lastDir: s.lastDir }; });
   const before = await snap();
   assert.equal(before.lh, 1.9); assert.equal(before.lang, "pl"); assert.equal(before.rDays, "67"); assert.equal(before.lastDir, "architecture");
-  await page.reload();
+  await h.reloadSettled(ctx,page,{setting:["lastDir","architecture"],lastDir:true});
   await h.openBoardViaUi(page);          // folder picker is a user gesture; preferences come from storage
   assert.deepEqual(await snap(), before);
   // restored into the UI as well
@@ -163,20 +163,39 @@ test("R11 storage failures degrade silently", async () => {
   await ctx.close();
 });
 
+// Wait for the reopen banner; on failure report the state that decides whether it appears (CI flake evidence).
+async function bannerShown(page) {
+  try { await page.waitForSelector("#banner.show", { timeout: 10000 }); return; } catch (e) {}
+  const state = await page.evaluate(async () => {
+    const idb = await new Promise((res) => {
+      const r = indexedDB.open("agent-file-board-ui", 1);
+      r.onerror = () => res("open-error");
+      r.onsuccess = () => { try { const q = r.result.transaction("kv").objectStore("kv").get("lastDir");
+        q.onsuccess = () => res(q.result === undefined ? "undefined" : q.result === null ? "null" : typeof q.result + ":" + (q.result.name || "?"));
+        q.onerror = () => res("get-error"); } catch (err) { res("tx-error " + err.name); } };
+    });
+    const s = window.__boardTest.getSettings();
+    return { perm: window.__fakefs ? "see persisted test-filesystem permission" : "no filesystem", idbLastDir: idb, autoOpen: s.autoOpen,
+      model: window.__boardTest.getModel() !== null, banner: document.querySelector("#banner").className,
+      hasPicker: typeof window.showDirectoryPicker, url: location.href };
+  });
+  throw new Error("banner did not show; state=" + JSON.stringify(state));
+}
+
 test("R9 remembered folder: reopen silently when permission still granted, else one-click banner", async () => {
   const tmp = h.tmpDir(); const proj = h.layoutExample(tmp);
   const tree = h.readTree(proj);
   const { ctx, page } = await h.openPage(browser, { tree });
   await h.openBoardViaUi(page);                        // stores the handle in IndexedDB
   // permission still granted: silent reopen after reload, no click
-  await page.reload();
+  await h.reloadSettled(ctx, page, { lastDir: true });
   await page.waitForFunction(() => window.__boardTest.getModel() !== null);
   assert.equal(await page.isVisible("#banner"), false);
   assert.match(await page.textContent("#folderName"), /Folder: proj/);
   // permission needs a gesture: banner offers one-click reopen
   await page.evaluate(() => window.__fakefs.setPermission("prompt"));
-  await page.reload();
-  await page.waitForSelector("#banner.show");
+  await h.reloadSettled(ctx, page, { perm: "prompt", lastDir: true });
+  await bannerShown(page);
   assert.match(await page.textContent("#lastName"), /proj/);
   assert.equal(await page.evaluate(() => window.__boardTest.getModel()), null);
   await page.click("#reopen");
@@ -184,11 +203,11 @@ test("R9 remembered folder: reopen silently when permission still granted, else 
   assert.equal(await page.isVisible("#banner"), false);
   // "forget" removes the offer
   await page.evaluate(() => window.__fakefs.setPermission("prompt"));
-  await page.reload();
-  await page.waitForSelector("#banner.show");
+  await h.reloadSettled(ctx, page, { perm: "prompt", lastDir: true });
+  await bannerShown(page);
   await page.click("#forget");
   await page.waitForSelector("#banner:not(.show)", { state: "attached" });
-  await page.reload();
+  await h.reloadSettled(ctx, page, { lastDir: false });
   await page.waitForTimeout(300);
   assert.equal(await page.isVisible("#banner"), false);
   await ctx.close();
