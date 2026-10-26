@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.15'
       - run: |
           python3 scripts/build_update_checker.py --check
           mkdir public-checker
