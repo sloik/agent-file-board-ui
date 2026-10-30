@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@noble/curves": "2.4.0",
-    "@openuidev/react-lang": "1.0.1",
+    "@openuidev/react-lang": "1.0.2",
     "dompurify": "3.4.17",
     "esbuild": "0.28.2",
     "highlight.js": "11.12.0",
