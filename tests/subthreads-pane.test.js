@@ -496,6 +496,39 @@ test("AC4 compact: a REPLY-TO link to the main flow closes the pane and offers B
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
+test("AC5 the pane composer asks before posting as an agent, through the one guard both composers share", async () => {
+  // Same Send rules as the main composer: dismissing writes nothing and keeps the draft; accepting posts.
+  const run = async (html, dialog) => {
+    const { proj } = X.subthreadBoard();
+    const s = await h.openPage(browser, { html, tree: h.readTree(proj), fixedTime: AT, dialog });
+    try {
+      await h.openBoardViaUi(s.page); await s.page.selectOption("#me", "research-agent-01"); await h.openView(s.page, X.VIEW);
+      await openPane(s.page);
+      const before = (await s.page.evaluate(() => window.__fakefs.dump())).length;
+      await s.page.fill("#subBody", "Agent post from the pane");
+      await s.page.click("#subSend");
+      if (dialog === "accept" || html) await expect.poll(() => written(s.page, "Agent post from the pane")).not.toBeNull();
+      else await expect(s.page.locator("#subSend")).toBeEnabled();
+      return { dialogs: s.log.dialogs.map(d => d.message), written: (await s.page.evaluate(() => window.__fakefs.dump())).length - before, draft: await s.page.inputValue("#subBody"), text: await written(s.page, "Agent post from the pane") };
+    } finally { await s.ctx.close(); h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
+  };
+  const ask = 'You are posting as "research-agent-01" (an agent). Boards run on trust: people post only as themselves. Continue?';
+  const dismissed = await run(undefined, "dismiss");
+  assert.deepEqual(dismissed.dialogs, [ask]); assert.equal(dismissed.written, 0); assert.equal(dismissed.draft, "Agent post from the pane");
+  const accepted = await run(undefined, "accept");
+  assert.deepEqual(accepted.dialogs, [ask]); assert.equal(header(accepted.text, "FROM"), "research-agent-01"); assert.equal(header(accepted.text, "SUBTHREAD"), F.root);
+  // Non-vacuity: removing the shared guard line (the tests/mutation.test.js anchor) silences the pane's dialog too,
+  // and the agent post goes through without being asked: the hazard the guard exists for, on both composers.
+  const anchor = 'if(!window.confirm(t("confirm_agent",{name:person.name}))) return;', src = h.fs.readFileSync(h.BOARD_HTML, "utf8");
+  assert.equal(src.split(anchor).length - 1, 1, "one shared guard");
+  const file = h.path.join(h.tmpDir("afb-pane-agent-"), "board.html"); h.fs.writeFileSync(file, src.replace(anchor, ""));
+  try {
+    const mutated = await run(file, "dismiss");
+    assert.deepEqual(mutated.dialogs, [], "without the shared guard the pane asks nothing");
+    assert.equal(mutated.written, 1, "and posts as the agent without asking");
+  } finally { h.fs.rmSync(h.path.dirname(file), { recursive: true, force: true }); }
+});
+
 test("AC5 signed send from the pane: its own status row, for its own destination; the post verifies in Python", async t => {
   const f = await native.boot(t, browser, url, f => {
     const room = h.path.join(f.proj, ".agent-board", "rooms", X.ROOM); h.fs.mkdirSync(room, { recursive: true });

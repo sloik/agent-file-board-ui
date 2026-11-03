@@ -4024,7 +4024,7 @@ async function subPostMessage({body,status,state=null,also=false,replyTo,slug,la
   if(to===me || !B.people[to]) to="all";
   if(scope==="direct"){ const ids=dir.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to=ids.find(x=>x!==me); }
   let confirmed=false;
-  if(person.kind==="agent"){ if(!window.confirm(t("confirm_agent",{name:person.name}))) return null; confirmed=true; }
+  if(person.kind==="agent"){ if(!confirmAgentPost(person)) return null; confirmed=true; }
   const msg=composeMessage({sender:me,to,scope,room:scope==="room"?dir:null,pair:scope==="direct"?dir:null,tid:th.tid,threadLabel:th.label,
     slug:slug||slugify(body.replace(/@\S+/g,"").split("\n")[0]).slice(0,32).replace(/-+$/,"")||"message",status,language:language||undefined,body,contentType,
     replyTo:replyTo||root,subthread:root,subthreadAlso:also,subthreadState:state,confirmedAgent:confirmed});
@@ -4083,7 +4083,7 @@ async function subPromote(rawTitle){
   if(!r || r.subthread || r.quarantined || !old) throw boardErr("e_subthread",{m:t("sub_gone")});
   const title=rawTitle.trim(); if(!validTopicTitle(title)) throw boardErr("e_title");
   const me=signingSender(currentUser()), person=guardRegistered(me);
-  let confirmed=false; if(person.kind==="agent"){ if(!window.confirm(t("confirm_agent",{name:person.name}))) return null; confirmed=true; }
+  let confirmed=false; if(person.kind==="agent"){ if(!confirmAgentPost(person)) return null; confirmed=true; }
   let to="all"; if(scope==="direct"){ const ids=dir.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to=ids.find(x=>x!==me); }
   const tid=nextThreadId(), label=tid+"-"+(title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"topic");
   const common={sender:me,to,scope,room:scope==="room"?dir:null,pair:scope==="direct"?dir:null,status:"INFO",confirmedAgent:confirmed};
@@ -4537,7 +4537,7 @@ async function sendImpl(){
     const bodySlug = slugify(body.replace(/@\S+/g,"").split("\n")[0]).slice(0,32).replace(/-+$/,"") || "message";
     let confirmed = false;
     if(person.kind==="agent"){
-      if(!window.confirm(t("confirm_agent",{name:person.name}))) return;
+      if(!confirmAgentPost(person)) return;
       confirmed = true;
     }
     created = await historyCreationDeclare({me, tid});          // SPEC-002-063: creation-time policy, before the first message
@@ -4554,6 +4554,12 @@ async function sendImpl(){
   }catch(e){
     toast(historyCreationFailure(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)}),created));
   }
+}
+// The one agent-sender confirmation of both composers (main sendImpl and the sub-thread pane, SPEC-002-078):
+// posting as an agent always asks first; composeMessage's guardAgent refuses an unconfirmed agent anyway.
+function confirmAgentPost(person){
+  if(!window.confirm(t("confirm_agent",{name:person.name}))) return;
+  return true;
 }
 
 /* ===== search ===== */
