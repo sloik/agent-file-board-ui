@@ -16,6 +16,15 @@ const F = {
   resolved: file("1255", "research-agent-01", "T009", "queue-outcome"),
   other: file("1300", "human-owner-01", "T010", "other-topic"),
   hostq: file("1350", "research-agent-01", "T009", "host-question"),
+  // SPEC-002-080 (audit #13, #14): a root question of its own, answered in the main flow and inside its sub-thread.
+  rootq: file("1360", "implementation-agent-01", "T009", "pick-region"),
+  answerMain: file("1370", "human-owner-01", "T009", "region-main"),
+  answerJoined: file("1380", "human-owner-01", "T009", "region-joined"),
+  // SPEC-002-080 (audit #29): PROMOTED-FROM origins that are missing, a member, or in another room (each a topic's first message).
+  promotedGone: file("1410", "human-owner-01", "T011", "promoted-gone"),
+  promotedMember: file("1420", "human-owner-01", "T012", "promoted-member"),
+  promotedCrossRoom: file("1430", "human-owner-01", "T013", "promoted-cross-room"),
+  otherRoom: "2026-09-26_1100_human-owner-01_T003_language-policy-question.txt",
 };
 // [name, headers..., body]; POSTED-AT keeps the posting order exact.
 function message({ from, to = "all", tid = "T009", label = "planning", date, posted, reply = "-", status = "INFO", extra = [], body }) {
@@ -34,8 +43,12 @@ const VALID = {
 };
 // A valid member question, present with the invalid set so an unmarked answer to it can be checked.
 const HOST_QUESTION = JSON.stringify({ id: "host", type: "single", prompt: "Where do we host?", options: [{ id: "cloud", label: "Cloud" }, { id: "local", label: "Local" }] });
+const REGION_QUESTION = JSON.stringify({ id: "region", type: "single", prompt: "Which region?", options: [{ id: "eu", label: "EU" }, { id: "us", label: "US" }] });
 const SUPPORT = {
   [F.hostq]: message({ from: "research-agent-01", to: "human-owner-01", date: "13:50", reply: F.root, status: "QUESTION", extra: [`SUBTHREAD: ${F.root}`, `QUESTION: ${HOST_QUESTION}`], body: "Where do we host?" }),
+  [F.rootq]: message({ from: "implementation-agent-01", to: "human-owner-01", date: "13:52", status: "QUESTION", extra: [`QUESTION: ${REGION_QUESTION}`], body: "Which region?" }),
+  [F.answerMain]: message({ from: "human-owner-01", to: "implementation-agent-01", date: "13:54", reply: F.rootq, status: "REPLY", extra: ['ANSWER: {"question":"region","selected":["eu"]}'], body: "EU, in the main flow." }),
+  [F.answerJoined]: message({ from: "human-owner-01", to: "implementation-agent-01", date: "13:56", reply: F.rootq, status: "REPLY", extra: [`SUBTHREAD: ${F.rootq}`, 'ANSWER: {"question":"region","selected":["us"]}'], body: "US, joining the sub-thread." }),
 };
 // One file per SPEC-002-076 AC2 rule; each must be isolated as invalid (viewer) and rejected (canonical validate).
 const inv = (slug, o) => [file("1400", "human-owner-01", "T009", slug), message({ from: "human-owner-01", date: "14:00", ...o })];
@@ -51,11 +64,22 @@ const INVALID = Object.fromEntries([
   inv("also-value", { reply: F.root, extra: [`SUBTHREAD: ${F.root}`, "SUBTHREAD-ALSO: yes"], body: "bad also" }),
   inv("state-value", { reply: F.root, extra: [`SUBTHREAD: ${F.root}`, "SUBTHREAD-STATE: done"], body: "bad state" }),
   inv("closed-member", { reply: F.root, status: "CLOSED", extra: [`SUBTHREAD: ${F.root}`], body: "closed" }),
-  inv("promoted-not-first", { extra: [`PROMOTED-FROM: ${F.root}`], body: "promoted later" }),
+  // SPEC-002-080: was mislabelled `promoted-not-first`; it is a T009 message naming a T009 root (audit #25).
+  inv("promoted-same-topic", { extra: [`PROMOTED-FROM: ${F.root}`], body: "promoted into its own topic" }),
   inv("promoted-bad-name", { extra: ["PROMOTED-FROM: a/b.txt"], body: "promoted slash" }),
   inv("promoted-with-subthread", { reply: F.root, extra: [`SUBTHREAD: ${F.root}`, `PROMOTED-FROM: ${F.root}`], body: "both" }),
+  // SPEC-002-080 (audit #9, #14): a member replying into another sub-thread; an answer to a main-flow question carrying a marker.
+  inv("reply-crossed", { reply: F.resolved, extra: [`SUBTHREAD: ${F.root}`], body: "crossed into another sub-thread" }),
+  inv("answer-wrong-marker", { to: "implementation-agent-01", reply: F.rootq, status: "REPLY", extra: [`SUBTHREAD: ${F.root}`, 'ANSWER: {"question":"region","selected":["eu"]}'], body: "wrong marker" }),
   inv("answer-unmarked", { to: "research-agent-01", reply: F.hostq, status: "REPLY", extra: ['ANSWER: {"question":"host","selected":["cloud"]}'], body: "unmarked answer" }),
 ]);
+// Topic first messages whose PROMOTED-FROM origin is wrong (audit #29); invalid, judged like INVALID.
+const first = (name, tid, origin) => [name, message({ from: "human-owner-01", tid, label: "promoted", date: "14:10", extra: [`PROMOTED-FROM: ${origin}`], body: "Promoted topic." })];
+Object.assign(INVALID, Object.fromEntries([
+  first(F.promotedGone, "T011", "2026-10-15_1100_human-owner-01_T009_gone.txt"),
+  first(F.promotedMember, "T012", F.first),
+  first(F.promotedCrossRoom, "T013", F.otherRoom),
+]));
 
 // Writes the example board plus the sub-thread files into a fresh temp project; returns {proj, room}.
 function subthreadBoard({ invalid = false, extra = {} } = {}) {

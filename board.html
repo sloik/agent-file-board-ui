@@ -2433,6 +2433,53 @@ function validNativeDate(value){
   const date=new Date(0); date.setUTCFullYear(year,month-1,day); date.setUTCHours(hour,minute,second,0);
   return date.getUTCFullYear()===year && date.getUTCMonth()===month-1 && date.getUTCDate()===day && Number.isFinite(Date.parse(value.replace(" ","T")));
 }
+/* Canonical posting order (SPEC-002-080, audit #22; canonical `message_order`): the DATE instant (a DATE without an
+   offset is read in the board's time_zone, an ambiguous or skipped local time as Python's fold=0), then POSTED-AT
+   (else the file's modification time), then filename, then path. Times are in microseconds, as Python compares them.
+   Time corrections (time-corrections.txt) only place a message in the transcript; sub-thread STATE and every
+   validity rule use this order. */
+const zoneFormats=new Map();
+function zoneOffsetMs(utcMs,tz){
+  let f=zoneFormats.get(tz);
+  if(!f){ f=new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}); zoneFormats.set(tz,f); }
+  const p=Object.fromEntries(f.formatToParts(new Date(utcMs)).map(x=>[x.type,x.value])), d=new Date(0);
+  d.setUTCFullYear(+p.year,+p.month-1,+p.day); d.setUTCHours(+p.hour%24,+p.minute,+p.second,0);
+  return d.getTime()-Math.floor(utcMs/1000)*1000;
+}
+function zonedUtcMs(localMs,tz){
+  if(!tz) return localMs;
+  try{
+    const before=zoneOffsetMs(localMs-43200000,tz), after=zoneOffsetMs(localMs+43200000,tz);
+    if(zoneOffsetMs(localMs-before,tz)===before) return localMs-before;
+    if(zoneOffsetMs(localMs-after,tz)===after) return localMs-after;
+    return localMs-before;
+  }catch(e){ return localMs; }
+}
+// DATE (`now_for`) and POSTED-AT (`board_presence.instant`) as microseconds since the epoch, or NaN.
+function orderInstant(value,tz,posted=false){
+  const re=posted ? /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)(?:\.(\d{1,6}))?(Z)$/ : /^(\d{4})-(\d\d)-(\d\d)[ T](\d\d):(\d\d)(?::(\d\d)(?:\.(\d{1,6}))?)?(Z|[+-]\d\d:\d\d)?$/;
+  const p=typeof value==="string" ? value.match(re) : null; if(!p) return NaN;
+  const d=new Date(0); d.setUTCFullYear(+p[1],+p[2]-1,+p[3]); d.setUTCHours(+p[4],+p[5],+(p[6]||0),0);
+  const local=d.getTime(), zone=p[8];
+  const utc=zone==="Z" ? local : zone ? local-(zone[0]==="-"?-1:1)*(+zone.slice(1,3)*60+ +zone.slice(4,6))*60000 : zonedUtcMs(local,tz);
+  return utc*1000+Number((p[7]||"").padEnd(6,"0"));
+}
+function messageOrder(m,tz){
+  if(m.order && m.order.tz===tz) return m.order.key;
+  const posted=m.h["POSTED-AT"] ? orderInstant(m.h["POSTED-AT"],tz,true) : NaN;
+  const key=[orderInstant(m.h.DATE,tz),Number.isFinite(posted)?posted:(m.modifiedAt||0)*1000,m.file,m.path];
+  m.order={tz,key}; return key;
+}
+function orderCompare(a,b){ for(let i=0;i<4;i++){ if(a[i]<b[i]) return -1; if(a[i]>b[i]) return 1; } return 0; }
+// A sibling's parse failure in canonical `parse_message` wording (without the path), or "" when it parses.
+function siblingParseError(x){
+  if(!x) return "";
+  if(x.source?.readError) return x.source.readError;
+  if(x.duplicates.length) return "duplicate header "+x.duplicates[0];
+  if(!x.hasSeparator) return "missing header separator";
+  const missing=["DATE","FROM","LANGUAGE","REPLY-TO","SCOPE","STATUS","THREAD","TO"].filter(k=>!Object.hasOwn(x.h,k));
+  return missing.length ? "missing header(s): "+missing.join(", ") : "";
+}
 function nativeIssue(m,cfg,people,index){
   const h=m.h, required=["FROM","TO","SCOPE","THREAD","DATE","LANGUAGE","REPLY-TO","STATUS"];
   if(m.source?.readError) return m.source.readError;
@@ -2445,7 +2492,7 @@ function nativeIssue(m,cfg,people,index){
   if(!validNativeDate(h.DATE)) return "Invalid DATE";
   if(h["REPLY-TO"]!=="-" && (/[\\/]/.test(h["REPLY-TO"]) || !index.has(m.dkey+"|"+h["REPLY-TO"]))) return "Missing or unsafe reply target";
   try{ messageMetadata(h,index.get(m.dkey+"|"+h["REPLY-TO"])?.h); }catch(e){ return e.message; }
-  return subthreadIssue(h,{dkey:m.dkey,index,self:m});
+  return subthreadIssue(h,{dkey:m.dkey,index,self:m,tz:cfg.time_zone});
 }
 /* Sub-threads (SPEC-002-076 rules, SPEC-002-077 AC2): the viewer mirror of canonical subthread_check, same rule
    order and wording. It reads only the headers of sibling files in the same directory (root, REPLY-TO target,
@@ -2459,7 +2506,7 @@ function siblingHeaders(x){
   return x.h;
 }
 const subthreadTid=h=>String(h.THREAD||"").split("-")[0];
-function subthreadIssue(h,{dkey,index,self=null,post=false}){
+function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null}){
   const reply=h["REPLY-TO"], target=reply && reply!=="-" ? index.get(dkey+"|"+reply) : null, source=target?siblingHeaders(target):null;
   const answer=h.ANSWER!==undefined || h["ANSWER-STATE"]!==undefined;
   if(!SUBTHREAD_HEADERS.some(k=>h[k]!==undefined) && !(source && source.SUBTHREAD!==undefined && answer)) return "";
@@ -2482,7 +2529,9 @@ function subthreadIssue(h,{dkey,index,self=null,post=false}){
       if(subthreadTid(rootHeaders)!==own) return `SUBTHREAD: root ${sub} is in another thread (${subthreadTid(rootHeaders)}), not ${own}`;
       if(rootHeaders.SUBTHREAD!==undefined) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
     }else if(r===self) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
-    else if(post && !(r && !r.source?.readError)) return `SUBTHREAD: root ${sub} does not exist in this directory`;
+    else if(post && !r) return `SUBTHREAD: root ${sub} does not exist in this directory`;
+    // Audit #36: canonical post reads the root strictly, so a present but unparseable root refuses a new post.
+    else if(post) return `${sub}: ${siblingParseError(r)}`;
     if(reply==="-") return "SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -";
     if(reply!==sub){
       if(!subthreadName(reply) || !target){ if(post) return "SUBTHREAD: REPLY-TO target does not exist in this directory"; }
@@ -2493,12 +2542,13 @@ function subthreadIssue(h,{dkey,index,self=null,post=false}){
   if(h["PROMOTED-FROM"]!==undefined){
     const o=index.get(dkey+"|"+h["PROMOTED-FROM"]), origin=o?siblingHeaders(o):null;
     if(!o) return `PROMOTED-FROM: ${h["PROMOTED-FROM"]} is not a message in this directory`;
-    if(!origin) return `PROMOTED-FROM: ${h["PROMOTED-FROM"]} cannot be read as a message`;
+    if(!origin) return `${h["PROMOTED-FROM"]}: ${siblingParseError(o)}`;
     if(origin.SUBTHREAD!==undefined) return "PROMOTED-FROM: names a sub-thread message, not a root";
     if(subthreadTid(origin)===own) return "PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic";
-    // Messages are indexed in the canonical posting order, so an earlier sibling of the topic comes first.
-    for(const x of index.values()){
-      if(x===self) break;
+    // Audit #26/#27 (decision: monotonic validity): "the topic's first message" is a post-time rule. A new post is
+    // refused when the topic has any message; a later violation by an existing file is a warning
+    // (subthreadWarning), never an error.
+    if(post) for(const x of index.values()){
       if(x.dkey===dkey && siblingHeaders(x) && subthreadTid(x.h)===own) return `PROMOTED-FROM: only the first message of a topic can carry it, but ${x.file} is earlier in ${own}`;
     }
   }
@@ -3255,9 +3305,10 @@ function threadsOf(){
   }
   B.threadIndex=th; return th;
 }
-/* Sub-thread index (SPEC-002-077 AC2), headers only: root key (dkey|root filename) -> members in the
-   canonical posting order, participants, last activity, latest state and SUBTHREAD-ALSO members.
-   Memoised on the model; a refresh builds a new model, so it is never stale. */
+/* Sub-thread index (SPEC-002-077 AC2), headers only: root key (dkey|root filename) -> members in transcript
+   order, participants, last activity and SUBTHREAD-ALSO members. Memoised on the model; a refresh builds a new model,
+   so it is never stale. STATE is not cached here (SPEC-002-080, audit #23): it is read live by subthreadState()
+   from eligible members only. */
 function subthreadsOf(model=B){
   if(model.subthreadIndex) return model.subthreadIndex;
   const index=new Map();
@@ -3265,12 +3316,11 @@ function subthreadsOf(model=B){
     if(!m.subthread) continue;
     const key=m.dkey+"|"+m.subthread;
     let x=index.get(key);
-    if(!x){ x={key,dkey:m.dkey,scope:m.scope,dir:m.dir,root:m.subthread,tkey:m.tkey,tid:m.tid,members:[],participants:[],also:[],last:"",lastOrder:0,lastMsg:null,state:"open",stateMsg:null}; index.set(key,x); }
+    if(!x){ x={key,dkey:m.dkey,scope:m.scope,dir:m.dir,root:m.subthread,tkey:m.tkey,tid:m.tid,members:[],participants:[],also:[],last:"",lastOrder:0,lastMsg:null}; index.set(key,x); }
     x.members.push(m);
     if(!x.participants.includes(m.author)) x.participants.push(m.author);
     if(m.subthreadAlso) x.also.push(m);
     x.last=m.time; x.lastOrder=m.postedAt ?? m.modifiedAt; x.lastMsg=m;
-    if(m.subthreadState){ x.state=m.subthreadState; x.stateMsg=m; }
   }
   model.subthreadIndex=index; return index;
 }
@@ -3278,6 +3328,16 @@ function subthreadsOf(model=B){
 function subthreadRoot(x){ return B.messageIndex.get(x.key)||null; }
 function subthreadOrphan(x){ const r=subthreadRoot(x); return !r || !!r.quarantined; }
 function subthreadMembers(x){ return x.members.filter(m=>!m.quarantined && !m.receipt && signingEligible(m)); }
+/* The state of a sub-thread (SPEC-002-080, decisions #22 and #23): the latest SUBTHREAD-STATE among the valid,
+   eligible members (not quarantined, not excluded by signing), in canonical posting order (messageOrder), never
+   the transcript order that time corrections change. An excluded member can neither resolve a sub-thread nor have
+   its body shown as the outcome. Read live, like subthreadMembers, because signing and repairs apply later. */
+function subthreadState(x){
+  let msg=null;
+  if(x) for(const m of subthreadMembers(x)) if(m.subthreadState && Number.isFinite(messageOrder(m,B.timeZone)[0]) && (!msg || orderCompare(messageOrder(m,B.timeZone),messageOrder(msg,B.timeZone))>0)) msg=m;
+  return {state:msg?msg.subthreadState:"open",msg};
+}
+function subthreadOutcome(msg){ return msg ? String(msg.bodyLoaded?msg.body:msg.preview||"").split("\n").find(l=>l.trim())||"" : ""; }
 function subthreadOf(m){ return m && m.subthread || null; }
 // A sub-thread view resolves while its root is a valid main-flow message of the topic, or members exist (orphaned).
 function subthreadResolves(dkey,tkey,root){
@@ -3682,7 +3742,7 @@ function subthreadWhen(m){
 }
 // The capsule (AC4): an unanswered question to the reader first, then an unanswered DECISION-NEEDED member.
 function subthreadCapsule(x,members){
-  if(x.state==="resolved") return {kind:"resolved",text:t("sub_resolved")};
+  if(subthreadState(x).state==="resolved") return {kind:"resolved",text:t("sub_resolved")};
   const me=currentUser(), answered=(q,by)=>B.msgs.some(r=>r.dkey===q.dkey && r.replyTo===q.file && !r.metadataError && (!by || r.author===by));
   if(me && members.some(q=>(q.status==="QUESTION" || q.question) && q.author!==me && q.to.split(",").map(s=>s.trim()).includes(me) && !answered(q,me))) return {kind:"question",text:t("sub_question")};
   if(members.some(d=>d.status==="DECISION-NEEDED" && !answered(d))) return {kind:"decision",text:t("sub_decision")};
@@ -3694,7 +3754,7 @@ function subthreadStripHtml(x){
   const people=[...new Set(members.map(m=>m.author))], extra=people.length-3;
   const dots=people.slice(0,3).map(id=>`<i class="sub-dot" data-party="${esc(id)}" style="--c:${colorOf(id)}" title="${esc(personOf(id).name)}"></i>`).join("")+(extra>0?`<span class="sub-more">+${extra}</span>`:"");
   const fresh=members.some(unread), cap=subthreadCapsule(x,members);
-  const outcome=cap?.kind==="resolved" && x.stateMsg ? String(x.stateMsg.bodyLoaded?x.stateMsg.body:x.stateMsg.preview||"").split("\n").find(l=>l.trim())||"" : "";
+  const outcome=cap?.kind==="resolved" ? subthreadOutcome(subthreadState(x).msg) : "";
   return `<button type="button" class="sub-strip ${cap?"sub-"+cap.kind:""}" data-subthread-open="${esc(x.key)}" aria-label="${esc(label+(fresh?" · "+t("sub_unread"):"")+(cap?" · "+cap.text:""))}" title="${esc(label)}">
     <span class="sub-icon" aria-hidden="true">\u{1F9F5}</span><span class="sub-count">${esc(subthreadReplies(members.length))}</span><span class="sub-dots">${dots}</span><span class="sub-when">${esc(when)}</span>${fresh?`<span class="sub-unread" title="${esc(t("sub_unread"))}"></span>`:""}${cap?`<span class="sub-cap">${esc(cap.text)}</span>`:""}${outcome?`<span class="sub-outcome">${esc(outcome.slice(0,140))}</span>`:""}</button>`;
 }
@@ -3719,8 +3779,10 @@ function subthreadListRender(){
   const label=`\u{1F9F5} <span class="sub-menu-word">${esc(text.slice(0,at).trim())}</span> ${esc(text.slice(at))}`;
   if(toggle.innerHTML!==label) toggle.innerHTML=label;
   toggle.title=text; toggle.setAttribute("aria-label",text);
-  const byLast=(a,b)=>(b.last.localeCompare(a.last)) || ((b.lastOrder||0)-(a.lastOrder||0));
-  const orphaned=list.filter(subthreadOrphan), active=list.filter(x=>!subthreadOrphan(x) && x.state!=="resolved").sort(byLast), resolved=list.filter(x=>!subthreadOrphan(x) && x.state==="resolved").sort(byLast);
+  // Last activity, state and counts from eligible members only (SPEC-002-080, audit #23).
+  const lastOf=x=>subthreadMembers(x).at(-1), byLast=(a,b)=>{ const p=lastOf(a), q=lastOf(b); return q.time.localeCompare(p.time) || ((q.postedAt ?? q.modifiedAt)-(p.postedAt ?? p.modifiedAt)); };
+  const resolvedOf=x=>subthreadState(x).state==="resolved";
+  const orphaned=list.filter(subthreadOrphan), active=list.filter(x=>!subthreadOrphan(x) && !resolvedOf(x)).sort(byLast), resolved=list.filter(x=>!subthreadOrphan(x) && resolvedOf(x)).sort(byLast);
   const row=x=>{ const members=subthreadMembers(x), r=subthreadRoot(x), fresh=members.filter(unread).length, last=members.at(-1);
     const head=r && !subthreadOrphan(x) ? personOf(r.author,r.authorName).name+": "+String(r.bodyLoaded?r.body:r.preview||"").replace(/\s+/g," ").trim() : t("sub_orphan_root",{file:x.root});
     return `<button type="button" class="sub-row" data-subthread-open="${esc(x.key)}"><span class="sub-row-text">${esc(head.slice(0,160))}</span>${badge(fresh)}<span class="sub-row-meta">${esc(subthreadReplies(members.length))} · ${esc(subthreadWhen(last))}</span></button>`; };
@@ -3825,8 +3887,8 @@ function subRootHtml(key,r,root){
 }
 function subPaneBanner(x,th,orphan){
   if(orphan) return {tone:"warn",text:t("sub_orphan_root",{file:sel.sub})};
-  if(x?.state==="resolved"){ const outcome=x.stateMsg?String(x.stateMsg.bodyLoaded?x.stateMsg.body:x.stateMsg.preview||"").split("\n").find(l=>l.trim())||"":"";
-    return {tone:"info",text:t("sub_resolved_banner",{outcome:outcome.slice(0,200)})}; }
+  const st=subthreadState(x);
+  if(st.state==="resolved") return {tone:"info",text:t("sub_resolved_banner",{outcome:subthreadOutcome(st.msg).slice(0,200)})};
   if(th?.status==="CLOSED") return {tone:"info",text:t("sub_closed_banner")};
   return null;
 }
@@ -3845,8 +3907,9 @@ function renderSubPane(background=false){
   const crumbs=`<button type="button" class="sub-crumb" data-sub-crumb="room">${esc(composerDirLabel(sel.scope,sel.dir))}</button><span aria-hidden="true"> › </span><button type="button" class="sub-crumb" data-sub-crumb="topic">${esc((th?.tid||"")+" "+threadTitle(th))}</button><span aria-hidden="true"> › </span><span class="sub-crumb-root">\u{1F9F5} ${esc(subRootLabel(orphan?null:r,root))}</span>`;
   const title=$("#subPaneTitle"); if(title.innerHTML!==crumbs) title.innerHTML=crumbs; title.title=title.textContent;
   subFollowRender(key,th);
-  $("#subResolve").hidden=x?.state==="resolved"; $("#subReopen").hidden=x?.state!=="resolved";
-  for(const id of ["subResolve","subReopen"]) $("#"+id).disabled=!x?.members.length;
+  const resolvedNow=subthreadState(x).state==="resolved";
+  $("#subResolve").hidden=resolvedNow; $("#subReopen").hidden=!resolvedNow;
+  for(const id of ["subResolve","subReopen"]) $("#"+id).disabled=!(x && subthreadMembers(x).length);
   $("#subPromote").disabled=orphan || B.layout.dialect!=="native"; $("#subFlat").setAttribute("aria-pressed",String(!!S.flatView));
   const banner=subPaneBanner(x,th,orphan), bannerEl=$("#subBanner");
   bannerEl.hidden=!banner; if(banner){ bannerEl.dataset.tone=banner.tone; if(bannerEl.textContent!==banner.text) bannerEl.textContent=banner.text; }
@@ -4326,6 +4389,23 @@ async function loadRepairDraft(){
     for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=!m || !m.metadataError || m.quarantined || !m?.source?.file || !canWrite();
   }finally{ if(token===repairLoadToken) $("#repairDialog").setAttribute("aria-busy","false"); }
 }
+/* A repair replacement keeps the original's sub-thread membership (SPEC-002-080, audit #37, decision: exactly the
+   original's SUBTHREAD and SUBTHREAD-ALSO), so a repair can neither move a message out of its sub-thread nor into one.
+   The original's headers are recovered as canonical `repair` does: bytes decoded with replacement characters, line
+   ends normalised, the first occurrence of a header wins (the original may be the malformed file being repaired). */
+const REPAIR_KEPT_HEADERS=["SUBTHREAD","SUBTHREAD-ALSO"];
+function repairSubthreadIssue(originalBytes,replacementHeaders){
+  const original=Object.create(null);
+  for(const line of new TextDecoder("utf-8").decode(originalBytes).replace(/\r\n/g,"\n").split("\n")){
+    if(line==="---") break;
+    const at=line.indexOf(": "); if(at>=0 && !Object.hasOwn(original,line.slice(0,at))) original[line.slice(0,at)]=line.slice(at+2);
+  }
+  for(const key of REPAIR_KEPT_HEADERS){
+    const was=Object.hasOwn(original,key)?original[key]:undefined, now=Object.hasOwn(replacementHeaders,key)?replacementHeaders[key]:undefined;
+    if(was!==now) return `a replacement keeps the original's sub-thread headers: ${key} is ${was ?? "absent"} in the original and ${now ?? "absent"} in the replacement`;
+  }
+  return "";
+}
 async function saveRepair(correct){
   if(repairBusy) return;
   const model=B, writeRoot=baseHandle, draft=repairDraft, m=model.msgs.find(m=>m.path===$("#repairSelect").value), actor=currentUser(), reason=$("#repairReason").value.trim();
@@ -4340,6 +4420,7 @@ async function saveRepair(correct){
       if(!match) throw Error("Invalid DATE");
       const name=match[1]+"_"+match[2]+match[3]+"_"+h.FROM+"_"+(h.THREAD||"").split("-")[0]+"_amend-"+crypto.randomUUID().replaceAll("-","")+".txt";
       replacement=m.path.split("/").slice(0,-1).concat(name).join("/");
+      const keep=repairSubthreadIssue(original,h); if(keep) throw Error(keep);
       const candidate={...m,file:name,path:replacement,h,duplicates:parsed.duplicates,hasSeparator:parsed.hasSeparator,source:null};
       const error=nativeIssue(candidate,model.cfg,model.people,model.messageIndex); if(error) throw Error(error);
       if(h.FROM!==actor && !confirm(t("confirm_agent",{name:h.FROM}))) return;
