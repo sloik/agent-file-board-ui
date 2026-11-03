@@ -42,7 +42,7 @@ test("AC2 the index maps each root to its members in posting order, participants
   const s = await boot({ view: null });
   try {
     const index = await s.page.evaluate(() => [...subthreadsOf().values()].map(x => ({ key: x.key, members: x.members.map(m => m.file), participants: x.participants,
-      last: x.last, state: x.state, also: x.also.map(m => m.file), orphan: subthreadOrphan(x) })));
+      last: x.last, state: subthreadState(x).state, also: x.also.map(m => m.file), orphan: subthreadOrphan(x) })));
     assert.deepEqual(index, [
       { key: X.KEY(F.root), members: [F.first, F.also, F.question], participants: ["research-agent-01", "implementation-agent-01"], last: "2026-10-15 12:30", state: "open", also: [F.also], orphan: false },
       { key: X.KEY(F.root2), members: [F.resolved], participants: ["research-agent-01"], last: "2026-10-15 12:55", state: "resolved", also: [], orphan: false },
@@ -70,7 +70,12 @@ test("AC2 every SPEC-002-076 rule isolates the file as invalid; invalid files ar
       "state-without": "SUBTHREAD-STATE: only a sub-thread message (with SUBTHREAD) can resolve or reopen a sub-thread",
       "also-value": "SUBTHREAD-ALSO: the only value is main", "state-value": "SUBTHREAD-STATE: expected resolved or open",
       "closed-member": "SUBTHREAD: STATUS CLOSED is invalid on a sub-thread message; resolve with SUBTHREAD-STATE: resolved (old readers would read CLOSED as closing the topic)",
-      "promoted-not-first": "PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic",
+      "promoted-same-topic": "PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic",
+      "reply-crossed": `SUBTHREAD: REPLY-TO ${F.resolved} is neither the root ${F.root} nor a message of its sub-thread`,
+      "answer-wrong-marker": `SUBTHREAD: REPLY-TO ${F.rootq} is neither the root ${F.root} nor a message of its sub-thread`,
+      [F.promotedGone.replace(/\.txt$/, "")]: "PROMOTED-FROM: 2026-10-15_1100_human-owner-01_T009_gone.txt is not a message in this directory",
+      [F.promotedMember.replace(/\.txt$/, "")]: "PROMOTED-FROM: names a sub-thread message, not a root",
+      [F.promotedCrossRoom.replace(/\.txt$/, "")]: `PROMOTED-FROM: ${F.otherRoom} is not a message in this directory`,
       "promoted-with-subthread": "PROMOTED-FROM: a topic's first message cannot also be a sub-thread message",
       "answer-unmarked": `SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD: ${F.root}`,
     });
@@ -181,7 +186,9 @@ test("AC5 strip, Enter on the strip and Start sub-thread open the sub-thread pan
     await s.page.keyboard.press("Enter");
     await expect(s.page.locator("#subPane")).toBeVisible();
     await expect(s.page.locator("#title")).toHaveText("# planning › T009 Planning");
-    await expect(s.page.locator("#subPaneTitle")).toHaveText("# planning › T009 Planning › 🧵 human-owner-01: Which database should the planning service use?");
+    // SPEC-002-080 AC4: the full path is the header's title; a narrow header shows "‹ T009" before the root label.
+    await expect(s.page.locator("#subPaneTitle")).toHaveAttribute("title", "# planning › T009 Planning › 🧵 human-owner-01: Which database should the planning service use?");
+    await expect(s.page.locator("#subPaneTitle .sub-crumb-root")).toHaveText("🧵 human-owner-01: Which database should the planning service use?");
     await expect(s.page.locator("#subClose")).toBeVisible();
     assert.deepEqual(await paneFiles(s.page), [F.first, F.also, F.question]);
     assert.deepEqual(await feedFiles(s.page), MAIN);

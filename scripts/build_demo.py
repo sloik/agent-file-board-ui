@@ -2,6 +2,7 @@
 """Build the offline demo from pinned, public synthetic fixtures (stdlib only)."""
 import argparse
 import json
+import posixpath
 import re
 from pathlib import Path
 import shutil
@@ -202,7 +203,19 @@ def build_demo(root: Path, destination: Path):
         manifest['extensions']['api'] = '1.3.0'
         manifest['sourcePresentation'] = {'guide': 'docs/SOURCE-CODE.md', 'room': 'reports', 'thread': 'T016', 'views': ['unified', 'split', 'source']}
     if subthreads_enabled:
-        shutil.copyfile(root / 'docs/guides/SUBTHREADS.md', destination / 'docs/SUBTHREADS.md')
+        # SPEC-002-080: the packaged guide keeps its illustrations (docs/images/subthreads/...) and points the
+        # viewer guides that are not in the demo at the published repository, so it has no broken links offline.
+        guide = (root / 'docs/guides/SUBTHREADS.md').read_text()
+        for image in sorted(set(re.findall(r'\]\(\.\./images/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)\)', guide))):
+            target = destination / 'images' / image
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(root / 'docs/images' / image, target)
+        def published(match):
+            link = match.group(1)
+            path = posixpath.normpath(posixpath.join('docs/guides', link.split('#', 1)[0]))
+            return '](https://github.com/sloik/agent-file-board-ui/blob/main/' + path + ('#' + link.split('#', 1)[1] if '#' in link else '') + ')'
+        guide = re.sub(r'\]\((?!https?://|#|\.\./images/)([^)]+\.md(?:#[^)]*)?)\)', published, guide)
+        (destination / 'docs/SUBTHREADS.md').write_text(guide)
         manifest['subthreads'] = {'guide': 'docs/SUBTHREADS.md', 'room': 'architecture', 'thread': 'T017', 'open': 1, 'resolved': 1}
     if tuple(map(int, version.split('.'))) >= (2, 9, 0):
         for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:

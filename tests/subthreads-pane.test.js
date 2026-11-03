@@ -187,6 +187,44 @@ test("AC2 the pane width resizes from its handle (keys, pointer, Home) and is re
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
+// SPEC-002-080 AC4: the characters of the root label that are drawn inside its visible box (per character, by Range).
+const visibleRootLabel = page => page.evaluate(() => {
+  const label = document.querySelector("#subPaneTitle .sub-crumb-root"), box = label.getBoundingClientRect(), range = document.createRange(), out = [];
+  const walk = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+  for (let node; (node = walk.nextNode());) for (let i = 0; i < node.length; i++) {
+    range.setStart(node, i); range.setEnd(node, i + 1); const r = range.getBoundingClientRect();
+    if (r.width > 0 && r.left >= box.left - 0.5 && r.right <= box.right + 0.5 && r.top >= box.top - 0.5 && r.bottom <= box.bottom + 0.5) out.push(node.data[i]);
+  }
+  return Array.from(out.join("")).join("");
+});
+test("AC4 (SPEC-002-080) the pane header keeps the root's author and preview readable down to the minimum pane width and on a phone", async () => {
+  for (const [viewport, width] of [[{ width: 1280, height: 800 }, 320], [{ width: 1000, height: 700 }, 320], [{ width: 390, height: 640 }, null]]) {
+    const s = await boot({ viewport });
+    try {
+      if (width) await s.page.evaluate(w => { S.subW = w; }, width);
+      await openPane(s.page);
+      if (width) assert.equal((await box(s.page, "#subPane")).w, width, "the minimum pane width");
+      const visible = await visibleRootLabel(s.page);
+      assert.ok(Array.from(visible).length >= 12 && visible.startsWith("🧵 human-owner-01"), `${viewport.width}px: root label shows ${JSON.stringify(visible)}`);
+      // Room and topic shorten first: one back crumb (wide and medium), or the Back button (compact).
+      const back = s.page.locator("#subPaneTitle .sub-crumb-back");
+      if (viewport.width > 820) { await expect(back).toBeVisible(); await expect(back).toHaveText("‹ T009"); await expect(s.page.locator("#subPaneTitle .sub-crumb-path .sub-crumb").first()).toBeHidden(); }
+      else { await expect(back).toBeHidden(); await expect(s.page.locator("#subBack")).toBeVisible(); }
+      const full = "# planning › T009 Planning › 🧵 human-owner-01: Which database should the planning service use?";
+      await expect(s.page.locator("#subPaneTitle")).toHaveAttribute("title", full);
+      // Expanded, the full path is visible text that wraps inside the pane.
+      await s.page.click("#subPaneTitle .sub-crumb-root");
+      await expect(s.page.locator("#subPaneTitle .sub-crumb-root")).toHaveAttribute("aria-expanded", "true");
+      await expect(s.page.locator("#subPaneTitle [data-sub-crumb=room]")).toBeVisible();
+      assert.equal((await s.page.locator("#subPaneTitle").innerText()).replace(/\s+/g, " ").trim(), full);
+      assert.deepEqual(await paneFits(s.page), []);
+      await s.page.click("#subPaneTitle .sub-crumb-root");
+      await expect(s.page.locator("#subPaneTitle .sub-crumb-root")).toHaveAttribute("aria-expanded", "false");
+      if (viewport.width > 820) { await s.page.click("#subPaneTitle .sub-crumb-back"); await expect(s.page.locator("#subPane")).toBeHidden(); }
+    } finally { await s.ctx.close(); s.cleanup(); }
+  }
+});
+
 test("AC5 two composers keep independent drafts across refresh and reload; neither moves into the other", async () => {
   const s = await boot();
   try {

@@ -6,6 +6,7 @@ const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const h=require('./lib/helpers');
 const {SHOTS}=require('../scripts/screenshot_signing');
+const {SHOTS:SUBTHREAD_SHOTS}=require('../scripts/screenshot_subthreads');
 const guides=h.fs.readdirSync(h.path.join(h.ROOT,'docs/guides')).filter(n=>n.endsWith('.md')).map(n=>h.path.join(h.ROOT,'docs/guides',n));
 const docs=[...guides,h.path.join(h.ROOT,'README.md')];
 // Markdown images and links to image files, and HTML <img src>; external URLs are not files here.
@@ -39,4 +40,18 @@ test('the guide quotes the exact request text that Copy what to send them produc
   const expected=c.request({name:'Maya',id:'maya',board:'Team board',boardId:'0b6c2f4e-8d1a-4c57-9a63-2f1e5d7c9b10',fingerprint:'urn:ietf:params:oauth:jwk-thumbprint:sha-256:k7JiOo0Fsaj3XlqBrf_66p-MRiltMTxk8PF_J9PSx5c'});
   const doc=h.fs.readFileSync(h.path.join(h.ROOT,'docs/guides/signing.md'),'utf8').replace(/\s+/g,' ');
   assert.ok(doc.includes(expected),'docs/guides/signing.md quotes the current request text');
+});
+
+test('SPEC-002-080 AC5: every sub-thread capture is shown by the guide, and the README and FEATURES show one',()=>{
+  const guide=images(h.path.join(h.ROOT,'docs/guides/SUBTHREADS.md')).map(src=>h.path.basename(src));
+  assert.ok(SUBTHREAD_SHOTS.length>=10);
+  for(const name of SUBTHREAD_SHOTS){
+    assert.ok(guide.includes(name+'.png'),`${name}.png is referenced by docs/guides/SUBTHREADS.md`);
+    assert.ok(h.fs.existsSync(h.path.join(h.ROOT,'docs/images/subthreads',name+'.png')),`${name}.png exists`);
+  }
+  assert.ok(images(h.path.join(h.ROOT,'README.md')).some(src=>src.startsWith('docs/images/subthreads/')),'the README shows a sub-thread capture');
+  assert.ok(images(h.path.join(h.ROOT,'docs/FEATURES.md')).some(src=>src.startsWith('images/subthreads/')),'FEATURES shows the sub-thread captures');
+  // Descriptive alt text: every sub-thread image says what it shows.
+  for(const file of ['docs/guides/SUBTHREADS.md','docs/FEATURES.md','README.md'])
+    for(const m of h.fs.readFileSync(h.path.join(h.ROOT,file),'utf8').matchAll(/!\[([^\]]*)\]\(([^)]*subthreads\/[^)]+)\)/g)) assert.ok(m[1].split(/\s+/).length>=6,`${file}: ${m[2]} has descriptive alt text`);
 });

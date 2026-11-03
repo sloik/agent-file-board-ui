@@ -614,6 +614,9 @@ async function signingDelivery(msg, options = {}) {
   const parsed = parseHeaders(msg.text).native, h = parsed.h;
   const source = model.msgs.find((m) => m.file === h["REPLY-TO"] && m.path.split("/").slice(0, -1).join("/") === msg.relPath.split("/").slice(0, -1).join("/"));
   C.require(!source || signingEligible(source), "Reply source excluded by signing requirements");
+  // SPEC-002-080 (decision #39): a sub-thread post needs an eligible root, also when it replies to another member.
+  const subRoot = h.SUBTHREAD ? model.msgs.find((m) => m.file === h.SUBTHREAD && m.path.split("/").slice(0, -1).join("/") === msg.relPath.split("/").slice(0, -1).join("/")) : null;
+  C.require(!subRoot || signingEligible(subRoot), "Sub-thread root excluded by signing requirements");
   if (source && base) C.require(source.source?.file && source.source.file.size <= 4194304, "Reviewed reply source unavailable or too large");
   const sourceDigest = source && base ? await C.hash(await rawBytes(source.source.file)) : null;
   if(h['ANSWER-STATE']&&sourceDigest)C.require(AnswerState.metadata(h,source?.h,jsonObject).questionDigest===sourceDigest,"ANSWER-STATE question bytes changed");
