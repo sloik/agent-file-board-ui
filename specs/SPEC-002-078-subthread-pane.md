@@ -43,11 +43,13 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
   Medium (compact-layout breakpoint up to 1199 px): an overlay sheet over the transcript.
   Compact (SPEC-002-068 phone layout): full screen with a Back button. Opening and closing
   never shifts the main feed's reading position.
-- [ ] AC3 (pane header): breadcrumb "Room › Topic › 🧵 <root preview>", follow bell toggle,
+- [x] AC3 (pane header): breadcrumb "Room › Topic › 🧵 <root preview>", follow bell toggle,
   overflow menu (Resolve/Reopen, Promote to topic, Copy link to root, Flat view), close
   (✕). The pinned root is collapsible (collapsed by default when it is a long report, form
-  or question; forms/reports open in their existing modal from the pane). Esc closes the
-  pane and keeps its draft; focus returns to the strip.
+  or question). A form, report or question root shows a folded, non-interactive preview with
+  "Show in main thread ↗", which goes to its one interactive rendering in the main feed (compact:
+  closes the pane and shows "Back to sub-thread"). Esc closes the pane and keeps its draft; focus
+  returns to the strip. (Amended 2026-11-03, see Amendments.)
 - [x] AC4 (pane transcript): members in canonical posting order. The newest 50 load first,
   with Older paging, a "New messages" divider at the reader's first unread, a "N new" pill
   and Latest when not at the bottom. Runs of more than 20 consecutive routine agent messages
@@ -115,8 +117,7 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
 - Decision (medium windows): the spec names both composers only for wide windows. From 821 to 1199px the sheet
   covers the transcript's right side including Post, so, as on compact windows, only the pane composer is
   reachable while the pane is open; the main composer keeps its draft (hidden and inert, never removed).
-- AC3 stays open for an owner decision; everything else in it is done (breadcrumb, Follow, overflow menu, close,
-  Esc with the draft kept and focus back on the strip, the collapsible pinned root). The deviation: no generic modal exists for forms (reports have their own in-report Open modal), and
+- AC3 (as amended below): no generic modal exists for forms (reports have their own in-report Open modal), and
   moving a mounted form between containers would break the one-rendering rule. The pinned root is a preview
   (folded for a long, form, report, question, extension or information root) with **Show in main thread ↗**,
   which scrolls the main feed to the one interactive rendering (compact: closes the pane and shows "Back to
@@ -148,3 +149,13 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
 - AC10 (docs part done): docs/guides/SUBTHREADS.md, FEATURES section, README row, CHANGELOG 3.4.0 (077 + 078),
   two captures from `scripts/screenshot_subthreads.js`, demo topic architecture/T017. The PR, tag and release
   verification are left to the coordinator.
+
+## Amendments
+
+- **Amendment 2026-11-03 (AC3, accepted by the coordinator):** AC3 asked that forms and reports open "in
+  their existing modal from the pane". No generic modal exists for forms (reports only have their in-report
+  Open modal), and mounting the root's form or report in the pane as well would render one interactive body
+  twice, which AC1 forbids. The one-rendering rule wins: the pinned root is a folded preview with "Show in main
+  thread ↗" to the single interactive rendering in the main feed; on compact windows that closes the pane and
+  offers "Back to sub-thread". Tested in `tests/subthreads-pane.test.js` (one rendering, preview without
+  controls, compact Back chip).
