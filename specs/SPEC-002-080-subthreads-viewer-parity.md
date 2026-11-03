@@ -31,19 +31,19 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
 - [ ] AC3 (audit fixes): every MISMATCH and GAP marked viewer in the audit is fixed, or
   dispositioned with a reason in the audit file, with a failing-then-passing test for each
   fix. Docs that contradict the code are corrected.
-- [ ] AC4 (breadcrumb): the pane header keeps the root's author and preview readable at
+- [x] AC4 (breadcrumb): the pane header keeps the root's author and preview readable at
   every pane width down to the compact layout. Room and topic shorten first, as a single
   "‹ Topic" back crumb. The full path stays available as the element's title and visible
   text when expanded. A layout snapshot at the minimum pane width and at 390px asserts the
   root label is not truncated to fewer than 12 characters.
-- [ ] AC5 (screenshots): `scripts/screenshot_subthreads.js` produces, from the demo board,
+- [x] AC5 (screenshots): `scripts/screenshot_subthreads.js` produces, from the demo board,
   all of: wide pane, phone pane, the Sub-threads list, the root strip with "Question for
   you", a resolved sub-thread, Promote to topic (dialog and the new topic's "Continued from
   a sub-thread"), Flat view, and Dark and Dracula themes for the pane. Output goes to
   `docs/images/subthreads/`. The README gets a sub-thread screenshot near Highlights;
   `docs/guides/SUBTHREADS.md` and `docs/FEATURES.md` use the new images with descriptive
   alt text. Existing `board-subthread-*.png` references are updated or kept consistent.
-- [ ] AC6 (guide): `docs/guides/SUBTHREADS.md` is updated to match the audited behaviour.
+- [x] AC6 (guide): `docs/guides/SUBTHREADS.md` is updated to match the audited behaviour.
   It covers each action with its screenshot, keyboard use (Esc, Enter on the strip), what
   agents see (link to canonical `docs/SUBTHREADS.md`), and troubleshooting for orphans,
   validation refusals and signing in the pane.
@@ -55,3 +55,21 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
   assertions. Linux pixel baselines for new or changed scenes come from the
   update_visual_baselines CI run. Viewer 3.4.1, CHANGELOG, protected PR, tag `v3.4.1`. The
   release workflow publishes, and the published assets are verified.
+
+## Implementation notes (2026-11-03)
+
+- AC3 (audit fixes): dispositions for every viewer row are in
+  `docs/design/subthreads/SUBTHREAD-RULE-AUDIT.md`, section "Viewer dispositions". New tests:
+  `tests/subthreads-parity.test.js` (rows 9, 11, 13-16, 19, 21-23, 25-29, 36, 37, 39) and additions to
+  `tests/subthreads-canonical.test.js` (10, 30, 35) and the shared fixture `tests/lib/subthread-fixture.js`.
+  AC3 stays open for the #37 header-set ruling (decision text: SUBTHREAD and SUBTHREAD-ALSO; canonical
+  7daf497: all four headers).
+- AC4: the header shortens room and topic to one "‹ T…" back crumb through container queries; below a
+  360px header the crumbs take their own line. The full path is the title and expands on a click of the
+  root label. `tests/subthreads-pane.test.js` "AC4 (SPEC-002-080)" measures drawn characters per character
+  at a 320px pane (wide, medium) and at 390px; layout scene `subthread-pane-min`.
+- AC5: `node scripts/screenshot_subthreads.js` (10 captures in `docs/images/subthreads/`).
+- AC6: `docs/guides/SUBTHREADS.md` rewritten; FEATURES and README updated.
+- Linux pixel baselines: subthread-view, subthread-view-390x640, subthread-pane-medium/-dark/-dracula change
+  and subthread-pane-min is new; they must come from the update_visual_baselines CI run.
+

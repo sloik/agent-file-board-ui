@@ -157,3 +157,40 @@ Viewer:
    - an answer to a root question with and without the marker
    - a cross-tool parity test of STATE against `recent --subthreads` and of the main flow against `recent --main-flow`
 6. Fix `docs/guides/SUBTHREADS.md` and the SPEC-002-077 orphan wording.
+
+## Viewer dispositions (SPEC-002-080, 2026-11-03)
+
+Each viewer MISMATCH and GAP row, and each SPEC-AMBIGUOUS row whose decision touches the viewer, with
+its disposition. Decisions are those of SPEC-002-079 ("Decisions on the audit's ..."); canonical
+fixes are agent-file-board 7daf497. Tests: **VP2** = `tests/subthreads-parity.test.js`, **VC** =
+`tests/subthreads-canonical.test.js`, **VT** = `tests/subthreads.test.js`, **VP** =
+`tests/subthreads-pane.test.js`. Every fix had a test that failed before it (quoted in the commit).
+
+| # | Verdict | Viewer disposition | Test |
+|---|---|---|---|
+| 9 | GAP | Tests added: `reply-crossed` fixture (into another sub-thread, invalid, compared word for word with canonical) and the chained `also` member (valid). | VP2 "#9", VT AC2, VC AC2 |
+| 10 | MISMATCH | Fixed: canonical wording and order, "ANSWER requires a question filename", "ANSWER reply target is missing", "REPLY-TO target is missing". | VC "deleted root", VC "#10" |
+| 11 | GAP | Fixed per decision: a new member that sorts at or before its root is refused (canonical rule text, without the CLI `--at` hint); an existing one is valid with canonical's warning, shown on its card. | VP2 "#11" |
+| 13 | GAP | Tests added: an ANSWER to a root question is main flow without a marker and a member with `SUBTHREAD: <root>`. | VP2 "#13 #14", VC AC2 |
+| 14 | GAP | Test added: `answer-wrong-marker` fixture (marker on an answer to a main-flow question), compared with canonical. | VP2 "#13 #14", VC AC2 |
+| 15 | GAP | Test added (viewer side): an ANSWER-STATE record to a member question must carry the marker. | VP2 "#15" |
+| 16 | SPEC-AMBIGUOUS | Decision kept the viewer's behaviour; the validator now also requires the marker on an EXTENSION-ANSWER to a member request (canonical `ANSWER_HEADERS`). | VP2 "#16" |
+| 19 | GAP | Test added: a new sub-thread in a closed topic posts, validates canonically and shows the closed-topic banner. | VP2 "#19" |
+| 21 | GAP | Test added: a STATE tie is broken by filename, same result as `recent --subthreads`. | VP2 "#21" |
+| 22 | MISMATCH | Fixed: `messageOrder()` is canonical `message_order` (DATE instant in the board time zone, POSTED-AT else mtime, filename, path, microseconds). STATE and validity use it; `time-corrections.txt` only places messages in the transcript. | VP2 "#22 R2", "#22 R2b" |
+| 23 | MISMATCH (security) | Fixed: `subthreadState()` is read live from valid, eligible members only; the index caches no state. Capsule, strip outcome, list grouping and order, banner and Resolve/Reopen use it. | VP2 "#23 R8", "#23 R8b" |
+| 24 | MISMATCH (canonical) | Viewer unchanged (whole board, as decided); canonical fixed in 7daf497. The cross-tool comparison is the shared-fixture test (SPEC-002-080 AC2, after the v3.4.1 pin). | AC2 (pending pin) |
+| 25 | GAP | Fixture renamed `promoted-not-first` to `promoted-same-topic`; the real first-message rule is tested at post time. | VP2 "#25", VT AC2 |
+| 26 | SPEC-AMBIGUOUS | Decision applied: a post-time rule; an existing displaced PROMOTED-FROM message stays valid with canonical's warning, shown on its card. | VP2 "#26 #27 R10b" |
+| 27 | MISMATCH | Fixed with #22 and #26: ordering by canonical order; corrections never decide validity. | VP2 "#26 #27 R10b", "#27 R10a" |
+| 28 | MISMATCH (canonical) | Viewer already isolated the bad sibling; regression test added. | VP2 "#28 R10c" |
+| 29 | GAP | Fixtures added: missing origin, origin that is a member, origin in another room (each a topic's first message), compared with canonical. | VP2 "#29", VT AC2, VC AC2 |
+| 30 | MISMATCH | Fixed: the viewer reports the origin's canonical parse error (`<origin>: missing header separator`); canonical prefixes the origin's full path, which the viewer cannot know, and the test compares from the path's last segment. | VC "#30" |
+| 32 | SPEC-AMBIGUOUS | Decision keeps board-wide allocation; the viewer already allocates board-wide (`nextThreadId`). No change. | VP "AC7 Promote ..." |
+| 33 | MATCH (minor) | Kept: the viewer refuses to promote a quarantined root (stricter than canonical; a withdrawn message should not start a topic). | VP AC7 |
+| 34 | SPEC-AMBIGUOUS | Decision applied in docs: `docs/guides/SUBTHREADS.md` (Troubleshooting, Orphaned replies) and a dated SPEC-002-077 amendment. Behaviour unchanged (already matched). | VC "deleted root" |
+| 35 | GAP | Test added: a quarantined root leaves members valid and orphaned, with canonical's warning. | VC "#35" |
+| 36 | MISMATCH | Fixed: a new post naming a present but unparseable root is refused with the root's parse error; existing members stay valid. | VP2 "#36 R5" |
+| 37 | MISMATCH | Fixed in `saveRepair` (refuses the replacement) and in `applyRepairs` (an existing record that changed the headers is a repair error and quarantines nothing), with canonical's message and header recovery. **Open:** the decision names `SUBTHREAD` and `SUBTHREAD-ALSO`; canonical 7daf497 compares all four sub-thread headers. The viewer implements the decision until the parent rules. | VP2 "#37 R9", "#37 existing record" |
+| 38 | SPEC-AMBIGUOUS | No viewer change: the viewer has no correction writer. | n/a |
+| 39 | GAP | Fixed per decision: `signingDelivery` refuses a sub-thread post whose root is excluded by signing, also when replying to another member. | VP2 "#39" |
