@@ -2333,30 +2333,62 @@ function nativeIssue(m,cfg,people,index){
   if(!validNativeDate(h.DATE)) return "Invalid DATE";
   if(h["REPLY-TO"]!=="-" && (/[\\/]/.test(h["REPLY-TO"]) || !index.has(m.dkey+"|"+h["REPLY-TO"]))) return "Missing or unsafe reply target";
   try{ messageMetadata(h,index.get(m.dkey+"|"+h["REPLY-TO"])?.h); }catch(e){ return e.message; }
-  return subthreadIssue(h,{dkey:m.dkey,tid:m.tid,index,self:m});
+  return subthreadIssue(h,{dkey:m.dkey,index,self:m});
 }
-/* Sub-threads (SPEC-002-076 rules, SPEC-002-077 AC2). Header-only checks live in messageMetadata;
-   the rules that need other files of the same conversation live here, for read and for post. */
-function subthreadName(value){ return typeof value==="string" && /^[^/\\]+\.txt$/.test(value) && !/[\u0000-\u001f\u007f]/.test(value); }
-function subthreadIssue(h,{dkey,tid,index,self=null,post=false}){
-  const root=h.SUBTHREAD, promoted=h["PROMOTED-FROM"];
-  if(root!==undefined){
-    if(!subthreadName(root)) return "Invalid SUBTHREAD root filename";
-    const r=index.get(dkey+"|"+root);
-    if(!r){ if(post) return "SUBTHREAD root is missing"; }
-    else{
-      if(r===self) return "A message cannot be its own SUBTHREAD root";
-      if(Object.hasOwn(r.h,"SUBTHREAD")) return "SUBTHREAD root is itself a sub-thread member";
-      if(r.tid!==tid) return "SUBTHREAD root is in another thread";
-    }
-    const reply=h["REPLY-TO"];
-    if(reply==="-") return "Sub-thread REPLY-TO must name the root or a member";
-    if(reply!==root){ const target=index.get(dkey+"|"+reply); if(!target || target.h.SUBTHREAD!==root) return "Sub-thread REPLY-TO is outside the sub-thread"; }
+/* Sub-threads (SPEC-002-076 rules, SPEC-002-077 AC2): the viewer mirror of canonical subthread_check, same rule
+   order and wording. It reads only the headers of sibling files in the same directory (root, REPLY-TO target,
+   the topic's earlier messages for PROMOTED-FROM). For an existing file a missing, unreadable or quarantined root
+   leaves the member valid but orphaned; for a new post (post:true) a missing root is an error. */
+const SUBTHREAD_HEADERS=["SUBTHREAD","SUBTHREAD-ALSO","SUBTHREAD-STATE","PROMOTED-FROM"];
+function subthreadName(value){ return typeof value==="string" && /^[A-Za-z0-9][A-Za-z0-9._-]*\.txt$/.test(value); }
+// A sibling's headers as canonical parse_message would read them, or null when it would refuse the file.
+function siblingHeaders(x){
+  if(!x || x.source?.readError || !x.hasSeparator || x.duplicates.length || ["FROM","TO","SCOPE","THREAD","DATE","LANGUAGE","REPLY-TO","STATUS"].some(k=>!Object.hasOwn(x.h,k))) return null;
+  return x.h;
+}
+const subthreadTid=h=>String(h.THREAD||"").split("-")[0];
+function subthreadIssue(h,{dkey,index,self=null,post=false}){
+  const reply=h["REPLY-TO"], target=reply && reply!=="-" ? index.get(dkey+"|"+reply) : null, source=target?siblingHeaders(target):null;
+  const answer=h.ANSWER!==undefined || h["ANSWER-STATE"]!==undefined;
+  if(!SUBTHREAD_HEADERS.some(k=>h[k]!==undefined) && !(source && source.SUBTHREAD!==undefined && answer)) return "";
+  const sub=h.SUBTHREAD;
+  for(const key of ["SUBTHREAD","PROMOTED-FROM"]) if(h[key]!==undefined && !subthreadName(h[key])) return key+": expected the filename of a .txt message in the same directory (no slashes, traversal or other extensions)";
+  if(h["SUBTHREAD-ALSO"]!==undefined){
+    if(sub===undefined) return "SUBTHREAD-ALSO: only a sub-thread message (with SUBTHREAD) can also show in the main thread";
+    if(h["SUBTHREAD-ALSO"]!=="main") return "SUBTHREAD-ALSO: the only value is main";
   }
-  if(promoted!==undefined){
-    if(!subthreadName(promoted)) return "Invalid PROMOTED-FROM root filename";
-    if(!index.has(dkey+"|"+promoted)) return "PROMOTED-FROM root is not in this conversation";
-    for(const x of index.values()) if(x.dkey===dkey && x.tid===tid){ if(x!==self) return "PROMOTED-FROM is only allowed on the first message of a topic"; break; }
+  if(h["SUBTHREAD-STATE"]!==undefined){
+    if(sub===undefined) return "SUBTHREAD-STATE: only a sub-thread message (with SUBTHREAD) can resolve or reopen a sub-thread";
+    if(!["resolved","open"].includes(h["SUBTHREAD-STATE"])) return "SUBTHREAD-STATE: expected resolved or open";
+  }
+  const own=subthreadTid(h);
+  if(sub!==undefined){
+    if(h["PROMOTED-FROM"]!==undefined) return "PROMOTED-FROM: a topic's first message cannot also be a sub-thread message";
+    if(h.STATUS==="CLOSED") return "SUBTHREAD: STATUS CLOSED is invalid on a sub-thread message; resolve with SUBTHREAD-STATE: resolved (old readers would read CLOSED as closing the topic)";
+    const r=index.get(dkey+"|"+sub), rootHeaders=r && r!==self ? siblingHeaders(r) : null;
+    if(rootHeaders){
+      if(subthreadTid(rootHeaders)!==own) return `SUBTHREAD: root ${sub} is in another thread (${subthreadTid(rootHeaders)}), not ${own}`;
+      if(rootHeaders.SUBTHREAD!==undefined) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
+    }else if(r===self) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
+    else if(post && !(r && !r.source?.readError)) return `SUBTHREAD: root ${sub} does not exist in this directory`;
+    if(reply==="-") return "SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -";
+    if(reply!==sub){
+      if(!subthreadName(reply) || !target){ if(post) return "SUBTHREAD: REPLY-TO target does not exist in this directory"; }
+      else if(source && source.SUBTHREAD!==sub) return `SUBTHREAD: REPLY-TO ${reply} is neither the root ${sub} nor a message of its sub-thread`;
+    }
+  }
+  if(source && answer && source.SUBTHREAD!==undefined && source.SUBTHREAD!==sub) return `SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD: ${source.SUBTHREAD}`;
+  if(h["PROMOTED-FROM"]!==undefined){
+    const o=index.get(dkey+"|"+h["PROMOTED-FROM"]), origin=o?siblingHeaders(o):null;
+    if(!o) return `PROMOTED-FROM: ${h["PROMOTED-FROM"]} is not a message in this directory`;
+    if(!origin) return `PROMOTED-FROM: ${h["PROMOTED-FROM"]} cannot be read as a message`;
+    if(origin.SUBTHREAD!==undefined) return "PROMOTED-FROM: names a sub-thread message, not a root";
+    if(subthreadTid(origin)===own) return "PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic";
+    // Messages are indexed in the canonical posting order, so an earlier sibling of the topic comes first.
+    for(const x of index.values()){
+      if(x===self) break;
+      if(x.dkey===dkey && siblingHeaders(x) && subthreadTid(x.h)===own) return `PROMOTED-FROM: only the first message of a topic can carry it, but ${x.file} is earlier in ${own}`;
+    }
   }
   return "";
 }
@@ -2556,9 +2588,6 @@ function composeMessage(o){
     // SPEC-002-077 AC6: a message in a sub-thread destination carries the canonical marker; a topic title never does.
     if(legacy) throw boardErr("e_subthread_legacy");
     if(o.topicTitle!==undefined) throw boardErr("e_subthread_title");
-    headers.push(["SUBTHREAD",o.subthread]);
-    if(o.subthreadAlso) headers.push(["SUBTHREAD-ALSO","main"]);
-    if(o.subthreadState) headers.push(["SUBTHREAD-STATE",o.subthreadState]);
   }
   if(o.topicTitle!==undefined){
     if(!validTopicTitle(o.topicTitle)) throw boardErr("e_title");
@@ -2574,12 +2603,14 @@ function composeMessage(o){
     if(o.question) headers.push(["QUESTION",JSON.stringify(o.question)]);
     if(o.answer) headers.push(["ANSWER",JSON.stringify(o.answer)]);
     if(o.answerState) headers.push(["ANSWER-STATE",JSON.stringify(o.answerState)]);
+    // After the other optional headers, like `boardctl post` (SPEC-002-076).
+    if(o.subthread){ headers.push(["SUBTHREAD",o.subthread]); if(o.subthreadAlso) headers.push(["SUBTHREAD-ALSO","main"]); if(o.subthreadState) headers.push(["SUBTHREAD-STATE",o.subthreadState]); }
     try{
       const source=B.msgs.find(m=>m.dkey===scope+":"+dir && m.file===o.replyTo);
       if(source && (source.metadataError || source.duplicates.length)) throw Error("Invalid source");
       messageMetadata(Object.fromEntries(headers),source && source.h);
     }catch(e){ throw boardErr("invalid_metadata"); }
-    const subIssue=subthreadIssue(Object.fromEntries(headers),{dkey:scope+":"+dir,tid,index:B.messageIndex,post:true});
+    const subIssue=subthreadIssue(Object.fromEntries(headers),{dkey:scope+":"+dir,index:B.messageIndex,post:true});
     if(subIssue) throw boardErr("e_subthread",{m:subIssue});
   }else if(o.question || o.answer || o.ui || o.extension || o.extensionAnswer || o.information){ throw boardErr("choice_legacy"); }
   const text = headers.map(([k,v])=>k+": "+v).join("\n")+"\n---\n"+body.replace(/\s+$/,"")+"\n";
@@ -3386,10 +3417,6 @@ function messageMetadata(h, source){
   if(h["TOPIC-TITLE"]!==undefined && !validTopicTitle(h["TOPIC-TITLE"])) throw Error("Invalid TOPIC-TITLE");
   if(h["POSTED-AT"]!==undefined && postingTime(h["POSTED-AT"])===null) throw Error("Invalid POSTED-AT");
   if(!["text/plain","text/markdown","text/html"].includes(h["CONTENT-TYPE"]||"text/plain")) throw Error("Invalid CONTENT-TYPE");
-  if(h.SUBTHREAD===undefined && (h["SUBTHREAD-ALSO"]!==undefined || h["SUBTHREAD-STATE"]!==undefined)) throw Error("SUBTHREAD-ALSO and SUBTHREAD-STATE require SUBTHREAD");
-  if(h["SUBTHREAD-ALSO"]!==undefined && h["SUBTHREAD-ALSO"]!=="main") throw Error("SUBTHREAD-ALSO must be main");
-  if(h["SUBTHREAD-STATE"]!==undefined && !["resolved","open"].includes(h["SUBTHREAD-STATE"])) throw Error("SUBTHREAD-STATE must be resolved or open");
-  if(h.SUBTHREAD!==undefined && h.STATUS==="CLOSED") throw Error("A sub-thread resolves with SUBTHREAD-STATE, not STATUS: CLOSED");
   if(h.QUESTION!==undefined && h.ANSWER!==undefined) throw Error("Conflicting question and answer");
   const question=h.QUESTION===undefined?null:questionValue(h.QUESTION);
   let answer=null;
@@ -3403,7 +3430,6 @@ function messageMetadata(h, source){
       if(q.id!==answer.question || answer.selected.some(v=>!q.options.some(o=>o.id===v)) || (q.type==="single" && answer.selected.length>1))throw Error("Answer does not match question");
     }
     if(h.SCOPE!==source.SCOPE || h.THREAD.split("-")[0]!==source.THREAD.split("-")[0] || h.ROOM!==source.ROOM || h["DIRECT-PARTICIPANTS"]!==source["DIRECT-PARTICIPANTS"])throw Error("Answer routing differs");
-    if(source.SUBTHREAD!==undefined && h.SUBTHREAD!==source.SUBTHREAD)throw Error("An answer to a sub-thread question must carry its SUBTHREAD");
   }
   return {question,answer,ui};
 }

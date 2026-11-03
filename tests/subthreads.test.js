@@ -55,27 +55,27 @@ test("AC2 every SPEC-002-076 rule isolates the file as invalid; invalid files ar
     const rows = await s.page.evaluate(names => names.map(n => { const m = B.msgs.find(x => x.file === n); return { file: n, error: m.validationError, metadataError: !!m.metadataError, member: m.subthread }; }), Object.keys(X.INVALID));
     for (const row of rows) { assert.ok(row.error && row.metadataError, "invalid: " + row.file); assert.equal(row.member, null, row.file); }
     const reasons = Object.fromEntries(rows.map(r => [r.file.replace(/^.*_T009_|\.txt$/g, ""), r.error]));
+    const name = key => key + ": expected the filename of a .txt message in the same directory (no slashes, traversal or other extensions)";
     assert.deepEqual(reasons, {
-      "bad-root-name": "Invalid SUBTHREAD root filename", "bad-root-ext": "Invalid SUBTHREAD root filename",
-      "root-is-member": "SUBTHREAD root is itself a sub-thread member", "root-other-thread": "SUBTHREAD root is in another thread",
-      "reply-dash": "Sub-thread REPLY-TO must name the root or a member", "reply-outside": "Sub-thread REPLY-TO is outside the sub-thread",
-      "also-without": "SUBTHREAD-ALSO and SUBTHREAD-STATE require SUBTHREAD", "state-without": "SUBTHREAD-ALSO and SUBTHREAD-STATE require SUBTHREAD",
-      "also-value": "SUBTHREAD-ALSO must be main", "state-value": "SUBTHREAD-STATE must be resolved or open",
-      "closed-member": "A sub-thread resolves with SUBTHREAD-STATE, not STATUS: CLOSED",
-      "promoted-not-first": "PROMOTED-FROM is only allowed on the first message of a topic", "promoted-bad-name": "Invalid PROMOTED-FROM root filename",
+      "bad-root-name": name("SUBTHREAD"), "bad-root-ext": name("SUBTHREAD"), "promoted-bad-name": name("PROMOTED-FROM"),
+      "root-is-member": `SUBTHREAD: root ${F.first} is itself a sub-thread message; sub-threads nest one level only`,
+      "root-other-thread": `SUBTHREAD: root ${F.other} is in another thread (T010), not T009`,
+      "reply-dash": "SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -",
+      "reply-outside": `SUBTHREAD: REPLY-TO ${F.plain} is neither the root ${F.root} nor a message of its sub-thread`,
+      "also-without": "SUBTHREAD-ALSO: only a sub-thread message (with SUBTHREAD) can also show in the main thread",
+      "state-without": "SUBTHREAD-STATE: only a sub-thread message (with SUBTHREAD) can resolve or reopen a sub-thread",
+      "also-value": "SUBTHREAD-ALSO: the only value is main", "state-value": "SUBTHREAD-STATE: expected resolved or open",
+      "closed-member": "SUBTHREAD: STATUS CLOSED is invalid on a sub-thread message; resolve with SUBTHREAD-STATE: resolved (old readers would read CLOSED as closing the topic)",
+      "promoted-not-first": "PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic",
+      "promoted-with-subthread": "PROMOTED-FROM: a topic's first message cannot also be a sub-thread message",
+      "answer-unmarked": `SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD: ${F.root}`,
     });
     // The valid files are untouched by the invalid neighbours.
-    assert.deepEqual(await s.page.evaluate(names => names.filter(n => B.msgs.find(x => x.file === n).validationError), Object.keys(X.VALID)), []);
-    // An answer to a member question must carry the marker; with it the answer is a valid member.
-    const answer = await s.page.evaluate(() => {
-      const q = { FROM: "research-agent-01", TO: "human-owner-01", SCOPE: "ROOM", ROOM: "planning", THREAD: "T009-planning", "REPLY-TO": "x.txt", STATUS: "QUESTION", SUBTHREAD: "r.txt",
-        QUESTION: JSON.stringify({ id: "budget", type: "single", prompt: "Budget?", options: [{ id: "low", label: "Low" }, { id: "high", label: "High" }] }) };
-      const a = { FROM: "human-owner-01", TO: "research-agent-01", SCOPE: "ROOM", ROOM: "planning", THREAD: "T009-planning", "REPLY-TO": "q.txt", STATUS: "REPLY", ANSWER: JSON.stringify({ question: "budget", selected: ["low"] }) };
-      const out = [];
-      for (const h of [a, { ...a, SUBTHREAD: "r.txt" }]) try { window.__boardTest.messageMetadata(h, q); out.push("ok"); } catch (e) { out.push(e.message); }
-      return out;
-    });
-    assert.deepEqual(answer, ["An answer to a sub-thread question must carry its SUBTHREAD", "ok"]);
+    assert.deepEqual(await s.page.evaluate(names => names.filter(n => B.msgs.find(x => x.file === n).validationError), [...Object.keys(X.VALID), ...Object.keys(X.SUPPORT)]), []);
+    // Posting: a missing root is an error for a new message (an orphan only for files already on the board).
+    const post = await s.page.evaluate(() => { const h = { THREAD: "T009-planning", STATUS: "INFO", "REPLY-TO": "2026-10-15_1100_human-owner-01_T009_gone.txt", SUBTHREAD: "2026-10-15_1100_human-owner-01_T009_gone.txt" };
+      return [subthreadIssue(h, { dkey: "room:planning", index: B.messageIndex, post: true }), subthreadIssue(h, { dkey: "room:planning", index: B.messageIndex })]; });
+    assert.deepEqual(post, ["SUBTHREAD: root 2026-10-15_1100_human-owner-01_T009_gone.txt does not exist in this directory", ""]);
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 

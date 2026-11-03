@@ -15,6 +15,7 @@ const F = {
   root2: file("1250", "implementation-agent-01", "T009", "pick-queue"),
   resolved: file("1255", "research-agent-01", "T009", "queue-outcome"),
   other: file("1300", "human-owner-01", "T010", "other-topic"),
+  hostq: file("1350", "research-agent-01", "T009", "host-question"),
 };
 // [name, headers..., body]; POSTED-AT keeps the posting order exact.
 function message({ from, to = "all", tid = "T009", label = "planning", date, posted, reply = "-", status = "INFO", extra = [], body }) {
@@ -30,6 +31,11 @@ const VALID = {
   [F.root2]: message({ from: "implementation-agent-01", date: "12:50", body: "Which queue should we use?" }),
   [F.resolved]: message({ from: "research-agent-01", date: "12:55", reply: F.root2, status: "DONE", extra: [`SUBTHREAD: ${F.root2}`, "SUBTHREAD-STATE: resolved"], body: "Outcome: keep the file queue.\nDetails follow." }),
   [F.other]: message({ from: "human-owner-01", tid: "T010", label: "other", date: "13:00", body: "Another topic." }),
+};
+// A valid member question, present with the invalid set so an unmarked answer to it can be checked.
+const HOST_QUESTION = JSON.stringify({ id: "host", type: "single", prompt: "Where do we host?", options: [{ id: "cloud", label: "Cloud" }, { id: "local", label: "Local" }] });
+const SUPPORT = {
+  [F.hostq]: message({ from: "research-agent-01", to: "human-owner-01", date: "13:50", reply: F.root, status: "QUESTION", extra: [`SUBTHREAD: ${F.root}`, `QUESTION: ${HOST_QUESTION}`], body: "Where do we host?" }),
 };
 // One file per SPEC-002-076 AC2 rule; each must be isolated as invalid (viewer) and rejected (canonical validate).
 const inv = (slug, o) => [file("1400", "human-owner-01", "T009", slug), message({ from: "human-owner-01", date: "14:00", ...o })];
@@ -47,15 +53,17 @@ const INVALID = Object.fromEntries([
   inv("closed-member", { reply: F.root, status: "CLOSED", extra: [`SUBTHREAD: ${F.root}`], body: "closed" }),
   inv("promoted-not-first", { extra: [`PROMOTED-FROM: ${F.root}`], body: "promoted later" }),
   inv("promoted-bad-name", { extra: ["PROMOTED-FROM: a/b.txt"], body: "promoted slash" }),
+  inv("promoted-with-subthread", { reply: F.root, extra: [`SUBTHREAD: ${F.root}`, `PROMOTED-FROM: ${F.root}`], body: "both" }),
+  inv("answer-unmarked", { to: "research-agent-01", reply: F.hostq, status: "REPLY", extra: ['ANSWER: {"question":"host","selected":["cloud"]}'], body: "unmarked answer" }),
 ]);
 
 // Writes the example board plus the sub-thread files into a fresh temp project; returns {proj, room}.
 function subthreadBoard({ invalid = false, extra = {} } = {}) {
   const proj = h.layoutExample(h.tmpDir("afb-subthreads-")), room = h.path.join(proj, ".agent-board", "rooms", ROOM);
   h.fs.mkdirSync(room, { recursive: true });
-  for (const [name, text] of Object.entries({ ...VALID, ...(invalid ? INVALID : {}), ...extra })) h.fs.writeFileSync(h.path.join(room, name), text);
+  for (const [name, text] of Object.entries({ ...VALID, ...(invalid ? { ...SUPPORT, ...INVALID } : {}), ...extra })) h.fs.writeFileSync(h.path.join(room, name), text);
   return { proj, room };
 }
 const VIEW = `room:${ROOM}|T009`;
 const KEY = name => `room:${ROOM}|${name}`;
-module.exports = { ROOM, F, VALID, INVALID, VIEW, KEY, message, file, subthreadBoard };
+module.exports = { ROOM, F, VALID, INVALID, SUPPORT, HOST_QUESTION, VIEW, KEY, message, file, subthreadBoard };
