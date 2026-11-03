@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-080
 title: Sub-threads in the viewer - audited rule parity, shared fixtures, breadcrumb, screenshots, guide
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-11-03
@@ -51,7 +51,7 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
   alignment anchors that code and maps it to the shared fixture test. Any new UI model or
   trace is optional; parity with the canonical model is proven through the shared fixtures
   (AC2). Alignment stays current, and the bounded-models CI job passes.
-- [ ] AC8 (tests and release): full `npm test` green in CI, with no skips or weakened
+- [x] AC8 (tests and release): full `npm test` green in CI, with no skips or weakened
   assertions. Linux pixel baselines for new or changed scenes come from the
   update_visual_baselines CI run. Viewer 3.4.1, CHANGELOG, protected PR, tag `v3.4.1`. The
   release workflow publishes, and the published assets are verified.
@@ -117,3 +117,5 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
   not run locally (no Java), so the bounded-models job is left to CI.
 - AC8: CHANGELOG 3.4.1 written. CI, Linux pixel baselines, PR, tag and release are the parent's.
 
+
+AC8 release evidence (2026-11-04): PR #48 merged (4c5d823) after test + bounded-models passed on 5f389ce; Linux baselines from CI run 41736150107; tag v3.4.1; release run 41738773630 passed target/test/prepare/publish/verify; GitHub Release v3.4.1 is Latest; downloaded assets match SHA256SUMS, board.html is byte-identical to the tag, and the demo ZIP ships the 10 sub-thread guide images.
