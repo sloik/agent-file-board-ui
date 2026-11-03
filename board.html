@@ -192,6 +192,42 @@ button.chip.sub-chip{font-family:inherit;cursor:pointer}button.chip.sub-chip:hov
 #subMenuPanel{width:340px}#subMenuPanel h4{margin:6px 4px 2px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .sub-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;width:100%;box-sizing:border-box;margin:2px 0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
 .sub-row:hover,.sub-row:focus-visible{background:var(--hover)}.sub-row .sub-row-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sub-row .sub-row-meta{grid-column:1/-1;color:var(--muted);font-size:12px}
+/* Sub-thread pane (SPEC-002-078): a 4th grid column at >=1200px, an overlay sheet at 821-1199px, full screen at <=820px.
+   The closed-state grid templates above are unchanged; the column exists only while body.sub-open. */
+.sub-pane[hidden],.sub-return[hidden]{display:none}
+.sub-pane{min-width:0;min-height:0;display:flex;flex-direction:column;position:relative;background:var(--bg);border-left:1px solid var(--line);--thread-accent:#5b5fc7}
+:root:is([data-theme="dark"],[data-theme="dracula"]) .sub-pane{--thread-accent:#9aa5ff}:root[data-theme="dracula"] .sub-pane{--thread-accent:#bd93f9}
+@media (prefers-color-scheme:dark){:root[data-theme="system"] .sub-pane{--thread-accent:#9aa5ff}}
+@media (min-width:1200px){body.sub-open .app{grid-template-columns:var(--sidew,270px) 6px minmax(0,1fr) var(--subw,420px)}body.sub-open.side-hidden .app{grid-template-columns:0 0 minmax(0,1fr) var(--subw,420px)}body.sub-open .sub-pane{grid-column:4;grid-row:1}}
+@media (min-width:821px) and (max-width:1199px){body.sub-open .sub-pane{position:fixed;top:var(--top-h,56px);right:0;bottom:0;width:min(var(--subw,420px),calc(100vw - 48px));z-index:4;box-shadow:-10px 0 30px rgba(0,0,0,.22)}}
+@media (max-width:820px){body.sub-open .sub-pane{position:fixed;top:var(--top-h,56px);left:0;right:0;bottom:0;width:auto;z-index:4;border-left:0}}
+@media (max-width:1199px){body.sub-open :is(#composer,#composerResizer){visibility:hidden}}
+#subResize{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:col-resize;z-index:3}@media (max-width:820px){#subResize{display:none}}
+#subResize:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.sub-pane-head{display:flex;align-items:center;gap:6px;padding:5px 10px;border-bottom:1px solid var(--line);background:var(--panel2);min-width:0;box-shadow:inset 3px 0 0 var(--thread-accent)}
+.sub-pane-head .sub-back{display:none;flex:none;padding:2px 9px;line-height:1.3}@media (max-width:820px){.sub-pane-head .sub-back{display:inline-flex}}
+.sub-crumbs{margin:0;flex:1 1 auto;min-width:0;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}.sub-crumbs:focus{outline:none}.sub-crumbs:focus-visible{outline:2px solid var(--accent)}
+.sub-crumb{border:0;background:none;padding:0;font:inherit;font-weight:500;color:var(--muted);cursor:pointer}.sub-crumb:hover{color:var(--accent);text-decoration:underline}.sub-crumb-root{color:var(--ink)}
+@media (max-width:820px){.sub-crumbs .sub-crumb,.sub-crumbs .sub-crumb+span{display:none}}
+.sub-follow,.sub-close{flex:none;padding:2px 9px;line-height:1.3;white-space:nowrap}.sub-follow[data-state="following"]{border-color:var(--thread-accent);color:var(--thread-accent)}.sub-pane-menu{margin-left:0;flex:none}#subPaneMenuPanel{width:240px}#subFlat[aria-pressed="true"]::before{content:"\2713  "}
+@media (max-width:600px){.sub-follow{font-size:0;padding:2px 7px}.sub-follow::first-letter{font-size:14px}}
+.sub-ask{display:grid;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}.sub-ask[hidden]{display:none}.sub-ask label{font-size:12.5px;font-weight:600}.sub-ask-row{display:flex;gap:6px}.sub-ask-row input{flex:1;min-width:0}.sub-ask .hint:empty{display:none}
+.sub-banner{padding:6px 12px;font-size:12.5px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--thread-accent) 10%,var(--panel));color:var(--ink);overflow-wrap:anywhere}.sub-banner[data-tone="warn"]{background:var(--warn-bg,#fff4e5);color:var(--warn-ink,#8a4b00)}.sub-banner[hidden]{display:none}
+.sub-root{padding:6px 12px 8px;border-bottom:1px solid var(--line);max-height:40%;overflow:auto;min-height:0}
+.sub-root-card{border-left:3px solid color-mix(in srgb,var(--c) 60%,var(--line));padding-left:8px}.sub-root-card>summary{display:flex;align-items:baseline;gap:6px;cursor:pointer;min-width:0;font-size:12.5px}.sub-root-card>summary .who{font-weight:700}.sub-root-card>summary .time{color:var(--muted)}
+.sub-root-line{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}.sub-root-card[open] .sub-root-line{display:none}.sub-root-body{font-size:13px}.sub-root-note{margin:4px 0 0}.sub-root-main{margin-top:4px}
+.sub-pane>*{flex:none}.sub-pane>.sub-feed{flex:1 1 auto;min-height:0}.sub-feed{padding:8px 12px 12px}.sub-feed .msg{max-width:100%}.sub-feed .inner{max-width:none}
+.sub-divider{display:flex;align-items:center;gap:8px;margin:10px 0;color:var(--thread-accent);font-size:12px;font-weight:700}.sub-divider::before,.sub-divider::after{content:"";flex:1;height:1px;background:var(--thread-accent)}
+.sub-collapse{margin:6px 0 12px}.sub-collapse-btn{width:100%;text-align:left;white-space:normal;color:var(--muted)}
+.sub-pills{display:flex;justify-content:center;gap:6px;padding:0 12px;min-height:0}.sub-pills:not(:has(button:not([hidden]))){display:none}.sub-pills .btn{margin:4px 0}.sub-new{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sub-composer{border-top:1px solid var(--line);background:var(--panel);padding:8px 12px 10px;max-height:max(150px,50dvh);overflow:auto;box-shadow:inset 3px 0 0 var(--thread-accent)}
+.sub-target{font-size:12.5px;font-weight:600;color:var(--thread-accent);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-replying{display:flex;align-items:center;gap:6px;font-size:12.5px;margin-bottom:4px}.sub-replying[hidden]{display:none}.sub-replying>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sub-replying button{border:0;background:none;color:var(--muted);cursor:pointer}
+#subOptions{margin-bottom:4px;font-size:12.5px}#subOptions .ctx{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:4px}#subOptions .ctx label{display:grid;gap:2px;min-width:0}#subOptions select{min-width:0;max-width:100%}
+.sub-write{display:flex;gap:8px;align-items:flex-end}.sub-write textarea{flex:1;min-width:0;min-height:calc(3lh + 10px);resize:vertical;box-sizing:border-box;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.sub-also{display:flex;gap:6px;align-items:center;margin-top:4px;font-size:12.5px}#subSigningNotice{margin-bottom:6px}
+@media (max-height:640px){.sub-composer{padding:6px 10px 8px}.sub-write textarea{min-height:calc(2lh + 8px)}.sub-root{max-height:30%}}
+.sub-return{position:fixed;left:12px;bottom:12px;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 /* The extra action never wraps the row: on a phone it is an icon, and the file-name action yields its width first. */
 .tools button{white-space:nowrap}.tools [data-copy]{min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){.tools .tools-label{display:none}.tools:has([data-subthread-start]){gap:8px}}
@@ -804,7 +840,7 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
   </aside>
   <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
   <section class="feed-wrap">
-    <div class="feed-head"><button type="button" class="btn sub-back" id="subBack" data-i18n="sub_back" data-i18n-title="sub_back_title" hidden></button><h2 id="title"></h2><span class="sub" id="subtitle"></span><details id="subMenu" class="toolbar-tools topic-menu sub-menu" hidden><summary class="btn" id="subMenuToggle"></summary><div class="toolbar-tools-panel" id="subMenuPanel"></div></details><details id="topicMenu" class="toolbar-tools topic-menu"><summary class="btn" id="topicMenuToggle" data-i18n-title="topic_menu" data-i18n-aria="topic_menu">&#8943;</summary><div class="toolbar-tools-panel" id="topicMenuPanel">
+    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><details id="subMenu" class="toolbar-tools topic-menu sub-menu" hidden><summary class="btn" id="subMenuToggle"></summary><div class="toolbar-tools-panel" id="subMenuPanel"></div></details><details id="topicMenu" class="toolbar-tools topic-menu"><summary class="btn" id="topicMenuToggle" data-i18n-title="topic_menu" data-i18n-aria="topic_menu">&#8943;</summary><div class="toolbar-tools-panel" id="topicMenuPanel">
       <button class="btn" type="button" id="topicRename" data-i18n="rename_topic" hidden></button><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div>
       <button class="btn" type="button" id="flatViewToggle" aria-pressed="false" data-i18n="flat_view" hidden></button><button class="btn" id="repairsOpen" data-i18n="repairs_title"></button><button class="btn" id="guidanceOpen" data-i18n="guidance_title" hidden></button>
     </div></details></div>
@@ -846,6 +882,29 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
       </div>
     </div>
   </section>
+  <aside class="sub-pane" id="subPane" hidden>
+    <div id="subResize" role="separator" aria-orientation="vertical" aria-controls="subPane" tabindex="0" data-i18n-aria="sub_resize" data-i18n-title="sub_resize"></div>
+    <div class="sub-pane-head"><button type="button" class="btn sub-back" id="subBack" data-i18n="sub_back" data-i18n-title="sub_back_title"></button><h2 id="subPaneTitle" class="sub-crumbs" tabindex="-1"></h2><button type="button" class="btn sub-follow" id="subFollow" aria-pressed="false"></button><details id="subPaneMenu" class="toolbar-tools topic-menu sub-pane-menu"><summary class="btn" id="subPaneMenuToggle" data-i18n-title="sub_menu" data-i18n-aria="sub_menu">&#8943;</summary><div class="toolbar-tools-panel" id="subPaneMenuPanel">
+      <button class="btn" type="button" id="subResolve" data-i18n="sub_resolve"></button><button class="btn" type="button" id="subReopen" data-i18n="sub_reopen" hidden></button><button class="btn" type="button" id="subPromote" data-i18n="sub_promote"></button><button class="btn" type="button" id="subCopyLink" data-i18n="sub_copy_link"></button><button class="btn" type="button" id="subFlat" aria-pressed="false" data-i18n="flat_view"></button>
+    </div></details><button type="button" class="btn sub-close" id="subClose" data-i18n-title="sub_close" data-i18n-aria="sub_close">&#10005;</button></div>
+    <form class="sub-ask" id="subAsk" hidden><label for="subAskInput" id="subAskLabel"></label><div class="sub-ask-row"><input id="subAskInput" maxlength="200" autocomplete="off"><button class="btn primary" id="subAskOk" type="submit"></button><button class="btn" id="subAskCancel" type="button" data-i18n="sub_ask_cancel"></button></div><p class="hint" id="subAskResult" role="status"></p></form>
+    <div class="sub-banner" id="subBanner" role="status" hidden></div>
+    <div class="sub-root" id="subRoot"></div>
+    <div class="feed sub-feed" id="subFeed" tabindex="0"></div>
+    <div class="sub-pills"><button type="button" class="btn sub-new" id="subNew" hidden></button><button type="button" class="btn sub-latest" id="subLatest" data-i18n="sub_latest" hidden></button></div>
+    <div class="sub-composer status-tone s-INFO" id="subComposer">
+      <div class="sub-target" id="subTarget"></div>
+      <div class="sub-replying" id="subReplying" hidden><span><span data-i18n="replying_to"></span> <b id="subReplyName"></b></span><button type="button" id="subReplyClear" data-i18n-title="cancel_reply" data-i18n-aria="cancel_reply">&#10005;</button></div>
+      <div class="composer-target-note" id="subNote" role="status" hidden></div>
+      <details id="subOptions"><summary class="composer-options-summary"><span data-i18n="composer_options"></span> <span id="subStatusPreview" class="chip status status-tone s-INFO">INFO</span></summary>
+      <div class="ctx"><label><span data-i18n="content_type"></span> <select id="subContentType"></select></label><label><span data-i18n="c_status"></span> <select id="subStatus"></select></label><label><span data-i18n="c_lang"></span> <select id="subLang"></select></label></div></details>
+      <div class="signing-notice" id="subSigningNotice" role="status" hidden><span class="signing-notice-head"><span class="signing-notice-emoji" aria-hidden="true"></span><strong class="signing-notice-label"></strong></span><button class="signing-link signing-notice-more" type="button" aria-expanded="false" data-i18n="signing_details"></button><span class="signing-notice-body"><span class="signing-notice-text"></span><span class="signing-notice-note" hidden></span></span><span class="signing-notice-actions"><button class="btn signing-notice-action" type="button" hidden></button><span class="signing-notice-hint" hidden></span><span class="signing-notice-switches" hidden></span><button class="signing-link signing-notice-alt" type="button" hidden></button></span></div>
+      <div class="sub-write"><textarea id="subBody" data-i18n-ph="sub_body_ph" data-i18n-aria="sub_body_ph"></textarea><button class="btn primary" id="subSend" data-i18n="c_send"></button></div>
+      <label class="ck sub-also"><input type="checkbox" id="subAlso"> <span data-i18n="sub_also"></span></label>
+      <div class="hint" id="subSigningRequires" hidden></div>
+    </div>
+  </aside>
+  <button type="button" class="btn sub-return" id="subReturn" data-i18n="sub_back_chip" hidden></button>
 </div>
 <dialog id="locationsDialog" class="afb-dialog" aria-labelledby="locationsHeading"><div class="vocabulary-head afb-dialog-head"><div class="folder-picker-head"><h2 id="locationsHeading" data-i18n="folder_picker"></h2><button class="btn primary" type="button" id="open"></button></div><button class="btn afb-dialog-close" type="button" id="locationsClose" data-i18n="vocabulary_close"></button></div>
  <p class="hint" data-i18n="locations_note"></p><p id="locationsStorage" class="hint" role="status"></p><p id="locationsResult" class="tool-result" role="status"></p><h3 data-i18n="locations_open"></h3><div id="locationsList"></div><button class="btn" id="locationsClear" data-i18n="locations_clear"></button>
@@ -1574,7 +1633,7 @@ const SAFE_SEG_RE = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 const RUNTIME_HUMAN = "agent-file-board-ui " + VIEWER_VERSION;
 const RUNTIME_AGENT = "agent-file-board-ui " + VIEWER_VERSION + " (manual post, sender is an agent)";
 const DEF = {lang:"en",theme:"system",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showReceipts:false,showPresenceNotices:false,presenceAnnouncements:false,composerOptionsOpen:false,composerAdvancedOpen:false,expandAll:false,autoOpen:true,
-  sideW:270,settingsW:340,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
+  sideW:270,settingsW:340,subW:420,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
   me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null,lastSub:null,flatView:false};
 const $ = s => document.querySelector(s);
 const stats = {autoRefreshes:0,builds:0,messageReads:0,indexReads:0};
@@ -1888,13 +1947,24 @@ const STRINGS = {
   in_reply_to:"in reply to: {who} - {when}", show_all:"Show all", collapse:"Collapse",
   reply_btn:"Reply", copy_name:"Copy file name", copied:"File name copied",
   outside_filter:"Message is outside the current filter",
-  sub_start:"Start sub-thread", sub_open:"Open sub-thread", sub_crumb:"\u{1F9F5} Sub-thread", sub_back:"\u2039 Back", sub_back_title:"Back to the topic",
+  sub_start:"Start sub-thread", sub_open:"Open sub-thread", sub_back:"\u2039 Back", sub_back_title:"Back to the topic",
   sub_replies_one:"{n} reply", sub_replies_few:"{n} replies", sub_replies_many:"{n} replies", sub_replies_other:"{n} replies",
   sub_strip_label:"{replies}, last {when}", sub_unread:"unread replies", sub_question:"Question for you", sub_decision:"Decision needed", sub_resolved:"Resolved",
   sub_stub:"Also in a sub-thread", sub_stub_open:"View in sub-thread", sub_in:"In a sub-thread", sub_empty:"No replies yet. The first message you post here starts the sub-thread.",
   sub_list:"Sub-threads ({n})", sub_list_active:"Active", sub_list_resolved:"Resolved sub-threads", sub_list_orphaned:"Orphaned", sub_orphan_root:"Root message not found: {file}",
   sub_gone:"That sub-thread is no longer on the board", flat_view:"Flat view (show sub-thread replies in the topic)",
   e_subthread:"Cannot post in this sub-thread: {m}", e_subthread_title:"A topic title cannot be set from a sub-thread", e_subthread_legacy:"Sub-threads need a board in the current format",
+  sub_pane_label:"Sub-thread of {who}: {text}", sub_close:"Close the sub-thread (Esc)", sub_resize:"Resize the sub-thread pane", sub_menu:"Sub-thread actions",
+  sub_follow:"Follow", sub_following:"Following", sub_muted:"Muted", sub_follow_title:"Alerts for this sub-thread: Follow, then Mute, then off",
+  sub_resolve:"Resolve…", sub_reopen:"Reopen", sub_promote:"Promote to topic…", sub_copy_link:"Copy link to root", sub_link_copied:"Root message path copied",
+  sub_ask_outcome:"Outcome (one line)", sub_ask_outcome_empty:"Write the outcome first", sub_ask_title:"New topic title", sub_ask_resolve:"Resolve", sub_ask_promote:"Promote", sub_ask_cancel:"Cancel",
+  sub_resolved_banner:"Resolved: {outcome}. Posting stays allowed.", sub_closed_banner:"Topic closed. Posting is still allowed.", sub_reopened_body:"Reopened this sub-thread.",
+  sub_root_interactive:"This message has a form, report or question; it is answered in the main thread.", sub_show_main:"Show in main thread", sub_in_main:"main thread",
+  sub_divider:"New messages", sub_new_pill:"{n} new ↓", sub_latest:"Latest ↓", sub_older:"Older messages", sub_expand:"Expand",
+  sub_collapsed_one:"{n} routine agent message", sub_collapsed_few:"{n} routine agent messages", sub_collapsed_many:"{n} routine agent messages", sub_collapsed_other:"{n} routine agent messages",
+  sub_target:"Posting to 🧵 sub-thread of {who}: {text}", sub_body_ph:"Reply in the sub-thread…", sub_also:"Also send to the main thread", sub_back_chip:"↩ Back to sub-thread",
+  sub_promote_failed:"Topic {tid} was posted ({file}), but the resolving sub-thread message failed: {m}. Nothing was deleted; resolve the sub-thread from its pane.", sub_promoted:"Continued from a sub-thread",
+  notify_subthread:"Sub-thread", notify_subthread_mute:"Muted sub-thread",
   receipt_line:"{who} acknowledges reading", receipt_to:"up to",
   replying_to:"Replying to:", cancel_reply:"Cancel reply",
   c_where:"Where", c_thread:"Thread", c_new_thread_opt:"+ new thread...", c_new_thread_ph:"Topic name", c_advanced:"Advanced routing",
@@ -2207,13 +2277,24 @@ const STRINGS = {
   in_reply_to:"w odpowiedzi na: {who} - {when}", show_all:"Pokaż całość", collapse:"Zwiń",
   reply_btn:"Odpowiedz", copy_name:"Kopiuj nazwę pliku", copied:"Skopiowano nazwę pliku",
   outside_filter:"Wiadomość poza bieżącym filtrem",
-  sub_start:"Rozpocznij podwątek", sub_open:"Otwórz podwątek", sub_crumb:"\u{1F9F5} Podwątek", sub_back:"\u2039 Wróć", sub_back_title:"Wróć do wątku",
+  sub_start:"Rozpocznij podwątek", sub_open:"Otwórz podwątek", sub_back:"\u2039 Wróć", sub_back_title:"Wróć do wątku",
   sub_replies_one:"{n} odpowiedź", sub_replies_few:"{n} odpowiedzi", sub_replies_many:"{n} odpowiedzi", sub_replies_other:"{n} odpowiedzi",
   sub_strip_label:"{replies}, ostatnia {when}", sub_unread:"nieprzeczytane odpowiedzi", sub_question:"Pytanie do ciebie", sub_decision:"Potrzebna decyzja", sub_resolved:"Rozwiązany",
   sub_stub:"Także w podwątku", sub_stub_open:"Zobacz w podwątku", sub_in:"W podwątku", sub_empty:"Brak odpowiedzi. Pierwsza wiadomość wysłana tutaj rozpoczyna podwątek.",
   sub_list:"Podwątki ({n})", sub_list_active:"Aktywne", sub_list_resolved:"Rozwiązane podwątki", sub_list_orphaned:"Osierocone", sub_orphan_root:"Nie znaleziono wiadomości głównej: {file}",
   sub_gone:"Tego podwątku nie ma już na tablicy", flat_view:"Widok płaski (odpowiedzi z podwątków w wątku)",
   e_subthread:"Nie można wysłać w tym podwątku: {m}", e_subthread_title:"Tytułu wątku nie można ustawić z podwątku", e_subthread_legacy:"Podwątki wymagają tablicy w bieżącym formacie",
+  sub_pane_label:"Podwątek: {who}: {text}", sub_close:"Zamknij podwątek (Esc)", sub_resize:"Zmień szerokość panelu podwątku", sub_menu:"Działania podwątku",
+  sub_follow:"Obserwuj", sub_following:"Obserwujesz", sub_muted:"Wyciszony", sub_follow_title:"Powiadomienia z tego podwątku: Obserwuj, potem Wycisz, potem wyłącz",
+  sub_resolve:"Rozwiąż…", sub_reopen:"Otwórz ponownie", sub_promote:"Przenieś do nowego wątku…", sub_copy_link:"Kopiuj odnośnik do wiadomości głównej", sub_link_copied:"Skopiowano ścieżkę wiadomości głównej",
+  sub_ask_outcome:"Wynik (jedna linia)", sub_ask_outcome_empty:"Najpierw wpisz wynik", sub_ask_title:"Tytuł nowego wątku", sub_ask_resolve:"Rozwiąż", sub_ask_promote:"Przenieś", sub_ask_cancel:"Anuluj",
+  sub_resolved_banner:"Rozwiązany: {outcome}. Nadal można pisać.", sub_closed_banner:"Wątek zamknięty. Nadal możesz tu pisać.", sub_reopened_body:"Ponownie otwarto ten podwątek.",
+  sub_root_interactive:"Ta wiadomość zawiera formularz, raport lub pytanie; odpowiada się na nią w głównym wątku.", sub_show_main:"Pokaż w głównym wątku", sub_in_main:"główny wątek",
+  sub_divider:"Nowe wiadomości", sub_new_pill:"Nowe: {n} ↓", sub_latest:"Najnowsze ↓", sub_older:"Starsze wiadomości", sub_expand:"Rozwiń",
+  sub_collapsed_one:"{n} rutynowa wiadomość agenta", sub_collapsed_few:"{n} rutynowe wiadomości agentów", sub_collapsed_many:"{n} rutynowych wiadomości agentów", sub_collapsed_other:"{n} rutynowej wiadomości agentów",
+  sub_target:"Wysyłasz do 🧵 podwątku: {who}: {text}", sub_body_ph:"Odpowiedz w podwątku…", sub_also:"Wyślij też do głównego wątku", sub_back_chip:"↩ Wróć do podwątku",
+  sub_promote_failed:"Wątek {tid} został wysłany ({file}), ale wiadomość rozwiązująca podwątek nie powiodła się: {m}. Nic nie usunięto; rozwiąż podwątek z jego panelu.", sub_promoted:"Kontynuacja podwątku",
+  notify_subthread:"Podwątek", notify_subthread_mute:"Wyciszony podwątek",
   receipt_line:"{who} potwierdza odczyt", receipt_to:"do",
   replying_to:"Odpowiedź na:", cancel_reply:"Anuluj odpowiedź",
   c_where:"Gdzie", c_thread:"Wątek", c_new_thread_opt:"+ nowy wątek...", c_new_thread_ph:"Nazwa wątku", c_advanced:"Zaawansowane kierowanie",
@@ -2591,6 +2672,7 @@ function composeMessage(o){
     if(legacy) throw boardErr("e_subthread_legacy");
     if(o.topicTitle!==undefined) throw boardErr("e_subthread_title");
   }
+  if(o.promotedFrom && legacy) throw boardErr("e_subthread_legacy");
   if(o.topicTitle!==undefined){
     if(!validTopicTitle(o.topicTitle)) throw boardErr("e_title");
     headers.push(["TOPIC-TITLE",o.topicTitle.trim()]);
@@ -2607,6 +2689,8 @@ function composeMessage(o){
     if(o.answerState) headers.push(["ANSWER-STATE",JSON.stringify(o.answerState)]);
     // After the other optional headers, like `boardctl post` (SPEC-002-076).
     if(o.subthread){ headers.push(["SUBTHREAD",o.subthread]); if(o.subthreadAlso) headers.push(["SUBTHREAD-ALSO","main"]); if(o.subthreadState) headers.push(["SUBTHREAD-STATE",o.subthreadState]); }
+    // SPEC-002-078 AC7: a promoted topic's first message names the root it continues (last, as in boardctl).
+    if(o.promotedFrom) headers.push(["PROMOTED-FROM",o.promotedFrom]);
     try{
       const source=B.msgs.find(m=>m.dkey===scope+":"+dir && m.file===o.replyTo);
       if(source && (source.metadataError || source.duplicates.length)) throw Error("Invalid source");
@@ -3173,11 +3257,13 @@ function subthreadResolves(dkey,tkey,root){
 }
 // The main flow (SPEC-002-077 AC3): members are hidden unless they also go to main, Flat view is on or a
 // search runs. A selected sub-thread shows its root and members only.
+// The main flow never filters to a sub-thread any more: an open sub-thread has its own pane (SPEC-002-078).
 function subthreadShown(m,selection=sel,query=""){
-  if(selection.sub) return m.dkey===selection.scope+":"+selection.dir && (m.file===selection.sub || m.subthread===selection.sub);
   return !m.subthread || m.subthreadAlso || !!S.flatView || !!query;
 }
-function subthreadStub(m){ return !!m.subthread && !sel.sub && !S.flatView && !$("#q").value.trim() && m.subthreadAlso; }
+// A member renders as a non-interactive stub in the main flow when it is SUBTHREAD-ALSO, and always while its
+// sub-thread is open in the pane, whatever Flat view or search say: the pane owns its members (SPEC-002-078 AC1).
+function subthreadStub(m){ if(!m.subthread) return false; if(m.dkey+"|"+m.subthread===subthreadPaneKey()) return true; return !S.flatView && !$("#q").value.trim() && m.subthreadAlso; }
 function badge(n){ return n ? `<span class="unread-badge">${esc(t("unread_count",{n}))}</span>` : ""; }
 function unread(m){ return signingEligible(m) && !m.metadataError && !m.quarantined && !m.receipt && !sessionNotice(m) && m.author!==currentUser() && !seen[m.path]; }
 function matchingMessages(){
@@ -3185,7 +3271,8 @@ function matchingMessages(){
   return B.msgs.filter(m=>(signingInspect||signingEligible(m)) && (!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && routinePresenceVisible(m) && subthreadShown(m,sel,q) && (!q||msgMatches(m,q)));
 }
 function messagePage(view, background=false){
-  const key=JSON.stringify([seenKey,sel,$("#q").value.trim().toLowerCase(),$("#showReceipts").checked,S.showPresenceNotices,!!S.flatView]);
+  // The open sub-thread pane is not part of the main window's identity: opening it keeps the window (SPEC-002-078 AC2).
+  const key=JSON.stringify([seenKey,{scope:sel.scope,dir:sel.dir,thread:sel.thread},$("#q").value.trim().toLowerCase(),$("#showReceipts").checked,S.showPresenceNotices,!!S.flatView]);
   if(historyPage.key!==key) historyPage={key,end:null,last:null,count:MESSAGE_PAGE_SIZE};
   const feed=$("#feed");
   if(background && !historyPage.end && historyPage.last && feed.scrollHeight-feed.scrollTop-feed.clientHeight>=80 && view.at(-1)?.path!==historyPage.last) historyPage.end=historyPage.last;
@@ -3270,6 +3357,7 @@ function build({background = false, preserveComposer = false} = {}){
   syncSidebarMenu();
   fillComposer(preserveComposer);
   render(background);
+  renderSubPane(background);
 }
 
 function inline(s, q, code = true){
@@ -3586,7 +3674,7 @@ function subthreadStubHtml(m,c,mine){
   const p=personOf(m.author,m.authorName), text=String(m.bodyLoaded?m.body:m.preview||"").replace(/\s+/g," ").trim();
   return `<article class="msg sub-stub ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
     <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
-    <div><div class="msg-head"><span class="who">${esc(p.name)}</span><span class="time" title="${esc(m.file)}">${esc(m.time.slice(11,16))}</span>${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}<span class="chip sub-chip">\u{1F9F5} ${esc(t("sub_stub"))}</span></div>
+    <div><div class="msg-head"><span class="who">${esc(p.name)}</span><span class="time" title="${esc(m.file)}">${esc(m.time.slice(11,16))}</span>${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}<span class="chip sub-chip">\u{1F9F5} ${esc(t(m.subthreadAlso?"sub_stub":"sub_in"))}</span></div>
       <div class="body sub-stub-text">${esc(text.slice(0,280))}${text.length>280?"…":""}</div>
       <button type="button" class="sub-jump" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">${esc(t("sub_stub_open"))} ›</button></div></article>`;
 }
@@ -3617,7 +3705,6 @@ function jumpToMessage(key){
   const target=B && B.messageIndex.get(key);
   if(!el && target){
     if(target.subthread && !sel.sub && !S.flatView && !matchingMessages().includes(target)){ openSubthread(target.dkey+"|"+target.subthread,target.file); return; }
-    if(sel.sub && !matchingMessages().includes(target) && target.dkey===sel.scope+":"+sel.dir){ sel={scope:sel.scope,dir:sel.dir,thread:sel.thread}; rememberView(); build({preserveComposer:true}); el=document.getElementById("m-"+key); }
   }
   if(!el){
     const view=matchingMessages(), at=view.findIndex(m=>m.dkey+"|"+m.file===key);
@@ -3626,31 +3713,441 @@ function jumpToMessage(key){
   if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
   else toast(t("outside_filter"));
 }
-// Opening a sub-thread selects it by keys; the composer then follows the view, or pins a draft (SPEC-002-064).
+// Opening a sub-thread selects it by keys and shows its pane (SPEC-002-078 AC2): the main feed keeps its topic,
+// window and reading position, and the main composer keeps its destination and draft.
 function openSubthread(key, focusFile){
   if(!B) return;
   const at=key.indexOf("|"), dkey=key.slice(0,at), root=key.slice(at+1), colon=dkey.indexOf(":");
   const scope=dkey.slice(0,colon), dir=dkey.slice(colon+1), r=B.messageIndex.get(key), x=subthreadsOf().get(key);
   const tkey=r && !r.subthread ? r.tkey : x?.tkey;
   if(!tkey || !subthreadResolves(dkey,tkey,root) && !(r && subthreadStartable(r))){ toast(t("sub_gone")); return; }
-  $("#subMenu").open=false;
+  $("#subMenu").open=false; subShowReturn("");
   if($("#q").value){ $("#q").value=""; startBodySearch(); }
-  sel={scope,dir,thread:tkey,sub:root}; rememberView(); closeSidebarDrawer(false); build();
-  const feed=$("#feed"), el=focusFile && document.getElementById("m-"+dkey+"|"+focusFile);
-  if(el){ el.scrollIntoView({block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
-  else feed.scrollTop=feed.scrollHeight;
-  $("#subBack").focus({preventScroll:true});
+  const same=sel.scope===scope && sel.dir===dir && sel.thread===tkey;
+  const go=()=>{ sel={scope,dir,thread:tkey,sub:root}; rememberView(); closeSidebarDrawer(false); build(); };
+  if(same) holdFeedPosition(go); else go();
+  if(subthreadPaneKey()!==key) return;
+  const m=focusFile && B.messageIndex.get(dkey+"|"+focusFile);
+  if(m && m.subthread===root){ subWindowAround(subthreadPaneRows(key),m.path); subPane.fresh=false; renderSubPane(true); if(subFocusMember(m.path)) return; }
+  $("#subPaneTitle").focus({preventScroll:true});
 }
-function closeSubthread(){
+// Closing keeps the pane's draft and the main reading position; focus returns to the root's strip (AC3).
+function closeSubthread(focus=true){
   if(!sel.sub) return;
-  const key=sel.scope+":"+sel.dir+"|"+sel.sub;
-  sel={scope:sel.scope,dir:sel.dir,thread:sel.thread}; rememberView(); build();
-  if(!document.getElementById("m-"+key) && B.messageIndex.get(key)) jumpToMessage(key);
-  const root=document.getElementById("m-"+key);
-  if(root){ root.scrollIntoView({block:"center"}); (root.querySelector(".sub-strip")||root.querySelector("[data-subthread-start]"))?.focus({preventScroll:true}); }
-  else $("#feed").focus({preventScroll:true});
+  const key=subthreadPaneKey();
+  subDraftSave(); subAskClose();
+  holdFeedPosition(()=>{ sel={scope:sel.scope,dir:sel.dir,thread:sel.thread}; rememberView(); build({preserveComposer:true}); });
+  if(!focus) return;
+  const root=document.getElementById("m-"+key), target=root && (root.querySelector(".sub-strip")||root.querySelector("[data-subthread-start]"));
+  (target||$("#feed")).focus({preventScroll:true});
 }
 function subthreadStartable(m){ return B.layout.dialect==="native" && !m.subthread && !m.receipt && !m.metadataError && !m.quarantined && !!m.tid && !sessionNotice(m); }
+/* ===== sub-thread pane (SPEC-002-078) ===== */
+// Pane state is keys only (ui-code-map risk 5): sel.sub names the root; the window, the "New messages" divider and
+// the expanded collapse stubs belong to the pane key and are re-resolved against B on every render.
+const SUB_PAGE=50, SUB_MAX_RENDERED=150, SUB_COLLAPSE_RUN=20;
+let subPane={key:"",start:null,end:null,divider:null,seen:0,expanded:new Set(),rootOpen:null,token:0,lastCount:0};
+let subAskMode=null, subComposerKey="", subReply=null, subSending=false, subReturnKey="", subReturnTimer=0;
+function subthreadPaneKey(){ return B && sel.sub && sel.scope ? sel.scope+":"+sel.dir+"|"+sel.sub : ""; }
+const subPaneMedia=q=>window.matchMedia && matchMedia(q).matches;
+function subPaneMode(){ return subPaneMedia("(max-width:820px)") ? "compact" : subPaneMedia("(max-width:1199px)") ? "medium" : "wide"; }
+// The members shown in the pane, in canonical posting order (the index order).
+function subthreadPaneRows(key){
+  const x=subthreadsOf().get(key); if(!x) return [];
+  const showR=$("#showReceipts").checked;
+  return x.members.filter(m=>(signingInspect||signingEligible(m)) && (showR||!m.receipt));
+}
+// The window: newest SUB_PAGE first; Older extends it by SUB_PAGE, at most SUB_MAX_RENDERED rendered.
+// start/end are paths (null: from the newest / to the live edge), so arrivals never move a reader's window.
+function subPageOf(rows){
+  const at=path=>path===null?-1:rows.findIndex(m=>m.path===path);
+  let end=subPane.end===null?rows.length:at(subPane.end)+1;
+  if(end<=0){ subPane.end=null; end=rows.length; }
+  let start=subPane.start===null?Math.max(0,end-SUB_PAGE):at(subPane.start);
+  if(start<0){ subPane.start=null; start=Math.max(0,end-SUB_PAGE); }
+  if(end-start>SUB_MAX_RENDERED) start=end-SUB_MAX_RENDERED;
+  return {start,end,rows:rows.slice(start,end)};
+}
+function subWindowAround(rows,path){
+  const i=rows.findIndex(m=>m.path===path); if(i<0) return;
+  const page=subPageOf(rows); if(i>=page.start && i<page.end) return;
+  const start=Math.max(0,i-Math.floor(SUB_PAGE/2)), end=Math.min(rows.length,start+SUB_PAGE);
+  subPane.start=rows[start].path; subPane.end=end===rows.length?null:rows[end-1].path;
+}
+// A routine agent message (AC4): INFO, from an agent, not addressed to the reader, no question.
+function subRoutine(m){
+  const me=currentUser();
+  return !m.receipt && m.status==="INFO" && !m.question && m.h.QUESTION===undefined && personOf(m.author,m.authorName).kind==="agent" && !(me && m.to.split(",").map(s=>s.trim()).includes(me));
+}
+function subCollapsed(n){ return plural(n,"sub_collapsed_one","sub_collapsed_few","sub_collapsed_many","sub_collapsed_other"); }
+function subOneLine(m,max=120){ return String(m?.bodyLoaded?m.body:m?.preview||"").replace(/\s+/g," ").trim().slice(0,max); }
+function subRootLabel(r,root){ return r && !r.quarantined ? personOf(r.author,r.authorName).name+": "+subOneLine(r,80) : t("sub_orphan_root",{file:root}); }
+// The pinned root: a preview only. Its interactive body (form, choices, report, extension) renders once, in the
+// main feed (AC1, AC3); the pane offers "Show in main thread" for it.
+function subRootHtml(key,r,root){
+  if(!r || r.quarantined) return `<p class="metadata-error sub-root-missing">${esc(t("sub_orphan_root",{file:root}))}</p>`;
+  const p=personOf(r.author,r.authorName), text=r.bodyLoaded?r.body:r.preview||"";
+  const interactive=!!(r.ui || r.question || r.h.QUESTION!==undefined || r.h.EXTENSION!==undefined || r.h.INFORMATION!==undefined), long=text.length>700;
+  const open=subPane.rootOpen ?? !(interactive||long);
+  const body=r.bodyLoaded?formatBody(r.body,"",r.metadataError?"text/plain":r.h["CONTENT-TYPE"]):esc(text||t("message_loading"));
+  return `<details class="sub-root-card" style="--c:${colorOf(r.author)}" ${open?"open":""}><summary><span class="who">${esc(p.name)}</span>${r.status?`<span class="chip status status-tone s-${esc(r.status)}">${esc(r.status)}</span>`:""}<span class="time" title="${esc(r.file)}">${esc(r.time.slice(5,16))}</span><span class="sub-root-line">${esc(subOneLine(r))}</span></summary>
+    <div class="body sub-root-body">${body}</div>${interactive?`<p class="hint sub-root-note">${esc(t("sub_root_interactive"))}</p>`:""}</details>
+    <button type="button" class="sub-jump sub-root-main" data-sub-main="${esc(key)}">${esc(t("sub_show_main"))} ↗</button>`;
+}
+function subPaneBanner(x,th,orphan){
+  if(orphan) return {tone:"warn",text:t("sub_orphan_root",{file:sel.sub})};
+  if(x?.state==="resolved"){ const outcome=x.stateMsg?String(x.stateMsg.bodyLoaded?x.stateMsg.body:x.stateMsg.preview||"").split("\n").find(l=>l.trim())||"":"";
+    return {tone:"info",text:t("sub_resolved_banner",{outcome:outcome.slice(0,200)})}; }
+  if(th?.status==="CLOSED") return {tone:"info",text:t("sub_closed_banner")};
+  return null;
+}
+// Called by build() after the main feed (never from render(), which returns early on an empty view).
+function renderSubPane(background=false){
+  const pane=$("#subPane"); if(!pane) return;
+  const key=subthreadPaneKey();
+  if(!key){ if(!pane.hidden || document.body.classList.contains("sub-open")){ pane.hidden=true; document.body.classList.remove("sub-open"); subPaneInert(); } subComposerKey=""; return; }
+  const dkey=sel.scope+":"+sel.dir, root=sel.sub, r=B.messageIndex.get(key), x=subthreadsOf().get(key), th=threadsOf()[sel.thread];
+  const orphan=!r || !!r.quarantined || !!r.subthread;
+  if(subPane.key!==key){ const rows=subthreadPaneRows(key); subPane={key,start:null,end:null,divider:rows.find(unread)?.path||null,seen:rows.length,expanded:new Set(),rootOpen:null,token:subPane.token,lastCount:rows.length,fresh:true}; subAskClose(); }
+  pane.hidden=false; document.body.classList.add("sub-open"); applySubWidth(); subPaneInert();
+  const label=t("sub_pane_label",{who:r&&!orphan?personOf(r.author,r.authorName).name:"?",text:r&&!orphan?subOneLine(r,80):root});
+  pane.setAttribute("aria-label",label);
+  // Breadcrumb: Room › Topic › 🧵 root preview. The room and topic crumbs leave the pane.
+  const crumbs=`<button type="button" class="sub-crumb" data-sub-crumb="room">${esc(composerDirLabel(sel.scope,sel.dir))}</button><span aria-hidden="true"> › </span><button type="button" class="sub-crumb" data-sub-crumb="topic">${esc((th?.tid||"")+" "+threadTitle(th))}</button><span aria-hidden="true"> › </span><span class="sub-crumb-root">\u{1F9F5} ${esc(subRootLabel(orphan?null:r,root))}</span>`;
+  const title=$("#subPaneTitle"); if(title.innerHTML!==crumbs) title.innerHTML=crumbs; title.title=title.textContent;
+  subFollowRender(key,th);
+  $("#subResolve").hidden=x?.state==="resolved"; $("#subReopen").hidden=x?.state!=="resolved";
+  for(const id of ["subResolve","subReopen"]) $("#"+id).disabled=!x?.members.length;
+  $("#subPromote").disabled=orphan || B.layout.dialect!=="native"; $("#subFlat").setAttribute("aria-pressed",String(!!S.flatView));
+  const banner=subPaneBanner(x,th,orphan), bannerEl=$("#subBanner");
+  bannerEl.hidden=!banner; if(banner){ bannerEl.dataset.tone=banner.tone; if(bannerEl.textContent!==banner.text) bannerEl.textContent=banner.text; }
+  const rootHtml=subRootHtml(key,orphan?null:r,root), rootEl=$("#subRoot");
+  if(rootEl.innerHTML!==rootHtml) rootEl.innerHTML=rootHtml;
+  // Transcript: the window of members, the divider, collapse stubs for long routine runs.
+  const rows=subthreadPaneRows(key), page=subPageOf(rows), feed=$("#subFeed");
+  const need=[...page.rows,...(r&&!orphan?[r]:[])].filter(m=>!m.bodyLoaded), token=++subPane.token;
+  if(need.length) hydrateMessages(need,B).then(()=>{ if(token===subPane.token && subthreadPaneKey()===key) renderSubPane(background); }).catch(e=>{ if(token===subPane.token) toast(t("message_error",{m:e.message})); });
+  const me=currentUser(), meP=me?B.people[me]:null, ctx={q:"",me,meP,subs:subthreadsOf(),pane:true,paneKey:key,root};
+  let html=page.start>0?`<nav class="history-nav sub-history"><button class="btn" type="button" data-sub-history="older">${esc(t("sub_older"))}</button><span>${esc(t("history_range",{start:page.start+1,end:page.end,total:rows.length}))}</span></nav>`:"", lastDay="";
+  if(!rows.length) html+=`<p class="hint sub-empty">${esc(t("sub_empty"))}</p>`;
+  for(let i=0;i<page.rows.length;){
+    let j=i; while(j<page.rows.length && subRoutine(page.rows[j]) && page.rows[j].path!==subPane.divider) j++;
+    if(j-i>SUB_COLLAPSE_RUN && !subPane.expanded.has(page.rows[i].path)){
+      const run=page.rows.slice(i,j), names=[...new Set(run.map(m=>personOf(m.author,m.authorName).name))].slice(0,3).join(", ");
+      html+=`<div class="sub-collapse"><button type="button" class="btn sub-collapse-btn" data-sub-expand="${esc(run[0].path)}" aria-expanded="false">▸ ${esc(subCollapsed(run.length))} (${esc(names)}) · ${esc(t("sub_expand"))}</button></div>`;
+      i=j; continue;
+    }
+    const stop=Math.max(j,i+1);
+    for(;i<stop;i++){ const m=page.rows[i], day=m.time.slice(0,10);
+      if(m.path===subPane.divider) html+=`<div class="sub-divider" role="separator"><span>${esc(t("sub_divider"))}</span></div>`;
+      if(day!==lastDay){ html+=`<div class="day">${esc(dayLabel(day))}</div>`; lastDay=day; }
+      html+=messageArticleHtml(m,ctx); }
+  }
+  const atBottom=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80, oldTop=feed.scrollTop, grew=rows.length!==subPane.lastCount;
+  paintMessages(feed,html);
+  const live=page.end===rows.length;
+  // First render of a pane: open at the reader's first unread ("New messages"), else at the end (AC4).
+  if(subPane.fresh){ if(!need.length) subPane.fresh=false; const div=feed.querySelector(".sub-divider"); if(div) feed.scrollTop+=div.getBoundingClientRect().top-feed.getBoundingClientRect().top-8; else feed.scrollTop=feed.scrollHeight; }
+  else if(live && (atBottom || (!background && grew))) feed.scrollTop=feed.scrollHeight;
+  else feed.scrollTop=oldTop;
+  subPane.lastCount=rows.length;
+  const bottom=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;
+  if(bottom && live) subPane.seen=rows.length;
+  // Marking read follows what is displayed (SPEC-002-077 AC7): on open, and for a reader following the live edge.
+  if(document.visibilityState==="visible" && (!background || bottom) && page.rows.some(unread)) markViewRead(page.rows);
+  subPillUpdate(rows,live,bottom);
+  subComposerRender(key,x,th,orphan);
+}
+// "N new" while the reader is above the live edge, and Latest whenever the end is not in view (AC4).
+function subPillUpdate(rows,live,bottom){
+  const fresh=rows.length-subPane.seen, pill=$("#subNew");
+  pill.hidden=!(fresh>0 && !bottom); if(!pill.hidden){ const text=t("sub_new_pill",{n:fresh}); if(pill.textContent!==text) pill.textContent=text; }
+  $("#subLatest").hidden=bottom && live;
+}
+function subScrollUpdate(){
+  const key=subthreadPaneKey(); if(!key) return;
+  const feed=$("#subFeed"), rows=subthreadPaneRows(key), page=subPageOf(rows), live=page.end===rows.length, bottom=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;
+  if(bottom && live) subPane.seen=rows.length;
+  if(bottom && document.visibilityState==="visible" && page.rows.some(unread)){ renderSubPane(true); return; }
+  subPillUpdate(rows,live,bottom);
+}
+// Wide windows keep both columns usable; medium and compact cover the transcript, so only the pane composer
+// is reachable there while the pane is open (owner decision). The covered parts stay in the DOM with their state.
+function subPaneInert(){
+  const open=document.body.classList.contains("sub-open"), mode=subPaneMode();
+  document.body.dataset.subMode=open?mode:"";
+  const wrap=$(".feed-wrap"); if(wrap) wrap.inert=open && mode==="compact";
+  for(const id of ["composer","composerResizer"]){ const el=$("#"+id); if(el) el.inert=open && mode!=="wide"; }
+}
+// Opening and closing never shifts the main feed's reading position (AC2): the first visible message keeps its
+// offset while the column width changes, and a reader at the live edge stays there.
+function holdFeedPosition(fn){
+  const feed=$("#feed"), top=feed.getBoundingClientRect().top, atBottom=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;
+  const anchor=[...feed.querySelectorAll("article.msg,.receipt")].find(el=>el.getBoundingClientRect().bottom>top+1);
+  const id=anchor?.id, offset=anchor?anchor.getBoundingClientRect().top-top:0, before=feed.scrollTop;
+  fn();
+  if(atBottom && before>0){ feed.scrollTop=feed.scrollHeight; return; }
+  const el=id && document.getElementById(id); if(el) feed.scrollTop+=el.getBoundingClientRect().top-feed.getBoundingClientRect().top-offset;
+}
+function subFlash(el){ try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
+function subFocusMember(path){
+  const m=B.byPath.get(path), el=m && document.getElementById("sm-"+m.dkey+"|"+m.file);
+  if(el){ el.scrollIntoView({block:"center"}); el.tabIndex=-1; el.focus({preventScroll:true}); subFlash(el); }
+  return el;
+}
+// Jumps inside the pane (a REPLY-TO between members), loading the window around the target.
+function subJumpInPane(key){
+  const m=B?.messageIndex.get(key); if(!m) return toast(t("outside_filter"));
+  subWindowAround(subthreadPaneRows(subthreadPaneKey()),m.path); renderSubPane(true);
+  if(!subFocusMember(m.path)) toast(t("outside_filter"));
+}
+// A link from the pane to the main flow: wide/medium scroll the main feed; compact closes the pane and offers
+// "Back to sub-thread" (AC4).
+function subJumpToMain(key){
+  if(subPaneMode()==="compact"){ const back=subthreadPaneKey(); closeSubthread(false); jumpToMessage(key); subShowReturn(back); }
+  else jumpToMessage(key);
+}
+function subShowReturn(key){
+  const chip=$("#subReturn"); subReturnKey=key; chip.hidden=!key; clearTimeout(subReturnTimer);
+  if(key) subReturnTimer=setTimeout(()=>{ chip.hidden=true; subReturnKey=""; },10000);
+}
+// ---- follow / mute (AC8): local notification rules, kind "subthread"/"subthread-mute", key topic|root ----
+function subFollowKey(tkey,root){ return tkey+"|"+root; }
+function subFollowState(fkey){ const s=notificationState; if(!s || !notificationCurrent(s)) return "off";
+  return s.follows.some(x=>x.kind==="subthread-mute"&&x.key===fkey)?"muted":s.follows.some(x=>x.kind==="subthread"&&x.key===fkey)?"following":"off"; }
+function subFollowRender(key,th){
+  const b=$("#subFollow"), state=subFollowState(subFollowKey(sel.thread,sel.sub)), ready=!!notificationState?.ready;
+  const text=state==="following"?"\u{1F514} "+t("sub_following"):state==="muted"?"\u{1F515} "+t("sub_muted"):"\u{1F514} "+t("sub_follow");
+  if(b.textContent!==text) b.textContent=text; b.dataset.state=state; b.setAttribute("aria-pressed",String(state==="following")); b.title=t("sub_follow_title"); b.disabled=!ready;
+}
+function subFollowSet(fkey,state){
+  const s=notificationsContext(); if(!s?.ready) return;
+  if(state!=="following") changeNotificationFollow("subthread",fkey,true);
+  if(state!=="muted") changeNotificationFollow("subthread-mute",fkey,true);
+  if(state==="following") changeNotificationFollow("subthread",fkey);
+  if(state==="muted") changeNotificationFollow("subthread-mute",fkey);
+}
+// Starting or replying in a sub-thread follows it, unless the reader muted it explicitly (a mute is a decision).
+function subFollowAuto(tkey,root){ const fkey=subFollowKey(tkey,root); if(subFollowState(fkey)==="off") subFollowSet(fkey,"following"); }
+// ---- the pane composer (AC5): its own fields, draft, reply target and Send; never the main composer's ----
+const subDrafts=new Map(); let subDraftBinding="", subDraftsReady=false, subDraftWrites=Promise.resolve(), subDraftDurable=false;
+const SUB_DRAFT_LIMIT=50;
+function subDraftKey(tkey,root){ return JSON.stringify([boardStorageId||B?.name||"", tkey.split("|")[0], tkey, root]); }
+function subDraftContext(){
+  const binding=B?JSON.stringify([dirHandle?boardStorageId:"upload-session",B.name]):"";
+  if(binding===subDraftBinding) return;
+  subDraftBinding=binding; subDrafts.clear(); subDraftsReady=false;
+  subDraftDurable=!!dirHandle && !!boardStorageId && !boardStorageId.startsWith("session-");
+  if(!binding) return;
+  if(!subDraftDurable){ subDraftsReady=true; return; }
+  const expected=binding;
+  idbGet("subthread-drafts-v1:"+boardStorageId).then(value=>{ if(subDraftBinding!==expected) return;
+    if(value && typeof value==="object" && !Array.isArray(value)) for(const [k,v] of Object.entries(value).slice(0,SUB_DRAFT_LIMIT)) if(v && typeof v.body==="string" && v.body.length<=65536) subDrafts.set(k,v);
+  }).catch(()=>{ subDraftDurable=false; }).finally(()=>{ if(subDraftBinding!==expected) return; subDraftsReady=true; subComposerKey=""; renderSubPane(true); });
+}
+function subDraftPersist(){
+  if(!subDraftDurable) return;
+  const store="subthread-drafts-v1:"+boardStorageId, snapshot=Object.fromEntries([...subDrafts].slice(-SUB_DRAFT_LIMIT));
+  subDraftWrites=subDraftWrites.then(()=>idbSet(store,snapshot)).catch(()=>{});
+}
+function subDraftFields(){ return {body:$("#subBody").value,status:$("#subStatus").value,contentType:$("#subContentType").value,language:$("#subLang").value,also:$("#subAlso").checked,reply:subReply?.file||null}; }
+function subDraftEmpty(d){ return !d || (!d.body && !d.also && !d.reply); }
+function subDraftSave(){
+  if(!subComposerKey || !subDraftsReady) return;
+  const d=subDraftFields();
+  if(subDraftEmpty(d)) subDrafts.delete(subComposerKey); else { subDrafts.delete(subComposerKey); subDrafts.set(subComposerKey,d); while(subDrafts.size>SUB_DRAFT_LIMIT) subDrafts.delete(subDrafts.keys().next().value); }
+  subDraftPersist();
+}
+function subComposerHasDraft(tkey,root){ const k=subDraftKey(tkey,root); return k===subComposerKey ? !subDraftEmpty(subDraftFields()) : !subDraftEmpty(subDrafts.get(k)); }
+function subOptionsInto(select,html){ if(select.dataset.options!==html){ const v=select.value; select.innerHTML=html; select.dataset.options=html; if([...select.options].some(o=>o.value===v)) select.value=v; } }
+function subComposerRender(key,x,th,orphan){
+  subDraftContext();
+  const r=B.messageIndex.get(key), dkey=key.slice(0,key.indexOf("|")), draftKey=subDraftKey(sel.thread,sel.sub);
+  // Status choices: every board status except CLOSED (invalid on a sub-thread message, SPEC-002-076).
+  subOptionsInto($("#subStatus"),B.statuses.filter(s=>s!=="CLOSED").map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join(""));
+  subOptionsInto($("#subLang"),$("#cLang").innerHTML);
+  subOptionsInto($("#subContentType"),$("#cContentType").innerHTML);
+  const body=$("#subBody");
+  if(draftKey!==subComposerKey && subDraftsReady){
+    subComposerKey=draftKey; const d=subDrafts.get(draftKey)||{};
+    body.value=d.body||""; $("#subStatus").value=[...$("#subStatus").options].some(o=>o.value===d.status)?d.status:(B.statuses.includes("REPLY")?"REPLY":B.statuses[0]);
+    $("#subContentType").value=d.contentType||"text/plain"; $("#subLang").value=d.language||"";
+    if(!$("#subLang").value && $("#subLang").options.length) $("#subLang").value=resolveLanguage(th?.tid||"",currentUser(),null);
+    $("#subAlso").checked=!!d.also;
+    const m=d.reply && B.messageIndex.get(dkey+"|"+d.reply); subReply=m?{file:m.file,author:m.author,authorName:m.authorName,time:m.time}:null;
+  }
+  body.disabled=!subDraftsReady;
+  const rootName=r&&!orphan?personOf(r.author,r.authorName).name:"?";
+  const target=t("sub_target",{who:rootName,text:r&&!orphan?subOneLine(r,60):sel.sub});
+  const tEl=$("#subTarget"); if(tEl.textContent!==target){ tEl.textContent=target; tEl.title=target; }
+  const bar=$("#subReplying"); bar.hidden=!subReply;
+  if(subReply){ const name=`${personOf(subReply.author,subReply.authorName).name} · ${subReply.time.slice(5,16)}`; if($("#subReplyName").textContent!==name) $("#subReplyName").textContent=name; }
+  const composer=$("#subComposer"); composer.className="sub-composer status-tone s-"+($("#subStatus").value||"INFO");
+  const preview=$("#subStatusPreview"); preview.textContent=$("#subStatus").value; preview.className="chip status status-tone s-"+$("#subStatus").value;
+  const me=currentUser(), outside=sel.scope==="direct" && !sel.dir.split("--").includes(me);
+  const note=$("#subNote"), noteText=outside?exText(`You (${composerName(me)}) are not in this conversation.`,`Ty (${composerName(me)}) nie należysz do tej rozmowy.`):"";
+  note.hidden=!noteText; if(note.textContent!==noteText) note.textContent=noteText;
+  $("#subSend").disabled=subSending || !subDraftsReady || outside || !th;
+  subComposerSigning();
+}
+// The pane repeats the signing row and the requirement hint for the sub-thread's own destination (AC5).
+function subComposerSigning(){
+  const el=$("#subSigningNotice"), req=$("#subSigningRequires"); if(!el) return;
+  const key=subthreadPaneKey(), th=key && threadsOf()[sel.thread];
+  if(!key || !th){ el.hidden=true; req.hidden=true; return; }
+  const target={scope:sel.scope,dir:sel.dir,tid:th.tid}, status=signingPostBlock(target);
+  signingNoticePaint(el,status);
+  let required=false; try{ const c=B.signingContext, p=signingDestinationPath(target); required=!!c && !B.signingError && c.minimum(p.path,p.thread)==="trusted"; }catch(e){ required=false; }
+  const text=!status && required ? exText("This destination requires trusted signatures.","Ten cel wymaga zaufanych podpisów.") : "";
+  if(req.textContent!==text) req.textContent=text; req.hidden=!text;
+}
+function subReplyStart(m){
+  if(!signingEligible(m)){ toast(signingMessageBlock(m).message); return; }
+  const key=m.subthread?m.dkey+"|"+m.subthread:m.dkey+"|"+m.file;
+  if(subthreadPaneKey()!==key){ openSubthread(key,m.subthread?m.file:null); if(subthreadPaneKey()!==key) return; }
+  subReply={file:m.file,author:m.author,authorName:m.authorName,time:m.time};
+  const body=$("#subBody"), auto="@"+personOf(m.author,m.authorName).name+" ";
+  if(!body.value.trim()) body.value=auto;
+  subDraftSave(); renderSubPane(true); body.focus();
+}
+function subReplyClear(){ subReply=null; subDraftSave(); renderSubPane(true); }
+// One writer for every pane post: Send, Resolve, Reopen and the resolving half of Promote. Signing, the final
+// writer guard and read-only download are deliverMessage's (the same path as the main composer).
+async function subPostMessage({body,status,state=null,also=false,replyTo,slug,language,contentType,tkey=sel.thread,root=sel.sub,scope=sel.scope,dir=sel.dir}){
+  const me=signingSender(currentUser()), person=guardRegistered(me), th=threadsOf()[tkey];
+  if(!th) throw boardErr("e_subthread",{m:t("sub_gone")});
+  let to=replyTo && replyTo!==root ? (B.messageIndex.get(scope+":"+dir+"|"+replyTo)?.author||"all") : "all";
+  if(to===me || !B.people[to]) to="all";
+  if(scope==="direct"){ const ids=dir.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to=ids.find(x=>x!==me); }
+  let confirmed=false;
+  if(person.kind==="agent"){ if(!window.confirm(t("confirm_agent",{name:person.name}))) return null; confirmed=true; }
+  const msg=composeMessage({sender:me,to,scope,room:scope==="room"?dir:null,pair:scope==="direct"?dir:null,tid:th.tid,threadLabel:th.label,
+    slug:slug||slugify(body.replace(/@\S+/g,"").split("\n")[0]).slice(0,32).replace(/-+$/,"")||"message",status,language:language||undefined,body,contentType,
+    replyTo:replyTo||root,subthread:root,subthreadAlso:also,subthreadState:state,confirmedAgent:confirmed});
+  await deliverMessage(msg);
+  subFollowAuto(tkey,root);
+  return msg;
+}
+async function subSend(){
+  if(!B){ toast(t("e_open_first")); return; }
+  const key=subthreadPaneKey(); if(!key || subSending) return;
+  const draftKey=subComposerKey, body=$("#subBody").value.trim();
+  if(!body){ toast(t("e_empty")); return; }
+  const dkey=key.slice(0,key.indexOf("|")), reply=subReply && B.messageIndex.get(dkey+"|"+subReply.file) ? subReply.file : null;
+  subSending=true; $("#subSend").disabled=true;
+  try{
+    const submittedDraft=signingDraftStamp(), submitted=$("#subBody").value;
+    const msg=await subPostMessage({body,status:$("#subStatus").value,also:$("#subAlso").checked,replyTo:reply,language:$("#subLang").value,contentType:$("#subContentType").value});
+    if(!msg) return;
+    // Clear only the draft that was sent: never one typed meanwhile, never another sub-thread's.
+    if(subComposerKey===draftKey && submittedDraft===signingDraftStamp()){ $("#subBody").value=""; $("#subAlso").checked=false; subReply=null; subDraftSave(); }
+    else if(subComposerKey!==draftKey && subDrafts.get(draftKey)?.body===submitted){ subDrafts.delete(draftKey); subDraftPersist(); }
+    else toast(exText("Previous message posted; newer draft kept","Poprzednia wiadomość wysłana; nowy szkic zachowany"));
+  }catch(e){ toast(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)})); }
+  finally{ subSending=false; renderSubPane(true); }
+}
+// ---- resolve / reopen / promote (AC6, AC7) ----
+function subAskOpen(mode){
+  subAskMode=mode; const form=$("#subAsk"), input=$("#subAskInput");
+  $("#subPaneMenu").open=false; form.hidden=false; input.value="";
+  $("#subAskLabel").textContent=t(mode==="promote"?"sub_ask_title":"sub_ask_outcome");
+  $("#subAskOk").textContent=t(mode==="promote"?"sub_ask_promote":"sub_ask_resolve");
+  $("#subAskResult").textContent=""; input.focus();
+}
+function subAskClose(){ subAskMode=null; const form=$("#subAsk"); if(form) form.hidden=true; }
+async function subAskSubmit(){
+  const value=$("#subAskInput").value.trim(), mode=subAskMode, result=$("#subAskResult");
+  if(!value){ result.textContent=t(mode==="promote"?"e_title":"sub_ask_outcome_empty"); return; }
+  if(/[\n\r]/.test(value)) return;
+  $("#subAskOk").disabled=true;
+  try{
+    if(mode==="resolve"){ if(await subPostMessage({body:value,status:B.statuses.includes("DONE")?"DONE":"INFO",state:"resolved"})) subAskClose(); }
+    else if(mode==="promote") await subPromote(value);
+  }catch(e){ result.textContent=e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)}); }
+  finally{ $("#subAskOk").disabled=false; renderSubPane(true); }
+}
+async function subReopen(){
+  $("#subPaneMenu").open=false;
+  try{ await subPostMessage({body:t("sub_reopened_body"),status:"INFO",state:"open"}); }
+  catch(e){ toast(e && e.name==="BoardError" ? e.message : t("e_write",{m:e&&e.message||String(e)})); }
+}
+// The same two posts as `boardctl promote` (canonical command_promote): the new topic's first message with
+// TOPIC-TITLE and PROMOTED-FROM, then a resolving sub-thread message naming it. Nothing is ever deleted.
+function promoteSlug(title){ return title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60).replace(/^-+|-+$/g,"")||"topic"; }
+async function subPromote(rawTitle){
+  const key=subthreadPaneKey(), r=B.messageIndex.get(key), root=sel.sub, scope=sel.scope, dir=sel.dir, tkey=sel.thread, old=threadsOf()[tkey];
+  if(!r || r.subthread || r.quarantined || !old) throw boardErr("e_subthread",{m:t("sub_gone")});
+  const title=rawTitle.trim(); if(!validTopicTitle(title)) throw boardErr("e_title");
+  const me=signingSender(currentUser()), person=guardRegistered(me);
+  let confirmed=false; if(person.kind==="agent"){ if(!window.confirm(t("confirm_agent",{name:person.name}))) return; confirmed=true; }
+  let to="all"; if(scope==="direct"){ const ids=dir.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to=ids.find(x=>x!==me); }
+  const tid=nextThreadId(), label=tid+"-"+(title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"topic");
+  const common={sender:me,to,scope,room:scope==="room"?dir:null,pair:scope==="direct"?dir:null,status:"INFO",confirmedAgent:confirmed};
+  const first=composeMessage({...common,tid,threadLabel:label,slug:promoteSlug(title),topicTitle:title,promotedFrom:root,body:`Continues the sub-thread of ${root} (topic ${old.tid}).`});
+  await deliverMessage(first);
+  try{
+    await deliverMessage(composeMessage({...common,tid:old.tid,threadLabel:old.label,slug:"promoted-to-"+tid.toLowerCase(),replyTo:root,subthread:root,subthreadState:"resolved",
+      body:`Continued as ${tid} "${title}" (${first.fileName||first.relPath.split("/").pop()}). This sub-thread is resolved.`,reserved:new Set([first.relPath])}));
+  }catch(e){
+    $("#subAskResult").textContent=t("sub_promote_failed",{tid,file:first.relPath.split("/").pop(),m:e && e.message || String(e)});
+    return;
+  }
+  subAskClose(); subFollowAuto(tkey,root);
+  const next=Object.values(threadsOf()).find(x=>x.dkey===scope+":"+dir && x.tid===tid);
+  if(next){ sel={scope,dir,thread:next.key}; rememberView(); build(); $("#feed").focus({preventScroll:true}); }
+}
+// The promoted topic's first message links back (AC7): "Continued from a sub-thread".
+function promotedFromHtml(m){
+  if(!m.promotedFrom) return "";
+  return `<button type="button" class="chip sub-chip sub-promoted" data-subthread-open="${esc(m.dkey+"|"+m.promotedFrom)}" title="${esc(m.promotedFrom)}">\u{1F9F5} ${esc(t("sub_promoted"))} ›</button>`;
+}
+function wireSubPane(){
+  const pane=$("#subPane"); if(!pane) return;
+  wireMessageContainer($("#subFeed"));
+  $("#subFeed").addEventListener("click",e=>{
+    const older=e.target.closest("[data-sub-history]"), expand=e.target.closest("[data-sub-expand]"), inPane=e.target.closest("[data-sub-jump]");
+    if(older){ const rows=subthreadPaneRows(subthreadPaneKey()), page=subPageOf(rows), feed=$("#subFeed"), anchor=feed.querySelector("article.msg"), id=anchor?.id, top=anchor?.getBoundingClientRect().top;
+      const start=Math.max(0,page.start-SUB_PAGE); subPane.start=rows[start]?.path||null;
+      if(page.end-start>SUB_MAX_RENDERED){ const end=start+SUB_MAX_RENDERED; subPane.end=end>=rows.length?null:rows[end-1].path; }
+      renderSubPane(true); const el=id&&document.getElementById(id); if(el) feed.scrollTop+=el.getBoundingClientRect().top-top; }
+    else if(expand){ subPane.expanded.add(expand.dataset.subExpand); renderSubPane(true); }
+    else if(inPane) subJumpInPane(inPane.dataset.subJump);
+  });
+  let frame=0;
+  $("#subFeed").addEventListener("scroll",()=>{ if(frame) return; frame=requestAnimationFrame(()=>{ frame=0; subScrollUpdate(); }); });
+  $("#subRoot").addEventListener("click",e=>{
+    const summary=e.target.closest("summary"); if(summary){ subPane.rootOpen=!summary.parentElement.open; return; }
+    const main=e.target.closest("[data-sub-main]"); if(main) subJumpToMain(main.dataset.subMain);
+  });
+  $("#subPaneTitle").addEventListener("click",e=>{ const crumb=e.target.closest("[data-sub-crumb]"); if(!crumb) return;
+    if(crumb.dataset.subCrumb==="topic") closeSubthread(); else { const scope=sel.scope, dir=sel.dir; sel={scope,dir,thread:null}; rememberView(); build(); } });
+  $("#subClose").onclick=()=>closeSubthread(); $("#subBack").onclick=()=>closeSubthread();
+  $("#subFollow").onclick=()=>{ const fkey=subFollowKey(sel.thread,sel.sub), state=subFollowState(fkey); subFollowSet(fkey,state==="off"?"following":state==="following"?"muted":"off"); renderSubPane(true); };
+  $("#subPaneMenuToggle").addEventListener("click",e=>{ e.preventDefault(); const menu=$("#subPaneMenu"), panel=$("#subPaneMenuPanel"), r=e.currentTarget.getBoundingClientRect(); if(menu.open){ menu.open=false; return; }
+    menu.open=true; panel.style.left=Math.max(8,Math.min(r.right-panel.offsetWidth,innerWidth-panel.offsetWidth-8))+"px"; panel.style.top=Math.max(8,Math.min(r.bottom+6,innerHeight-panel.offsetHeight-8))+"px"; });
+  document.addEventListener("click",e=>{ const menu=$("#subPaneMenu"); if(menu.open && !menu.contains(e.target)) menu.open=false; });
+  $("#subResolve").onclick=()=>subAskOpen("resolve"); $("#subPromote").onclick=()=>subAskOpen("promote"); $("#subReopen").onclick=subReopen;
+  $("#subCopyLink").onclick=()=>{ $("#subPaneMenu").open=false; const r=B?.messageIndex.get(subthreadPaneKey()); if(!r) return; try{ navigator.clipboard && navigator.clipboard.writeText(r.path); }catch(err){} toast(t("sub_link_copied")); };
+  $("#subFlat").onclick=()=>{ $("#subPaneMenu").open=false; S.flatView=!S.flatView; saveSettings(); build({preserveComposer:true}); };
+  $("#subAsk").addEventListener("submit",e=>{ e.preventDefault(); subAskSubmit(); });
+  $("#subAskCancel").onclick=()=>{ subAskClose(); $("#subPaneMenuToggle").focus(); };
+  $("#subSend").onclick=subSend;
+  $("#subReplyClear").onclick=subReplyClear;
+  $("#subBody").addEventListener("keydown",e=>{ if(e.key==="Enter" && (e.metaKey||e.ctrlKey)){ e.preventDefault(); subSend(); } });
+  for(const type of ["input","change"]) $("#subComposer").addEventListener(type,()=>{ subDraftSave(); if(type==="change") renderSubPane(true); });
+  signingWireNotice($("#subSigningNotice"),()=>signingNoticeShown.get($("#subSigningNotice"))?.status||null);
+  $("#subNew").onclick=$("#subLatest").onclick=()=>{ subPane.start=null; subPane.end=null; renderSubPane(true); const feed=$("#subFeed"); feed.scrollTop=feed.scrollHeight; renderSubPane(true); };
+  $("#subReturn").onclick=()=>{ const key=subReturnKey; subShowReturn(""); if(key) openSubthread(key); };
+  // Esc closes the pane and keeps its draft; menus, dialogs and suggestion lists close first (AC3).
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="Escape" || e.defaultPrevented || !subthreadPaneKey() || document.querySelector("dialog[open]")) return;
+    if(e.target.closest?.(".top,#composer,.composer-target-menu,.sugg.show")) return;
+    if($("#subPaneMenu").open){ e.preventDefault(); $("#subPaneMenu").open=false; $("#subPaneMenuToggle").focus(); return; }
+    if(subAskMode){ e.preventDefault(); subAskClose(); $("#subPaneMenuToggle").focus(); return; }
+    e.preventDefault(); closeSubthread();
+  });
+  addEventListener("resize",()=>{ $("#subPaneMenu").open=false; if(subthreadPaneKey()) subPaneInert(); });
+}
 // Replaces a message container's content (SPEC-002-078 AC1: #feed and the sub-thread pane). Keeps the
 // reader's expanded messages, disclosures, review/information state, focused choice form and form caret, and
 // moves mounted report/form/extension nodes instead of rebuilding them. Scroll stays with the caller.
@@ -3680,7 +4177,7 @@ function messageArticleHtml(m,ctx){
   const {q,me,meP,subs}=ctx;
   const p = personOf(m.author, m.authorName), c = colorOf(m.author);
   const mine = S.align==="split" && me && m.author===me;
-  if(subthreadStub(m)) return subthreadStubHtml(m,c,mine);
+  if(!ctx.pane && subthreadStub(m)) return subthreadStubHtml(m,c,mine);
   if(m.receipt){
     const upTo = m.h["PRZECZYTANE-DO"];
     return `<div class="receipt ${mine?"mine":""}" data-file="${esc(m.file)}" style="--c:${c}"><span class="dot"></span>${esc(t("receipt_line",{who:p.name}))}${upTo?` ${esc(t("receipt_to"))} <code>${esc(upTo.slice(0,40))}</code>`:""} \u00b7 ${esc(m.time.slice(11,16))}${signingMessageHtml(m)}</div>`;
@@ -3691,13 +4188,13 @@ function messageArticleHtml(m,ctx){
   const long = m.body.length>700 && !$("#expandAll").checked && !q;
   const reply = m.replyTo && m.replyTo!=="-" ? B.messageIndex.get(m.dkey+"|"+m.replyTo) || B.msgs.find(x=>x.file===m.replyTo) : null;
   const toTitle = m.to==="all" ? t("c_all") : m.to;
-  return `<article class="msg ${toMe?"to-me":""} ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
+  return `<article class="msg ${toMe?"to-me":""} ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="${ctx.pane?"sm-":"m-"}${esc(m.dkey+"|"+m.file)}">
     <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
     <div><div class="msg-head"><span class="who">${esc(p.name)}</span>${presenceBadge(m.author)}<span class="kind">${esc(kindLabel(p))}</span><span class="to">\u2192 ${esc(toTitle)}</span>
       <span class="time ${m.fixed?"fixed":""}" title="${m.fixed?esc(t("time_in_file",{t:m.fixed,f:m.fixReason||"time-corrections"})):esc(m.file)}">${esc(m.time.slice(11,16))}${m.fixed?" \u00b7 "+esc(t("time_corrected")):""}</span>
       ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
-      ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}${m.subthread && !sel.sub?`<button type="button" class="chip sub-chip" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">\u{1F9F5} ${esc(t("sub_in"))}</button>`:""}</div>
-      ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
+      ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}${!ctx.pane?promotedFromHtml(m):""}${m.subthread && !ctx.pane?`<button type="button" class="chip sub-chip" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">\u{1F9F5} ${esc(t("sub_in"))}</button>`:""}</div>
+      ${reply && !(ctx.pane && reply.file===ctx.root && reply.dkey===m.dkey)?`<div class="reply-ref" ${ctx.pane && reply.subthread===ctx.root?"data-sub-jump":"data-jump"}="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}${ctx.pane && reply.subthread!==ctx.root?` \u00b7 ${esc(t("sub_in_main"))} \u2197`:""}</div>`:""}
       ${signingMessageHtml(m)}
       ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
       <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
@@ -3705,8 +4202,8 @@ function messageArticleHtml(m,ctx){
       ${answerReview(m)}
       ${!signingEligible(m)?signingExclusionHtml(m):m.metadataError?`<p class="metadata-error">${m.quarantined?"[withdrawn / original preserved] ":""}${esc(t("invalid_metadata"))}</p>`:(m.h.UI!==undefined && !m.bodyLoaded?"":choiceHtml(m))}
       ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
-      ${!sel.sub && !S.flatView && subs.has(m.dkey+"|"+m.file) && !m.subthread ? subthreadStripHtml(subs.get(m.dkey+"|"+m.file)) : ""}
-      <div class="tools"><button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button>${!sel.sub && subthreadStartable(m)?`<button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-subthread-start="${esc(m.dkey+"|"+m.file)}" aria-label="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}" title="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}">\u{1F9F5}<span class="tools-label"> ${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}</span></button>`:""}<button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
+      ${!ctx.pane && !S.flatView && subs.has(m.dkey+"|"+m.file) && !m.subthread ? subthreadStripHtml(subs.get(m.dkey+"|"+m.file)) : ""}
+      <div class="tools"><button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button>${!ctx.pane && subthreadStartable(m)?`<button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-subthread-start="${esc(m.dkey+"|"+m.file)}" aria-label="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}" title="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}">\u{1F9F5}<span class="tools-label"> ${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}</span></button>`:""}<button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
 }
 function render(background = false){
   extensionContext();
@@ -3720,10 +4217,7 @@ function render(background = false){
   let titleText = t("all_messages");
   if(sel.thread){ const topic = threadsOf()[sel.thread]; titleText = composerDirLabel(sel.scope, sel.dir)+" \u203a "+(topic?.tid||"")+" "+threadTitle(topic); }
   else if(sel.scope) titleText = composerDirLabel(sel.scope, sel.dir);
-  // Before SPEC-002-078's pane, a selected sub-thread is this transcript filtered to root + members (AC5).
-  if(sel.sub) titleText += " \u203a "+t("sub_crumb");
   $("#title").textContent = titleText; $("#title").title = titleText;
-  $("#subBack").hidden = !sel.sub;
   $("#topicRename").hidden = !sel.thread || !!sel.sub; if(!sel.thread || sel.sub) $("#titleEditor").hidden = true;
   subthreadListRender();
   $("#guidanceOpen").hidden = !sel.scope;
@@ -3737,7 +4231,6 @@ function render(background = false){
   if(missing) hydrateMessages(page.rows,B).then(()=>{ if(token===bodyRenderToken) render(background); }).catch(e=>{ if(token===bodyRenderToken) toast(t("message_error",{m:e.message})); });
   let html = view.length>MESSAGE_PAGE_SIZE ? `<nav class="history-nav" aria-label="${esc(t("history_label"))}"><button class="btn" data-history="older" ${page.start===0?"disabled":""}>${esc(t("history_older"))}</button><span>${esc(t("history_range",{start:page.start+1,end:page.end,total:view.length}))}</span><button class="btn" data-history="newer" ${page.end===view.length?"disabled":""}>${esc(t("history_newer"))}</button><button class="btn" data-history="latest" ${page.end===view.length?"disabled":""}>${esc(t("history_latest"))}</button></nav>` : "", lastDay = "";
   const subs = subthreadsOf(), ctx={q,me,meP,subs};
-  if(sel.sub && !page.rows.some(m=>m.subthread)) html += `<p class="hint sub-empty">${esc(t("sub_empty"))}</p>`;
   for(const m of page.rows){
     const day = m.time.slice(0,10);
     if(day!==lastDay){ html += `<div class="day">${esc(dayLabel(day))}</div>`; lastDay = day; }
@@ -3989,12 +4482,12 @@ function updateComposerInfo(){
 }
 function startReply(m){
   if(!signingEligible(m)){toast(signingMessageBlock(m).message);return;}
+  // A reply to a sub-thread member stays in its sub-thread: the pane composer answers it (SPEC-002-078 AC5).
+  if(m.subthread){ subReplyStart(m); return; }
   replyTo = m;
   $("#replying").style.display = "flex";
   $("#replyName").textContent = `${personOf(m.author,m.authorName).name} \u00b7 ${m.time.slice(5,16)} \u00b7 ${m.label}`;
-  // A reply to a member, or to the root inside its sub-thread view, stays in the sub-thread (SPEC-002-077 AC5).
-  const sub = m.subthread || (sel.sub && m.file===sel.sub && m.dkey===sel.scope+":"+sel.dir ? sel.sub : "");
-  setComposerTarget({scope:m.scope, dir:m.dir, thread:m.tkey, sub, to:B.people[m.author] ? m.author : "all"});
+  setComposerTarget({scope:m.scope, dir:m.dir, thread:m.tkey, to:B.people[m.author] ? m.author : "all"});
   const auto = "@"+personOf(m.author,m.authorName).name+" ";
   startReply.auto = auto;
   if(!$("#cBody").value.trim()) $("#cBody").value = auto;
@@ -6404,7 +6897,7 @@ function notificationBinding(){return B?JSON.stringify([dirHandle?boardStorageId
 function notificationCurrent(state){return state===notificationState&&state.binding===notificationBinding()&&state.root===dirHandle;}
 async function readNotificationFollows(key){const db=await idb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction("kv"),q=tx.objectStore("kv").get(key);tx.oncomplete=()=>resolve(q.result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error("Notification preference read aborted"));});}finally{db.close();}}
 function cleanNotificationFollows(value){
- const result=[];for(const item of Array.isArray(value)?value.slice(0,NOTIFY_FOLLOW_LIMIT):[]){if(!item||!["room","thread","participant"].includes(item.kind)||typeof item.key!=="string"||!item.key||item.key.length>1000)continue;if(!result.some(x=>x.kind===item.kind&&x.key===item.key))result.push({kind:item.kind,key:item.key});}return result;
+ const result=[];for(const item of Array.isArray(value)?value.slice(0,NOTIFY_FOLLOW_LIMIT):[]){if(!item||!["room","thread","participant","subthread","subthread-mute"].includes(item.kind)||typeof item.key!=="string"||!item.key||item.key.length>1000)continue;if(!result.some(x=>x.kind===item.kind&&x.key===item.key))result.push({kind:item.kind,key:item.key});}return result;
 }
 function notificationsContext(reset=false){
  const binding=notificationBinding();if(!binding)return null;
@@ -6417,7 +6910,13 @@ function notificationsContext(reset=false){
  else if(durable)state.loading=(async()=>{try{const value=await readNotificationFollows(state.store);if(notificationCurrent(state))state.follows=cleanNotificationFollows(value);}catch{state.stored=false;}finally{state.ready=true;if(notificationCurrent(state))renderNotifications();}})();
  renderNotifications();return state;
 }
-function notificationMatches(state,m){return state.follows.some(x=>x.kind==="room"?m.scope==="room"&&m.dir===x.key:x.kind==="thread"?m.tkey===x.key:m.author===x.key);}
+// SPEC-002-078 AC8: a sub-thread follow (key topic|root) matches its members; a muted sub-thread suppresses them even
+// when its room, topic or author is followed.
+function notificationMatches(state,m){
+ const sub=m.subthread?m.tkey+"|"+m.subthread:null;
+ if(sub&&state.follows.some(x=>x.kind==="subthread-mute"&&x.key===sub))return false;
+ return state.follows.some(x=>x.kind==="room"?m.scope==="room"&&m.dir===x.key:x.kind==="thread"?m.tkey===x.key:x.kind==="participant"?m.author===x.key:x.kind==="subthread"&&x.key===sub);
+}
 function notificationEligible(m){return signingEligible(m)&&!sessionNotice(m)&&!m.metadataError&&!m.quarantined&&!m.receipt&&!m.source?.readError&&!m.source?.ioError&&m.author!==currentUser()&&repairVisible(m);}
 function notificationsObserve(model,background){
  const state=notificationsContext(!background);if(!state)return;
@@ -6438,7 +6937,7 @@ async function drainNotifications(state){
   if(B!==model){if(B.byPath.has(path)){state.pending.set(path,true);if(state.pending.size>NOTIFY_LIMIT)state.pending.delete(state.pending.keys().next().value);}continue;}
   if(!notificationEligible(current)||!notificationMatches(state,current)||!current.bodyLoaded)continue;
   state.delivered.add(path);if(state.delivered.size>1000)state.delivered.delete(state.delivered.values().next().value);
-  const entry={path,unread:true,author:current.author,title:current.dir+" · "+current.label,preview:current.body.slice(0,240)};
+  const entry={path,unread:true,author:current.author,title:current.dir+" · "+current.label+(current.subthread?" · \u{1F9F5}":""),preview:current.body.slice(0,240)};
   state.entries.unshift(entry);state.entries.length=Math.min(state.entries.length,NOTIFY_LIMIT);notificationSystem(state,entry);renderNotifications();
  }}catch{if(notificationCurrent(state)){notificationPermissionNote="error";renderNotifications();}}finally{state.scanning=false;}
 }
@@ -6462,7 +6961,7 @@ function changeNotificationFollow(kind,key,remove=false){
  const snapshot=structuredClone(state.follows);renderNotifications();
  if(state.store){notificationWrites=notificationWrites.then(async()=>{try{await idbSet(state.store,snapshot);notificationMemory.delete(state.binding);if(notificationCurrent(state))state.stored=true;}catch{notificationMemory.set(state.binding,snapshot);while(notificationMemory.size>20)notificationMemory.delete(notificationMemory.keys().next().value);state.stored=false;}if(notificationCurrent(state))renderNotifications();});}
 }
-const NOTIFICATION_WORDS={room:"notify_room",thread:"notify_thread",participant:"notify_participant",unavailable:"notify_unavailable",denied:"notify_denied",default:"notify_default",granted:"notify_granted",off:"notify_off",error:"notify_error"};
+const NOTIFICATION_WORDS={room:"notify_room",thread:"notify_thread",participant:"notify_participant",subthread:"notify_subthread","subthread-mute":"notify_subthread_mute",unavailable:"notify_unavailable",denied:"notify_denied",default:"notify_default",granted:"notify_granted",off:"notify_off",error:"notify_error"};
 function notificationBackgroundRefresh(){const state=notificationState;return !!notificationOS&&typeof window.Notification==="function"&&Notification.permission==="granted"&&!!state&&notificationCurrent(state)&&state.ready&&state.follows.length>0;}
 function notificationHasDraft(){return !!($("#cBody").value.length||$("#cNewThread").value.length||$("#cNewRoom").value.length||replyTo||composerStructured);}
 function renderNotifications(){
@@ -6484,12 +6983,17 @@ function renderNotifications(){
 }
 async function activateNotification(state,entry,reply){
  if(!notificationCurrent(state))return;const m=B.byPath.get(entry.path);if(!m||!notificationEligible(m)){ $("#notificationsResult").textContent=t("notify_changed");return;}
- // Retargeting even unchanged text can send a draft to the wrong conversation. Require an empty composer.
- if(reply&&notificationHasDraft()){ $("#notificationsResult").textContent=t("notify_draft");return;}
+ // Retargeting even unchanged text can send a draft to the wrong conversation. Require an empty composer: for a
+ // sub-thread member that is its pane composer, which Quick reply writes into (SPEC-002-078 AC8).
+ const drafted=()=>m.subthread?subComposerHasDraft(m.tkey,m.subthread):notificationHasDraft();
+ if(reply&&drafted()){ $("#notificationsResult").textContent=t("notify_draft");return;}
  const model=B;try{await hydrateMessages([m],model);}catch{$("#notificationsResult").textContent=t("notify_changed");return;}
  if(!notificationCurrent(state)||B!==model||!notificationEligible(m))return;
- if(reply&&notificationHasDraft()){$("#notificationsResult").textContent=t("notify_draft");return;}
- $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};sel={scope:m.scope,dir:m.dir,thread:m.tkey,...(m.subthread&&!S.flatView?{sub:m.subthread}:{})};rememberView();build({preserveComposer:true});
+ if(reply&&drafted()){$("#notificationsResult").textContent=t("notify_draft");return;}
+ $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};
+ // A member opens in its sub-thread pane, focused there; Quick reply answers it from the pane composer.
+ if(m.subthread){sel={scope:m.scope,dir:m.dir,thread:m.tkey};openSubthread(m.dkey+"|"+m.subthread,m.file);if(reply)subReplyStart(m);renderNotifications();return;}
+ sel={scope:m.scope,dir:m.dir,thread:m.tkey};rememberView();build({preserveComposer:true});
  const view=matchingMessages(),at=view.findIndex(x=>x.path===m.path),end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2));historyPage.end=end===view.length?null:view[end-1]?.path;build({preserveComposer:true});
  const element=document.getElementById("m-"+m.dkey+"|"+m.file);if(element){element.tabIndex=-1;element.scrollIntoView({block:"center"});element.focus({preventScroll:true});}if(reply)startReply(m);renderNotifications();
 }
@@ -6689,10 +7193,11 @@ function composerSubTarget(x){
 const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'')+(x.sub?'^'+x.sub:'');
 const sameComposerTarget=(a,b)=>composerTargetKey(a)===composerTargetKey(b);
 // What the visible view implies: a thread posts there, a room starts a new topic, a direct
-// conversation continues its most recent topic; All messages has no destination.
+// conversation continues its most recent topic; All messages has no destination. An open sub-thread pane
+// has its own composer, so the main composer stays on the topic (SPEC-002-078 owner decision).
 function composerViewTarget(){
  if(!B||!sel.scope)return {scope:null};
- if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread,...(sel.sub?{sub:sel.sub}:{})};
+ if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread};
  return sel.scope==='direct'?composerDirectTarget(sel.dir):{scope:sel.scope,dir:sel.dir,thread:''};
 }
 function composerDirectTarget(dir){
@@ -6717,7 +7222,7 @@ function setComposerTarget(target={}){
 // Advanced fields and pin choices are explicit: they end any pending mismatch banner.
 function composerExplicit(){composerPin=null;composerTargetRender();}
 function composerFollowView(preserve){
- const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null,sel.sub||null]);
+ const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null]);
  if(key===composerViewKey)return composerTargetRender();
  composerViewKey=key;
  if(preserve)return composerTargetRender();
@@ -6775,8 +7280,9 @@ function composerTargetRender(){
   if(note){noteEl.dataset.tone=note.tone||'warn';set(noteEl.querySelector('.composer-target-note-text'),note.text);
    noteEl.querySelector('.composer-target-note-actions').replaceChildren(...note.actions.map(a=>{const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.composerAction=a.action;if(a.id)b.dataset.id=a.id;b.textContent=a.label;return b;}));}}
  $('#send').disabled=!!B&&(!target.scope||!!block);
- // The chip row only appears when the destination differs from what the view shows (SPEC-002-068).
- const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
+ // The chip row only appears when the destination differs from what the view shows (SPEC-002-068), and always
+ // while a sub-thread pane is open: two composers are on screen, each names its destination (SPEC-002-078 AC5).
+ const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&!sel.sub&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
  if(row.hidden!==same){if(same&&composerMenu?.anchor===chip)composerMenuClose();row.hidden=same;}
  const info=[B&&!target.scope?exText('Choose where to post: pick a room or topic in the sidebar, or use Change destination.','Wybierz, gdzie wysłać: wskaż pokój lub wątek w panelu bocznym albo użyj „Zmień cel”.'):'',composerInfoBase].filter(Boolean).join(' ');
  if($('#cInfo').textContent!==info)$('#cInfo').textContent=info;
@@ -7094,6 +7600,35 @@ function wirePanelLayout(){
   else if(e.key==='Home'){e.preventDefault();reset();}
  };
  addEventListener('resize',applySettingsWidth);
+}
+/* The sub-thread pane (SPEC-002-078 AC2) resizes like Settings: the same handle behaviour, a remembered width
+   (S.subW) and bounds that keep the conversation readable (min 320px, at most 60% of the conversation area). */
+function subWidthBounds(){
+ const area=($('.feed-wrap')?.getBoundingClientRect().width||innerWidth)+($('#subPane')?.getBoundingClientRect().width||0);
+ const max=innerWidth>=1200?Math.max(320,Math.floor(area*0.6)):Math.max(280,innerWidth-48);return {min:Math.min(320,max),max};
+}
+function applySubWidth(){
+ const {min,max}=subWidthBounds(),width=Math.max(min,Math.min(max,Number.isFinite(S.subW)?S.subW:420));
+ document.documentElement.style.setProperty('--subw',width+'px');
+ const handle=$('#subResize');if(!handle)return;handle.setAttribute('aria-valuemin',min);handle.setAttribute('aria-valuemax',max);handle.setAttribute('aria-valuenow',Math.round(width));
+}
+function wireSubPaneLayout(){
+ const pane=$('#subPane'),handle=$('#subResize');if(!pane||!handle)return;
+ const resize=width=>{const {min,max}=subWidthBounds();S.subW=Math.round(Math.max(min,Math.min(max,width)));applySubWidth();};
+ const reset=()=>{S.subW=420;applySubWidth();saveSettings();};
+ handle.onpointerdown=e=>{
+  if(e.button!==0)return;e.preventDefault();const x=e.clientX,width=pane.getBoundingClientRect().width;
+  handle.setPointerCapture(e.pointerId);document.body.classList.add('resizing');
+  handle.onpointermove=event=>resize(width+x-event.clientX);
+  const done=()=>{handle.onpointermove=null;handle.onpointerup=null;handle.onpointercancel=null;handle.onlostpointercapture=null;document.body.classList.remove('resizing');saveSettings();};
+  handle.onpointerup=done;handle.onpointercancel=done;handle.onlostpointercapture=done;
+ };
+ handle.ondblclick=reset;
+ handle.onkeydown=e=>{
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();resize(pane.getBoundingClientRect().width+(e.key==='ArrowLeft'?20:-20));saveSettings();}
+  else if(e.key==='Home'){e.preventDefault();reset();}
+ };
+ addEventListener('resize',applySubWidth);
 }
 
 // Signing help: one table of "why you cannot post" reasons feeds the composer notice,
@@ -7473,7 +8008,10 @@ let signingKnown = {}, signingNoticeKey = "", signingNoticeStatus = null, signin
 function signingNoteCatalog() {
   for (const p of signingProvider.catalog()) signingKnown[p.participant] = p.fingerprint;
 }
-function signingDestinationPath() {
+// `explicit` ({scope, dir, tid}) names a destination other than the main composer's: the sub-thread pane
+// composer posts into its topic (SPEC-002-078 AC5), whatever the main composer targets.
+function signingDestinationPath(explicit) {
+  if (explicit) return { path: `${explicit.scope === "direct" ? B.layout.directDir : B.layout.roomsDir}/${explicit.dir}/x.txt`, thread: explicit.tid || "" };
   const where = $("#cWhere")?.value || "", newRoom = slugify($("#cNewRoom")?.value || ""), L = B.layout;
   const th = $("#cThread")?.value ? threadsOf()[$("#cThread").value] : null;
   let dir = "", top = L.roomsDir;
@@ -7500,13 +8038,13 @@ function signingSendDecision(model, required) {
   return { kind: !status || status.id === "unsigned" ? "unsigned" : status.id === "signed" ? "signed" : "refused", status };
 }
 // What happens to the message in the composer now, for the composer's destination.
-function signingPostBlock() {
+function signingPostBlock(explicit) {
   if (!B) return null;
-  const c = B.signingContext, target = c ? signingDestinationPath() : null;
+  const c = B.signingContext, target = c ? signingDestinationPath(explicit) : null;
   let required = false;
   try { required = !!c && c.minimum(target.path, target.thread) === "trusted"; } catch { required = false; }
   // A ticked "Require trusted signatures" for a room or topic being created counts at once (SPEC-002-063).
-  return signingSendDecision(B, required || (typeof historyCreationRequires === "function" && historyCreationRequires())).status;
+  return signingSendDecision(B, required || (!explicit && typeof historyCreationRequires === "function" && historyCreationRequires())).status;
 }
 function signingStatusError(status) {
   const error = new Error(status.detail);
@@ -7557,12 +8095,19 @@ function updateSigningNotice(status = signingPostBlock()) {
     req.hidden = !note;
   }
   const el = $("#signingNotice");
-  if (!el) return;
+  if (el) { signingNoticeStatus = status; signingNoticePaint(el, status); }
+  // The sub-thread pane repeats the row for its own destination (SPEC-002-078 AC5).
+  if (typeof subComposerSigning === "function") subComposerSigning();
+}
+// Paints one status row. Each row keeps the status it shows, so its buttons act on that status.
+const signingNoticeShown = new WeakMap();
+function signingNoticePaint(el, status) {
   const note = signingNoticeNote(status), action = status?.action || null;
   const key = JSON.stringify([status, action && signingActionLabel(action), note && [note.kind, note.text, note.owners.map((id) => [id, signingPersonaName(id)])]]);
-  signingNoticeStatus = status;
-  if (key === signingNoticeKey) return;
-  signingNoticeKey = key;
+  const shown = signingNoticeShown.get(el);
+  signingNoticeShown.set(el, { key, status });
+  if (shown?.key === key) return;
+  if (el.id === "signingNotice") signingNoticeKey = key;
   el.hidden = !status;
   el.dataset.signingStatus = status?.id || "";
   el.dataset.tone = status?.tone || "";
@@ -7643,8 +8188,8 @@ async function signingComposerUnlock(files) {
   } else note("error", errors.length ? failed : exText(`These keys were already unlocked here, and none is for ${name}.`, `Te klucze były już odblokowane, a żaden nie jest dla: ${name}.`));
   updateSigningNotice();
 }
-function signingNoticeAction(button) {
-  const status = signingNoticeStatus, action = button.classList.contains("signing-notice-alt") ? status?.alt : status?.action;
+function signingNoticeAction(button, status = signingNoticeStatus) {
+  const action = button.classList.contains("signing-notice-alt") ? status?.alt : status?.action;
   if (!action) return;
   if (action.kind === "unlock") { const input = $("#signingComposerKey"); input.value = ""; input.click(); }
   else if (action.kind === "approve") signingDialog({ task: "review", participant: action.participant, focus: "#signingFingerprint" });
@@ -8059,7 +8604,7 @@ async function prepareSigning(model, files, base = null) {
   }
 }
 function signingDraftStamp() {
-  return JSON.stringify([composerStructured, [...document.querySelectorAll("#composer input,#composer textarea,#composer select,.choice-form input,.choice-form textarea,.choice-form select,.board-form input,.board-form textarea,.board-form select")].map((el) => [el.id, el.name, el.value, el.checked])]);
+  return JSON.stringify([composerStructured, [...document.querySelectorAll("#composer input,#composer textarea,#composer select,#subComposer input,#subComposer textarea,#subComposer select,.choice-form input,.choice-form textarea,.choice-form select,.board-form input,.board-form textarea,.board-form select")].map((el) => [el.id, el.name, el.value, el.checked])]);
 }
 async function signingDelivery(msg, options = {}) {
   const model = options.model || B, base = options.base || baseHandle, C = SigningContract, origin = dirHandle, epoch = signingProvider.generation, stamp = signingDraftStamp(), expected = model?.signingExpected;
@@ -9334,7 +9879,16 @@ function wireSigning() {
   key.setAttribute("aria-label", exText("Private key file of the selected persona", "Plik klucza prywatnego wybranej persony"));
   key.onchange = () => { const files = [...key.files]; key.value = ""; if (files.length) signingComposerUnlock(files); };
   document.body.append(key);
-  const el = $("#signingNotice");
+  signingWireNotice($("#signingNotice"), () => signingNoticeStatus);
+  // Any destination change (room, topic, new room, recipient) recomputes the status.
+  for (const type of ["input", "change"]) $("#composer")?.addEventListener(type, () => updateSigningNotice());
+  setInterval(signingTick, 3e4);
+  // Coming back to the tab rechecks at once; an expired key must not look ready.
+  window.addEventListener("focus", signingTick);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) signingTick(); });
+}
+// A status row's buttons (the composer's and the sub-thread pane's) act on the status that row shows.
+function signingWireNotice(el, current) {
   el?.addEventListener("click", (event) => {
     const button = event.target.closest?.("button");
     if (!button) return;
@@ -9351,18 +9905,12 @@ function wireSigning() {
       if (signingSelectPersona(id)) {
         signingMode = "signed";
         updateSigningNotice();
-        $("#signingNotice .signing-notice-action:not([hidden])")?.focus();
+        el.querySelector(".signing-notice-action:not([hidden])")?.focus();
       }
       return;
     }
-    signingNoticeAction(button);
+    signingNoticeAction(button, current());
   });
-  // Any destination change (room, topic, new room, recipient) recomputes the status.
-  for (const type of ["input", "change"]) $("#composer")?.addEventListener(type, () => updateSigningNotice());
-  setInterval(signingTick, 3e4);
-  // Coming back to the tab rechecks at once; an expired key must not look ready.
-  window.addEventListener("focus", signingTick);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) signingTick(); });
 }
 // Keys lock silently after 15 idle minutes; the composer must not keep showing them as ready.
 function signingTick() {
@@ -9686,6 +10234,7 @@ function wire(){
     if(n) n.focus();
   });
   wireMessageContainer($("#feed"));
+  wireSubPane(); wireSubPaneLayout();
   $("#feed").addEventListener("click", e=>{
     const history=e.target.closest("[data-history]");
     if(!history) return;
@@ -9805,7 +10354,7 @@ function wireMessageContainer(el){
     else if(rep){ const m = B.msgs.find(x=>x.dkey+"|"+x.file===rep.dataset.reply); if(m) (el.id==="subFeed"?subReplyStart:startReply)(m); }
     else if(cp){ try{ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.copy); }catch(err){} toast(t("copied")); }
     else if(go){ const x = threadsOf()[go.dataset.goto]; if(x){ sel = {scope:x.scope,dir:x.dir,thread:x.key}; rememberView(); build(); } }
-    else if(jump) jumpToMessage(jump.dataset.jump);
+    else if(jump) (el.id==="subFeed"?subJumpToMain:jumpToMessage)(jump.dataset.jump);
   });
 }
 async function init(){

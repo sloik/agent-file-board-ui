@@ -1,6 +1,8 @@
 "use strict";
-// SPEC-002-077: sub-threads in the viewer, part A. Model, main flow, summary strip, filtered sub-thread view,
-// composer destination and stamping, unread, discovery, refresh and reload. Owner policy: no VoiceOver checks;
+// SPEC-002-077: sub-threads in the viewer, part A. Model, main flow, summary strip, opening a sub-thread,
+// composer destination and stamping, unread, discovery, refresh and reload. SPEC-002-078 replaced the filtered
+// sub-thread view with the pane: an open sub-thread is #subPane (members in #subFeed, the pane composer), and the
+// main feed keeps the topic; these tests assert that pane behaviour (tests/subthreads-pane.test.js has the rest). Owner policy: no VoiceOver checks;
 // these are unit, DOM text/hierarchy and geometry checks.
 const { test, before, after } = require("node:test");
 const assert = require("node:assert/strict");
@@ -24,6 +26,8 @@ async function boot({ invalid = false, extra = {}, viewport, me = "human-owner-0
   return { ...s, proj, cleanup: () => h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }) };
 }
 const feedFiles = page => page.$$eval("#feed article.msg", els => els.map(e => e.dataset.file));
+const paneFiles = page => page.$$eval("#subFeed article.msg", els => els.map(e => e.dataset.file));
+const MAIN = [F.root, F.also, F.plain, F.root2];
 const written = (page, text) => page.evaluate(text => window.__fakefs.dump().find(f => f.text.includes(text))?.text || null, text);
 const header = (text, key) => (text.match(new RegExp("^" + key + ": (.*)$", "m")) || [])[1];
 async function refresh(page) {
@@ -82,20 +86,23 @@ test("AC2 every SPEC-002-076 rule isolates the file as invalid; invalid files ar
 test("AC3 the main flow hides members, keeps plain replies, and shows a SUBTHREAD-ALSO member as a non-interactive stub", async () => {
   const s = await boot();
   try {
-    assert.deepEqual(await feedFiles(s.page), [F.root, F.also, F.plain, F.root2]);
-    const stub = s.page.locator(`article[data-file="${F.also}"]`);
+    assert.deepEqual(await feedFiles(s.page), MAIN);
+    const stub = s.page.locator(`#feed article[data-file="${F.also}"]`);
     await expect(stub).toHaveClass(/sub-stub/);
     await expect(stub.locator(".sub-chip")).toHaveText("🧵 Also in a sub-thread");
     await expect(stub.locator(".sub-stub-text")).toHaveText("Benchmark summary: Postgres is 3x faster on our load.");
     assert.equal(await stub.locator(".tools, form, [data-reply], .board-report, .board-form").count(), 0, "a stub has no actions and no interactive body");
     assert.equal(await s.page.locator(`[id="m-${X.KEY(F.also)}"]`).count(), 1, "the member renders once in the document");
-    // The plain reply links to a hidden member: the jump opens that member's sub-thread (AC3/AC5).
-    await s.page.locator(`article[data-file="${F.plain}"] .reply-ref`).click();
+    // The plain reply links to a hidden member: the jump opens that member's sub-thread (AC3/AC5), now in the pane.
+    await s.page.locator(`#feed article[data-file="${F.plain}"] .reply-ref`).click();
     await expect.poll(() => s.page.evaluate(() => sel.sub || null)).toBe(F.root);
-    assert.deepEqual(await feedFiles(s.page), [F.root, F.first, F.also, F.question]);
-    // Inside the sub-thread the ALSO member renders in full, once.
-    assert.equal(await s.page.locator(`article[data-file="${F.also}"].sub-stub`).count(), 0);
-    assert.equal(await s.page.locator(`[id="m-${X.KEY(F.also)}"]`).count(), 1);
+    await expect(s.page.locator("#subPane")).toBeVisible();
+    assert.deepEqual(await paneFiles(s.page), [F.first, F.also, F.question]);
+    assert.deepEqual(await feedFiles(s.page), MAIN, "the main feed keeps the topic's main flow");
+    // Inside the pane the ALSO member renders in full, once; the main flow keeps its stub (distinct ids).
+    assert.equal(await s.page.locator(`#subFeed article[data-file="${F.also}"].sub-stub`).count(), 0);
+    assert.equal(await s.page.locator(`[id="sm-${X.KEY(F.also)}"]`).count(), 1);
+    assert.equal(await s.page.locator(`[id="m-${X.KEY(F.also)}"].sub-stub`).count(), 1);
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
@@ -166,64 +173,70 @@ test("AC4 the strip fits at 320 px and is readable in System, Light, Dark and Dr
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
-test("AC5 strip, Enter on the strip and Start sub-thread open the filtered view with a Back bar; members offer no Start", async () => {
+test("AC5 strip, Enter on the strip and Start sub-thread open the sub-thread pane; members offer no Start", async () => {
   const s = await boot();
   try {
-    await expect(s.page.locator("#subBack")).toBeHidden();
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).focus();
+    await expect(s.page.locator("#subPane")).toBeHidden();
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).focus();
     await s.page.keyboard.press("Enter");
-    await expect(s.page.locator("#title")).toHaveText("# planning › T009 Planning › 🧵 Sub-thread");
-    await expect(s.page.locator("#subBack")).toBeVisible();
-    assert.deepEqual(await feedFiles(s.page), [F.root, F.first, F.also, F.question]);
-    assert.equal(await s.page.locator("#feed [data-subthread-start]").count(), 0, "no Start sub-thread inside a sub-thread (one level)");
+    await expect(s.page.locator("#subPane")).toBeVisible();
+    await expect(s.page.locator("#title")).toHaveText("# planning › T009 Planning");
+    await expect(s.page.locator("#subPaneTitle")).toHaveText("# planning › T009 Planning › 🧵 human-owner-01: Which database should the planning service use?");
+    await expect(s.page.locator("#subClose")).toBeVisible();
+    assert.deepEqual(await paneFiles(s.page), [F.first, F.also, F.question]);
+    assert.deepEqual(await feedFiles(s.page), MAIN);
+    assert.equal(await s.page.locator("#subFeed [data-subthread-start]").count(), 0, "no Start sub-thread inside a sub-thread (one level)");
     await expect(s.page.locator("#topicRename")).toBeHidden();
-    await s.page.click("#subBack");
-    await expect(s.page.locator("#subBack")).toBeHidden();
-    assert.deepEqual(await feedFiles(s.page), [F.root, F.also, F.plain, F.root2]);
-    // Start sub-thread on a message with none: the view opens with the root only and a hint; Start is not on the stub.
-    assert.equal(await s.page.locator(`article[data-file="${F.also}"] [data-subthread-start]`).count(), 0);
-    const start = s.page.locator(`article[data-file="${F.plain}"] [data-subthread-start]`);
+    await s.page.click("#subClose");
+    await expect(s.page.locator("#subPane")).toBeHidden();
+    assert.deepEqual(await feedFiles(s.page), MAIN);
+    // Start sub-thread on a message with none: the pane opens with no members and a hint; Start is not on the stub.
+    assert.equal(await s.page.locator(`#feed article[data-file="${F.also}"] [data-subthread-start]`).count(), 0);
+    const start = s.page.locator(`#feed article[data-file="${F.plain}"] [data-subthread-start]`);
     await expect(start).toHaveAttribute("aria-label", "Start sub-thread");
-    await expect(s.page.locator(`article[data-file="${F.root}"] [data-subthread-start]`)).toHaveAttribute("aria-label", "Open sub-thread");
-    await s.page.locator(`article[data-file="${F.plain}"]`).hover();
+    await expect(s.page.locator(`#feed article[data-file="${F.root}"] [data-subthread-start]`)).toHaveAttribute("aria-label", "Open sub-thread");
+    await s.page.locator(`#feed article[data-file="${F.plain}"]`).hover();
     await start.click();
-    assert.deepEqual(await feedFiles(s.page), [F.plain]);
-    await expect(s.page.locator("#feed .sub-empty")).toHaveText("No replies yet. The first message you post here starts the sub-thread.");
+    assert.equal(await s.page.evaluate(() => sel.sub), F.plain);
+    assert.deepEqual(await paneFiles(s.page), []);
+    await expect(s.page.locator("#subFeed .sub-empty")).toHaveText("No replies yet. The first message you post here starts the sub-thread.");
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
-test("AC5/AC6 the composer targets the sub-thread: a post writes SUBTHREAD with REPLY-TO the root; Reply inside keeps it", async () => {
+test("AC5/AC6 the pane composer posts into the sub-thread: SUBTHREAD with REPLY-TO the root; Reply inside keeps it", async () => {
   const s = await boot();
   try {
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    assert.equal(await s.page.locator("#cSub").inputValue(), F.root);
-    await expect(s.page.locator("#composerTargetRow")).toBeHidden();
-    await s.page.fill("#cBody", "First post from the filtered view");
-    await s.page.click("#send");
-    await expect.poll(() => written(s.page, "First post from the filtered view")).not.toBeNull();
-    let text = await written(s.page, "First post from the filtered view");
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    await expect(s.page.locator("#subTarget")).toHaveText("Posting to 🧵 sub-thread of human-owner-01: Which database should the planning service use?");
+    assert.equal(await s.page.locator("#cSub").inputValue(), "", "the main composer stays on the topic");
+    await s.page.fill("#subBody", "First post from the pane");
+    await s.page.click("#subSend");
+    await expect.poll(() => written(s.page, "First post from the pane")).not.toBeNull();
+    let text = await written(s.page, "First post from the pane");
     assert.equal(header(text, "SUBTHREAD"), F.root); assert.equal(header(text, "REPLY-TO"), F.root); assert.equal(header(text, "SUBTHREAD-ALSO"), undefined);
-    await expect.poll(() => s.page.evaluate(() => B.msgs.some(m => m.body === "First post from the filtered view" && m.subthread))).toBe(true);
-    assert.equal(await s.page.evaluate(() => sel.sub), F.root, "the view stays on the sub-thread after posting");
-    // Reply to a member inside the view.
-    await s.page.locator(`article[data-file="${F.question}"]`).hover();
-    await s.page.locator(`article[data-file="${F.question}"] [data-reply]`).click();
-    await s.page.fill("#cBody", "Budget is small");
-    await s.page.click("#send");
+    await expect.poll(() => s.page.evaluate(() => B.msgs.some(m => m.body === "First post from the pane" && m.subthread))).toBe(true);
+    assert.equal(await s.page.evaluate(() => sel.sub), F.root, "the pane stays on the sub-thread after posting");
+    await expect(s.page.locator("#subBody")).toHaveValue("");
+    // Reply to a member inside the pane.
+    await s.page.locator(`#subFeed article[data-file="${F.question}"]`).hover();
+    await s.page.locator(`#subFeed article[data-file="${F.question}"] [data-reply]`).click();
+    await expect(s.page.locator("#subReplying")).toBeVisible();
+    await s.page.fill("#subBody", "Budget is small");
+    await s.page.click("#subSend");
     await expect.poll(() => written(s.page, "Budget is small")).not.toBeNull();
     text = await written(s.page, "Budget is small");
     assert.equal(header(text, "SUBTHREAD"), F.root); assert.equal(header(text, "REPLY-TO"), F.question);
-    // Back in the main flow, Reply on the root is a plain main-flow reply.
-    await s.page.click("#subBack");
-    await s.page.locator(`article[data-file="${F.root}"]`).hover();
-    await s.page.locator(`article[data-file="${F.root}"] [data-reply]`).click();
+    // In the main flow, Reply on the root is a plain main-flow reply.
+    await s.page.click("#subClose");
+    await s.page.locator(`#feed article[data-file="${F.root}"]`).hover();
+    await s.page.locator(`#feed article[data-file="${F.root}"] [data-reply]`).click();
     await s.page.fill("#cBody", "Plain main reply");
     await s.page.click("#send");
     await expect.poll(() => written(s.page, "Plain main reply")).not.toBeNull();
     text = await written(s.page, "Plain main reply");
     assert.equal(header(text, "SUBTHREAD"), undefined); assert.equal(header(text, "REPLY-TO"), F.root);
-    // Topic titles are refused from a sub-thread.
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
+    // Topic titles are refused while a sub-thread is open.
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
     const before = await s.page.evaluate(() => window.__fakefs.dump().length);
     await s.page.evaluate(() => { document.querySelector("#topicTitle").value = "Renamed"; return setTopicTitle(); });
     await expect(s.page.locator("#toast")).toHaveText("A topic title cannot be set from a sub-thread");
@@ -233,25 +246,28 @@ test("AC5/AC6 the composer targets the sub-thread: a post writes SUBTHREAD with 
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
-test("AC5 a draft never moves silently: opening a sub-thread with a main draft pins it, and it posts to the main flow", async () => {
+test("AC5 a draft never moves silently: the main draft stays on the topic while the pane is open; the pane keeps its own", async () => {
   const s = await boot();
   try {
     await s.page.fill("#cBody", "Main flow draft");
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    await expect(s.page.locator("#composerPin")).toBeVisible();
-    await expect(s.page.locator("#composerPin .composer-pin-text")).toHaveText("Draft for # planning › T009 Planning, not this view.");
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    await expect(s.page.locator("#subPane")).toBeVisible();
+    // SPEC-002-078 owner decision: the main composer stays bound to the topic, so there is nothing to pin.
+    await expect(s.page.locator("#composerPin")).toBeHidden();
+    await expect(s.page.locator("#cBody")).toHaveValue("Main flow draft");
+    await expect(s.page.locator("#subBody")).toHaveValue("", { message: "the main draft never moves into the pane" });
     assert.equal(await s.page.locator("#cSub").inputValue(), "");
+    await expect(s.page.locator("#composerTarget")).toContainText("# planning › T009 Planning");
     await s.page.click("#send");
     await expect.poll(() => written(s.page, "Main flow draft")).not.toBeNull();
     assert.equal(header(await written(s.page, "Main flow draft"), "SUBTHREAD"), undefined);
-    // "Post here instead" is the explicit move to the sub-thread.
-    await s.page.click("#subBack");
-    await s.page.fill("#cBody", "Second draft");
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    await s.page.click("#composerPinHere");
-    assert.equal(await s.page.locator("#cSub").inputValue(), F.root);
-    await expect(s.page.locator("#composerTarget .composer-chip-topic")).toHaveCount(1);
-    await s.page.click("#send");
+    // The pane draft is its own: it survives closing the pane and never reaches the main composer.
+    await s.page.fill("#subBody", "Second draft");
+    await s.page.click("#subClose");
+    await expect(s.page.locator("#cBody")).toHaveValue("");
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    await expect(s.page.locator("#subBody")).toHaveValue("Second draft");
+    await s.page.click("#subSend");
     await expect.poll(() => written(s.page, "Second draft")).not.toBeNull();
     assert.equal(header(await written(s.page, "Second draft"), "SUBTHREAD"), F.root);
   } finally { await s.ctx.close(); s.cleanup(); }
@@ -262,8 +278,8 @@ test("AC6 an answer to a member question carries the marker; a read-only board d
   const name = X.file("1301", "research-agent-01", "T009", "host-question");
   const s = await boot({ extra: { [name]: memberText("Where do we host?", { to: "human-owner-01", status: "QUESTION", date: "13:01", extra: [`SUBTHREAD: ${F.root}`, `QUESTION: ${question}`] }) } });
   try {
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    const form = s.page.locator(`article[data-file="${name}"] .choice-form`);
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    const form = s.page.locator(`#subFeed article[data-file="${name}"] .choice-form`);
     await form.locator("input[value=cloud]").check();
     await form.locator("[type=submit]").click();
     await expect.poll(() => written(s.page, '"selected":["cloud"]')).not.toBeNull();
@@ -276,9 +292,9 @@ test("AC6 an answer to a member question carries the marker; a read-only board d
   try {
     await page.setInputFiles("#fallback", proj); await page.waitForSelector("#feed article");
     await page.selectOption("#me", "human-owner-01"); await h.openView(page, X.VIEW);
-    await page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    await page.fill("#cBody", "Downloaded in a sub-thread");
-    const [download] = await Promise.all([page.waitForEvent("download"), page.click("#send")]);
+    await page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    await page.fill("#subBody", "Downloaded in a sub-thread");
+    const [download] = await Promise.all([page.waitForEvent("download"), page.click("#subSend")]);
     const bytes = h.fs.readFileSync(await download.path(), "utf8");
     assert.equal(header(bytes, "SUBTHREAD"), F.root); assert.equal(header(bytes, "REPLY-TO"), F.root);
   } finally { await ctx.close(); h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
@@ -313,9 +329,9 @@ test("AC7 a hidden member raises the topic badge and the strip dot; the main flo
     await h.openView(s.page, X.VIEW);
     await expect(s.page.locator(`article[data-file="${F.root}"] .sub-unread`)).toHaveCount(1);
     assert.equal(await unreadOf(name), true);
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
     await expect.poll(() => unreadOf(name)).toBe(false);
-    await s.page.click("#subBack");
+    await s.page.click("#subClose");
     await expect(s.page.locator(`article[data-file="${F.root}"] .sub-unread`)).toHaveCount(0);
     // A thread follow still matches members (same topic key).
     assert.equal(await s.page.evaluate(n => notificationMatches({ follows: [{ kind: "thread", key: "room:planning|T009" }] }, B.msgs.find(m => m.file === n)), name), true);
@@ -341,19 +357,22 @@ test("AC8 Sub-threads (n) lists active, then resolved, then orphaned; full-board
     // The orphaned member is listed, never dropped, and opens with its members.
     await panel.locator(".sub-row").last().click();
     await expect(panel).toBeHidden();
-    assert.deepEqual(await feedFiles(s.page), [orphanNext]);
-    await s.page.click("#subBack");
+    assert.deepEqual(await paneFiles(s.page), [orphanNext]);
+    await expect(s.page.locator("#subRoot")).toContainText("Root message not found: 2026-10-15_1100_human-owner-01_T009_deleted.txt");
+    await s.page.click("#subClose");
     await s.page.click("#subMenuToggle");
     await panel.locator(`[data-subthread-open="${X.KEY(F.root2)}"]`).click();
-    assert.deepEqual(await feedFiles(s.page), [F.root2, F.resolved]);
-    await s.page.click("#subBack");
+    assert.deepEqual(await paneFiles(s.page), [F.resolved]);
+    await s.page.click("#subClose");
     // Search: members are found and open in their sub-thread.
     await s.page.fill("#q", "hosting budget"); await s.page.keyboard.press("Escape");
     await expect.poll(() => feedFiles(s.page)).toEqual([F.question]);
-    await s.page.locator(`article[data-file="${F.question}"] .sub-chip`).click();
+    await s.page.locator(`#feed article[data-file="${F.question}"] .sub-chip`).click();
     await expect(s.page.locator("#q")).toHaveValue("");
     assert.equal(await s.page.evaluate(() => sel.sub), F.root);
-    assert.deepEqual(await feedFiles(s.page), [F.root, F.first, F.also, F.question]);
+    assert.deepEqual(await paneFiles(s.page), [F.first, F.also, F.question]);
+    // The invalid orphan source (REPLY-TO outside its sub-thread) is an ordinary invalid file in the main flow.
+    assert.deepEqual(await feedFiles(s.page), [...MAIN, orphanFirst]);
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
@@ -376,38 +395,43 @@ test("AC3 Flat view is a saved preference (default off) that restores the flat d
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
-test("AC9 refresh keeps the sub-thread view, scroll, focus and draft; reload restores it; a vanished one closes", async () => {
+test("AC9 refresh keeps the sub-thread pane, scroll, focus and draft; reload restores it; a vanished one closes", async () => {
   const filler = Object.fromEntries(Array.from({ length: 14 }, (_, i) => { const n = String(10 + i).padStart(2, "0");
     return [X.file("13" + n, "implementation-agent-01", "T009", "filler-" + n), X.message({ from: "implementation-agent-01", date: "13:" + n, reply: F.root, extra: [`SUBTHREAD: ${F.root}`], body: "Filler member " + n + "\n\nwith a second paragraph so the transcript scrolls." })]; }));
   const s = await boot({ extra: filler, viewport: { width: 1280, height: 600 } });
   try {
-    await s.page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    await s.page.fill("#cBody", "Draft kept across refresh");
-    await s.page.evaluate(() => { const f = document.querySelector("#feed"); f.scrollTop = 120; });
-    const top = await s.page.evaluate(() => document.querySelector("#feed").scrollTop);
-    await s.page.focus("#cBody");
-    await addFile(s.page, X.file("1340", "research-agent-01", "T009", "arrives"), memberText("Arrives during reading", { date: "13:40" }));
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    await s.page.fill("#subBody", "Draft kept across refresh");
+    await s.page.evaluate(() => { const f = document.querySelector("#subFeed"); f.scrollTop = 120; });
+    const top = await s.page.evaluate(() => document.querySelector("#subFeed").scrollTop);
+    assert.equal(top, 120, "the pane transcript scrolls");
+    await s.page.focus("#subBody");
+    const arrives = X.file("1340", "research-agent-01", "T009", "arrives");
+    await addFile(s.page, arrives, memberText("Arrives during reading", { date: "13:40" }));
     await refresh(s.page);
     assert.equal(await s.page.evaluate(() => sel.sub), F.root);
-    assert.equal(await s.page.inputValue("#cBody"), "Draft kept across refresh");
-    assert.equal(await s.page.evaluate(() => document.activeElement.id), "cBody");
-    assert.equal(await s.page.evaluate(() => document.querySelector("#feed").scrollTop), top, "a reader above the live edge is not moved");
-    assert.ok(await s.page.evaluate(n => B.msgs.some(m => m.file === n && m.subthread), X.file("1340", "research-agent-01", "T009", "arrives")), "the new member is in the model");
-    assert.ok(!(await feedFiles(s.page)).includes(X.file("1340", "research-agent-01", "T009", "arrives")), "a reader above the live edge keeps the window (existing rule)");
-    await s.page.fill("#cBody", "");
+    assert.equal(await s.page.inputValue("#subBody"), "Draft kept across refresh");
+    assert.equal(await s.page.evaluate(() => document.activeElement.id), "subBody");
+    assert.equal(await s.page.evaluate(() => document.querySelector("#subFeed").scrollTop), top, "a reader above the live edge is not moved");
+    assert.ok(await s.page.evaluate(n => B.msgs.some(m => m.file === n && m.subthread), arrives), "the new member is in the model");
+    // The pane window follows the live edge, so the arrival is rendered below the reader, announced by "1 new".
+    assert.ok((await paneFiles(s.page)).includes(arrives));
+    await expect(s.page.locator("#subNew")).toHaveText("1 new ↓");
+    await s.page.fill("#subBody", "");
     await h.reloadSettled(s.ctx, s.page, { setting: ["lastSub", F.root] });
     await s.page.waitForSelector("#feed article");
     await expect.poll(() => s.page.evaluate(() => sel.sub || null)).toBe(F.root);
-    await expect(s.page.locator("#title")).toHaveText("# planning › T009 Planning › 🧵 Sub-thread");
-    // The root and every member vanish: the next refresh closes the view instead of showing an empty one.
-    await s.page.evaluate(async names => { for (const n of names) await window.__fakefs.removeFile(`.agent-board/rooms/planning/${n}`); }, [F.root, F.first, F.also, F.question, F.plain, ...Object.keys(filler), X.file("1340", "research-agent-01", "T009", "arrives")]);
+    await expect(s.page.locator("#subPane")).toBeVisible();
+    await expect(s.page.locator("#subPaneTitle")).toContainText("🧵 human-owner-01: Which database");
+    // The root and every member vanish: the next refresh closes the pane instead of showing an empty one.
+    await s.page.evaluate(async names => { for (const n of names) await window.__fakefs.removeFile(`.agent-board/rooms/planning/${n}`); }, [F.root, F.first, F.also, F.question, F.plain, ...Object.keys(filler), arrives]);
     await refresh(s.page);
     await expect.poll(() => s.page.evaluate(() => sel.sub || null)).toBe(null);
-    await expect(s.page.locator("#subBack")).toBeHidden();
+    await expect(s.page.locator("#subPane")).toBeHidden();
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
-test("AC5/AC7 activating a notification for a member opens its sub-thread; Quick reply targets it", async () => {
+test("AC5/AC7 activating a notification for a member opens its sub-thread pane; Quick reply targets the pane composer", async () => {
   const s = await boot();
   try {
     await s.page.click("#tree .tree-root");
@@ -415,13 +439,15 @@ test("AC5/AC7 activating a notification for a member opens its sub-thread; Quick
     // The real activation path, with an entry for a hidden member (thread follows match members, AC7).
     const opened = await s.page.evaluate(async n => { const m = B.msgs.find(x => x.file === n), state = notificationsContext();
       await activateNotification(state, { path: m.path, unread: true }, false); return { sub: sel.sub || null, thread: sel.thread, focused: document.activeElement?.id || "" }; }, F.first);
-    assert.deepEqual(opened, { sub: F.root, thread: X.VIEW, focused: "m-" + X.KEY(F.first) });
-    assert.deepEqual(await feedFiles(s.page), [F.root, F.first, F.also, F.question]);
-    await s.page.click("#subBack");
+    assert.deepEqual(opened, { sub: F.root, thread: X.VIEW, focused: "sm-" + X.KEY(F.first) });
+    assert.deepEqual(await paneFiles(s.page), [F.first, F.also, F.question]);
+    await s.page.click("#subClose");
     await s.page.evaluate(async n => { const m = B.msgs.find(x => x.file === n); await activateNotification(notificationsContext(), { path: m.path, unread: true }, true); }, F.question);
     assert.equal(await s.page.evaluate(() => sel.sub), F.root);
-    assert.equal(await s.page.inputValue("#cSub"), F.root, "Quick reply posts into the sub-thread");
-    await expect(s.page.locator("#replyName")).toContainText("research-agent-01");
+    await expect(s.page.locator("#subReplyName")).toContainText("research-agent-01");
+    await expect(s.page.locator("#subBody")).toHaveValue("@research-agent-01 ");
+    assert.equal(await s.page.inputValue("#cSub"), "", "Quick reply writes into the pane composer, not the main one");
+    await expect(s.page.locator("#replying")).toBeHidden();
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 

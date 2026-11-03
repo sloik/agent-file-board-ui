@@ -24,3 +24,32 @@ function wirePanelLayout(){
  };
  addEventListener('resize',applySettingsWidth);
 }
+/* The sub-thread pane (SPEC-002-078 AC2) resizes like Settings: the same handle behaviour, a remembered width
+   (S.subW) and bounds that keep the conversation readable (min 320px, at most 60% of the conversation area). */
+function subWidthBounds(){
+ const area=($('.feed-wrap')?.getBoundingClientRect().width||innerWidth)+($('#subPane')?.getBoundingClientRect().width||0);
+ const max=innerWidth>=1200?Math.max(320,Math.floor(area*0.6)):Math.max(280,innerWidth-48);return {min:Math.min(320,max),max};
+}
+function applySubWidth(){
+ const {min,max}=subWidthBounds(),width=Math.max(min,Math.min(max,Number.isFinite(S.subW)?S.subW:420));
+ document.documentElement.style.setProperty('--subw',width+'px');
+ const handle=$('#subResize');if(!handle)return;handle.setAttribute('aria-valuemin',min);handle.setAttribute('aria-valuemax',max);handle.setAttribute('aria-valuenow',Math.round(width));
+}
+function wireSubPaneLayout(){
+ const pane=$('#subPane'),handle=$('#subResize');if(!pane||!handle)return;
+ const resize=width=>{const {min,max}=subWidthBounds();S.subW=Math.round(Math.max(min,Math.min(max,width)));applySubWidth();};
+ const reset=()=>{S.subW=420;applySubWidth();saveSettings();};
+ handle.onpointerdown=e=>{
+  if(e.button!==0)return;e.preventDefault();const x=e.clientX,width=pane.getBoundingClientRect().width;
+  handle.setPointerCapture(e.pointerId);document.body.classList.add('resizing');
+  handle.onpointermove=event=>resize(width+x-event.clientX);
+  const done=()=>{handle.onpointermove=null;handle.onpointerup=null;handle.onpointercancel=null;handle.onlostpointercapture=null;document.body.classList.remove('resizing');saveSettings();};
+  handle.onpointerup=done;handle.onpointercancel=done;handle.onlostpointercapture=done;
+ };
+ handle.ondblclick=reset;
+ handle.onkeydown=e=>{
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();resize(pane.getBoundingClientRect().width+(e.key==='ArrowLeft'?20:-20));saveSettings();}
+  else if(e.key==='Home'){e.preventDefault();reset();}
+ };
+ addEventListener('resize',applySubWidth);
+}

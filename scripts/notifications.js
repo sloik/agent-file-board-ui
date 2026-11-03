@@ -6,7 +6,7 @@ function notificationBinding(){return B?JSON.stringify([dirHandle?boardStorageId
 function notificationCurrent(state){return state===notificationState&&state.binding===notificationBinding()&&state.root===dirHandle;}
 async function readNotificationFollows(key){const db=await idb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction("kv"),q=tx.objectStore("kv").get(key);tx.oncomplete=()=>resolve(q.result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error("Notification preference read aborted"));});}finally{db.close();}}
 function cleanNotificationFollows(value){
- const result=[];for(const item of Array.isArray(value)?value.slice(0,NOTIFY_FOLLOW_LIMIT):[]){if(!item||!["room","thread","participant"].includes(item.kind)||typeof item.key!=="string"||!item.key||item.key.length>1000)continue;if(!result.some(x=>x.kind===item.kind&&x.key===item.key))result.push({kind:item.kind,key:item.key});}return result;
+ const result=[];for(const item of Array.isArray(value)?value.slice(0,NOTIFY_FOLLOW_LIMIT):[]){if(!item||!["room","thread","participant","subthread","subthread-mute"].includes(item.kind)||typeof item.key!=="string"||!item.key||item.key.length>1000)continue;if(!result.some(x=>x.kind===item.kind&&x.key===item.key))result.push({kind:item.kind,key:item.key});}return result;
 }
 function notificationsContext(reset=false){
  const binding=notificationBinding();if(!binding)return null;
@@ -19,7 +19,13 @@ function notificationsContext(reset=false){
  else if(durable)state.loading=(async()=>{try{const value=await readNotificationFollows(state.store);if(notificationCurrent(state))state.follows=cleanNotificationFollows(value);}catch{state.stored=false;}finally{state.ready=true;if(notificationCurrent(state))renderNotifications();}})();
  renderNotifications();return state;
 }
-function notificationMatches(state,m){return state.follows.some(x=>x.kind==="room"?m.scope==="room"&&m.dir===x.key:x.kind==="thread"?m.tkey===x.key:m.author===x.key);}
+// SPEC-002-078 AC8: a sub-thread follow (key topic|root) matches its members; a muted sub-thread suppresses them even
+// when its room, topic or author is followed.
+function notificationMatches(state,m){
+ const sub=m.subthread?m.tkey+"|"+m.subthread:null;
+ if(sub&&state.follows.some(x=>x.kind==="subthread-mute"&&x.key===sub))return false;
+ return state.follows.some(x=>x.kind==="room"?m.scope==="room"&&m.dir===x.key:x.kind==="thread"?m.tkey===x.key:x.kind==="participant"?m.author===x.key:x.kind==="subthread"&&x.key===sub);
+}
 function notificationEligible(m){return signingEligible(m)&&!sessionNotice(m)&&!m.metadataError&&!m.quarantined&&!m.receipt&&!m.source?.readError&&!m.source?.ioError&&m.author!==currentUser()&&repairVisible(m);}
 function notificationsObserve(model,background){
  const state=notificationsContext(!background);if(!state)return;
@@ -40,7 +46,7 @@ async function drainNotifications(state){
   if(B!==model){if(B.byPath.has(path)){state.pending.set(path,true);if(state.pending.size>NOTIFY_LIMIT)state.pending.delete(state.pending.keys().next().value);}continue;}
   if(!notificationEligible(current)||!notificationMatches(state,current)||!current.bodyLoaded)continue;
   state.delivered.add(path);if(state.delivered.size>1000)state.delivered.delete(state.delivered.values().next().value);
-  const entry={path,unread:true,author:current.author,title:current.dir+" · "+current.label,preview:current.body.slice(0,240)};
+  const entry={path,unread:true,author:current.author,title:current.dir+" · "+current.label+(current.subthread?" · \u{1F9F5}":""),preview:current.body.slice(0,240)};
   state.entries.unshift(entry);state.entries.length=Math.min(state.entries.length,NOTIFY_LIMIT);notificationSystem(state,entry);renderNotifications();
  }}catch{if(notificationCurrent(state)){notificationPermissionNote="error";renderNotifications();}}finally{state.scanning=false;}
 }
@@ -64,7 +70,7 @@ function changeNotificationFollow(kind,key,remove=false){
  const snapshot=structuredClone(state.follows);renderNotifications();
  if(state.store){notificationWrites=notificationWrites.then(async()=>{try{await idbSet(state.store,snapshot);notificationMemory.delete(state.binding);if(notificationCurrent(state))state.stored=true;}catch{notificationMemory.set(state.binding,snapshot);while(notificationMemory.size>20)notificationMemory.delete(notificationMemory.keys().next().value);state.stored=false;}if(notificationCurrent(state))renderNotifications();});}
 }
-const NOTIFICATION_WORDS={room:"notify_room",thread:"notify_thread",participant:"notify_participant",unavailable:"notify_unavailable",denied:"notify_denied",default:"notify_default",granted:"notify_granted",off:"notify_off",error:"notify_error"};
+const NOTIFICATION_WORDS={room:"notify_room",thread:"notify_thread",participant:"notify_participant",subthread:"notify_subthread","subthread-mute":"notify_subthread_mute",unavailable:"notify_unavailable",denied:"notify_denied",default:"notify_default",granted:"notify_granted",off:"notify_off",error:"notify_error"};
 function notificationBackgroundRefresh(){const state=notificationState;return !!notificationOS&&typeof window.Notification==="function"&&Notification.permission==="granted"&&!!state&&notificationCurrent(state)&&state.ready&&state.follows.length>0;}
 function notificationHasDraft(){return !!($("#cBody").value.length||$("#cNewThread").value.length||$("#cNewRoom").value.length||replyTo||composerStructured);}
 function renderNotifications(){
@@ -86,12 +92,17 @@ function renderNotifications(){
 }
 async function activateNotification(state,entry,reply){
  if(!notificationCurrent(state))return;const m=B.byPath.get(entry.path);if(!m||!notificationEligible(m)){ $("#notificationsResult").textContent=t("notify_changed");return;}
- // Retargeting even unchanged text can send a draft to the wrong conversation. Require an empty composer.
- if(reply&&notificationHasDraft()){ $("#notificationsResult").textContent=t("notify_draft");return;}
+ // Retargeting even unchanged text can send a draft to the wrong conversation. Require an empty composer: for a
+ // sub-thread member that is its pane composer, which Quick reply writes into (SPEC-002-078 AC8).
+ const drafted=()=>m.subthread?subComposerHasDraft(m.tkey,m.subthread):notificationHasDraft();
+ if(reply&&drafted()){ $("#notificationsResult").textContent=t("notify_draft");return;}
  const model=B;try{await hydrateMessages([m],model);}catch{$("#notificationsResult").textContent=t("notify_changed");return;}
  if(!notificationCurrent(state)||B!==model||!notificationEligible(m))return;
- if(reply&&notificationHasDraft()){$("#notificationsResult").textContent=t("notify_draft");return;}
- $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};sel={scope:m.scope,dir:m.dir,thread:m.tkey,...(m.subthread&&!S.flatView?{sub:m.subthread}:{})};rememberView();build({preserveComposer:true});
+ if(reply&&drafted()){$("#notificationsResult").textContent=t("notify_draft");return;}
+ $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};
+ // A member opens in its sub-thread pane, focused there; Quick reply answers it from the pane composer.
+ if(m.subthread){sel={scope:m.scope,dir:m.dir,thread:m.tkey};openSubthread(m.dkey+"|"+m.subthread,m.file);if(reply)subReplyStart(m);renderNotifications();return;}
+ sel={scope:m.scope,dir:m.dir,thread:m.tkey};rememberView();build({preserveComposer:true});
  const view=matchingMessages(),at=view.findIndex(x=>x.path===m.path),end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2));historyPage.end=end===view.length?null:view[end-1]?.path;build({preserveComposer:true});
  const element=document.getElementById("m-"+m.dkey+"|"+m.file);if(element){element.tabIndex=-1;element.scrollIntoView({block:"center"});element.focus({preventScroll:true});}if(reply)startReply(m);renderNotifications();
 }

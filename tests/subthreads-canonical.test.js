@@ -82,21 +82,22 @@ test("AC6 bytes from every writer in the sub-thread destination validate canonic
   const out = h.path.join(h.tmpDir("afb-subthread-out-"), "board");
   try {
     await h.openBoardViaUi(page); await page.selectOption("#me", "human-owner-01"); await h.openView(page, X.VIEW);
-    await page.locator(`article[data-file="${F.root}"] .sub-strip`).click();
-    const post = async text => { await page.fill("#cBody", text); await page.click("#send"); await expect.poll(() => page.evaluate(t => B.msgs.some(m => m.body === t), text)).toBe(true); };
+    // SPEC-002-078: an open sub-thread is the pane; its composer (#subBody/#subSend) is the sub-thread writer.
+    await page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    const post = async text => { await page.fill("#subBody", text); await page.click("#subSend"); await expect.poll(() => page.evaluate(t => B.msgs.some(m => m.body === t), text)).toBe(true); };
     await post("Canonical check: a sub-thread post");
-    await page.locator(`article[data-file="${F.question}"]`).hover(); await page.locator(`article[data-file="${F.question}"] [data-reply]`).click();
+    await page.locator(`#subFeed article[data-file="${F.question}"]`).hover(); await page.locator(`#subFeed article[data-file="${F.question}"] [data-reply]`).click();
     await post("Canonical check: a reply to a member");
-    const form = page.locator(`article[data-file="${name}"] .choice-form`);
+    const form = page.locator(`#subFeed article[data-file="${name}"] .choice-form`);
     await form.locator("input[value=local]").check(); await form.locator("[type=submit]").click();
     await expect.poll(() => page.evaluate(() => B.msgs.some(m => m.answer && m.subthread))).toBe(true);
     // A typed form answer (version 2) to a member form, filled as in tests/forms.test.js.
-    const field = id => page.locator(`article[data-file="${formName}"] [data-form-field='${id}']`);
-    await page.locator(`article[data-file="${formName}"] .typed-form`).waitFor();
+    const field = id => page.locator(`#subFeed article[data-file="${formName}"] [data-form-field='${id}']`);
+    await page.locator(`#subFeed article[data-file="${formName}"] .typed-form`).waitFor();
     await field("owner").locator("input").fill("Demo owner"); await field("notes").locator("textarea").fill("Keep original source unchanged.");
     await field("tasks").locator("[data-row=schema][data-column=hours] input").fill("3"); await field("tasks").locator("[data-row=viewer][data-column=approved] input").check();
     await field("checks").getByLabel("Browser tests").check(); await field("labels").getByRole("button", { name: "Needs review", exact: true }).click();
-    await page.locator(`article[data-file="${formName}"] .form-buttons [type=submit]`).click();
+    await page.locator(`#subFeed article[data-file="${formName}"] .form-buttons [type=submit]`).click();
     await expect.poll(() => page.evaluate(n => B.msgs.some(m => m.replyTo === n && m.answer && m.subthread), formName)).toBe(true);
     await h.dumpFakeFs(page, out);
     const board = h.path.join(out, ".agent-board"), written = h.fs.readdirSync(h.path.join(board, "rooms", "planning")).filter(f => !Object.keys(X.VALID).includes(f) && f !== name && f !== formName);

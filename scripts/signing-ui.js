@@ -8,7 +8,10 @@ let signingKnown = {}, signingNoticeKey = "", signingNoticeStatus = null, signin
 function signingNoteCatalog() {
   for (const p of signingProvider.catalog()) signingKnown[p.participant] = p.fingerprint;
 }
-function signingDestinationPath() {
+// `explicit` ({scope, dir, tid}) names a destination other than the main composer's: the sub-thread pane
+// composer posts into its topic (SPEC-002-078 AC5), whatever the main composer targets.
+function signingDestinationPath(explicit) {
+  if (explicit) return { path: `${explicit.scope === "direct" ? B.layout.directDir : B.layout.roomsDir}/${explicit.dir}/x.txt`, thread: explicit.tid || "" };
   const where = $("#cWhere")?.value || "", newRoom = slugify($("#cNewRoom")?.value || ""), L = B.layout;
   const th = $("#cThread")?.value ? threadsOf()[$("#cThread").value] : null;
   let dir = "", top = L.roomsDir;
@@ -35,13 +38,13 @@ function signingSendDecision(model, required) {
   return { kind: !status || status.id === "unsigned" ? "unsigned" : status.id === "signed" ? "signed" : "refused", status };
 }
 // What happens to the message in the composer now, for the composer's destination.
-function signingPostBlock() {
+function signingPostBlock(explicit) {
   if (!B) return null;
-  const c = B.signingContext, target = c ? signingDestinationPath() : null;
+  const c = B.signingContext, target = c ? signingDestinationPath(explicit) : null;
   let required = false;
   try { required = !!c && c.minimum(target.path, target.thread) === "trusted"; } catch { required = false; }
   // A ticked "Require trusted signatures" for a room or topic being created counts at once (SPEC-002-063).
-  return signingSendDecision(B, required || (typeof historyCreationRequires === "function" && historyCreationRequires())).status;
+  return signingSendDecision(B, required || (!explicit && typeof historyCreationRequires === "function" && historyCreationRequires())).status;
 }
 function signingStatusError(status) {
   const error = new Error(status.detail);
@@ -92,12 +95,19 @@ function updateSigningNotice(status = signingPostBlock()) {
     req.hidden = !note;
   }
   const el = $("#signingNotice");
-  if (!el) return;
+  if (el) { signingNoticeStatus = status; signingNoticePaint(el, status); }
+  // The sub-thread pane repeats the row for its own destination (SPEC-002-078 AC5).
+  if (typeof subComposerSigning === "function") subComposerSigning();
+}
+// Paints one status row. Each row keeps the status it shows, so its buttons act on that status.
+const signingNoticeShown = new WeakMap();
+function signingNoticePaint(el, status) {
   const note = signingNoticeNote(status), action = status?.action || null;
   const key = JSON.stringify([status, action && signingActionLabel(action), note && [note.kind, note.text, note.owners.map((id) => [id, signingPersonaName(id)])]]);
-  signingNoticeStatus = status;
-  if (key === signingNoticeKey) return;
-  signingNoticeKey = key;
+  const shown = signingNoticeShown.get(el);
+  signingNoticeShown.set(el, { key, status });
+  if (shown?.key === key) return;
+  if (el.id === "signingNotice") signingNoticeKey = key;
   el.hidden = !status;
   el.dataset.signingStatus = status?.id || "";
   el.dataset.tone = status?.tone || "";
@@ -178,8 +188,8 @@ async function signingComposerUnlock(files) {
   } else note("error", errors.length ? failed : exText(`These keys were already unlocked here, and none is for ${name}.`, `Te klucze były już odblokowane, a żaden nie jest dla: ${name}.`));
   updateSigningNotice();
 }
-function signingNoticeAction(button) {
-  const status = signingNoticeStatus, action = button.classList.contains("signing-notice-alt") ? status?.alt : status?.action;
+function signingNoticeAction(button, status = signingNoticeStatus) {
+  const action = button.classList.contains("signing-notice-alt") ? status?.alt : status?.action;
   if (!action) return;
   if (action.kind === "unlock") { const input = $("#signingComposerKey"); input.value = ""; input.click(); }
   else if (action.kind === "approve") signingDialog({ task: "review", participant: action.participant, focus: "#signingFingerprint" });
@@ -594,7 +604,7 @@ async function prepareSigning(model, files, base = null) {
   }
 }
 function signingDraftStamp() {
-  return JSON.stringify([composerStructured, [...document.querySelectorAll("#composer input,#composer textarea,#composer select,.choice-form input,.choice-form textarea,.choice-form select,.board-form input,.board-form textarea,.board-form select")].map((el) => [el.id, el.name, el.value, el.checked])]);
+  return JSON.stringify([composerStructured, [...document.querySelectorAll("#composer input,#composer textarea,#composer select,#subComposer input,#subComposer textarea,#subComposer select,.choice-form input,.choice-form textarea,.choice-form select,.board-form input,.board-form textarea,.board-form select")].map((el) => [el.id, el.name, el.value, el.checked])]);
 }
 async function signingDelivery(msg, options = {}) {
   const model = options.model || B, base = options.base || baseHandle, C = SigningContract, origin = dirHandle, epoch = signingProvider.generation, stamp = signingDraftStamp(), expected = model?.signingExpected;
@@ -1869,7 +1879,16 @@ function wireSigning() {
   key.setAttribute("aria-label", exText("Private key file of the selected persona", "Plik klucza prywatnego wybranej persony"));
   key.onchange = () => { const files = [...key.files]; key.value = ""; if (files.length) signingComposerUnlock(files); };
   document.body.append(key);
-  const el = $("#signingNotice");
+  signingWireNotice($("#signingNotice"), () => signingNoticeStatus);
+  // Any destination change (room, topic, new room, recipient) recomputes the status.
+  for (const type of ["input", "change"]) $("#composer")?.addEventListener(type, () => updateSigningNotice());
+  setInterval(signingTick, 3e4);
+  // Coming back to the tab rechecks at once; an expired key must not look ready.
+  window.addEventListener("focus", signingTick);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) signingTick(); });
+}
+// A status row's buttons (the composer's and the sub-thread pane's) act on the status that row shows.
+function signingWireNotice(el, current) {
   el?.addEventListener("click", (event) => {
     const button = event.target.closest?.("button");
     if (!button) return;
@@ -1886,18 +1905,12 @@ function wireSigning() {
       if (signingSelectPersona(id)) {
         signingMode = "signed";
         updateSigningNotice();
-        $("#signingNotice .signing-notice-action:not([hidden])")?.focus();
+        el.querySelector(".signing-notice-action:not([hidden])")?.focus();
       }
       return;
     }
-    signingNoticeAction(button);
+    signingNoticeAction(button, current());
   });
-  // Any destination change (room, topic, new room, recipient) recomputes the status.
-  for (const type of ["input", "change"]) $("#composer")?.addEventListener(type, () => updateSigningNotice());
-  setInterval(signingTick, 3e4);
-  // Coming back to the tab rechecks at once; an expired key must not look ready.
-  window.addEventListener("focus", signingTick);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) signingTick(); });
 }
 // Keys lock silently after 15 idle minutes; the composer must not keep showing them as ready.
 function signingTick() {

@@ -28,10 +28,11 @@ function composerSubTarget(x){
 const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'')+(x.sub?'^'+x.sub:'');
 const sameComposerTarget=(a,b)=>composerTargetKey(a)===composerTargetKey(b);
 // What the visible view implies: a thread posts there, a room starts a new topic, a direct
-// conversation continues its most recent topic; All messages has no destination.
+// conversation continues its most recent topic; All messages has no destination. An open sub-thread pane
+// has its own composer, so the main composer stays on the topic (SPEC-002-078 owner decision).
 function composerViewTarget(){
  if(!B||!sel.scope)return {scope:null};
- if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread,...(sel.sub?{sub:sel.sub}:{})};
+ if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread};
  return sel.scope==='direct'?composerDirectTarget(sel.dir):{scope:sel.scope,dir:sel.dir,thread:''};
 }
 function composerDirectTarget(dir){
@@ -56,7 +57,7 @@ function setComposerTarget(target={}){
 // Advanced fields and pin choices are explicit: they end any pending mismatch banner.
 function composerExplicit(){composerPin=null;composerTargetRender();}
 function composerFollowView(preserve){
- const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null,sel.sub||null]);
+ const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null]);
  if(key===composerViewKey)return composerTargetRender();
  composerViewKey=key;
  if(preserve)return composerTargetRender();
@@ -114,8 +115,9 @@ function composerTargetRender(){
   if(note){noteEl.dataset.tone=note.tone||'warn';set(noteEl.querySelector('.composer-target-note-text'),note.text);
    noteEl.querySelector('.composer-target-note-actions').replaceChildren(...note.actions.map(a=>{const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.composerAction=a.action;if(a.id)b.dataset.id=a.id;b.textContent=a.label;return b;}));}}
  $('#send').disabled=!!B&&(!target.scope||!!block);
- // The chip row only appears when the destination differs from what the view shows (SPEC-002-068).
- const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
+ // The chip row only appears when the destination differs from what the view shows (SPEC-002-068), and always
+ // while a sub-thread pane is open: two composers are on screen, each names its destination (SPEC-002-078 AC5).
+ const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&!sel.sub&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
  if(row.hidden!==same){if(same&&composerMenu?.anchor===chip)composerMenuClose();row.hidden=same;}
  const info=[B&&!target.scope?exText('Choose where to post: pick a room or topic in the sidebar, or use Change destination.','Wybierz, gdzie wysłać: wskaż pokój lub wątek w panelu bocznym albo użyj „Zmień cel”.'):'',composerInfoBase].filter(Boolean).join(' ');
  if($('#cInfo').textContent!==info)$('#cInfo').textContent=info;
