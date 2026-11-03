@@ -28,7 +28,7 @@ jobs:
           python3 scripts/build_update_checker.py --check
           mkdir public-checker
           cp site/update-check.html public-checker/
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v4
         with:
           path: public-checker
