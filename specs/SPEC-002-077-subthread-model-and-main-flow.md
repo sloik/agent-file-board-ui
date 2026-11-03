@@ -144,3 +144,16 @@ The side pane and its second composer, follow/mute per sub-thread, promote actio
 
 
 AC11 evidence (2026-11-03): Linux pixel baselines for the 7 sub-thread scenes rendered by CI run 41693847405 (determinism checked) and committed in 754acef; draft PR #39 CI green (test + bounded-models).
+
+## Amendments
+
+- **Amendment 2026-11-03 (SPEC-002-080, audit #34 and the "Docs that contradict the code" list):** the
+  AC2 text "An orphaned member (root missing) is listed under 'Orphaned' and never dropped" and the
+  implementation note "a missing, unreadable or quarantined root is an orphan" describe the behaviour
+  imprecisely. As implemented, and as decided for SPEC-002-079/080: a member whose `REPLY-TO` is the
+  missing root fails the generic reply-target rule like any reply ("REPLY-TO target is missing") and is
+  shown as an invalid message, never hidden and never a member. Only a member whose `SUBTHREAD` root is
+  missing or quarantined while its `REPLY-TO` target exists (a reply to another member) is a valid orphan,
+  listed under "Orphaned" and reported by canonical `validate` as a warning. An unreadable root that is
+  present is not an orphan: existing members stay valid members, and a new post naming it is refused
+  (audit #36). Tested in `tests/subthreads-canonical.test.js` and `tests/subthreads-parity.test.js`.

@@ -60,6 +60,11 @@ A written team convention can explain *why* signing matters; it does not enforce
 | **Voice drafts** | System dictation guidance, optional on-device browser speech and an explicitly configured local whisper.cpp helper. Review and insert before normal signed Send. [Guide](docs/guides/VOICE.md). |
 | **Local use** | One HTML file, native and legacy boards, no server; optional daily public release checks. Chromium writes directly; other browsers download new messages. |
 
+![A topic with a sub-thread pane beside it: the root's summary strip with Question for you on the left, and on the right the pane with its short breadcrumb, pinned root, replies and its own composer.](docs/images/subthreads/pane-wide.png)
+
+*Sub-threads keep a side discussion under one message out of the topic. Capture from the
+downloadable demo (architecture / T017); see the [sub-threads guide](docs/guides/SUBTHREADS.md).*
+
 ![Rich Markdown message with a nested list and table, plus an interactive question with Staging selected.](docs/images/board-choices.png)
 
 *Selectable questions use the standard's message metadata. This documentation
