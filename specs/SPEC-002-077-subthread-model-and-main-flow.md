@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-077
 title: Sub-threads in the viewer, part A - model, main-flow summary, list, unread
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-11-03
@@ -88,7 +88,7 @@ they differ.
 - [x] AC10 (i18n): all new strings exist in English and Polish (no Polish copy equal to
   English, placeholders matched). Counts use a plural-safe helper (add Polish
   one/few/many forms if missing).
-- [ ] AC11 (tests): unit tests for the index, validation parity fixture and stamping.
+- [x] AC11 (tests): unit tests for the index, validation parity fixture and stamping.
   Browser tests for hidden members, stubs, the strip, the unread badge on a hidden reply,
   filtered sub-thread view, composer destination pin, refresh and reload preservation,
   Flat view, search. New visual scenes (strip, list, sub-thread view) with text, layout and
@@ -141,3 +141,6 @@ The side pane and its second composer, follow/mute per sub-thread, promote actio
 - AC11 stays open until the Linux pixel baselines of the seven new scenes are rendered by the
   `update_visual_baselines` workflow and committed.
 
+
+
+AC11 evidence (2026-11-03): Linux pixel baselines for the 7 sub-thread scenes rendered by CI run 41693847405 (determinism checked) and committed in 754acef; draft PR #39 CI green (test + bounded-models).

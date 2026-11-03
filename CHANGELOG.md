@@ -1,6 +1,6 @@
 # Release notes
 
-## 3.4.0 — unreleased
+## 3.4.0 — 2026-11-03
 
 Board format 3.4 (agent-file-board `v3.4.0`) adds sub-threads: a side discussion under one message
 (`SUBTHREAD`, `SUBTHREAD-ALSO: main`, `SUBTHREAD-STATE`, `PROMOTED-FROM`). The viewer shows them

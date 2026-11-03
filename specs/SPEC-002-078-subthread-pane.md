@@ -80,7 +80,7 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
   room + thread + root). Starting or replying in a sub-thread auto-follows it. A muted
   sub-thread suppresses alerts for its members even when the topic is followed. Quick reply
   from an alert for a member posts into that sub-thread.
-- [ ] AC9 (tests): browser tests for wide, medium and compact pane layouts. They cover
+- [x] AC9 (tests): browser tests for wide, medium and compact pane layouts. They cover
   resize persistence, Esc/Back focus return, both composers with independent drafts across
   refresh and reload, signed send from the pane, also-send stub, resolve/reopen, promote
   bytes validated by canonical `boardctl validate`, follow/mute alerts, 120-message
@@ -159,3 +159,6 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
   thread ↗" to the single interactive rendering in the main feed; on compact windows that closes the pane and
   offers "Back to sub-thread". Tested in `tests/subthreads-pane.test.js` (one rendering, preview without
   controls, compact Back chip).
+
+
+AC9 evidence (2026-11-03): Linux pixel baselines for the pane scenes (new subthread-pane-medium/-dark/-dracula, regenerated subthread-view and subthread-view-390x640) rendered by CI run 41702625018 and committed in 360ab90.
