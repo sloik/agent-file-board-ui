@@ -1980,7 +1980,7 @@ const STRINGS = {
   sub_replies_one:"{n} reply", sub_replies_few:"{n} replies", sub_replies_many:"{n} replies", sub_replies_other:"{n} replies",
   sub_strip_label:"{replies}, last {when}", sub_unread:"unread replies", sub_question:"Question for you", sub_decision:"Decision needed", sub_resolved:"Resolved",
   sub_stub:"Also in a sub-thread", sub_stub_open:"View in sub-thread", sub_in:"In a sub-thread", sub_empty:"No replies yet. The first message you post here starts the sub-thread.",
-  sub_list:"Sub-threads ({n})", sub_list_active:"Active", sub_list_resolved:"Resolved sub-threads", sub_list_orphaned:"Orphaned", sub_orphan_root:"Root message not found: {file}",
+  sub_list:"Sub-threads ({n})", sub_list_active:"Active", sub_list_resolved:"Resolved sub-threads", sub_list_orphaned:"Orphaned", sub_orphan_root:"Root message not found: {file}", sub_warn_before_root:"This sub-thread reply sorts before its root message in posting order.", sub_warn_promoted:"No longer the first message of its topic ({file} is earlier); it still continues its sub-thread.",
   sub_gone:"That sub-thread is no longer on the board", flat_view:"Flat view (show sub-thread replies in the topic)",
   e_subthread:"Cannot post in this sub-thread: {m}", e_subthread_title:"A topic title cannot be set from a sub-thread", e_subthread_legacy:"Sub-threads need a board in the current format",
   sub_pane_label:"Sub-thread of {who}: {text}", sub_close:"Close the sub-thread (Esc)", sub_resize:"Resize the sub-thread pane", sub_menu:"Sub-thread actions",
@@ -2310,7 +2310,7 @@ const STRINGS = {
   sub_replies_one:"{n} odpowiedź", sub_replies_few:"{n} odpowiedzi", sub_replies_many:"{n} odpowiedzi", sub_replies_other:"{n} odpowiedzi",
   sub_strip_label:"{replies}, ostatnia {when}", sub_unread:"nieprzeczytane odpowiedzi", sub_question:"Pytanie do ciebie", sub_decision:"Potrzebna decyzja", sub_resolved:"Rozwiązany",
   sub_stub:"Także w podwątku", sub_stub_open:"Zobacz w podwątku", sub_in:"W podwątku", sub_empty:"Brak odpowiedzi. Pierwsza wiadomość wysłana tutaj rozpoczyna podwątek.",
-  sub_list:"Podwątki ({n})", sub_list_active:"Aktywne", sub_list_resolved:"Rozwiązane podwątki", sub_list_orphaned:"Osierocone", sub_orphan_root:"Nie znaleziono wiadomości głównej: {file}",
+  sub_list:"Podwątki ({n})", sub_list_active:"Aktywne", sub_list_resolved:"Rozwiązane podwątki", sub_list_orphaned:"Osierocone", sub_orphan_root:"Nie znaleziono wiadomości głównej: {file}", sub_warn_before_root:"Ta odpowiedź w podwątku jest w kolejności publikacji przed swoją wiadomością główną.", sub_warn_promoted:"To już nie jest pierwsza wiadomość wątku ({file} jest wcześniej); nadal kontynuuje swój podwątek.",
   sub_gone:"Tego podwątku nie ma już na tablicy", flat_view:"Widok płaski (odpowiedzi z podwątków w wątku)",
   e_subthread:"Nie można wysłać w tym podwątku: {m}", e_subthread_title:"Tytułu wątku nie można ustawić z podwątku", e_subthread_legacy:"Podwątki wymagają tablicy w bieżącym formacie",
   sub_pane_label:"Podwątek: {who}: {text}", sub_close:"Zamknij podwątek (Esc)", sub_resize:"Zmień szerokość panelu podwątku", sub_menu:"Działania podwątku",
@@ -2512,9 +2512,10 @@ function siblingHeaders(x){
   return x.h;
 }
 const subthreadTid=h=>String(h.THREAD||"").split("-")[0];
-function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null}){
+function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null,name=""}){
   const reply=h["REPLY-TO"], target=reply && reply!=="-" ? index.get(dkey+"|"+reply) : null, source=target?siblingHeaders(target):null;
-  const answer=h.ANSWER!==undefined || h["ANSWER-STATE"]!==undefined;
+  // Answers, acceptance records and extension answers follow their question (canonical ANSWER_HEADERS, decision #16).
+  const answer=h.ANSWER!==undefined || h["ANSWER-STATE"]!==undefined || h["EXTENSION-ANSWER"]!==undefined;
   if(!SUBTHREAD_HEADERS.some(k=>h[k]!==undefined) && !(source && source.SUBTHREAD!==undefined && answer)) return "";
   const sub=h.SUBTHREAD;
   for(const key of ["SUBTHREAD","PROMOTED-FROM"]) if(h[key]!==undefined && !subthreadName(h[key])) return key+": expected the filename of a .txt message in the same directory (no slashes, traversal or other extensions)";
@@ -2534,6 +2535,8 @@ function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null}){
     if(rootHeaders){
       if(subthreadTid(rootHeaders)!==own) return `SUBTHREAD: root ${sub} is in another thread (${subthreadTid(rootHeaders)}), not ${own}`;
       if(rootHeaders.SUBTHREAD!==undefined) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
+      // Decision #11: a new member sorts after its root (an existing one that does not is a warning).
+      if(post && orderCompare(messageOrder({h,file:name,path:"",modifiedAt:Date.now()},tz),messageOrder(r,tz))<=0) return `SUBTHREAD: a sub-thread message must sort after its root ${sub} in posting order (DATE, then POSTED-AT)`;
     }else if(r===self) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
     else if(post && !r) return `SUBTHREAD: root ${sub} does not exist in this directory`;
     // Audit #36: canonical post reads the root strictly, so a present but unparseable root refuses a new post.
@@ -2557,6 +2560,28 @@ function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null}){
     if(post) for(const x of index.values()){
       if(x.dkey===dkey && siblingHeaders(x) && subthreadTid(x.h)===own) return `PROMOTED-FROM: only the first message of a topic can carry it, but ${x.file} is earlier in ${own}`;
     }
+  }
+  return "";
+}
+/* Sub-thread warnings (canonical `subthread_warnings`, SPEC-002-080): reported, never hidden, never an error, so a
+   message accepted when posted stays valid as other files arrive (decisions #11, #26, #34). For any message whose
+   headers parse: an orphaned member (root missing or quarantined), a member that sorts before its root, and a
+   PROMOTED-FROM message displaced as its topic's first message by an earlier sibling. Read live (repairs apply after
+   the model is built). The text is canonical's, without the board-relative path. */
+function subthreadWarning(m,model=B){
+  if(!m || !siblingHeaders(m)) return "";
+  const h=m.h, tz=model.timeZone, okOrder=x=>Number.isFinite(messageOrder(x,tz)[0]);
+  if(subthreadName(h.SUBTHREAD)){
+    const r=model.messageIndex.get(m.dkey+"|"+h.SUBTHREAD);
+    if(!r) return `orphaned sub-thread: root ${h.SUBTHREAD} is missing`;
+    if(r.quarantined) return `orphaned sub-thread: root ${h.SUBTHREAD} is quarantined by a repair record`;
+    if(siblingHeaders(r) && okOrder(m) && okOrder(r) && orderCompare(messageOrder(m,tz),messageOrder(r,tz))<=0) return `sub-thread message sorts before its root ${h.SUBTHREAD} in posting order`;
+  }
+  if(h.SUBTHREAD===undefined && subthreadName(h["PROMOTED-FROM"]) && okOrder(m)){
+    const own=subthreadTid(h), mine=messageOrder(m,tz);
+    let first=null;
+    for(const x of model.msgs) if(x!==m && x.dkey===m.dkey && siblingHeaders(x) && subthreadTid(x.h)===own && okOrder(x) && orderCompare(messageOrder(x,tz),mine)<0 && (!first || orderCompare(messageOrder(x,tz),messageOrder(first,tz))<0)) first=x;
+    if(first) return `PROMOTED-FROM: ${first.file} is earlier in ${own}, so this is no longer the topic's first message; it still continues the sub-thread of ${h["PROMOTED-FROM"]}`;
   }
   return "";
 }
@@ -2781,7 +2806,7 @@ function composeMessage(o){
       if(source && (source.metadataError || source.duplicates.length)) throw Error("Invalid source");
       messageMetadata(Object.fromEntries(headers),source && source.h);
     }catch(e){ throw boardErr("invalid_metadata"); }
-    const subIssue=subthreadIssue(Object.fromEntries(headers),{dkey:scope+":"+dir,index:B.messageIndex,post:true});
+    const subIssue=subthreadIssue(Object.fromEntries(headers),{dkey:scope+":"+dir,index:B.messageIndex,post:true,tz:B.timeZone,name:relPath.split("/").pop()});
     if(subIssue) throw boardErr("e_subthread",{m:subIssue});
   }else if(o.question || o.answer || o.ui || o.extension || o.extensionAnswer || o.information){ throw boardErr("choice_legacy"); }
   const text = headers.map(([k,v])=>k+": "+v).join("\n")+"\n---\n"+body.replace(/\s+$/,"")+"\n";
@@ -3342,6 +3367,14 @@ function subthreadState(x){
   let msg=null;
   if(x) for(const m of subthreadMembers(x)) if(m.subthreadState && Number.isFinite(messageOrder(m,B.timeZone)[0]) && (!msg || orderCompare(messageOrder(m,B.timeZone),messageOrder(msg,B.timeZone))>0)) msg=m;
   return {state:msg?msg.subthreadState:"open",msg};
+}
+// The reader's wording of a sub-thread warning on a valid message's card; the canonical text is its title.
+function subthreadWarningText(m){
+  const w=subthreadWarning(m);
+  if(w.startsWith("orphaned")) return t("sub_orphan_root",{file:m.h.SUBTHREAD});
+  if(w.startsWith("sub-thread message sorts")) return t("sub_warn_before_root");
+  if(w.startsWith("PROMOTED-FROM")) return t("sub_warn_promoted",{file:(w.match(/^PROMOTED-FROM: (\S+)/)||[])[1]||""});
+  return w;
 }
 function subthreadOutcome(msg){ return msg ? String(msg.bodyLoaded?msg.body:msg.preview||"").split("\n").find(l=>l.trim())||"" : ""; }
 function subthreadOf(m){ return m && m.subthread || null; }
@@ -4298,6 +4331,7 @@ function messageArticleHtml(m,ctx){
       ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}${!ctx.pane?promotedFromHtml(m):""}${m.subthread && !ctx.pane?`<button type="button" class="chip sub-chip" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">\u{1F9F5} ${esc(t("sub_in"))}</button>`:""}</div>
       ${reply && !(ctx.pane && reply.file===ctx.root && reply.dkey===m.dkey)?`<div class="reply-ref" ${ctx.pane && reply.subthread===ctx.root?"data-sub-jump":"data-jump"}="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}${ctx.pane && reply.subthread!==ctx.root?` \u00b7 ${esc(t("sub_in_main"))} \u2197`:""}</div>`:""}
       ${signingMessageHtml(m)}
+      ${!m.metadataError && subthreadWarning(m)?`<p class="hint sub-warning" title="${esc(subthreadWarning(m))}">\u26a0 ${esc(subthreadWarningText(m))}</p>`:""}
       ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
       <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
       ${signingEligible(m)?informationPlaceholder(m)+reportPlaceholder(m)+extensionPlaceholder(m):""}
@@ -8743,6 +8777,9 @@ async function signingDelivery(msg, options = {}) {
   const parsed = parseHeaders(msg.text).native, h = parsed.h;
   const source = model.msgs.find((m) => m.file === h["REPLY-TO"] && m.path.split("/").slice(0, -1).join("/") === msg.relPath.split("/").slice(0, -1).join("/"));
   C.require(!source || signingEligible(source), "Reply source excluded by signing requirements");
+  // SPEC-002-080 (decision #39): a sub-thread post needs an eligible root, also when it replies to another member.
+  const subRoot = h.SUBTHREAD ? model.msgs.find((m) => m.file === h.SUBTHREAD && m.path.split("/").slice(0, -1).join("/") === msg.relPath.split("/").slice(0, -1).join("/")) : null;
+  C.require(!subRoot || signingEligible(subRoot), "Sub-thread root excluded by signing requirements");
   if (source && base) C.require(source.source?.file && source.source.file.size <= 4194304, "Reviewed reply source unavailable or too large");
   const sourceDigest = source && base ? await C.hash(await rawBytes(source.source.file)) : null;
   if(h['ANSWER-STATE']&&sourceDigest)C.require(AnswerState.metadata(h,source?.h,jsonObject).questionDigest===sourceDigest,"ANSWER-STATE question bytes changed");

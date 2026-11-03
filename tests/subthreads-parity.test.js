@@ -224,3 +224,80 @@ test("#37 R9: a repair replacement must keep the original's SUBTHREAD and SUBTHR
     finally { h.fs.rmSync(h.path.dirname(out), { recursive: true, force: true }); }
   } finally { await s.cleanup(); }
 });
+
+test("#11 a new member that would sort before its root is refused; an existing one stays valid with a warning", async () => {
+  // The root is dated after the fixed clock (13:05 UTC = 15:05 Europe/Warsaw), so a post now would sort before it.
+  const late = X.file("1600", "human-owner-01", "T009", "late-root"), early = X.file("1500", "research-agent-01", "T009", "early-member");
+  const s = await boot({ view: null, extra: {
+    [late]: raw({ from: "human-owner-01", date: "2026-10-15 16:00", posted: "2026-10-15T14:00:00.000Z", body: "A root dated later." }),
+    [early]: raw({ from: "research-agent-01", date: "2026-10-15 15:00", posted: "2026-10-15T13:00:00.000Z", reply: late, extra: [`SUBTHREAD: ${late}`], body: "A member dated before it." }),
+  } });
+  try {
+    assert.equal(await errorOf(s.page, early), "", "validity is monotonic: an existing member is never invalidated by order");
+    assert.equal(await s.page.evaluate(n => subthreadWarning(B.msgs.find(m => m.file === n)), early), `sub-thread message sorts before its root ${late} in posting order`);
+    const refused = await s.page.evaluate(root => { try { composeMessage({ sender: "research-agent-01", to: "all", scope: "room", room: "planning", tid: "T009", threadLabel: "T009-planning", slug: "now", status: "INFO", body: "now", replyTo: root, subthread: root, confirmedAgent: true }); return ""; } catch (e) { return e.message; } }, late);
+    assert.match(refused, new RegExp(`SUBTHREAD: a sub-thread message must sort after its root ${late} in posting order \\(DATE, then POSTED-AT\\)`));
+    // An ordinary member (root earlier) composes.
+    assert.equal(await s.page.evaluate(root => { try { composeMessage({ sender: "research-agent-01", to: "all", scope: "room", room: "planning", tid: "T009", threadLabel: "T009-planning", slug: "ok", status: "INFO", body: "ok", replyTo: root, subthread: root, confirmedAgent: true }); return ""; } catch (e) { return e.message; } }, F.root), "");
+  } finally { await s.cleanup(); }
+});
+
+const PROMOTED = X.file("1310", "human-owner-01", "T011", "promoted"), SIBLING = X.file("1320", "research-agent-01", "T011", "sibling");
+const promoted = () => X.message({ from: "human-owner-01", tid: "T011", label: "promoted", date: "13:10", extra: [`PROMOTED-FROM: ${F.root}`], body: "Continues the sub-thread." });
+test("#26 #27 R10b: a sibling that sorts earlier (an offset DATE) leaves the promoted message valid, with a warning", async () => {
+  const s = await boot({ view: null, extra: { [PROMOTED]: promoted(),
+    [SIBLING]: raw({ from: "research-agent-01", tid: "T011", label: "promoted", date: "2026-10-15 13:08+05:00", posted: "2026-10-15T08:08:00.000Z", body: "Backdated sibling." }) } });
+  try {
+    assert.equal(await errorOf(s.page, PROMOTED), "");
+    assert.equal(await s.page.evaluate(n => subthreadWarning(B.msgs.find(m => m.file === n)), PROMOTED),
+      `PROMOTED-FROM: ${SIBLING} is earlier in T011, so this is no longer the topic's first message; it still continues the sub-thread of ${F.root}`);
+    await h.openView(s.page, "room:planning|T011");
+    await expect(s.page.locator(`#feed article[data-file="${PROMOTED}"] .sub-warning`)).toHaveText(`⚠ No longer the first message of its topic (${SIBLING} is earlier); it still continues its sub-thread.`);
+  } finally { await s.cleanup(); }
+});
+
+test("#27 R10a: a time correction that moves a sibling first changes neither validity nor warnings", async () => {
+  const s = await boot({ view: null, extra: { [PROMOTED]: promoted(), [SIBLING]: X.message({ from: "research-agent-01", tid: "T011", label: "promoted", date: "13:20", body: "Later sibling." }) },
+    files: { "time-corrections.txt": `${SIBLING} | 2026-10-15 13:05 | clock skew\n` } });
+  try {
+    assert.equal(await errorOf(s.page, PROMOTED), "");
+    assert.equal(await s.page.evaluate(n => subthreadWarning(B.msgs.find(m => m.file === n)), PROMOTED), "");
+    const r = h.boardctl(["validate", "--json", "--path", s.proj]);
+    assert.deepEqual(JSON.parse(r.out).errors, [], "canonical agrees: corrections never decide validity");
+  } finally { await s.cleanup(); }
+});
+
+test("#28 R10c: a sibling with an unreadable DATE is isolated and never invalidates the promoted message", async () => {
+  const s = await boot({ view: null, extra: { [PROMOTED]: promoted(), [SIBLING]: X.message({ from: "research-agent-01", tid: "T011", label: "promoted", date: "13:20", body: "Bad date." }).replace("DATE: 2026-10-15 13:20", "DATE: soon") } });
+  try {
+    assert.equal(await errorOf(s.page, PROMOTED), "");
+    assert.equal(await errorOf(s.page, SIBLING), "Invalid DATE");
+    assert.equal(await s.page.evaluate(n => subthreadWarning(B.msgs.find(m => m.file === n)), PROMOTED), "");
+  } finally { await s.cleanup(); }
+});
+
+test("#16 an extension answer follows its request into the sub-thread like an ANSWER", async () => {
+  const s = await boot({ invalid: true, view: null });
+  try {
+    const issue = sub => s.page.evaluate(([sub, q]) => subthreadIssue({ THREAD: "T009-planning", STATUS: "REPLY", "REPLY-TO": q, "EXTENSION-ANSWER": "{}", ...(sub ? { SUBTHREAD: sub } : {}) }, { dkey: "room:planning", index: B.messageIndex }), [sub, F.hostq]);
+    assert.equal(await issue(null), `SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD: ${F.root}`);
+    assert.equal(await issue(F.root), "");
+  } finally { await s.cleanup(); }
+});
+
+test("#39 a post into a sub-thread whose root is excluded by signing is refused, also when it replies to a member", async () => {
+  const s = await boot({ config: c => { c.identity = { boardId: "0b6f7c1e-3c2d-4a59-9a43-2f1f6d1a7e10" }; c.message_signing = { version: 1, minimum: "optional", scopes: {} }; } });
+  try {
+    await expect.poll(() => s.page.evaluate(() => !!B.signingContext && !B.signingError)).toBe(true);
+    await s.page.locator(`#feed article[data-file="${F.root}"] .sub-strip`).click();
+    await expect(s.page.locator("#subPane")).toBeVisible();
+    await s.page.locator(`#subFeed article[data-file="${F.first}"]`).hover();
+    await s.page.locator(`#subFeed article[data-file="${F.first}"] [data-reply]`).click();
+    // The root's signing decision turns excluded (as the signing pass would set it) after the reply started.
+    await s.page.evaluate(name => { B.msgs.find(m => m.file === name).signing = { eligibility: "excluded", signature: "unsigned", trust: "unknown", lifecycle: "unknown", reason: "Trusted signature required" }; }, F.root);
+    await s.page.fill("#subBody", "Reply to a member of an excluded root");
+    await s.page.click("#subSend");
+    await expect(s.page.locator("#toast")).toContainText("Sub-thread root excluded by signing requirements");
+    assert.equal(await s.page.evaluate(() => window.__fakefs.dump().some(f => f.text.includes("Reply to a member of an excluded root"))), false, "nothing was written");
+  } finally { await s.cleanup(); }
+});
