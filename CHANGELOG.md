@@ -1,5 +1,39 @@
 # Release notes
 
+## 3.4.1 — 2026-11-03
+
+The viewer follows board format 3.4.1 (agent-file-board `v3.4.1`, vendored and pinned). An audit
+compared every sub-thread rule across the convention, `boardctl` and the viewer
+(`docs/design/subthreads/SUBTHREAD-RULE-AUDIT.md`); this release fixes the viewer's side, and a new
+test runs every case of the standard's shared sub-thread fixture through the viewer.
+
+- **Sub-thread state is trustworthy (security):** a sub-thread's state, reply count, participants,
+  capsule and outcome now come only from replies that are valid and not excluded by signing or a
+  repair. An unsigned reply in a topic that requires trusted signatures can no longer mark a
+  sub-thread resolved or have its text shown as the outcome.
+- **Canonical posting order:** state and every validity rule use the standard's order (the `DATE`
+  instant, so `+05:00` offsets compare correctly, then `POSTED-AT`, then the file name). Time
+  corrections (`time-corrections.txt`) only move a message in the transcript.
+- **Validity never changes later:** a promoted topic's first message that an earlier-dated message
+  displaced, and a reply that sorts before its root, stay valid with a warning on the card. New
+  posts are refused instead: into a root that cannot be read or is invalid or withdrawn, a reply
+  that would sort before its root, a second "first message", or a sub-thread whose root signing
+  excludes (also when replying to another reply). Promote refuses an invalid or withdrawn root.
+  Extension answers follow their question into the sub-thread like other answers.
+- **Repairs keep sub-thread headers:** a repair replacement keeps the original's valid sub-thread
+  headers byte for byte, may only correct or drop an invalid one and never adds one; existing repair
+  records that break this are reported and withdraw nothing. Members of an unreadable root are
+  listed as orphaned.
+- **Same words as `boardctl`:** reply-target, unreadable-origin, header-parse, DATE and other
+  file-format errors use the standard's wording.
+- **Pane header:** the root's author and preview stay readable at every pane width. Room and topic
+  shorten to a **‹ T…** back crumb; the full path is the header's title and expands on a click.
+- **Docs:** the sub-threads guide is rewritten with ten new captures (made by
+  `node scripts/screenshot_subthreads.js`), keyboard use, what agents see, and troubleshooting for
+  orphans, refusals and signing. The README and features page show the pane. The offline demo
+  includes the guide's images.
+- **Fixed:** the topic subtitle says "1 message" (Polish forms included).
+
 ## 3.4.0 — 2026-11-03
 
 Board format 3.4 (agent-file-board `v3.4.0`) adds sub-threads: a side discussion under one message
