@@ -234,6 +234,8 @@ test("#11 a new member that would sort before its root is refused; an existing o
   } });
   try {
     assert.equal(await errorOf(s.page, early), "", "validity is monotonic: an existing member is never invalidated by order");
+    // Canonical emits the warning only for a valid message: an invalid member that also sorts early gets none.
+    assert.equal(await s.page.evaluate(n => { const m = B.msgs.find(x => x.file === n); return subthreadWarning({ ...m, metadataError: true }); }, early), "");
     assert.equal(await s.page.evaluate(n => subthreadWarning(B.msgs.find(m => m.file === n)), early), `sub-thread message sorts before its root ${late} in posting order`);
     const refused = await s.page.evaluate(root => { try { composeMessage({ sender: "research-agent-01", to: "all", scope: "room", room: "planning", tid: "T009", threadLabel: "T009-planning", slug: "now", status: "INFO", body: "now", replyTo: root, subthread: root, confirmedAgent: true }); return ""; } catch (e) { return e.message; } }, late);
     assert.match(refused, new RegExp(`SUBTHREAD: a sub-thread message must sort after its root ${late} in posting order \\(DATE, then POSTED-AT\\)`));
@@ -330,6 +332,8 @@ test("#37 (ruling 2026-11-03) repair header clauses: keep valid, correct or drop
     assert.equal(await issue([R, "SUBTHREAD-STATE: done"], [R]), "");
     assert.equal(await issue([R, "SUBTHREAD-ALSO: yes"], [R]), "");
     assert.equal(await issue(["PROMOTED-FROM: a/b.txt"], []), "");
+    // (b) but not into another invalid value (canonical a42bde9 wording).
+    assert.equal(await issue([R, "SUBTHREAD-STATE: done"], [R, "SUBTHREAD-STATE: finished"]), "a replacement corrects or drops an invalid sub-thread header: SUBTHREAD-STATE is done in the original and finished in the replacement, which is still invalid");
     // (c) never add a header the original lacked.
     assert.equal(await issue([R], [R, "SUBTHREAD-ALSO: main"]), `${keep}SUBTHREAD-ALSO is absent in the original and main in the replacement`);
     assert.equal(await issue([], [R]), `${keep}SUBTHREAD is absent in the original and ${F.root} in the replacement`);

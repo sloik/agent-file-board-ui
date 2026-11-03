@@ -2581,9 +2581,10 @@ function subthreadWarning(m,model=B){
     const r=model.messageIndex.get(m.dkey+"|"+h.SUBTHREAD);
     if(!r) return `orphaned sub-thread: root ${h.SUBTHREAD} is missing`;
     if(r.quarantined) return `orphaned sub-thread: root ${h.SUBTHREAD} is quarantined by a repair record`;
-    if(siblingHeaders(r) && okOrder(m) && okOrder(r) && orderCompare(messageOrder(m,tz),messageOrder(r,tz))<=0) return `sub-thread message sorts before its root ${h.SUBTHREAD} in posting order`;
+    if(!m.metadataError && siblingHeaders(r) && okOrder(m) && okOrder(r) && orderCompare(messageOrder(m,tz),messageOrder(r,tz))<=0) return `sub-thread message sorts before its root ${h.SUBTHREAD} in posting order`;
   }
-  if(h.SUBTHREAD===undefined && subthreadName(h["PROMOTED-FROM"]) && okOrder(m)){
+  // Canonical emits these two only for valid messages (an invalid one already has its error).
+  if(!m.metadataError && h.SUBTHREAD===undefined && subthreadName(h["PROMOTED-FROM"]) && okOrder(m)){
     const own=subthreadTid(h), mine=messageOrder(m,tz);
     let first=null;
     for(const x of model.msgs) if(x!==m && x.dkey===m.dkey && siblingHeaders(x) && subthreadTid(x.h)===own && okOrder(x) && orderCompare(messageOrder(x,tz),mine)<0 && (!first || orderCompare(messageOrder(x,tz),messageOrder(first,tz))<0)) first=x;
@@ -4471,7 +4472,10 @@ function repairSubthreadIssue(originalBytes,replacementBytes){
   for(const key of REPAIR_KEPT_HEADERS){
     const had=Object.hasOwn(original,key), was=had?original[key]:undefined, now=Object.hasOwn(replacement,key)?replacement[key]:undefined;
     if(was===now) continue;
-    if(had && !repairHeaderValid(key,original)) continue;   // (b): an invalid value may be corrected or dropped
+    if(had && !repairHeaderValid(key,original)){   // (b): an invalid value may be corrected or dropped, not replaced by another invalid one
+      if(now===undefined || repairHeaderValid(key,replacement)) continue;
+      return `a replacement corrects or drops an invalid sub-thread header: ${key} is ${was} in the original and ${now} in the replacement, which is still invalid`;
+    }
     return `a replacement keeps the original's sub-thread headers: ${key} is ${was ?? "absent"} in the original and ${now ?? "absent"} in the replacement`;
   }
   return "";
