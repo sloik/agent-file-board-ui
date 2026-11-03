@@ -289,8 +289,10 @@ test("AC6 every writer passes the sub-thread marker of its source (form answer, 
   // the behaviour of composeMessage with `subthread` is covered by the browser tests above.
   const read = f => h.fs.readFileSync(h.path.join(h.ROOT, f), "utf8");
   const calls = src => [...src.matchAll(/composeMessage\(\{[^]*?\}\);/g)].map(m => m[0]);
-  for (const call of calls(read("scripts/form-board.js"))) assert.match(call, /subthread:subthreadOf\((m|q)\)/, call.slice(0, 80));
-  for (const call of calls(read("scripts/extension-ui.js"))) assert.match(call, /subthread:subthreadOf\(m\)/, call.slice(0, 80));
+  const forms = calls(read("scripts/form-board.js")), extensions = calls(read("scripts/extension-ui.js"));
+  assert.equal(forms.length, 2, "form answer and acceptance"); assert.equal(extensions.length, 1, "extension answer");
+  for (const call of forms) assert.match(call, /subthread:subthreadOf\((m|q)\)/, call.slice(0, 80));
+  for (const call of extensions) assert.match(call, /subthread:subthreadOf\(m\)/, call.slice(0, 80));
   const html = read("board.html");
   assert.match(html, /slug:"answer-"\+m\.question\.id,status:"REPLY",body,replyTo:m\.file,answer,subthread:subthreadOf\(m\)/);
   assert.match(html, /replyTo: replyTo \? replyTo\.file : subthread, subthread,/);
@@ -405,14 +407,21 @@ test("AC9 refresh keeps the sub-thread view, scroll, focus and draft; reload res
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
-test("AC5 a notification for a member opens its sub-thread", async () => {
+test("AC5/AC7 activating a notification for a member opens its sub-thread; Quick reply targets it", async () => {
   const s = await boot();
   try {
-    await s.page.evaluate(n => { const m = B.msgs.find(x => x.file === n); sel = { scope: m.scope, dir: m.dir, thread: m.tkey, ...(m.subthread && !S.flatView ? { sub: m.subthread } : {}) }; build(); }, F.first);
+    await s.page.click("#tree .tree-root");
+    assert.equal(await s.page.evaluate(() => sel.sub || null), null);
+    // The real activation path, with an entry for a hidden member (thread follows match members, AC7).
+    const opened = await s.page.evaluate(async n => { const m = B.msgs.find(x => x.file === n), state = notificationsContext();
+      await activateNotification(state, { path: m.path, unread: true }, false); return { sub: sel.sub || null, thread: sel.thread, focused: document.activeElement?.id || "" }; }, F.first);
+    assert.deepEqual(opened, { sub: F.root, thread: X.VIEW, focused: "m-" + X.KEY(F.first) });
+    assert.deepEqual(await feedFiles(s.page), [F.root, F.first, F.also, F.question]);
+    await s.page.click("#subBack");
+    await s.page.evaluate(async n => { const m = B.msgs.find(x => x.file === n); await activateNotification(notificationsContext(), { path: m.path, unread: true }, true); }, F.question);
     assert.equal(await s.page.evaluate(() => sel.sub), F.root);
-    const src = h.fs.readFileSync(h.path.join(h.ROOT, "scripts/notifications.js"), "utf8");
-    assert.match(src, /sel=\{scope:m\.scope,dir:m\.dir,thread:m\.tkey,\.\.\.\(m\.subthread&&!S\.flatView\?\{sub:m\.subthread\}:\{\}\)\};/);
-    assert.ok((await feedFiles(s.page)).includes(F.first));
+    assert.equal(await s.page.inputValue("#cSub"), F.root, "Quick reply posts into the sub-thread");
+    await expect(s.page.locator("#replyName")).toContainText("research-agent-01");
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
