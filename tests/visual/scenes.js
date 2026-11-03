@@ -38,7 +38,7 @@ const LANDMARKS=[
  // SPEC-002-077: sub-threads in the main flow.
  ['#subBack',{flow:true}],['#subMenuToggle',{flow:true}],['#subMenuPanel',{flow:true,box:true}],['#feed .sub-strip',{flow:true,box:true}],['#feed .sub-stub',{flow:true,box:true,intrinsic:'h'}],
  // SPEC-002-078: the sub-thread pane (#subBack is its Back button on phones).
- ['#subPane',{box:true}],['#subPaneTitle',{flow:true,intrinsic:'w'}],['#subFollow',{flow:true}],['#subPaneMenuToggle',{flow:true}],['#subClose',{flow:true}],['#subRoot',{box:true,flow:true}],
+ ['#subPane',{box:true}],['#subPaneTitle',{flow:true,intrinsic:'w'}],['#subPaneTitle .sub-crumb-back',{flow:true}],['#subPaneTitle .sub-crumb-root',{flow:true,intrinsic:'w'}],['#subFollow',{flow:true}],['#subPaneMenuToggle',{flow:true}],['#subClose',{flow:true}],['#subRoot',{box:true,flow:true}],
  ['#subFeed',{box:true}],['#subFeed article.msg:last-of-type',{flow:true,box:true,intrinsic:'h'}],['#subComposer',{box:true}],['#subTarget',{flow:true,intrinsic:'w'}],['#subSigningNotice',{box:true}],
  ['#subBody'],['#subSend'],['#subAlso',{flow:true}],
 ];
@@ -257,6 +257,8 @@ const GROUPS=[
  {name:'subthread-view',board:subthreadBoard,setup:subthreadOpen,shots:[S('subthread-view')]},
  {name:'subthread-view-phone',board:subthreadBoard,setup:p=>subthreadPaneAt(p,390,640),shots:[S('subthread-view-390x640',390,640)]},
  {name:'subthread-pane-medium',board:subthreadBoard,setup:p=>subthreadPaneAt(p,1000,700),shots:[S('subthread-pane-medium',1000,700)]},
+ // SPEC-002-080 AC4: the minimum pane width (320px); the header keeps the root label, room and topic shorten to "‹ T009".
+ {name:'subthread-pane-min',board:subthreadBoard,setup:async p=>{await p.evaluate(()=>{S.subW=320;});await subthreadOpen(p);},shots:[S('subthread-pane-min')]},
  {name:'subthread-pane-dark',board:subthreadBoard,setup:async p=>{await subthreadOpen(p);await choose(p,'#sTheme','dark');},shots:[S('subthread-pane-dark')]},
  {name:'subthread-pane-dracula',board:subthreadBoard,setup:async p=>{await subthreadOpen(p);await choose(p,'#sTheme','dracula');},shots:[S('subthread-pane-dracula')]},
  // SPEC-002-073: the Keys list with a key in every state, a detail with the guided steps, a changed key, the phone accordion.

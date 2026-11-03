@@ -70,6 +70,8 @@
  "#feed .sub-stub":{"present":true,"visible":true,"box":{"x":298,"y":133,"w":514,"h":100},"style":{"display":"grid","background-color":"color(srgb 0.138667 0.222745 0.257569)","color":"rgb(231, 234, 240)","border-color":"color(srgb 0.258235 0.470588 0.532353)","box-shadow":"none","font-weight":"400"},"name":"","text":null,"textBearing":true},
  "#subPane":{"present":true,"visible":false},
  "#subPaneTitle":{"present":true,"visible":false},
+ "#subPaneTitle .sub-crumb-back":{"present":false},
+ "#subPaneTitle .sub-crumb-root":{"present":false},
  "#subFollow":{"present":true,"visible":false},
  "#subPaneMenuToggle":{"present":true,"visible":false},
  "#subClose":{"present":true,"visible":false},

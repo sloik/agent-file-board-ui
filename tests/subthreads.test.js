@@ -186,7 +186,9 @@ test("AC5 strip, Enter on the strip and Start sub-thread open the sub-thread pan
     await s.page.keyboard.press("Enter");
     await expect(s.page.locator("#subPane")).toBeVisible();
     await expect(s.page.locator("#title")).toHaveText("# planning › T009 Planning");
-    await expect(s.page.locator("#subPaneTitle")).toHaveText("# planning › T009 Planning › 🧵 human-owner-01: Which database should the planning service use?");
+    // SPEC-002-080 AC4: the full path is the header's title; a narrow header shows "‹ T009" before the root label.
+    await expect(s.page.locator("#subPaneTitle")).toHaveAttribute("title", "# planning › T009 Planning › 🧵 human-owner-01: Which database should the planning service use?");
+    await expect(s.page.locator("#subPaneTitle .sub-crumb-root")).toHaveText("🧵 human-owner-01: Which database should the planning service use?");
     await expect(s.page.locator("#subClose")).toBeVisible();
     assert.deepEqual(await paneFiles(s.page), [F.first, F.also, F.question]);
     assert.deepEqual(await feedFiles(s.page), MAIN);
