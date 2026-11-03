@@ -2474,7 +2474,8 @@ function messageOrder(m,tz){
   m.order={tz,key}; return key;
 }
 function orderCompare(a,b){ for(let i=0;i<4;i++){ if(a[i]<b[i]) return -1; if(a[i]>b[i]) return 1; } return 0; }
-// A sibling's parse failure in canonical `parse_message` wording (without the path), or "" when it parses.
+// A sibling's parse failure in canonical `parse_message` wording, or "" when it parses. Callers prefix the sibling's
+// board-relative path, as canonical names the file (shared fixtures: paths relative to .agent-board/).
 function siblingParseError(x){
   if(!x) return "";
   if(x.source?.readError) return x.source.readError;
@@ -2543,7 +2544,7 @@ function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null,name=""}){
     }else if(r===self) return `SUBTHREAD: root ${sub} is itself a sub-thread message; sub-threads nest one level only`;
     else if(post && !r) return `SUBTHREAD: root ${sub} does not exist in this directory`;
     // Audit #36: canonical post reads the root strictly, so a present but unparseable root refuses a new post.
-    else if(post) return `${sub}: ${siblingParseError(r)}`;
+    else if(post) return `${r.path}: ${siblingParseError(r)}`;
     if(reply==="-") return "SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -";
     if(reply!==sub){
       if(!subthreadName(reply) || !target){ if(post) return "SUBTHREAD: REPLY-TO target does not exist in this directory"; }
@@ -2554,7 +2555,7 @@ function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null,name=""}){
   if(h["PROMOTED-FROM"]!==undefined){
     const o=index.get(dkey+"|"+h["PROMOTED-FROM"]), origin=o?siblingHeaders(o):null;
     if(!o) return `PROMOTED-FROM: ${h["PROMOTED-FROM"]} is not a message in this directory`;
-    if(!origin) return `${h["PROMOTED-FROM"]}: ${siblingParseError(o)}`;
+    if(!origin) return `${o.path}: ${siblingParseError(o)}`;
     if(origin.SUBTHREAD!==undefined) return "PROMOTED-FROM: names a sub-thread message, not a root";
     if(subthreadTid(origin)===own) return "PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic";
     // Audit #26/#27 (decision: monotonic validity): "the topic's first message" is a post-time rule. A new post is

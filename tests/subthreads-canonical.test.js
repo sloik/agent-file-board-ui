@@ -153,11 +153,11 @@ test("SPEC-002-080 #30: an unreadable PROMOTED-FROM origin gets canonical's pars
   } });
   try {
     const report = canonical(proj), viewer = await viewerVerdicts(proj);
-    assert.equal(viewer.errors[promoted], `${broken}: missing header separator`);
-    // Canonical names the origin by its full path ("<promoted>: <path>/<origin>: missing header separator").
+    assert.equal(viewer.errors[promoted], `rooms/planning/${broken}: missing header separator`);
+    // Canonical names the origin by its full path; the shared fixtures record it relative to .agent-board/, as the viewer reports it.
     const lines = lineFor(report.errors, promoted);
     assert.equal(lines.length, 1, JSON.stringify(report.errors));
     assert.match(lines[0], new RegExp(`/planning/${promoted}: /.+/planning/${broken}: missing header separator$`));
-    assert.ok(lines[0].endsWith("/planning/" + viewer.errors[promoted]), lines[0]);
+    assert.ok(lines[0].endsWith("/.agent-board/" + viewer.errors[promoted]), lines[0]);
   } finally { h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
 });

@@ -185,7 +185,7 @@ fixes are agent-file-board 7daf497. Tests: **VP2** = `tests/subthreads-parity.te
 | 27 | MISMATCH | Fixed with #22 and #26: ordering by canonical order; corrections never decide validity. | VP2 "#26 #27 R10b", "#27 R10a" |
 | 28 | MISMATCH (canonical) | Viewer already isolated the bad sibling; regression test added. | VP2 "#28 R10c" |
 | 29 | GAP | Fixtures added: missing origin, origin that is a member, origin in another room (each a topic's first message), compared with canonical. | VP2 "#29", VT AC2, VC AC2 |
-| 30 | MISMATCH | Fixed: the viewer reports the origin's canonical parse error (`<origin>: missing header separator`); canonical prefixes the origin's full path, which the viewer cannot know, and the test compares from the path's last segment. | VC "#30" |
+| 30 | MISMATCH | Fixed: the viewer reports the origin's canonical parse error with its board-relative path (`rooms/<room>/<origin>: missing header separator`), as the shared fixture `promoted-origin` records it; the same for a new post into an unparseable root (#36, fixture post `post-unreadable-root`). | VC "#30" |
 | 32 | SPEC-AMBIGUOUS | Decision keeps board-wide allocation; the viewer already allocates board-wide (`nextThreadId`). No change. | VP "AC7 Promote ..." |
 | 33 | MATCH (minor) | Kept: the viewer refuses to promote a quarantined root (stricter than canonical; a withdrawn message should not start a topic). | VP AC7 |
 | 34 | SPEC-AMBIGUOUS | Decision applied in docs: `docs/guides/SUBTHREADS.md` (Troubleshooting, Orphaned replies) and a dated SPEC-002-077 amendment. Behaviour unchanged (already matched). | VC "deleted root" |

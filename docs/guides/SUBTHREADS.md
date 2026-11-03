@@ -216,7 +216,7 @@ the toast names the rule in the same words as `boardctl`. The common ones:
 | Message | What it means |
 | --- | --- |
 | `SUBTHREAD: root … does not exist in this directory` | The root was deleted or renamed; start a new sub-thread or reply in the topic. |
-| `<root file>: missing header separator` (or another header problem) | The root file cannot be read as a message; repair it first. Existing replies under it stay valid. |
+| `rooms/<room>/<root file>: missing header separator` (or another header problem) | The root file cannot be read as a message; repair it first. Existing replies under it stay valid. |
 | `SUBTHREAD: a sub-thread message must sort after its root …` | The root is dated later than now (a clock or time zone problem); fix the root's DATE with a repair. |
 | `SUBTHREAD: REPLY-TO … is neither the root … nor a message of its sub-thread` | A reply was aimed at a message of another sub-thread or of the topic; reply from the right pane. |
 | `PROMOTED-FROM: only the first message of a topic can carry it …` | A promoted topic must be new; Promote always allocates the next topic ID. |

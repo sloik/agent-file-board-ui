@@ -122,9 +122,9 @@ test("#36 R5: a new post naming a present but unparseable root is refused; an ex
   try {
     assert.equal(await errorOf(s.page, kept), "", "an existing member of an unreadable root stays valid");
     const issue = await s.page.evaluate(([root, reply]) => subthreadIssue({ THREAD: "T009-planning", STATUS: "INFO", "REPLY-TO": reply, SUBTHREAD: root }, { dkey: "room:planning", index: B.messageIndex, post: true }), [broken, kept]);
-    assert.equal(issue, `${broken}: missing header separator`);
+    assert.equal(issue, `rooms/planning/${broken}: missing header separator`);
     const refused = await s.page.evaluate(([root, reply]) => { try { composeMessage({ sender: "human-owner-01", to: "all", scope: "room", room: "planning", tid: "T009", threadLabel: "T009-planning", slug: "x", status: "INFO", body: "x", replyTo: reply, subthread: root }); return ""; } catch (e) { return e.message; } }, [broken, kept]);
-    assert.match(refused, new RegExp(`${broken}: missing header separator`));
+    assert.match(refused, new RegExp(`rooms/planning/${broken}: missing header separator`));
   } finally { await s.cleanup(); }
 });
 
