@@ -4442,11 +4442,14 @@ async function loadRepairDraft(){
     for(const id of ["repairSave","repairWithdraw"]) $("#"+id).disabled=!m || !m.metadataError || m.quarantined || !m?.source?.file || !canWrite();
   }finally{ if(token===repairLoadToken) $("#repairDialog").setAttribute("aria-busy","false"); }
 }
-/* A repair replacement keeps the original's sub-thread membership (SPEC-002-080, audit #37, decision: exactly the
-   original's SUBTHREAD and SUBTHREAD-ALSO), so a repair can neither move a message out of its sub-thread nor into one.
-   The original's headers are recovered as canonical `repair` does: bytes decoded with replacement characters, line
-   ends normalised, the first occurrence of a header wins (the original may be the malformed file being repaired). */
-const REPAIR_KEPT_HEADERS=["SUBTHREAD","SUBTHREAD-ALSO"];
+/* A repair replacement and the original's sub-thread headers (SPEC-002-080, audit #37; parent ruling 2026-11-03,
+   the same rule as canonical `message_repairs`), for SUBTHREAD, SUBTHREAD-ALSO, SUBTHREAD-STATE and PROMOTED-FROM:
+   (a) a header whose original value is valid is kept byte for byte; (b) a header whose original value is invalid may
+   be corrected or dropped, because that is the repair; (c) a replacement never adds a sub-thread header the
+   original lacked; (d) so SUBTHREAD changes only under (b). A value is valid by the header's own value rule
+   (subthreadIssue's first checks). The original's headers are recovered as canonical `repair` does: bytes decoded
+   with replacement characters, line ends normalised, the first occurrence of a header wins. */
+const REPAIR_KEPT_HEADERS=["SUBTHREAD","SUBTHREAD-ALSO","SUBTHREAD-STATE","PROMOTED-FROM"];
 function repairRecoverableHeaders(bytes){
   const out=Object.create(null);
   for(const line of new TextDecoder("utf-8").decode(bytes).replace(/\r\n/g,"\n").split("\n")){
@@ -4455,11 +4458,19 @@ function repairRecoverableHeaders(bytes){
   }
   return out;
 }
+function repairHeaderValid(key,h){
+  const v=h[key];
+  if(key==="SUBTHREAD" || key==="PROMOTED-FROM") return subthreadName(v);
+  if(key==="SUBTHREAD-ALSO") return v==="main" && subthreadName(h.SUBTHREAD);
+  return ["resolved","open"].includes(v) && subthreadName(h.SUBTHREAD);
+}
 function repairSubthreadIssue(originalBytes,replacementBytes){
   const original=repairRecoverableHeaders(originalBytes), replacement=repairRecoverableHeaders(replacementBytes);
   for(const key of REPAIR_KEPT_HEADERS){
-    const was=Object.hasOwn(original,key)?original[key]:undefined, now=Object.hasOwn(replacement,key)?replacement[key]:undefined;
-    if(was!==now) return `a replacement keeps the original's sub-thread headers: ${key} is ${was ?? "absent"} in the original and ${now ?? "absent"} in the replacement`;
+    const had=Object.hasOwn(original,key), was=had?original[key]:undefined, now=Object.hasOwn(replacement,key)?replacement[key]:undefined;
+    if(was===now) continue;
+    if(had && !repairHeaderValid(key,original)) continue;   // (b): an invalid value may be corrected or dropped
+    return `a replacement keeps the original's sub-thread headers: ${key} is ${was ?? "absent"} in the original and ${now ?? "absent"} in the replacement`;
   }
   return "";
 }

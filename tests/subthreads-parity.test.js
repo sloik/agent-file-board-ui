@@ -195,7 +195,7 @@ test("#29 PROMOTED-FROM origin: missing, a member, or in another room", async ()
   } finally { await s.cleanup(); }
 });
 
-test("#37 R9: a repair replacement must keep the original's SUBTHREAD and SUBTHREAD-ALSO; one that keeps them is published", async () => {
+test("#37 R9: a repair replacement keeps the original's valid sub-thread headers; one that corrects only the invalid one is published", async () => {
   const bad = X.file("1302", "research-agent-01", "T009", "bad-state"), rel = `rooms/planning/${bad}`;
   const original = X.message({ from: "research-agent-01", date: "13:02", reply: F.root, extra: [`SUBTHREAD: ${F.root}`, "SUBTHREAD-ALSO: main", "SUBTHREAD-STATE: done"], body: "Resolved with a typo." });
   const s = await boot({ extra: { [bad]: original } });
@@ -311,5 +311,31 @@ test("#37 an existing repair record whose replacement dropped SUBTHREAD is a rep
   try {
     assert.deepEqual(await s.page.evaluate(n => [B.msgs.find(m => m.file === n).quarantined || false, B.repairErrors], bad),
       [false, [`repairs/0123456789abcdef0123456789abcdef.json: a replacement keeps the original's sub-thread headers: SUBTHREAD is ${F.root} in the original and absent in the replacement`]]);
+  } finally { await s.cleanup(); }
+});
+
+test("#37 (ruling 2026-11-03) repair header clauses: keep valid, correct or drop invalid, never add, SUBTHREAD only when invalid", async () => {
+  const s = await boot({ view: null });
+  try {
+    const head = extra => ["FROM: research-agent-01", "TO: all", ...extra, "---", "body", ""].join("\n");
+    const issue = (o, r) => s.page.evaluate(([o, r]) => repairSubthreadIssue(new TextEncoder().encode(o), new TextEncoder().encode(r)), [head(o), head(r)]);
+    const R = `SUBTHREAD: ${F.root}`, keep = "a replacement keeps the original's sub-thread headers: ";
+    // (a) a valid value is kept byte for byte, for each of the four headers.
+    assert.equal(await issue([R, "SUBTHREAD-ALSO: main", "SUBTHREAD-STATE: resolved"], [R, "SUBTHREAD-ALSO: main", "SUBTHREAD-STATE: resolved"]), "");
+    assert.equal(await issue([R, "SUBTHREAD-STATE: resolved"], [R, "SUBTHREAD-STATE: open"]), `${keep}SUBTHREAD-STATE is resolved in the original and open in the replacement`);
+    assert.equal(await issue([R, "SUBTHREAD-ALSO: main"], [R]), `${keep}SUBTHREAD-ALSO is main in the original and absent in the replacement`);
+    assert.equal(await issue([`PROMOTED-FROM: ${F.root}`], [`PROMOTED-FROM: ${F.root2}`]), `${keep}PROMOTED-FROM is ${F.root} in the original and ${F.root2} in the replacement`);
+    // (b) an invalid value may be corrected or dropped.
+    assert.equal(await issue([R, "SUBTHREAD-STATE: done"], [R, "SUBTHREAD-STATE: resolved"]), "");
+    assert.equal(await issue([R, "SUBTHREAD-STATE: done"], [R]), "");
+    assert.equal(await issue([R, "SUBTHREAD-ALSO: yes"], [R]), "");
+    assert.equal(await issue(["PROMOTED-FROM: a/b.txt"], []), "");
+    // (c) never add a header the original lacked.
+    assert.equal(await issue([R], [R, "SUBTHREAD-ALSO: main"]), `${keep}SUBTHREAD-ALSO is absent in the original and main in the replacement`);
+    assert.equal(await issue([], [R]), `${keep}SUBTHREAD is absent in the original and ${F.root} in the replacement`);
+    // (d) SUBTHREAD changes only when its original value is invalid.
+    assert.equal(await issue([R], [`SUBTHREAD: ${F.root2}`]), `${keep}SUBTHREAD is ${F.root} in the original and ${F.root2} in the replacement`);
+    assert.equal(await issue([`SUBTHREAD: ../${F.root}`], [R]), "");
+    assert.equal(await issue([`SUBTHREAD: ../${F.root}`], []), "");
   } finally { await s.cleanup(); }
 });
