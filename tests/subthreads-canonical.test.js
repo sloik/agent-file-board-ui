@@ -144,3 +144,20 @@ test("SPEC-002-080 #35: a quarantined root leaves its members valid and orphaned
     for (const name of [F.first, F.also, F.question]) assert.ok(report.warnings.includes(`rooms/planning/${name}: orphaned sub-thread: root ${F.root} is quarantined by a repair record`), JSON.stringify(report.warnings));
   } finally { h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
 });
+
+test("SPEC-002-080 #30: an unreadable PROMOTED-FROM origin gets canonical's parse error for the origin in both", async () => {
+  const broken = X.file("1305", "human-owner-01", "T009", "broken-origin"), promoted = X.file("1410", "human-owner-01", "T011", "promoted-broken");
+  const { proj } = X.subthreadBoard({ extra: {
+    [broken]: "FROM: human-owner-01\nTO: all\nno header separator here\n",
+    [promoted]: X.message({ from: "human-owner-01", tid: "T011", label: "promoted", date: "14:10", extra: [`PROMOTED-FROM: ${broken}`], body: "Promoted from an unreadable root." }),
+  } });
+  try {
+    const report = canonical(proj), viewer = await viewerVerdicts(proj);
+    assert.equal(viewer.errors[promoted], `${broken}: missing header separator`);
+    // Canonical names the origin by its full path ("<promoted>: <path>/<origin>: missing header separator").
+    const lines = lineFor(report.errors, promoted);
+    assert.equal(lines.length, 1, JSON.stringify(report.errors));
+    assert.match(lines[0], new RegExp(`/planning/${promoted}: /.+/planning/${broken}: missing header separator$`));
+    assert.ok(lines[0].endsWith("/planning/" + viewer.errors[promoted]), lines[0]);
+  } finally { h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
+});
