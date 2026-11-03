@@ -4025,7 +4025,7 @@ async function sendImpl(){
     if(!body){ toast(t("e_empty")); return; }
     let to = $("#cTo").value || "all";
     // SPEC-002-077 AC6: the sub-thread destination stamps SUBTHREAD; REPLY-TO defaults to the root.
-    const destination = composerTarget(), subthread = destination.sub && tkey && destination.thread===tkey ? destination.sub : null;
+    const subthread = $("#cSub")?.value && tkey ? composerSubTarget({scope, dir:scope==="room"?room:pair, thread:tkey}).sub || null : null;
     if(scope==="direct" && pair){ const ids = pair.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to = ids.find(x=>x!==me); }
     const bodySlug = slugify(body.replace(/@\S+/g,"").split("\n")[0]).slice(0,32).replace(/-+$/,"") || "message";
     let confirmed = false;
