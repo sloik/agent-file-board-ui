@@ -203,8 +203,8 @@ A sub-thread reply whose root message is gone is **orphaned**. What you see depe
   hidden, and it is not counted as a sub-thread reply.
 - A reply that answers another sub-thread reply still has its reply target. It stays valid and is
   listed under **Orphaned** in the Sub-threads list; its pane says "Root message not found: …".
-- A root withdrawn by a [message repair](../FEATURES.md) leaves its replies valid and orphaned in
-  the same way.
+- A root withdrawn by a [message repair](../FEATURES.md), or a root file that cannot be read as a
+  message, leaves its replies valid and orphaned in the same way.
 
 `boardctl validate` reports orphaned replies as warnings, never as errors.
 
@@ -217,6 +217,7 @@ the toast names the rule in the same words as `boardctl`. The common ones:
 | --- | --- |
 | `SUBTHREAD: root … does not exist in this directory` | The root was deleted or renamed; start a new sub-thread or reply in the topic. |
 | `rooms/<room>/<root file>: missing header separator` (or another header problem) | The root file cannot be read as a message; repair it first. Existing replies under it stay valid. |
+| `rooms/<room>/<root file>: <reason>`, for example `unknown sender, status, or language` | The root is an invalid message (or withdrawn); new replies are refused until it is repaired. Promote refuses it too. |
 | `SUBTHREAD: a sub-thread message must sort after its root …` | The root is dated later than now (a clock or time zone problem); fix the root's DATE with a repair. |
 | `SUBTHREAD: REPLY-TO … is neither the root … nor a message of its sub-thread` | A reply was aimed at a message of another sub-thread or of the topic; reply from the right pane. |
 | `PROMOTED-FROM: only the first message of a topic can carry it …` | A promoted topic must be new; Promote always allocates the next topic ID. |

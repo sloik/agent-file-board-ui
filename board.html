@@ -2491,10 +2491,10 @@ function nativeIssue(m,cfg,people,index){
   // Canonical parse_message and DATE wording (SPEC-002-080 AC2 contract: file-format errors adopt the easy texts).
   if(!m.hasSeparator || m.duplicates.length || required.some(k=>!Object.hasOwn(h,k))) return siblingParseError(m);
   const match=m.file.match(new RegExp("^\\d{4}-\\d{2}-\\d{2}_\\d{4}_([a-z][a-z0-9-]{2,63})_(T\\d{"+((cfg.board||{}).thread_digits||3)+"})_[a-z0-9]+(?:-[a-z0-9]+)*\\.txt$"));
-  if(!match || match[1]!==h.FROM || !h.THREAD.startsWith(match[2]+"-")) return "Filename does not match sender/thread";
-  if(!people[h.FROM] || !(cfg.statuses||DEFAULT_STATUSES).includes(h.STATUS) || !((cfg.language||{}).allowed||["en"]).includes(h.LANGUAGE)) return "Unknown sender/status/language";
-  if(h.TO!=="all" && h.TO.split(",").some(id=>!people[id.trim()])) return "Unknown recipient";
-  if(m.scope==="room" ? h.SCOPE!=="ROOM" || h.ROOM!==m.dir : h.SCOPE!=="DIRECT" || h["DIRECT-PARTICIPANTS"]!==m.dir.split("--").join(", ") || !m.dir.split("--").includes(h.FROM) || !m.dir.split("--").includes(h.TO)) return "Routing does not match physical conversation";
+  if(!match || match[1]!==h.FROM || !h.THREAD.startsWith(match[2]+"-")) return "filename does not match sender/thread header";
+  if(!people[h.FROM] || !(cfg.statuses||DEFAULT_STATUSES).includes(h.STATUS) || !((cfg.language||{}).allowed||["en"]).includes(h.LANGUAGE)) return "unknown sender, status, or language";
+  if(h.TO!=="all" && h.TO.split(",").some(id=>!people[id.trim()])) return "unknown recipient";
+  if(m.scope==="room" ? h.SCOPE!=="ROOM" || h.ROOM!==m.dir : h.SCOPE!=="DIRECT" || h["DIRECT-PARTICIPANTS"]!==m.dir.split("--").join(", ") || !m.dir.split("--").includes(h.FROM) || !m.dir.split("--").includes(h.TO)) return m.scope==="room" ? "ROOM routing does not match path" : "DIRECT routing does not match path";
   if(!validNativeDate(h.DATE)) return CANONICAL_DATE_ERROR;
   // Canonical check_message wording and order (SPEC-002-080, audit #10): an answer's target first, then any REPLY-TO.
   const reply=h["REPLY-TO"];
@@ -2567,6 +2567,9 @@ function subthreadIssue(h,{dkey,index,self=null,post=false,tz=null,name=""}){
       if(x.dkey===dkey && siblingHeaders(x) && subthreadTid(x.h)===own) return `PROMOTED-FROM: only the first message of a topic can carry it, but ${x.file} is earlier in ${own}`;
     }
   }
+  // Canonical post checks the root as a message after the sub-thread rules (fa5a9a8, rule subthread.root-invalid):
+  // a parseable root that is invalid or quarantined refuses the post with the root's own error.
+  if(post && sub!==undefined){ const r=index.get(dkey+"|"+sub); if(r && (r.metadataError || r.quarantined)) return `${r.path}: ${r.validationError || "quarantined by a repair record"}`; }
   return "";
 }
 /* Sub-thread warnings (canonical `subthread_warnings`, SPEC-002-080): reported, never hidden, never an error, so a
@@ -2581,6 +2584,7 @@ function subthreadWarning(m,model=B){
     const r=model.messageIndex.get(m.dkey+"|"+h.SUBTHREAD);
     if(!r) return `orphaned sub-thread: root ${h.SUBTHREAD} is missing`;
     if(r.quarantined) return `orphaned sub-thread: root ${h.SUBTHREAD} is quarantined by a repair record`;
+    if(!siblingHeaders(r)) return `orphaned sub-thread: root ${h.SUBTHREAD} cannot be read as a message`;
     if(!m.metadataError && siblingHeaders(r) && okOrder(m) && okOrder(r) && orderCompare(messageOrder(m,tz),messageOrder(r,tz))<=0) return `sub-thread message sorts before its root ${h.SUBTHREAD} in posting order`;
   }
   // Canonical emits these two only for valid messages (an invalid one already has its error).
@@ -3364,7 +3368,8 @@ function subthreadsOf(model=B){
 }
 // Repairs and signing are applied after the model is built, so these are read live, never cached.
 function subthreadRoot(x){ return B.messageIndex.get(x.key)||null; }
-function subthreadOrphan(x){ const r=subthreadRoot(x); return !r || !!r.quarantined; }
+// Orphaned: the root is missing, quarantined or unreadable (canonical orphan warnings, fa5a9a8).
+function subthreadOrphan(x){ const r=subthreadRoot(x); return !r || !!r.quarantined || !siblingHeaders(r); }
 function subthreadMembers(x){ return x.members.filter(m=>!m.quarantined && !m.receipt && signingEligible(m)); }
 /* The state of a sub-thread (SPEC-002-080, decisions #22 and #23): the latest SUBTHREAD-STATE among the valid,
    eligible members (not quarantined, not excluded by signing), in canonical posting order (messageOrder), never
@@ -4222,7 +4227,10 @@ async function subReopen(){
 function promoteSlug(title){ return title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60).replace(/^-+|-+$/g,"")||"topic"; }
 async function subPromote(rawTitle){
   const key=subthreadPaneKey(), r=B.messageIndex.get(key), root=sel.sub, scope=sel.scope, dir=sel.dir, tkey=sel.thread, old=threadsOf()[tkey];
-  if(!r || r.subthread || r.quarantined || !old) throw boardErr("e_subthread",{m:t("sub_gone")});
+  if(!r || r.subthread || !old) throw boardErr("e_subthread",{m:t("sub_gone")});
+  // As canonical `promote` (fa5a9a8: promote.root-quarantined, promote.root-invalid): only a valid, unquarantined root.
+  if(r.quarantined) throw boardErr("e_subthread",{m:`${root} is quarantined by a repair record; promote a valid root instead`});
+  if(r.metadataError) throw boardErr("e_subthread",{m:`${root} is not a valid message: ${r.validationError}`});
   const title=rawTitle.trim(); if(!validTopicTitle(title)) throw boardErr("e_title");
   const me=signingSender(currentUser()), person=guardRegistered(me);
   let confirmed=false; if(person.kind==="agent"){ if(!confirmAgentPost(person)) return null; confirmed=true; }

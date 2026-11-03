@@ -367,3 +367,31 @@ test("SPEC-002-080 AC2 contract: the two easy file-format errors use canonical w
   } finally { await s.cleanup(); }
 });
 
+
+test("canonical fa5a9a8 rules: orphan.root-unreadable, subthread.root-invalid, promote.root-invalid/-quarantined, file.sender-status-language", async () => {
+  const broken = X.file("1245", "human-owner-01", "T009", "broken-root"), kept = X.file("1246", "research-agent-01", "T009", "kept-member");
+  const weird = X.file("1247", "human-owner-01", "T009", "weird-root"), side = X.file("1248", "research-agent-01", "T009", "weird-member");
+  const s = await boot({ extra: {
+    [broken]: "FROM: human-owner-01\nTO: all\nno header separator here\n",
+    [kept]: X.message({ from: "research-agent-01", date: "12:46", reply: broken, extra: [`SUBTHREAD: ${broken}`], body: "Member of a broken root." }),
+    [weird]: X.message({ from: "human-owner-01", date: "12:47", status: "BOGUS", body: "A root with an unknown status." }),
+    [side]: X.message({ from: "research-agent-01", date: "12:48", reply: weird, extra: [`SUBTHREAD: ${weird}`], body: "Member of an invalid root." }),
+  } });
+  try {
+    // orphan.root-unreadable: the member stays valid and is orphaned, with canonical's warning.
+    assert.deepEqual(await s.page.evaluate(([n, k]) => { const m = B.msgs.find(x => x.file === n); return [m.validationError, subthreadWarning(m), subthreadOrphan(subthreadsOf().get(k))]; }, [kept, X.KEY(broken)]),
+      ["", `orphaned sub-thread: root ${broken} cannot be read as a message`, true]);
+    // file.sender-status-language: canonical's wording.
+    assert.equal(await errorOf(s.page, weird), "unknown sender, status, or language");
+    assert.equal(await errorOf(s.page, side), "", "a member of a parseable but invalid root stays valid");
+    // subthread.root-invalid: a new post into it is refused with the root's own error.
+    const post = await s.page.evaluate(([root, reply]) => { try { composeMessage({ sender: "research-agent-01", to: "all", scope: "room", room: "planning", tid: "T009", threadLabel: "T009-planning", slug: "x", status: "INFO", body: "x", replyTo: reply, subthread: root, confirmedAgent: true }); return ""; } catch (e) { return e.message; } }, [weird, side]);
+    assert.match(post, new RegExp(`rooms/planning/${weird}: unknown sender, status, or language$`));
+    // promote.root-invalid and promote.root-quarantined.
+    const promote = () => s.page.evaluate(async key => { openSubthread(key); try { await subPromote("New topic"); return ""; } catch (e) { return e.message; } }, X.KEY(weird));
+    assert.match(await promote(), new RegExp(`${weird} is not a valid message: unknown sender, status, or language$`));
+    await s.page.evaluate(n => { B.msgs.find(m => m.file === n).quarantined = true; }, weird);
+    assert.match(await promote(), new RegExp(`${weird} is quarantined by a repair record; promote a valid root instead$`));
+    assert.equal(await s.page.evaluate(() => window.__fakefs.dump().filter(f => f.text.includes("New topic")).length), 0, "nothing was written");
+  } finally { await s.cleanup(); }
+});

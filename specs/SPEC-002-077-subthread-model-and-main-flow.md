@@ -154,6 +154,6 @@ AC11 evidence (2026-11-03): Linux pixel baselines for the 7 sub-thread scenes re
   missing root fails the generic reply-target rule like any reply ("REPLY-TO target is missing") and is
   shown as an invalid message, never hidden and never a member. Only a member whose `SUBTHREAD` root is
   missing or quarantined while its `REPLY-TO` target exists (a reply to another member) is a valid orphan,
-  listed under "Orphaned" and reported by canonical `validate` as a warning. An unreadable root that is
-  present is not an orphan: existing members stay valid members, and a new post naming it is refused
-  (audit #36). Tested in `tests/subthreads-canonical.test.js` and `tests/subthreads-parity.test.js`.
+  listed under "Orphaned" and reported by canonical `validate` as a warning. A root that is present but
+  cannot be parsed also orphans its members (canonical fa5a9a8, warning `orphaned sub-thread: root R cannot be
+  read as a message`): they stay valid, and a new post naming it is refused (audit #36). Tested in `tests/subthreads-canonical.test.js` and `tests/subthreads-parity.test.js`.

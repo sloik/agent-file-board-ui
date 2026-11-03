@@ -83,7 +83,12 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
   For generic file-format errors (header separator, DATE, UTF-8 decoding) the test compares the `rule` id
   and the verdict, not Python's text. The viewer still adopts the two easy canonical wordings: the
   `parse_message` texts ("missing header separator", "duplicate header K", "missing header(s): …") and
-  canonical 3.4.1's DATE text. No case may be skipped; membership, main flow, state and orphans are compared
+  canonical 3.4.1's DATE text (and the short sender/status/language, recipient, filename and routing texts).
+  For post and promote refusals that only the CLI words (#11 "use a later --at", #39's multi-line signing
+  help) the test compares the rule id only (parent ruling 2026-11-03); everything `validate` reports is
+  compared word for word. The viewer supports canonical fa5a9a8's rule ids `promote.root-invalid`,
+  `promote.root-quarantined`, `subthread.root-invalid`, `orphan.root-unreadable` and
+  `file.sender-status-language`. No case may be skipped; membership, main flow, state and orphans are compared
   as AC2 says.
 - **Amendment 2026-11-03 (AC3, audit #37, parent ruling):** for all four sub-thread headers a repair
   replacement (a) keeps a header whose original value is valid byte for byte, (b) may correct or drop a
