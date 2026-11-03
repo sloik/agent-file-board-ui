@@ -271,7 +271,7 @@ test("#28 R10c: a sibling with an unreadable DATE is isolated and never invalida
   const s = await boot({ view: null, extra: { [PROMOTED]: promoted(), [SIBLING]: X.message({ from: "research-agent-01", tid: "T011", label: "promoted", date: "13:20", body: "Bad date." }).replace("DATE: 2026-10-15 13:20", "DATE: soon") } });
   try {
     assert.equal(await errorOf(s.page, PROMOTED), "");
-    assert.equal(await errorOf(s.page, SIBLING), "Invalid DATE");
+    assert.equal(await errorOf(s.page, SIBLING), "DATE must be an ISO date/time in the board time zone, optionally with seconds, fractional seconds or an offset", "canonical 3.4.1 wording");
     assert.equal(await s.page.evaluate(n => subthreadWarning(B.msgs.find(m => m.file === n)), PROMOTED), "");
   } finally { await s.cleanup(); }
 });
@@ -350,3 +350,16 @@ test("SPEC-002-080: the topic subtitle counts messages with the plural helper (1
     await expect(s.page.locator("#subtitle")).toHaveText(/^4 messages · /);
   } finally { await s.cleanup(); }
 });
+
+test("SPEC-002-080 AC2 contract: the two easy file-format errors use canonical wording (separator, DATE)", async () => {
+  const noSep = X.file("1306", "human-owner-01", "T009", "no-separator"), dup = X.file("1307", "human-owner-01", "T009", "dup-header");
+  const s = await boot({ view: null, extra: {
+    [noSep]: "FROM: human-owner-01\nTO: all\nno separator\n",
+    [dup]: X.message({ from: "human-owner-01", date: "13:07", body: "dup" }).replace("STATUS: INFO", "STATUS: INFO\nSTATUS: INFO"),
+  } });
+  try {
+    assert.equal(await errorOf(s.page, noSep), "missing header separator");
+    assert.equal(await errorOf(s.page, dup), "duplicate header STATUS");
+  } finally { await s.cleanup(); }
+});
+

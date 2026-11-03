@@ -2484,16 +2484,18 @@ function siblingParseError(x){
   const missing=["DATE","FROM","LANGUAGE","REPLY-TO","SCOPE","STATUS","THREAD","TO"].filter(k=>!Object.hasOwn(x.h,k));
   return missing.length ? "missing header(s): "+missing.join(", ") : "";
 }
+const CANONICAL_DATE_ERROR="DATE must be an ISO date/time in the board time zone, optionally with seconds, fractional seconds or an offset";
 function nativeIssue(m,cfg,people,index){
   const h=m.h, required=["FROM","TO","SCOPE","THREAD","DATE","LANGUAGE","REPLY-TO","STATUS"];
   if(m.source?.readError) return m.source.readError;
-  if(!m.hasSeparator || m.duplicates.length || required.some(k=>!Object.hasOwn(h,k))) return "Missing separator/headers or duplicate headers";
+  // Canonical parse_message and DATE wording (SPEC-002-080 AC2 contract: file-format errors adopt the easy texts).
+  if(!m.hasSeparator || m.duplicates.length || required.some(k=>!Object.hasOwn(h,k))) return siblingParseError(m);
   const match=m.file.match(new RegExp("^\\d{4}-\\d{2}-\\d{2}_\\d{4}_([a-z][a-z0-9-]{2,63})_(T\\d{"+((cfg.board||{}).thread_digits||3)+"})_[a-z0-9]+(?:-[a-z0-9]+)*\\.txt$"));
   if(!match || match[1]!==h.FROM || !h.THREAD.startsWith(match[2]+"-")) return "Filename does not match sender/thread";
   if(!people[h.FROM] || !(cfg.statuses||DEFAULT_STATUSES).includes(h.STATUS) || !((cfg.language||{}).allowed||["en"]).includes(h.LANGUAGE)) return "Unknown sender/status/language";
   if(h.TO!=="all" && h.TO.split(",").some(id=>!people[id.trim()])) return "Unknown recipient";
   if(m.scope==="room" ? h.SCOPE!=="ROOM" || h.ROOM!==m.dir : h.SCOPE!=="DIRECT" || h["DIRECT-PARTICIPANTS"]!==m.dir.split("--").join(", ") || !m.dir.split("--").includes(h.FROM) || !m.dir.split("--").includes(h.TO)) return "Routing does not match physical conversation";
-  if(!validNativeDate(h.DATE)) return "Invalid DATE";
+  if(!validNativeDate(h.DATE)) return CANONICAL_DATE_ERROR;
   // Canonical check_message wording and order (SPEC-002-080, audit #10): an answer's target first, then any REPLY-TO.
   const reply=h["REPLY-TO"];
   if(Object.hasOwn(h,"ANSWER") || Object.hasOwn(h,"ANSWER-STATE")){

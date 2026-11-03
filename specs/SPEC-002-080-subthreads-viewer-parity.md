@@ -62,8 +62,8 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
   `docs/design/subthreads/SUBTHREAD-RULE-AUDIT.md`, section "Viewer dispositions". New tests:
   `tests/subthreads-parity.test.js` (rows 9, 11, 13-16, 19, 21-23, 25-29, 36, 37, 39) and additions to
   `tests/subthreads-canonical.test.js` (10, 30, 35) and the shared fixture `tests/lib/subthread-fixture.js`.
-  AC3 stays open for the #37 header-set ruling (decision text: SUBTHREAD and SUBTHREAD-ALSO; canonical
-  7daf497: all four headers).
+  #37 follows the parent ruling (see Amendments). AC3 stays open until the shared-fixture run (AC2) confirms
+  the viewer against canonical v3.4.1.
 - AC4: the header shortens room and topic to one "‹ T…" back crumb through container queries; below a
   360px header the crumbs take their own line. The full path is the title and expands on a click of the
   root label. `tests/subthreads-pane.test.js` "AC4 (SPEC-002-080)" measures drawn characters per character
@@ -73,3 +73,21 @@ breadcrumb collapses to `#… › T…` when the pane is narrow.
 - Linux pixel baselines: subthread-view, subthread-view-390x640, subthread-pane-medium/-dark/-dracula change
   and subthread-pane-min is new; they must come from the update_visual_baselines CI run.
 
+
+## Amendments
+
+- **Amendment 2026-11-03 (AC2 parity contract, parent ruling):** every case in the vendored
+  `tests/fixtures/subthreads/cases.json` carries a stable `rule` id from canonical. The viewer must match
+  the `rule` id and the verdict exactly for every case, and the message text exactly for every sub-thread
+  rule (`SUBTHREAD…`, `PROMOTED-FROM…`, reply-target, orphan and repair-header texts, and the warnings).
+  For generic file-format errors (header separator, DATE, UTF-8 decoding) the test compares the `rule` id
+  and the verdict, not Python's text. The viewer still adopts the two easy canonical wordings: the
+  `parse_message` texts ("missing header separator", "duplicate header K", "missing header(s): …") and
+  canonical 3.4.1's DATE text. No case may be skipped; membership, main flow, state and orphans are compared
+  as AC2 says.
+- **Amendment 2026-11-03 (AC3, audit #37, parent ruling):** for all four sub-thread headers a repair
+  replacement (a) keeps a header whose original value is valid byte for byte, (b) may correct or drop a
+  header whose original value is invalid, (c) never adds a sub-thread header the original lacked, and
+  (d) changes SUBTHREAD only under (b). Enforced in `saveRepair` and for existing records in `applyRepairs`,
+  as canonical `message_repairs`. A correction (#38) copies only SUBTHREAD (optionally SUBTHREAD-ALSO); the
+  viewer has no correction writer.
