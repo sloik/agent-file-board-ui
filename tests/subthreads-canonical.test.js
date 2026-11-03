@@ -64,7 +64,11 @@ test("AC2 parity: a deleted root leaves its valid members orphaned in both, list
     const report = canonical(proj), viewer = await viewerVerdicts(proj);
     // Members replying to the deleted root lose their REPLY-TO target in both validators; the member replying to
     // another member stays valid and is the orphan.
-    for (const name of [F.first, F.question]) { assert.ok(viewer.errors[name]); assert.equal(lineFor(report.errors, name).length, 1, name); }
+    // SPEC-002-080 (audit #10): the same words as canonical check_message.
+    for (const name of [F.first, F.question]) {
+      assert.equal(viewer.errors[name], "REPLY-TO target is missing", name);
+      assert.deepEqual(lineFor(report.errors, name).map(l => l.slice(l.indexOf("/planning/" + name + ": ") + ("/planning/" + name + ": ").length)), [viewer.errors[name]], name);
+    }
     assert.equal(viewer.errors[F.also], ""); assert.deepEqual(lineFor(report.errors, F.also), []);
     assert.deepEqual(viewer.orphans, [F.also]);
     assert.ok(report.warnings.some(w => w.includes(`/planning/${F.also}: orphaned sub-thread: root ${F.root} is missing`)), JSON.stringify(report.warnings));
@@ -112,4 +116,31 @@ test("AC6 bytes from every writer in the sub-thread destination validate canonic
       assert.ok(row, file + " is in the canonical sub-thread"); assert.equal(row.subthread, F.root);
     }
   } finally { await ctx.close(); h.fs.rmSync(h.path.dirname(out), { recursive: true, force: true }); h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
+});
+
+test("SPEC-002-080 #10: an answer whose question file is missing gets canonical's ANSWER wording in both", async () => {
+  const answer = X.file("1301", "human-owner-01", "T009", "answer-gone");
+  const { proj, room } = X.subthreadBoard({ invalid: true, extra: {
+    [answer]: X.message({ from: "human-owner-01", to: "research-agent-01", date: "13:01", reply: "2026-10-15_1100_research-agent-01_T009_gone.txt", status: "REPLY", extra: ['ANSWER: {"question":"host","selected":["cloud"]}'], body: "answer to a deleted question" }),
+  } });
+  try {
+    const report = canonical(proj), viewer = await viewerVerdicts(proj);
+    assert.equal(viewer.errors[answer], "ANSWER reply target is missing");
+    assert.deepEqual(lineFor(report.errors, answer), [report.errors.find(l => l.endsWith(`/planning/${answer}: ANSWER reply target is missing`))]);
+  } finally { h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
+});
+
+test("SPEC-002-080 #35: a quarantined root leaves its members valid and orphaned in both, with the same warning", async () => {
+  // The root is invalid (unknown status), withdrawn by a hash-bound repair record; its members stay valid.
+  const { proj, room } = X.subthreadBoard();
+  try {
+    const rootPath = h.path.join(room, F.root), text = h.fs.readFileSync(rootPath, "utf8").replace("STATUS: INFO", "STATUS: BOGUS");
+    h.fs.writeFileSync(rootPath, text);
+    const r = h.boardctl(["repair", "--path", proj, "--message", `rooms/planning/${F.root}`, "--by", "human-owner-01", "--reason", "Unknown status"]);
+    assert.equal(r.code, 0, r.err);
+    const report = canonical(proj), viewer = await viewerVerdicts(proj);
+    for (const name of [F.first, F.also, F.question]) { assert.equal(viewer.errors[name], "", name); assert.deepEqual(lineFor(report.errors, name), [], name); }
+    assert.deepEqual(viewer.orphans, [F.first, F.also, F.question]);
+    for (const name of [F.first, F.also, F.question]) assert.ok(report.warnings.includes(`rooms/planning/${name}: orphaned sub-thread: root ${F.root} is quarantined by a repair record`), JSON.stringify(report.warnings));
+  } finally { h.fs.rmSync(h.path.dirname(proj), { recursive: true, force: true }); }
 });

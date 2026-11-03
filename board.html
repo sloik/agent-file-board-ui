@@ -2490,7 +2490,13 @@ function nativeIssue(m,cfg,people,index){
   if(h.TO!=="all" && h.TO.split(",").some(id=>!people[id.trim()])) return "Unknown recipient";
   if(m.scope==="room" ? h.SCOPE!=="ROOM" || h.ROOM!==m.dir : h.SCOPE!=="DIRECT" || h["DIRECT-PARTICIPANTS"]!==m.dir.split("--").join(", ") || !m.dir.split("--").includes(h.FROM) || !m.dir.split("--").includes(h.TO)) return "Routing does not match physical conversation";
   if(!validNativeDate(h.DATE)) return "Invalid DATE";
-  if(h["REPLY-TO"]!=="-" && (/[\\/]/.test(h["REPLY-TO"]) || !index.has(m.dkey+"|"+h["REPLY-TO"]))) return "Missing or unsafe reply target";
+  // Canonical check_message wording and order (SPEC-002-080, audit #10): an answer's target first, then any REPLY-TO.
+  const reply=h["REPLY-TO"];
+  if(Object.hasOwn(h,"ANSWER") || Object.hasOwn(h,"ANSWER-STATE")){
+    if(/[\\/]/.test(reply) || ["-",".",".."].includes(reply)) return "ANSWER requires a question filename";
+    if(!index.has(m.dkey+"|"+reply)) return "ANSWER reply target is missing";
+  }
+  if(reply!=="-" && (/[\\/]/.test(reply) || !index.has(m.dkey+"|"+reply))) return "REPLY-TO target is missing";
   try{ messageMetadata(h,index.get(m.dkey+"|"+h["REPLY-TO"])?.h); }catch(e){ return e.message; }
   return subthreadIssue(h,{dkey:m.dkey,index,self:m,tz:cfg.time_zone});
 }
