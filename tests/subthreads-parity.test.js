@@ -339,3 +339,14 @@ test("#37 (ruling 2026-11-03) repair header clauses: keep valid, correct or drop
     assert.equal(await issue([`SUBTHREAD: ../${F.root}`], []), "");
   } finally { await s.cleanup(); }
 });
+
+test("SPEC-002-080: the topic subtitle counts messages with the plural helper (1 message, not 1 messages; Polish forms)", async () => {
+  const s = await boot({ view: "room:planning|T010" });
+  try {
+    await expect(s.page.locator("#subtitle")).toHaveText(/^1 message · last status: INFO$/);
+    const pl = await s.page.evaluate(() => { S.lang = "pl"; const out = [1, 2, 5, 22].map(n => plural(n, "n_messages_one", "n_messages_few", "n_messages_many", "n_messages")); S.lang = "en"; return out; });
+    assert.deepEqual(pl, ["1 wiadomość", "2 wiadomości", "5 wiadomości", "22 wiadomości"]);
+    await h.openView(s.page, X.VIEW);
+    await expect(s.page.locator("#subtitle")).toHaveText(/^4 messages · /);
+  } finally { await s.cleanup(); }
+});

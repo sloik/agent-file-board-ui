@@ -1971,7 +1971,7 @@ const STRINGS = {
   message_loading:"Loading message…",
   message_error:"Could not load message: {m}", searching_history:"Searching message bodies…", search_incomplete:"Search incomplete; refresh to retry",
   history_label:"Message history", history_older:"Older 100", history_newer:"Newer 100", history_latest:"Latest", history_range:"Showing {start}–{end} of {total}",
-  n_messages:"{n} messages", last_status:"last status: {s}", results_for:"results for \"{q}\"",
+  n_messages:"{n} messages", n_messages_one:"{n} message", n_messages_few:"{n} messages", n_messages_many:"{n} messages", last_status:"last status: {s}", results_for:"results for \"{q}\"",
   sg_threads:"Threads", sg_rooms:"Rooms", sg_direct:"Direct conversations", sg_messages:"Messages",
   sg_text:"Search \"{q}\" in text",
   kind_agent:"agent", kind_human:"human", kind_unknown:"unregistered",
@@ -2301,7 +2301,7 @@ const STRINGS = {
   message_loading:"Wczytywanie wiadomości…",
   message_error:"Nie można wczytać wiadomości: {m}", searching_history:"Przeszukiwanie treści wiadomości…", search_incomplete:"Wyszukiwanie niepełne; odśwież, aby ponowić",
   history_label:"Historia wiadomości", history_older:"Starsze 100", history_newer:"Nowsze 100", history_latest:"Najnowsze", history_range:"Wyświetlono {start}–{end} z {total}",
-  n_messages:"{n} wiadomości", last_status:"ostatni status: {s}", results_for:"wyniki dla „{q}”",
+  n_messages:"{n} wiadomości", n_messages_one:"{n} wiadomość", n_messages_few:"{n} wiadomości", n_messages_many:"{n} wiadomości", last_status:"ostatni status: {s}", results_for:"wyniki dla „{q}”",
   sg_threads:"Wątki", sg_rooms:"Pokoje", sg_direct:"Rozmowy bezpośrednie", sg_messages:"Wiadomości",
   sg_text:"Szukaj „{q}” w treści",
   kind_agent:"agent", kind_human:"człowiek", kind_unknown:"niezarejestrowany",
@@ -4369,7 +4369,7 @@ function render(background = false){
   $("#guidanceOpen").hidden = !sel.scope;
   historyIndicatorUpdate();
   const lastSt = sel.thread ? ((view.filter(m=>!m.receipt).pop()||{}).status||"") : "";
-  $("#subtitle").textContent = t("n_messages",{n:view.length}) + (lastSt?" \u00b7 "+t("last_status",{s:lastSt}):"") + (q?" \u00b7 "+t("results_for",{q}):"");
+  $("#subtitle").textContent = plural(view.length,"n_messages_one","n_messages_few","n_messages_many","n_messages") + (lastSt?" \u00b7 "+t("last_status",{s:lastSt}):"") + (q?" \u00b7 "+t("results_for",{q}):"");
   if(q && bodySearch.pending) $("#subtitle").textContent+=" · "+t("searching_history");
   if(q && bodySearch.error) $("#subtitle").textContent+=" · "+t("search_incomplete");
   if(!view.length){ $("#feed").innerHTML = `<div class="empty"><h2>${esc(t("no_messages_h"))}</h2><p>${esc(t("no_messages_p"))}</p></div>`; mountReports(); return; }
