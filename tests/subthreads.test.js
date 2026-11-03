@@ -327,7 +327,7 @@ test("AC8 Sub-threads (n) lists active, then resolved, then orphaned; full-board
     [orphanNext]: X.message({ from: "implementation-agent-01", date: "13:04", reply: orphanFirst, extra: ["SUBTHREAD: 2026-10-15_1100_human-owner-01_T009_deleted.txt"], body: "Orphaned member stays visible" }),
   } });
   try {
-    await expect(s.page.locator("#subMenuToggle")).toHaveText(/🧵 Sub-threads \(\d\)/);
+    await expect(s.page.locator("#subMenuToggle")).toHaveText("🧵 Sub-threads (3)");
     await s.page.click("#subMenuToggle");
     const panel = s.page.locator("#subMenuPanel");
     await expect(panel).toBeVisible();

@@ -62,5 +62,10 @@
  "#signing-review h3":{"present":true,"visible":false},
  "#signingFingerprint":{"present":true,"visible":false},
  "#signingCompare":{"present":true,"visible":false},
- "#signingDialog [data-action=\"trust\"]":{"present":true,"visible":false}
+ "#signingDialog [data-action=\"trust\"]":{"present":true,"visible":false},
+ "#subBack":{"present":true,"visible":false},
+ "#subMenuToggle":{"present":true,"visible":false},
+ "#subMenuPanel":{"present":true,"visible":false},
+ "#feed .sub-strip":{"present":false},
+ "#feed .sub-stub":{"present":false}
 }}

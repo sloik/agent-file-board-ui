@@ -188,11 +188,13 @@ body.resizing{cursor:col-resize;user-select:none}
 button.chip.sub-chip{font-family:inherit;cursor:pointer}button.chip.sub-chip:hover{color:var(--accent);border-color:var(--accent)}
 .sub-empty{margin:4px 0 12px}
 .sub-back{flex:none;padding:2px 9px;line-height:1.3}#flatViewToggle[aria-pressed="true"]::before{content:"\2713  "}
-.sub-menu{margin-left:auto}.sub-menu:not([hidden])+#topicMenu{margin-left:0}.sub-menu>summary{max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub-menu{margin-left:auto}.sub-menu:not([hidden])+#topicMenu{margin-left:0}.sub-menu{flex:none}#subMenu>summary{white-space:nowrap;font-size:13px}#subMenu>summary::after{content:none}@media(max-width:600px){.sub-menu-word{display:none}}
 #subMenuPanel{width:340px}#subMenuPanel h4{margin:6px 4px 2px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .sub-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;width:100%;box-sizing:border-box;margin:2px 0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
 .sub-row:hover,.sub-row:focus-visible{background:var(--hover)}.sub-row .sub-row-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sub-row .sub-row-meta{grid-column:1/-1;color:var(--muted);font-size:12px}
-@media(max-width:600px){.tools .tools-label{display:none}}
+/* The extra action never wraps the row: on a phone it is an icon, and the file-name action yields its width first. */
+.tools button{white-space:nowrap}.tools [data-copy]{min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){.tools .tools-label{display:none}.tools:has([data-subthread-start]){gap:8px}}
 .body{margin-top:4px;overflow-wrap:anywhere;font-size:var(--fs);line-height:var(--lh)}
 .msg.mine{align-self:flex-end;grid-template-columns:1fr 40px;border-top-right-radius:4px}
 .msg.mine>.avatar{order:2}
@@ -816,7 +818,7 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
         <div class="composer-pin" id="composerPin" role="status" hidden><span class="composer-pin-text"></span> <button type="button" class="btn" id="composerPinHere"></button> <button type="button" class="btn" id="composerPinKeep"></button></div>
         </div><div class="composer-middle">
         <div class="composer-target-note" id="composerTargetNote" role="status" hidden><span class="composer-target-note-text"></span><span class="composer-target-note-actions"></span></div>
-        <div class="composer-target-fields" id="composerTargetFields"><input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" data-i18n-aria="c_new_room_title" size="11" hidden><input id="cNewThread" data-i18n-ph="c_new_thread_ph" data-i18n-aria="c_new_thread_ph" size="20" hidden><input type="hidden" id="cSub" value=""></div>
+        <div class="composer-target-fields" id="composerTargetFields"><input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" data-i18n-aria="c_new_room_title" size="11" hidden><input id="cNewThread" data-i18n-ph="c_new_thread_ph" data-i18n-aria="c_new_thread_ph" size="20" hidden><input type="hidden" id="cSub" value="" hidden></div>
         <details id="composerOptions"><summary class="composer-options-summary"><span data-i18n="composer_options"></span><span id="composerOptionsSummary"></span><span id="cStatusPreview" data-i18n-title="draft_status" class="chip status status-tone s-INFO">INFO</span></summary>
         <div class="ctx">
           <label><span data-i18n="content_type"></span> <select id="cContentType"><option value="text/plain" data-i18n="content_plain"></option><option value="text/markdown">Markdown</option><option value="text/html">HTML</option></select></label>
@@ -3595,9 +3597,11 @@ function subthreadListRender(){
   flat.hidden=!all.length && !S.flatView; flat.setAttribute("aria-pressed",String(!!S.flatView));
   const list=sel.thread?all.filter(x=>x.tkey===sel.thread):[];
   menu.hidden=!list.length; if(!list.length){ menu.open=false; return; }
-  const text=t("sub_list",{n:list.length}), toggle=$("#subMenuToggle");
-  if(toggle.textContent!=="\u{1F9F5} "+text) toggle.textContent="\u{1F9F5} "+text;
-  toggle.title=text;
+  // On a phone the topic bar keeps one line: the count stays, the word folds away (CSS).
+  const text=t("sub_list",{n:list.length}), toggle=$("#subMenuToggle"), at=text.lastIndexOf("(");
+  const label=`\u{1F9F5} <span class="sub-menu-word">${esc(text.slice(0,at).trim())}</span> ${esc(text.slice(at))}`;
+  if(toggle.innerHTML!==label) toggle.innerHTML=label;
+  toggle.title=text; toggle.setAttribute("aria-label",text);
   const byLast=(a,b)=>(b.last.localeCompare(a.last)) || ((b.lastOrder||0)-(a.lastOrder||0));
   const orphaned=list.filter(subthreadOrphan), active=list.filter(x=>!subthreadOrphan(x) && x.state!=="resolved").sort(byLast), resolved=list.filter(x=>!subthreadOrphan(x) && x.state==="resolved").sort(byLast);
   const row=x=>{ const members=subthreadMembers(x), r=subthreadRoot(x), fresh=members.filter(unread).length, last=members.at(-1);
