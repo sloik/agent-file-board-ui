@@ -60,6 +60,17 @@ class DemoTests(unittest.TestCase):
                 for image in illustrated:
                     self.assertEqual(archive.read(PREFIX + '/images/' + image), (ROOT / 'docs/images' / image).read_bytes())
 
+                # SPEC-002-080: the sub-threads guide ships with every capture and no link that breaks offline.
+                subthreads = archive.read(PREFIX + '/docs/SUBTHREADS.md').decode('utf-8')
+                shots = re.findall(r'\]\(\.\./images/(subthreads/[A-Za-z0-9_.-]+)\)', subthreads)
+                self.assertGreaterEqual(len(set(shots)), 10)
+                for image in shots:
+                    self.assertEqual(archive.read(PREFIX + '/images/' + image), (ROOT / 'docs/images' / image).read_bytes())
+                for link in re.findall(r'\[[^\]]*\]\(([^)]+)\)', subthreads):
+                    if '://' in link or link.startswith('#'):
+                        continue
+                    self.assertIn(posixpath.normpath(str(Path(PREFIX) / 'docs' / link.split('#', 1)[0])), names, link)
+                self.assertIn('](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/NOTIFICATIONS.md)', subthreads)
                 self.assertNotIn('SIGNING-REVIEW', signing)
                 self.assertNotIn('../validation/', signing)
                 for rel in ['docs/SOURCE-CODE.md', 'examples/source-code/review.md', 'examples/source-code/device.patch', 'examples/extensions/source-review.afb-plugin.json']:
@@ -95,7 +106,11 @@ class DemoTests(unittest.TestCase):
             self.assertEqual(manifest['sourcePresentation'], {'guide':'docs/SOURCE-CODE.md','room':'reports','thread':'T016','views':['unified','split','source']})
             # SPEC-002-078: the sub-thread example (one open, one resolved) and its guide.
             self.assertEqual(manifest['subthreads'], {'guide':'docs/SUBTHREADS.md','room':'architecture','thread':'T017','open':1,'resolved':1})
-            self.assertEqual((package / 'docs/SUBTHREADS.md').read_bytes(), (ROOT / 'docs/guides/SUBTHREADS.md').read_bytes())
+            # The packaged guide is the source guide; only links to viewer guides that are not packaged point at
+            # the published repository (SPEC-002-080), so nothing else may differ.
+            source = (ROOT / 'docs/guides/SUBTHREADS.md').read_text()
+            expected = source.replace('](NOTIFICATIONS.md)', '](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/NOTIFICATIONS.md)').replace('](../FEATURES.md)', '](https://github.com/sloik/agent-file-board-ui/blob/main/docs/FEATURES.md)')
+            self.assertEqual((package / 'docs/SUBTHREADS.md').read_text(), expected)
             members = [p.read_text() for p in (board / '.agent-board/rooms/architecture').glob('*_T017_*.txt')]
             self.assertEqual(sum('\nSUBTHREAD: ' in t for t in members), 4)
             self.assertEqual(sum('\nSUBTHREAD-ALSO: main' in t for t in members), 1)
