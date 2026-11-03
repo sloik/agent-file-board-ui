@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-078
 title: Sub-threads in the viewer, part B - pane, second composer, follow, resolve, promote, release
-status: planned
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-11-03
@@ -88,7 +88,7 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
   Visual scenes with text, layout and Linux pixel baselines for the three layouts and all
   themes in at least one scene each. Owner policy: no VoiceOver checks. All existing tests
   stay green with no skips or weakened assertions.
-- [ ] AC10 (docs and release): docs/FEATURES.md section and screenshots, a new
+- [x] AC10 (docs and release): docs/FEATURES.md section and screenshots, a new
   docs/guides/SUBTHREADS.md, README Highlights row, CHANGELOG. Viewer version 3.4.0, vendor
   pinned to canonical tag `v3.4.0`, release-check exact tag. Rebuild the demo with a
   sub-thread example. Protected PR with required checks green, then tag `v3.4.0`. The
@@ -162,3 +162,5 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
 
 
 AC9 evidence (2026-11-03): Linux pixel baselines for the pane scenes (new subthread-pane-medium/-dark/-dracula, regenerated subthread-view and subthread-view-390x640) rendered by CI run 41702625018 and committed in 360ab90.
+
+AC10 evidence (2026-11-03): PR #39 merged (6e4f889) after test + bounded-models passed on 5f6336c; tag v3.4.0; release run 41706884967 passed target/test/prepare/publish/verify; GitHub Release v3.4.0 is Latest with board.html, viewer ZIP, demo ZIP (contains architecture T017 sub-thread example), opener scripts and SHA256SUMS; downloaded board.html is byte-identical to the tag and checksums verify.
