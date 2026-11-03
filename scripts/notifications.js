@@ -91,7 +91,7 @@ async function activateNotification(state,entry,reply){
  const model=B;try{await hydrateMessages([m],model);}catch{$("#notificationsResult").textContent=t("notify_changed");return;}
  if(!notificationCurrent(state)||B!==model||!notificationEligible(m))return;
  if(reply&&notificationHasDraft()){$("#notificationsResult").textContent=t("notify_draft");return;}
- $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};sel={scope:m.scope,dir:m.dir,thread:m.tkey};rememberView();build({preserveComposer:true});
+ $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};sel={scope:m.scope,dir:m.dir,thread:m.tkey,...(m.subthread&&!S.flatView?{sub:m.subthread}:{})};rememberView();build({preserveComposer:true});
  const view=matchingMessages(),at=view.findIndex(x=>x.path===m.path),end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2));historyPage.end=end===view.length?null:view[end-1]?.path;build({preserveComposer:true});
  const element=document.getElementById("m-"+m.dkey+"|"+m.file);if(element){element.tabIndex=-1;element.scrollIntoView({block:"center"});element.focus({preventScroll:true});}if(reply)startReply(m);renderNotifications();
 }

@@ -15,17 +15,23 @@ let composerOptionsHeld=innerHeight<=640;
 function composerTarget(){
  const where=$('#cWhere')?.value||'',newRoom=slugify($('#cNewRoom')?.value||''),to=$('#cTo')?.value||'all',newTopic=$('#cNewThread')?.value||'';
  if(where==='newdirect')return {scope:'newdirect',dir:[currentUser(),to].sort().join('--'),thread:'',newRoom:'',newTopic,to};
- if(where.startsWith('direct:'))return {scope:'direct',dir:where.slice(7),thread:$('#cThread')?.value||'',newRoom:'',newTopic,to};
+ if(where.startsWith('direct:'))return composerSubTarget({scope:'direct',dir:where.slice(7),thread:$('#cThread')?.value||'',newRoom:'',newTopic,to});
  if(!where&&!newRoom)return {scope:null,dir:null,thread:'',newRoom:'',newTopic,to};
- return {scope:'room',dir:newRoom||where.slice(5),thread:newRoom?'':$('#cThread')?.value||'',newRoom,newTopic,to};
+ return composerSubTarget({scope:'room',dir:newRoom||where.slice(5),thread:newRoom?'':$('#cThread')?.value||'',newRoom,newTopic,to});
 }
-const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'');
+// SPEC-002-077: a sub-thread is one more destination dimension (backing input #cSub, the root filename).
+// It counts only while it belongs to the selected topic, so an Advanced Where/Thread change drops it.
+function composerSubTarget(x){
+ const sub=$('#cSub')?.value||'',r=sub&&x.thread&&B?B.messageIndex.get(x.scope+':'+x.dir+'|'+sub):null,i=sub&&x.thread&&B?subthreadsOf().get(x.scope+':'+x.dir+'|'+sub):null;
+ return {...x,sub:sub&&((r&&r.tkey===x.thread&&!r.subthread)||(i&&i.tkey===x.thread))?sub:''};
+}
+const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'')+(x.sub?'^'+x.sub:'');
 const sameComposerTarget=(a,b)=>composerTargetKey(a)===composerTargetKey(b);
 // What the visible view implies: a thread posts there, a room starts a new topic, a direct
 // conversation continues its most recent topic; All messages has no destination.
 function composerViewTarget(){
  if(!B||!sel.scope)return {scope:null};
- if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread};
+ if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread,...(sel.sub?{sub:sel.sub}:{})};
  return sel.scope==='direct'?composerDirectTarget(sel.dir):{scope:sel.scope,dir:sel.dir,thread:''};
 }
 function composerDirectTarget(dir){
@@ -40,6 +46,7 @@ function setComposerTarget(target={}){
  composerPin=null;composerNewRoomMode=!!target.newRoom;composerTopicAuto=true;
  $('#cWhere').value=where;if(!target.newRoom)$('#cNewRoom').value='';
  fillThreads(where&&scope!=='newdirect'?target.thread||'':'');
+ $('#cSub').value=where&&scope!=='newdirect'&&target.thread?target.sub||'':'';
  let to=target.to||'all';
  if(scope==='direct'){const ids=target.dir.split('--'),me=currentUser();to=ids.includes(me)?ids.find(id=>id!==me)||'all':'all';}
  if(to.includes(',')&&![...$('#cTo').options].some(o=>o.value===to))$('#cTo').insertAdjacentHTML('beforeend',composerToOption(to));
@@ -49,7 +56,7 @@ function setComposerTarget(target={}){
 // Advanced fields and pin choices are explicit: they end any pending mismatch banner.
 function composerExplicit(){composerPin=null;composerTargetRender();}
 function composerFollowView(preserve){
- const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null]);
+ const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null,sel.sub||null]);
  if(key===composerViewKey)return composerTargetRender();
  composerViewKey=key;
  if(preserve)return composerTargetRender();
@@ -69,7 +76,7 @@ function composerTargetText(target=composerTarget()){
  if(!target.scope)return {where:exText('Choose where to post','Wybierz, gdzie wysłać'),topic:''};
  const where=target.scope==='newdirect'?'✉ '+composerName(target.to):target.newRoom?'# '+target.newRoom:composerDirLabel(target.scope,target.dir);
  const th=target.thread?threadsOf()[target.thread]:null,name=target.newTopic.trim();
- return {where,topic:th?th.tid+' '+threadTitle(th):exText('New topic','Nowy wątek')+(name?': '+name:'')};
+ return {where,topic:(th?th.tid+' '+threadTitle(th):exText('New topic','Nowy wątek')+(name?': '+name:''))+(target.sub?' › 🧵 '+exText('sub-thread','podwątek'):'')};
 }
 function composerToText(to){
  if(!to||to==='all')return exText('to all','do wszystkich');
@@ -255,6 +262,8 @@ function wireComposerTarget(){
   else if(b.dataset.composerAction==='participant')composerMenuOpen('participant',composerAnchor());
  });
  $('#cNewThread').addEventListener('input',()=>{composerTopicAuto=false;composerTargetRender();});
+ // An explicit Advanced Where/Thread change leaves the sub-thread (the destination is then that topic).
+ for(const id of ['#cWhere','#cThread'])$(id).addEventListener('change',()=>{if($('#cSub').value){$('#cSub').value='';composerTargetRender();}});
  $('#cBody').addEventListener('input',composerTopicFromBody);
  $('#composerAdvanced').addEventListener('toggle',composerTargetRender);
  // The chip row, name fields and banners change the composer's height: keep a reader at the live edge there.

@@ -174,6 +174,25 @@ body.resizing{cursor:col-resize;user-select:none}
 .thread-link:hover{color:var(--accent);border-color:var(--accent)}
 .reply-ref{font-size:12px;color:var(--muted);margin-top:2px;cursor:pointer}
 .reply-ref:hover{color:var(--accent)}
+/* Sub-threads (SPEC-002-077): summary strip under a root, main-flow stubs, the list and the filtered view's Back. */
+.sub-strip{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;max-width:100%;box-sizing:border-box;margin-top:6px;padding:3px 10px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:var(--panel2);color:var(--muted);font:inherit;font-size:12.5px;line-height:1.4;text-align:left;cursor:pointer}
+.sub-strip:hover,.sub-strip:focus-visible{color:var(--ink);background:var(--hover)}
+.sub-strip .sub-count{color:var(--accent);font-weight:600;white-space:nowrap}.sub-strip .sub-when{white-space:nowrap}
+.sub-dots{display:inline-flex;align-items:center}.sub-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);border:1.5px solid var(--panel);margin-left:-3px}.sub-dot:first-child{margin-left:0}.sub-more{font-size:11px;margin-left:3px}
+.sub-unread{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.sub-cap{padding:0 7px;border-radius:9px;background:var(--warn-bg);color:var(--warn-ink);font-weight:600;font-size:11.5px;white-space:nowrap}
+.sub-strip.sub-resolved{border-left-color:var(--line)}.sub-resolved .sub-cap{background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+.sub-outcome{flex:1 1 100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg.sub-stub .sub-stub-text{color:var(--muted)}
+.sub-jump{border:0;background:none;color:var(--accent);padding:0;margin-top:2px;font:inherit;font-size:12.5px;cursor:pointer}
+button.chip.sub-chip{font-family:inherit;cursor:pointer}button.chip.sub-chip:hover{color:var(--accent);border-color:var(--accent)}
+.sub-empty{margin:4px 0 12px}
+.sub-back{flex:none;padding:2px 9px;line-height:1.3}#flatViewToggle[aria-pressed="true"]::before{content:"\2713  "}
+.sub-menu{margin-left:auto}.sub-menu:not([hidden])+#topicMenu{margin-left:0}.sub-menu>summary{max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#subMenuPanel{width:340px}#subMenuPanel h4{margin:6px 4px 2px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sub-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;width:100%;box-sizing:border-box;margin:2px 0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.sub-row:hover,.sub-row:focus-visible{background:var(--hover)}.sub-row .sub-row-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sub-row .sub-row-meta{grid-column:1/-1;color:var(--muted);font-size:12px}
+@media(max-width:600px){.tools .tools-label{display:none}}
 .body{margin-top:4px;overflow-wrap:anywhere;font-size:var(--fs);line-height:var(--lh)}
 .msg.mine{align-self:flex-end;grid-template-columns:1fr 40px;border-top-right-radius:4px}
 .msg.mine>.avatar{order:2}
@@ -783,9 +802,9 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
   </aside>
   <div class="resizer" id="resizer" data-i18n-title="resizer_title"></div>
   <section class="feed-wrap">
-    <div class="feed-head"><h2 id="title"></h2><span class="sub" id="subtitle"></span><details id="topicMenu" class="toolbar-tools topic-menu"><summary class="btn" id="topicMenuToggle" data-i18n-title="topic_menu" data-i18n-aria="topic_menu">&#8943;</summary><div class="toolbar-tools-panel" id="topicMenuPanel">
+    <div class="feed-head"><button type="button" class="btn sub-back" id="subBack" data-i18n="sub_back" data-i18n-title="sub_back_title" hidden></button><h2 id="title"></h2><span class="sub" id="subtitle"></span><details id="subMenu" class="toolbar-tools topic-menu sub-menu" hidden><summary class="btn" id="subMenuToggle"></summary><div class="toolbar-tools-panel" id="subMenuPanel"></div></details><details id="topicMenu" class="toolbar-tools topic-menu"><summary class="btn" id="topicMenuToggle" data-i18n-title="topic_menu" data-i18n-aria="topic_menu">&#8943;</summary><div class="toolbar-tools-panel" id="topicMenuPanel">
       <button class="btn" type="button" id="topicRename" data-i18n="rename_topic" hidden></button><div class="title-editor" id="titleEditor" hidden><input id="topicTitle" data-i18n-aria="topic_title" data-i18n-ph="topic_title"><button class="btn" id="setTitle" data-i18n="set_title"></button></div>
-      <button class="btn" id="repairsOpen" data-i18n="repairs_title"></button><button class="btn" id="guidanceOpen" data-i18n="guidance_title" hidden></button>
+      <button class="btn" type="button" id="flatViewToggle" aria-pressed="false" data-i18n="flat_view" hidden></button><button class="btn" id="repairsOpen" data-i18n="repairs_title"></button><button class="btn" id="guidanceOpen" data-i18n="guidance_title" hidden></button>
     </div></details></div>
     <div class="feed" id="feed" tabindex="0"></div>
     <div class="composer-resizer" id="composerResizer" role="separator" aria-orientation="horizontal" tabindex="0" data-i18n-aria="composer_resize" data-i18n-title="composer_resize"></div>
@@ -797,7 +816,7 @@ dialog.afb-dialog.afb-dialog-compact{--dialog-w:var(--dialog-compact-w)}
         <div class="composer-pin" id="composerPin" role="status" hidden><span class="composer-pin-text"></span> <button type="button" class="btn" id="composerPinHere"></button> <button type="button" class="btn" id="composerPinKeep"></button></div>
         </div><div class="composer-middle">
         <div class="composer-target-note" id="composerTargetNote" role="status" hidden><span class="composer-target-note-text"></span><span class="composer-target-note-actions"></span></div>
-        <div class="composer-target-fields" id="composerTargetFields"><input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" data-i18n-aria="c_new_room_title" size="11" hidden><input id="cNewThread" data-i18n-ph="c_new_thread_ph" data-i18n-aria="c_new_thread_ph" size="20" hidden></div>
+        <div class="composer-target-fields" id="composerTargetFields"><input id="cNewRoom" data-i18n-ph="c_new_room_ph" data-i18n-title="c_new_room_title" data-i18n-aria="c_new_room_title" size="11" hidden><input id="cNewThread" data-i18n-ph="c_new_thread_ph" data-i18n-aria="c_new_thread_ph" size="20" hidden><input type="hidden" id="cSub" value=""></div>
         <details id="composerOptions"><summary class="composer-options-summary"><span data-i18n="composer_options"></span><span id="composerOptionsSummary"></span><span id="cStatusPreview" data-i18n-title="draft_status" class="chip status status-tone s-INFO">INFO</span></summary>
         <div class="ctx">
           <label><span data-i18n="content_type"></span> <select id="cContentType"><option value="text/plain" data-i18n="content_plain"></option><option value="text/markdown">Markdown</option><option value="text/html">HTML</option></select></label>
@@ -1554,7 +1573,7 @@ const RUNTIME_HUMAN = "agent-file-board-ui " + VIEWER_VERSION;
 const RUNTIME_AGENT = "agent-file-board-ui " + VIEWER_VERSION + " (manual post, sender is an agent)";
 const DEF = {lang:"en",theme:"system",lh:1.6,fs:14.5,bubble:88,feed:1100,align:"split",showReceipts:false,showPresenceNotices:false,presenceAnnouncements:false,composerOptionsOpen:false,composerAdvancedOpen:false,expandAll:false,autoOpen:true,
   sideW:270,settingsW:340,composerH:0,threadOrder:"stable",rOn:true,rEvery:1,rUnit:"m",rDays:"1234567",rWin:false,rFrom:"08:00",rTo:"20:00",
-  me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null};
+  me:"",collapsed:{},closedGroups:{},lastScope:null,lastDir:null,lastThread:null,lastSub:null,flatView:false};
 const $ = s => document.querySelector(s);
 const stats = {autoRefreshes:0,builds:0,messageReads:0,indexReads:0};
 const MESSAGE_PAGE_SIZE = 100;
@@ -1867,6 +1886,13 @@ const STRINGS = {
   in_reply_to:"in reply to: {who} - {when}", show_all:"Show all", collapse:"Collapse",
   reply_btn:"Reply", copy_name:"Copy file name", copied:"File name copied",
   outside_filter:"Message is outside the current filter",
+  sub_start:"Start sub-thread", sub_open:"Open sub-thread", sub_crumb:"\u{1F9F5} Sub-thread", sub_back:"\u2039 Back", sub_back_title:"Back to the topic",
+  sub_replies_one:"{n} reply", sub_replies_few:"{n} replies", sub_replies_many:"{n} replies", sub_replies_other:"{n} replies",
+  sub_strip_label:"{replies}, last {when}", sub_unread:"unread replies", sub_question:"Question for you", sub_decision:"Decision needed", sub_resolved:"Resolved",
+  sub_stub:"Also in a sub-thread", sub_stub_open:"View in sub-thread", sub_in:"In a sub-thread", sub_empty:"No replies yet. The first message you post here starts the sub-thread.",
+  sub_list:"Sub-threads ({n})", sub_list_active:"Active", sub_list_resolved:"Resolved sub-threads", sub_list_orphaned:"Orphaned", sub_orphan_root:"Root message not found: {file}",
+  sub_gone:"That sub-thread is no longer on the board", flat_view:"Flat view (show sub-thread replies in the topic)",
+  e_subthread:"Cannot post in this sub-thread: {m}", e_subthread_title:"A topic title cannot be set from a sub-thread", e_subthread_legacy:"Sub-threads need a board in the current format",
   receipt_line:"{who} acknowledges reading", receipt_to:"up to",
   replying_to:"Replying to:", cancel_reply:"Cancel reply",
   c_where:"Where", c_thread:"Thread", c_new_thread_opt:"+ new thread...", c_new_thread_ph:"Topic name", c_advanced:"Advanced routing",
@@ -2179,6 +2205,13 @@ const STRINGS = {
   in_reply_to:"w odpowiedzi na: {who} - {when}", show_all:"Pokaż całość", collapse:"Zwiń",
   reply_btn:"Odpowiedz", copy_name:"Kopiuj nazwę pliku", copied:"Skopiowano nazwę pliku",
   outside_filter:"Wiadomość poza bieżącym filtrem",
+  sub_start:"Rozpocznij podwątek", sub_open:"Otwórz podwątek", sub_crumb:"\u{1F9F5} Podwątek", sub_back:"\u2039 Wróć", sub_back_title:"Wróć do wątku",
+  sub_replies_one:"{n} odpowiedź", sub_replies_few:"{n} odpowiedzi", sub_replies_many:"{n} odpowiedzi", sub_replies_other:"{n} odpowiedzi",
+  sub_strip_label:"{replies}, ostatnia {when}", sub_unread:"nieprzeczytane odpowiedzi", sub_question:"Pytanie do ciebie", sub_decision:"Potrzebna decyzja", sub_resolved:"Rozwiązany",
+  sub_stub:"Także w podwątku", sub_stub_open:"Zobacz w podwątku", sub_in:"W podwątku", sub_empty:"Brak odpowiedzi. Pierwsza wiadomość wysłana tutaj rozpoczyna podwątek.",
+  sub_list:"Podwątki ({n})", sub_list_active:"Aktywne", sub_list_resolved:"Rozwiązane podwątki", sub_list_orphaned:"Osierocone", sub_orphan_root:"Nie znaleziono wiadomości głównej: {file}",
+  sub_gone:"Tego podwątku nie ma już na tablicy", flat_view:"Widok płaski (odpowiedzi z podwątków w wątku)",
+  e_subthread:"Nie można wysłać w tym podwątku: {m}", e_subthread_title:"Tytułu wątku nie można ustawić z podwątku", e_subthread_legacy:"Podwątki wymagają tablicy w bieżącym formacie",
   receipt_line:"{who} potwierdza odczyt", receipt_to:"do",
   replying_to:"Odpowiedź na:", cancel_reply:"Anuluj odpowiedź",
   c_where:"Gdzie", c_thread:"Wątek", c_new_thread_opt:"+ nowy wątek...", c_new_thread_ph:"Nazwa wątku", c_advanced:"Zaawansowane kierowanie",
@@ -2300,6 +2333,31 @@ function nativeIssue(m,cfg,people,index){
   if(!validNativeDate(h.DATE)) return "Invalid DATE";
   if(h["REPLY-TO"]!=="-" && (/[\\/]/.test(h["REPLY-TO"]) || !index.has(m.dkey+"|"+h["REPLY-TO"]))) return "Missing or unsafe reply target";
   try{ messageMetadata(h,index.get(m.dkey+"|"+h["REPLY-TO"])?.h); }catch(e){ return e.message; }
+  return subthreadIssue(h,{dkey:m.dkey,tid:m.tid,index,self:m});
+}
+/* Sub-threads (SPEC-002-076 rules, SPEC-002-077 AC2). Header-only checks live in messageMetadata;
+   the rules that need other files of the same conversation live here, for read and for post. */
+function subthreadName(value){ return typeof value==="string" && /^[^/\\]+\.txt$/.test(value) && !/[\u0000-\u001f\u007f]/.test(value); }
+function subthreadIssue(h,{dkey,tid,index,self=null,post=false}){
+  const root=h.SUBTHREAD, promoted=h["PROMOTED-FROM"];
+  if(root!==undefined){
+    if(!subthreadName(root)) return "Invalid SUBTHREAD root filename";
+    const r=index.get(dkey+"|"+root);
+    if(!r){ if(post) return "SUBTHREAD root is missing"; }
+    else{
+      if(r===self) return "A message cannot be its own SUBTHREAD root";
+      if(Object.hasOwn(r.h,"SUBTHREAD")) return "SUBTHREAD root is itself a sub-thread member";
+      if(r.tid!==tid) return "SUBTHREAD root is in another thread";
+    }
+    const reply=h["REPLY-TO"];
+    if(reply==="-") return "Sub-thread REPLY-TO must name the root or a member";
+    if(reply!==root){ const target=index.get(dkey+"|"+reply); if(!target || target.h.SUBTHREAD!==root) return "Sub-thread REPLY-TO is outside the sub-thread"; }
+  }
+  if(promoted!==undefined){
+    if(!subthreadName(promoted)) return "Invalid PROMOTED-FROM root filename";
+    if(!index.has(dkey+"|"+promoted)) return "PROMOTED-FROM root is not in this conversation";
+    for(const x of index.values()) if(x.dkey===dkey && x.tid===tid){ if(x!==self) return "PROMOTED-FROM is only allowed on the first message of a topic"; break; }
+  }
   return "";
 }
 function buildModel(files, dirs, meta){
@@ -2382,6 +2440,11 @@ function buildModel(files, dirs, meta){
       if(source && source.duplicates.length) throw Error("Duplicate source headers");
       Object.assign(m,messageMetadata(m.h,source && source.h));
     }catch(e){ m.metadataError=true; m.validationError ||= e.message; }
+    // Only a valid message is a sub-thread member; an invalid one is isolated like any invalid file.
+    m.subthread=!legacy && !m.metadataError && typeof m.h.SUBTHREAD==="string" ? m.h.SUBTHREAD : null;
+    m.subthreadAlso=!!m.subthread && m.h["SUBTHREAD-ALSO"]==="main";
+    m.subthreadState=m.subthread ? m.h["SUBTHREAD-STATE"]||null : null;
+    m.promotedFrom=!legacy && !m.metadataError && typeof m.h["PROMOTED-FROM"]==="string" ? m.h["PROMOTED-FROM"] : null;
   }
   const ver = (String(byPath["CONVENTION.md"]||"").match(/^Version:\s*(\S+)/m)||[])[1] || null;
   const langs = cfg.language && Array.isArray(cfg.language.allowed) && cfg.language.allowed.length ? cfg.language.allowed : ["en"];
@@ -2489,6 +2552,14 @@ function composeMessage(o){
       ["THREAD",label],["DATE",date],["LANGUAGE",language],["REPLY-TO",o.replyTo||"-"],["RUNTIME",rt],["STATUS",o.status]];
   }
   if(typeof o.at!=="string") headers.push(["POSTED-AT",nextPostingTime(o.sender,o.replyTo,o.at,scope+":"+dir)]);
+  if(o.subthread){
+    // SPEC-002-077 AC6: a message in a sub-thread destination carries the canonical marker; a topic title never does.
+    if(legacy) throw boardErr("e_subthread_legacy");
+    if(o.topicTitle!==undefined) throw boardErr("e_subthread_title");
+    headers.push(["SUBTHREAD",o.subthread]);
+    if(o.subthreadAlso) headers.push(["SUBTHREAD-ALSO","main"]);
+    if(o.subthreadState) headers.push(["SUBTHREAD-STATE",o.subthreadState]);
+  }
   if(o.topicTitle!==undefined){
     if(!validTopicTitle(o.topicTitle)) throw boardErr("e_title");
     headers.push(["TOPIC-TITLE",o.topicTitle.trim()]);
@@ -2508,6 +2579,8 @@ function composeMessage(o){
       if(source && (source.metadataError || source.duplicates.length)) throw Error("Invalid source");
       messageMetadata(Object.fromEntries(headers),source && source.h);
     }catch(e){ throw boardErr("invalid_metadata"); }
+    const subIssue=subthreadIssue(Object.fromEntries(headers),{dkey:scope+":"+dir,tid,index:B.messageIndex,post:true});
+    if(subIssue) throw boardErr("e_subthread",{m:subIssue});
   }else if(o.question || o.answer || o.ui || o.extension || o.extensionAnswer || o.information){ throw boardErr("choice_legacy"); }
   const text = headers.map(([k,v])=>k+": "+v).join("\n")+"\n---\n"+body.replace(/\s+$/,"")+"\n";
   return {relPath, text, fileName:relPath.split("/").pop(), dir, scope};
@@ -2630,8 +2703,8 @@ async function hydrateMessages(rows,model){
   }));
 }
 async function prepareModel(model){
-  const selection=sel.scope?sel:(S.lastScope?{scope:S.lastScope,dir:S.lastDir,thread:S.lastThread}:sel);
-  const view=model.msgs.filter(m=>(!selection.scope || m.dkey===selection.scope+":"+selection.dir) && (!selection.thread || m.tkey===selection.thread) && (S.showReceipts||!m.receipt) && routinePresenceVisible(m,selection));
+  const selection=sel.scope?sel:(S.lastScope?{scope:S.lastScope,dir:S.lastDir,thread:S.lastThread,...(S.lastSub?{sub:S.lastSub}:{})}:sel);
+  const view=model.msgs.filter(m=>(!selection.scope || m.dkey===selection.scope+":"+selection.dir) && (!selection.thread || m.tkey===selection.thread) && (S.showReceipts||!m.receipt) && routinePresenceVisible(m,selection) && subthreadShown(m,selection));
   const anchor=historyPage.end && view.findIndex(m=>m.path===historyPage.end)+1;
   const end=anchor>0?anchor:view.length;
   await hydrateMessages(view.slice(Math.max(0,end-(historyPage.count||MESSAGE_PAGE_SIZE)),end),model);
@@ -2772,9 +2845,12 @@ function loadBoard(model, background = false){
   if(S.lastScope && !sel.scope && B.msgs.length){
     const ok = (S.lastScope==="room" ? B.rooms : B.directs).includes(S.lastDir);
     if(ok){ sel = {scope:S.lastScope, dir:S.lastDir, thread:null};
-      if(S.lastThread && B.msgs.some(m=>m.tkey===S.lastThread)) sel.thread = S.lastThread; }
+      if(S.lastThread && B.msgs.some(m=>m.tkey===S.lastThread)) sel.thread = S.lastThread;
+      if(sel.thread && S.lastSub && subthreadResolves(sel.scope+":"+sel.dir,sel.thread,S.lastSub)) sel.sub = S.lastSub; }
   }
   if(sel.scope && !(sel.scope==="room"?B.rooms:B.directs).includes(sel.dir)) sel = {scope:null,dir:null,thread:null};
+  // A selected sub-thread is kept as keys and re-resolved on every model (SPEC-002-077 AC9).
+  if(sel.sub && !subthreadResolves(sel.scope+":"+sel.dir,sel.thread,sel.sub)){ sel = {scope:sel.scope,dir:sel.dir,thread:sel.thread}; if(background) toast(t("sub_gone")); }
   renderChrome(); build({background, preserveComposer:background}); startBodySearch();
   notificationsObserve(model,background);
 }
@@ -3033,14 +3109,50 @@ function threadsOf(){
   }
   B.threadIndex=th; return th;
 }
+/* Sub-thread index (SPEC-002-077 AC2), headers only: root key (dkey|root filename) -> members in the
+   canonical posting order, participants, last activity, latest state and SUBTHREAD-ALSO members.
+   Memoised on the model; a refresh builds a new model, so it is never stale. */
+function subthreadsOf(model=B){
+  if(model.subthreadIndex) return model.subthreadIndex;
+  const index=new Map();
+  for(const m of model.msgs){
+    if(!m.subthread) continue;
+    const key=m.dkey+"|"+m.subthread;
+    let x=index.get(key);
+    if(!x){ x={key,dkey:m.dkey,scope:m.scope,dir:m.dir,root:m.subthread,tkey:m.tkey,tid:m.tid,members:[],participants:[],also:[],last:"",lastOrder:0,lastMsg:null,state:"open",stateMsg:null}; index.set(key,x); }
+    x.members.push(m);
+    if(!x.participants.includes(m.author)) x.participants.push(m.author);
+    if(m.subthreadAlso) x.also.push(m);
+    x.last=m.time; x.lastOrder=m.postedAt ?? m.modifiedAt; x.lastMsg=m;
+    if(m.subthreadState){ x.state=m.subthreadState; x.stateMsg=m; }
+  }
+  model.subthreadIndex=index; return index;
+}
+// Repairs and signing are applied after the model is built, so these are read live, never cached.
+function subthreadRoot(x){ return B.messageIndex.get(x.key)||null; }
+function subthreadOrphan(x){ const r=subthreadRoot(x); return !r || !!r.quarantined; }
+function subthreadMembers(x){ return x.members.filter(m=>!m.quarantined && !m.receipt && signingEligible(m)); }
+function subthreadOf(m){ return m && m.subthread || null; }
+// A sub-thread view resolves while its root is a valid main-flow message of the topic, or members exist (orphaned).
+function subthreadResolves(dkey,tkey,root){
+  const r=B.messageIndex.get(dkey+"|"+root), x=subthreadsOf().get(dkey+"|"+root);
+  return !!(r && r.tkey===tkey && !r.subthread && !r.metadataError && !r.receipt) || !!(x && x.tkey===tkey && x.members.length);
+}
+// The main flow (SPEC-002-077 AC3): members are hidden unless they also go to main, Flat view is on or a
+// search runs. A selected sub-thread shows its root and members only.
+function subthreadShown(m,selection=sel,query=""){
+  if(selection.sub) return m.dkey===selection.scope+":"+selection.dir && (m.file===selection.sub || m.subthread===selection.sub);
+  return !m.subthread || m.subthreadAlso || !!S.flatView || !!query;
+}
+function subthreadStub(m){ return !!m.subthread && !sel.sub && !S.flatView && !$("#q").value.trim() && m.subthreadAlso; }
 function badge(n){ return n ? `<span class="unread-badge">${esc(t("unread_count",{n}))}</span>` : ""; }
 function unread(m){ return signingEligible(m) && !m.metadataError && !m.quarantined && !m.receipt && !sessionNotice(m) && m.author!==currentUser() && !seen[m.path]; }
 function matchingMessages(){
   const q=$("#q").value.trim().toLowerCase(), showR=$("#showReceipts").checked || !!q;
-  return B.msgs.filter(m=>(signingInspect||signingEligible(m)) && (!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && routinePresenceVisible(m) && (!q||msgMatches(m,q)));
+  return B.msgs.filter(m=>(signingInspect||signingEligible(m)) && (!sel.scope || (m.scope===sel.scope && m.dir===sel.dir)) && (!sel.thread || m.tkey===sel.thread) && (showR||!m.receipt) && routinePresenceVisible(m) && subthreadShown(m,sel,q) && (!q||msgMatches(m,q)));
 }
 function messagePage(view, background=false){
-  const key=JSON.stringify([seenKey,sel,$("#q").value.trim().toLowerCase(),$("#showReceipts").checked,S.showPresenceNotices]);
+  const key=JSON.stringify([seenKey,sel,$("#q").value.trim().toLowerCase(),$("#showReceipts").checked,S.showPresenceNotices,!!S.flatView]);
   if(historyPage.key!==key) historyPage={key,end:null,last:null,count:MESSAGE_PAGE_SIZE};
   const feed=$("#feed");
   if(background && !historyPage.end && historyPage.last && feed.scrollHeight-feed.scrollTop-feed.clientHeight>=80 && view.at(-1)?.path!==historyPage.last) historyPage.end=historyPage.last;
@@ -3274,6 +3386,10 @@ function messageMetadata(h, source){
   if(h["TOPIC-TITLE"]!==undefined && !validTopicTitle(h["TOPIC-TITLE"])) throw Error("Invalid TOPIC-TITLE");
   if(h["POSTED-AT"]!==undefined && postingTime(h["POSTED-AT"])===null) throw Error("Invalid POSTED-AT");
   if(!["text/plain","text/markdown","text/html"].includes(h["CONTENT-TYPE"]||"text/plain")) throw Error("Invalid CONTENT-TYPE");
+  if(h.SUBTHREAD===undefined && (h["SUBTHREAD-ALSO"]!==undefined || h["SUBTHREAD-STATE"]!==undefined)) throw Error("SUBTHREAD-ALSO and SUBTHREAD-STATE require SUBTHREAD");
+  if(h["SUBTHREAD-ALSO"]!==undefined && h["SUBTHREAD-ALSO"]!=="main") throw Error("SUBTHREAD-ALSO must be main");
+  if(h["SUBTHREAD-STATE"]!==undefined && !["resolved","open"].includes(h["SUBTHREAD-STATE"])) throw Error("SUBTHREAD-STATE must be resolved or open");
+  if(h.SUBTHREAD!==undefined && h.STATUS==="CLOSED") throw Error("A sub-thread resolves with SUBTHREAD-STATE, not STATUS: CLOSED");
   if(h.QUESTION!==undefined && h.ANSWER!==undefined) throw Error("Conflicting question and answer");
   const question=h.QUESTION===undefined?null:questionValue(h.QUESTION);
   let answer=null;
@@ -3287,6 +3403,7 @@ function messageMetadata(h, source){
       if(q.id!==answer.question || answer.selected.some(v=>!q.options.some(o=>o.id===v)) || (q.type==="single" && answer.selected.length>1))throw Error("Answer does not match question");
     }
     if(h.SCOPE!==source.SCOPE || h.THREAD.split("-")[0]!==source.THREAD.split("-")[0] || h.ROOM!==source.ROOM || h["DIRECT-PARTICIPANTS"]!==source["DIRECT-PARTICIPANTS"])throw Error("Answer routing differs");
+    if(source.SUBTHREAD!==undefined && h.SUBTHREAD!==source.SUBTHREAD)throw Error("An answer to a sub-thread question must carry its SUBTHREAD");
   }
   return {question,answer,ui};
 }
@@ -3350,7 +3467,7 @@ async function sendChoice(form){
     const labels=m.question.options.filter(o=>selected.includes(o.id)).map(o=>o.label);
     const body=t("choice_answer_body",{q:m.question.prompt,a:labels.join("; ")||t("choice_none")})+(text?"\n\n"+text:"");
     const msg=composeMessage({sender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==="direct"?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,
-      slug:"answer-"+m.question.id,status:"REPLY",body,replyTo:m.file,answer,confirmedAgent:confirmed});
+      slug:"answer-"+m.question.id,status:"REPLY",body,replyTo:m.file,answer,subthread:subthreadOf(m),confirmedAgent:confirmed});
     await deliverMessage(msg); if(canWrite()) toast(t("choice_sent"));
   }catch(e){ toast(e.name==="BoardError"?e.message:t("e_write",{m:e.message})); }
   finally{ submittingChoices.delete(key); if(B) build({background:true,preserveComposer:true}); }
@@ -3401,6 +3518,109 @@ function mountReports(){
   mountForms();
   mountExtensions();
 }
+/* ===== sub-threads in the main flow (SPEC-002-077) ===== */
+// Plural-safe counts: every form is a literal key, so English and Polish tables stay checkable.
+function plural(n,one,few,many,other){
+  let c="other"; try{ c=new Intl.PluralRules(locale()).select(n); }catch(e){}
+  return t(c==="one"?one:c==="few"?few:c==="many"?many:other,{n});
+}
+function subthreadReplies(n){ return plural(n,"sub_replies_one","sub_replies_few","sub_replies_many","sub_replies_other"); }
+// Last activity: relative inside a week, the board date after that. Headers only (POSTED-AT, else DATE).
+function subthreadWhen(m){
+  const ms=m.postedAt ?? (Date.parse(m.time.replace(" ","T")+":00Z")||null), diff=ms===null?NaN:(Date.now()-ms)/1000;
+  if(!Number.isFinite(diff) || diff<0 || diff>=7*86400) return m.time.slice(5,16);
+  let rtf; try{ rtf=new Intl.RelativeTimeFormat(locale(),{numeric:"auto",style:"short"}); }catch(e){ return m.time.slice(5,16); }
+  if(diff<60) return rtf.format(0,"minute");
+  if(diff<3600) return rtf.format(-Math.floor(diff/60),"minute");
+  if(diff<86400) return rtf.format(-Math.floor(diff/3600),"hour");
+  return rtf.format(-Math.floor(diff/86400),"day");
+}
+// The capsule (AC4): an unanswered question to the reader first, then an unanswered DECISION-NEEDED member.
+function subthreadCapsule(x,members){
+  if(x.state==="resolved") return {kind:"resolved",text:t("sub_resolved")};
+  const me=currentUser(), answered=(q,by)=>B.msgs.some(r=>r.dkey===q.dkey && r.replyTo===q.file && !r.metadataError && (!by || r.author===by));
+  if(me && members.some(q=>(q.status==="QUESTION" || q.question) && q.author!==me && q.to.split(",").map(s=>s.trim()).includes(me) && !answered(q,me))) return {kind:"question",text:t("sub_question")};
+  if(members.some(d=>d.status==="DECISION-NEEDED" && !answered(d))) return {kind:"decision",text:t("sub_decision")};
+  return null;
+}
+function subthreadStripHtml(x){
+  const members=subthreadMembers(x); if(!members.length) return "";
+  const last=members.at(-1), when=subthreadWhen(last), label=t("sub_strip_label",{replies:subthreadReplies(members.length),when});
+  const people=[...new Set(members.map(m=>m.author))], extra=people.length-3;
+  const dots=people.slice(0,3).map(id=>`<i class="sub-dot" data-party="${esc(id)}" style="--c:${colorOf(id)}" title="${esc(personOf(id).name)}"></i>`).join("")+(extra>0?`<span class="sub-more">+${extra}</span>`:"");
+  const fresh=members.some(unread), cap=subthreadCapsule(x,members);
+  const outcome=cap?.kind==="resolved" && x.stateMsg ? String(x.stateMsg.bodyLoaded?x.stateMsg.body:x.stateMsg.preview||"").split("\n").find(l=>l.trim())||"" : "";
+  return `<button type="button" class="sub-strip ${cap?"sub-"+cap.kind:""}" data-subthread-open="${esc(x.key)}" aria-label="${esc(label+(fresh?" · "+t("sub_unread"):"")+(cap?" · "+cap.text:""))}" title="${esc(label)}">
+    <span class="sub-icon" aria-hidden="true">\u{1F9F5}</span><span class="sub-count">${esc(subthreadReplies(members.length))}</span><span class="sub-dots">${dots}</span><span class="sub-when">${esc(when)}</span>${fresh?`<span class="sub-unread" title="${esc(t("sub_unread"))}"></span>`:""}${cap?`<span class="sub-cap">${esc(cap.text)}</span>`:""}${outcome?`<span class="sub-outcome">${esc(outcome.slice(0,140))}</span>`:""}</button>`;
+}
+// A SUBTHREAD-ALSO member in the main flow: a non-interactive stub with a jump link (its body renders once, in the sub-thread).
+function subthreadStubHtml(m,c,mine){
+  const p=personOf(m.author,m.authorName), text=String(m.bodyLoaded?m.body:m.preview||"").replace(/\s+/g," ").trim();
+  return `<article class="msg sub-stub ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
+    <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
+    <div><div class="msg-head"><span class="who">${esc(p.name)}</span><span class="time" title="${esc(m.file)}">${esc(m.time.slice(11,16))}</span>${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}<span class="chip sub-chip">\u{1F9F5} ${esc(t("sub_stub"))}</span></div>
+      <div class="body sub-stub-text">${esc(text.slice(0,280))}${text.length>280?"…":""}</div>
+      <button type="button" class="sub-jump" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">${esc(t("sub_stub_open"))} ›</button></div></article>`;
+}
+// Discovery (AC8): "Sub-threads (n)" in the topic bar lists the topic's sub-threads: active, resolved, orphaned.
+function subthreadListRender(){
+  const menu=$("#subMenu"), panel=$("#subMenuPanel"), flat=$("#flatViewToggle");
+  const all=B?[...subthreadsOf().values()].filter(x=>subthreadMembers(x).length):[];
+  flat.hidden=!all.length && !S.flatView; flat.setAttribute("aria-pressed",String(!!S.flatView));
+  const list=sel.thread?all.filter(x=>x.tkey===sel.thread):[];
+  menu.hidden=!list.length; if(!list.length){ menu.open=false; return; }
+  const text=t("sub_list",{n:list.length}), toggle=$("#subMenuToggle");
+  if(toggle.textContent!=="\u{1F9F5} "+text) toggle.textContent="\u{1F9F5} "+text;
+  toggle.title=text;
+  const byLast=(a,b)=>(b.last.localeCompare(a.last)) || ((b.lastOrder||0)-(a.lastOrder||0));
+  const orphaned=list.filter(subthreadOrphan), active=list.filter(x=>!subthreadOrphan(x) && x.state!=="resolved").sort(byLast), resolved=list.filter(x=>!subthreadOrphan(x) && x.state==="resolved").sort(byLast);
+  const row=x=>{ const members=subthreadMembers(x), r=subthreadRoot(x), fresh=members.filter(unread).length, last=members.at(-1);
+    const head=r && !subthreadOrphan(x) ? personOf(r.author,r.authorName).name+": "+String(r.bodyLoaded?r.body:r.preview||"").replace(/\s+/g," ").trim() : t("sub_orphan_root",{file:x.root});
+    return `<button type="button" class="sub-row" data-subthread-open="${esc(x.key)}"><span class="sub-row-text">${esc(head.slice(0,160))}</span>${badge(fresh)}<span class="sub-row-meta">${esc(subthreadReplies(members.length))} · ${esc(subthreadWhen(last))}</span></button>`; };
+  const group=(key,rows)=>rows.length?`<h4>${esc(t(key))}</h4>`+rows.map(row).join(""):"";
+  const html=group("sub_list_active",active)+group("sub_list_resolved",resolved)+group("sub_list_orphaned",orphaned);
+  if(panel.innerHTML!==html) panel.innerHTML=html;
+}
+// Jump to a message (reply links): a hidden member opens its sub-thread; from a sub-thread, a main-flow target closes it.
+function jumpToMessage(key){
+  let el=document.getElementById("m-"+key);
+  const target=B && B.messageIndex.get(key);
+  if(!el && target){
+    if(target.subthread && !sel.sub && !S.flatView && !matchingMessages().includes(target)){ openSubthread(target.dkey+"|"+target.subthread,target.file); return; }
+    if(sel.sub && !matchingMessages().includes(target) && target.dkey===sel.scope+":"+sel.dir){ sel={scope:sel.scope,dir:sel.dir,thread:sel.thread}; rememberView(); build({preserveComposer:true}); el=document.getElementById("m-"+key); }
+  }
+  if(!el){
+    const view=matchingMessages(), at=view.findIndex(m=>m.dkey+"|"+m.file===key);
+    if(at>=0){ const end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2)); historyPage.end=end===view.length?null:view[end-1].path; build({preserveComposer:true}); el=document.getElementById("m-"+key); }
+  }
+  if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
+  else toast(t("outside_filter"));
+}
+// Opening a sub-thread selects it by keys; the composer then follows the view, or pins a draft (SPEC-002-064).
+function openSubthread(key, focusFile){
+  if(!B) return;
+  const at=key.indexOf("|"), dkey=key.slice(0,at), root=key.slice(at+1), colon=dkey.indexOf(":");
+  const scope=dkey.slice(0,colon), dir=dkey.slice(colon+1), r=B.messageIndex.get(key), x=subthreadsOf().get(key);
+  const tkey=r && !r.subthread ? r.tkey : x?.tkey;
+  if(!tkey || !subthreadResolves(dkey,tkey,root) && !(r && subthreadStartable(r))){ toast(t("sub_gone")); return; }
+  $("#subMenu").open=false;
+  if($("#q").value){ $("#q").value=""; startBodySearch(); }
+  sel={scope,dir,thread:tkey,sub:root}; rememberView(); closeSidebarDrawer(false); build();
+  const feed=$("#feed"), el=focusFile && document.getElementById("m-"+dkey+"|"+focusFile);
+  if(el){ el.scrollIntoView({block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
+  else feed.scrollTop=feed.scrollHeight;
+  $("#subBack").focus({preventScroll:true});
+}
+function closeSubthread(){
+  if(!sel.sub) return;
+  const key=sel.scope+":"+sel.dir+"|"+sel.sub;
+  sel={scope:sel.scope,dir:sel.dir,thread:sel.thread}; rememberView(); build();
+  if(!document.getElementById("m-"+key) && B.messageIndex.get(key)) jumpToMessage(key);
+  const root=document.getElementById("m-"+key);
+  if(root){ root.scrollIntoView({block:"center"}); (root.querySelector(".sub-strip")||root.querySelector("[data-subthread-start]"))?.focus({preventScroll:true}); }
+  else $("#feed").focus({preventScroll:true});
+}
+function subthreadStartable(m){ return B.layout.dialect==="native" && !m.subthread && !m.receipt && !m.metadataError && !m.quarantined && !!m.tid && !sessionNotice(m); }
 function render(background = false){
   extensionContext();
   notificationsContext(); renderNotifications();
@@ -3413,8 +3633,12 @@ function render(background = false){
   let titleText = t("all_messages");
   if(sel.thread){ const topic = threadsOf()[sel.thread]; titleText = composerDirLabel(sel.scope, sel.dir)+" \u203a "+(topic?.tid||"")+" "+threadTitle(topic); }
   else if(sel.scope) titleText = composerDirLabel(sel.scope, sel.dir);
+  // Before SPEC-002-078's pane, a selected sub-thread is this transcript filtered to root + members (AC5).
+  if(sel.sub) titleText += " \u203a "+t("sub_crumb");
   $("#title").textContent = titleText; $("#title").title = titleText;
-  $("#topicRename").hidden = !sel.thread; if(!sel.thread) $("#titleEditor").hidden = true;
+  $("#subBack").hidden = !sel.sub;
+  $("#topicRename").hidden = !sel.thread || !!sel.sub; if(!sel.thread || sel.sub) $("#titleEditor").hidden = true;
+  subthreadListRender();
   $("#guidanceOpen").hidden = !sel.scope;
   historyIndicatorUpdate();
   const lastSt = sel.thread ? ((view.filter(m=>!m.receipt).pop()||{}).status||"") : "";
@@ -3425,11 +3649,14 @@ function render(background = false){
   const missing=page.rows.some(m=>!m.bodyLoaded), token=++bodyRenderToken;
   if(missing) hydrateMessages(page.rows,B).then(()=>{ if(token===bodyRenderToken) render(background); }).catch(e=>{ if(token===bodyRenderToken) toast(t("message_error",{m:e.message})); });
   let html = view.length>MESSAGE_PAGE_SIZE ? `<nav class="history-nav" aria-label="${esc(t("history_label"))}"><button class="btn" data-history="older" ${page.start===0?"disabled":""}>${esc(t("history_older"))}</button><span>${esc(t("history_range",{start:page.start+1,end:page.end,total:view.length}))}</span><button class="btn" data-history="newer" ${page.end===view.length?"disabled":""}>${esc(t("history_newer"))}</button><button class="btn" data-history="latest" ${page.end===view.length?"disabled":""}>${esc(t("history_latest"))}</button></nav>` : "", lastDay = "";
+  const subs = subthreadsOf();
+  if(sel.sub && !page.rows.some(m=>m.subthread)) html += `<p class="hint sub-empty">${esc(t("sub_empty"))}</p>`;
   for(const m of page.rows){
     const day = m.time.slice(0,10);
     if(day!==lastDay){ html += `<div class="day">${esc(dayLabel(day))}</div>`; lastDay = day; }
     const p = personOf(m.author, m.authorName), c = colorOf(m.author);
     const mine = S.align==="split" && me && m.author===me;
+    if(subthreadStub(m)){ html += subthreadStubHtml(m,c,mine); continue; }
     if(m.receipt){
       const upTo = m.h["PRZECZYTANE-DO"];
       html += `<div class="receipt ${mine?"mine":""}" data-file="${esc(m.file)}" style="--c:${c}"><span class="dot"></span>${esc(t("receipt_line",{who:p.name}))}${upTo?` ${esc(t("receipt_to"))} <code>${esc(upTo.slice(0,40))}</code>`:""} \u00b7 ${esc(m.time.slice(11,16))}${signingMessageHtml(m)}</div>`;
@@ -3446,7 +3673,7 @@ function render(background = false){
       <div><div class="msg-head"><span class="who">${esc(p.name)}</span>${presenceBadge(m.author)}<span class="kind">${esc(kindLabel(p))}</span><span class="to">\u2192 ${esc(toTitle)}</span>
         <span class="time ${m.fixed?"fixed":""}" title="${m.fixed?esc(t("time_in_file",{t:m.fixed,f:m.fixReason||"time-corrections"})):esc(m.file)}">${esc(m.time.slice(11,16))}${m.fixed?" \u00b7 "+esc(t("time_corrected")):""}</span>
         ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
-        ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}</div>
+        ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}${m.subthread && !sel.sub?`<button type="button" class="chip sub-chip" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">\u{1F9F5} ${esc(t("sub_in"))}</button>`:""}</div>
         ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
         ${signingMessageHtml(m)}
         ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
@@ -3455,7 +3682,8 @@ function render(background = false){
         ${answerReview(m)}
         ${!signingEligible(m)?signingExclusionHtml(m):m.metadataError?`<p class="metadata-error">${m.quarantined?"[withdrawn / original preserved] ":""}${esc(t("invalid_metadata"))}</p>`:(m.h.UI!==undefined && !m.bodyLoaded?"":choiceHtml(m))}
         ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
-        <div class="tools"><button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button><button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
+        ${!sel.sub && !S.flatView && subs.has(m.dkey+"|"+m.file) && !m.subthread ? subthreadStripHtml(subs.get(m.dkey+"|"+m.file)) : ""}
+        <div class="tools"><button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button>${!sel.sub && subthreadStartable(m)?`<button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-subthread-start="${esc(m.dkey+"|"+m.file)}" aria-label="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}" title="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}">\u{1F9F5}<span class="tools-label"> ${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}</span></button>`:""}<button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
   }
   const feed = $("#feed");
   const atBottom = feed.scrollHeight-feed.scrollTop-feed.clientHeight < 80;
@@ -3725,7 +3953,9 @@ function startReply(m){
   replyTo = m;
   $("#replying").style.display = "flex";
   $("#replyName").textContent = `${personOf(m.author,m.authorName).name} \u00b7 ${m.time.slice(5,16)} \u00b7 ${m.label}`;
-  setComposerTarget({scope:m.scope, dir:m.dir, thread:m.tkey, to:B.people[m.author] ? m.author : "all"});
+  // A reply to a member, or to the root inside its sub-thread view, stays in the sub-thread (SPEC-002-077 AC5).
+  const sub = m.subthread || (sel.sub && m.file===sel.sub && m.dkey===sel.scope+":"+sel.dir ? sel.sub : "");
+  setComposerTarget({scope:m.scope, dir:m.dir, thread:m.tkey, sub, to:B.people[m.author] ? m.author : "all"});
   const auto = "@"+personOf(m.author,m.authorName).name+" ";
   startReply.auto = auto;
   if(!$("#cBody").value.trim()) $("#cBody").value = auto;
@@ -3764,6 +3994,8 @@ async function sendImpl(){
     const body = $("#cBody").value.trim();
     if(!body){ toast(t("e_empty")); return; }
     let to = $("#cTo").value || "all";
+    // SPEC-002-077 AC6: the sub-thread destination stamps SUBTHREAD; REPLY-TO defaults to the root.
+    const destination = composerTarget(), subthread = destination.sub && tkey && destination.thread===tkey ? destination.sub : null;
     if(scope==="direct" && pair){ const ids = pair.split("--"); if(!ids.includes(me)) throw boardErr("e_not_in_pair"); to = ids.find(x=>x!==me); }
     const bodySlug = slugify(body.replace(/@\S+/g,"").split("\n")[0]).slice(0,32).replace(/-+$/,"") || "message";
     let confirmed = false;
@@ -3775,7 +4007,7 @@ async function sendImpl(){
     if(created?.tid) tid = created.tid;
     const msg = composeMessage({sender:me, to, scope, room, pair, tid, threadLabel:label, newThreadName:newName,
       slug: bodySlug, status:$("#cStatus").value, language:$("#cLang").value||undefined, body,
-      ...structuredComposerPayload(), contentType:$("#cContentType").value, replyTo: replyTo ? replyTo.file : null, confirmedAgent: confirmed});
+      ...structuredComposerPayload(), contentType:$("#cContentType").value, replyTo: replyTo ? replyTo.file : subthread, subthread, confirmedAgent: confirmed});
     const submittedDraft=signingDraftStamp();
     await deliverMessage(msg);
     if(submittedDraft!==signingDraftStamp()){toast(exText("Previous message posted; newer draft kept","Poprzednia wiadomość wysłana; nowy szkic zachowany"));return;}
@@ -3810,7 +4042,7 @@ function pickSuggestion(btn){
   $("#sugg").classList.remove("show");
   startBodySearch(); rememberView(); build();
 }
-function rememberView(){ S.lastScope = sel.scope; S.lastDir = sel.dir; S.lastThread = sel.thread; saveSettings(); }
+function rememberView(){ S.lastScope = sel.scope; S.lastDir = sel.dir; S.lastThread = sel.thread; S.lastSub = sel.sub || null; saveSettings(); }
 
 /* ===== settings, i18n ===== */
 function putPreference(key,value){
@@ -3995,6 +4227,7 @@ async function deliverMessageImpl(msg,options={}){
 async function setTopicTitle(){
   const topic=B && threadsOf()[sel.thread], rawTitle=$("#topicTitle").value.trim(), title=slugify(rawTitle)||"topic";
   if(!topic) return;
+  if(sel.sub){ toast(t("e_subthread_title")); return; }
   if(!validTopicTitle(rawTitle)){ toast(t("e_title")); return; }
   const button=$("#setTitle"); button.disabled=true;
   try{
@@ -4348,7 +4581,7 @@ async function sendFormAnswer(path,definition,sender,answer){
    if(source.duplicates.length||!source.body.trim()||JSON.stringify(source.h)!==JSON.stringify(m.h))throw Error(t("form_stale"));
   }
   if(origin!==dirHandle||identity!==boardStorageId||currentUser()!==sender||B?.byPath.get(path)?.h.QUESTION!==definition)throw Error(t("form_stale"));
-  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,confirmedAgent:confirmed});
+  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,subthread:subthreadOf(m),confirmedAgent:confirmed});
   await deliverMessage(msg);saveFormDraft(key,m.question,BoardFormContract.initial(m.question),true);await formStorageWrites;return t(canWrite()?"choice_sent":"form_downloaded");
  }finally{submittingForms.delete(key);if(B)build({background:true,preserveComposer:true});}
 }
@@ -4400,7 +4633,7 @@ function bindAnswerChoices(){for(const button of $('#feed').querySelectorAll('[d
   const sender=signingSender(currentUser());if(sender!==q.author)throw Error('Select the question author identity');
   const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return;
   if(B!==origin||dirHandle!==root||boardStorageId!==identity)throw Error(t('form_stale'));
-  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},confirmedAgent:confirmed});
+  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},subthread:subthreadOf(q),confirmedAgent:confirmed});
   await deliverMessage(msg);
  }catch(e){toast(e.message);}finally{submittingForms.delete(pending);if(B)build({background:true,preserveComposer:true});}
 };}
@@ -5739,7 +5972,7 @@ async function sendExtensionAnswer(path,definition,sender,data,signature){
  const information=await informationReviewGuard(m,reviewedContext);
  ExtensionContract.require(extensionSignature(m)===signature,'shared information changed; review the reply again');
  ExtensionContract.require(origin===dirHandle&&identity===boardStorageId&&currentUser()===sender&&generation===extensionGeneration&&B?.byPath.get(path)?.h.EXTENSION===definition,'reply context changed');const answer={version:1,package:x.package,contract:x.contract,contractVersion:x.contractVersion,contractDigest:x.contractDigest,source:{message:path,sha256:digest},data};ExtensionContract.envelope(answer,true);
- const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'extension-answer',status:'REPLY',body:contract.id+'\n'+JSON.stringify(data,null,2),replyTo:m.file,extensionAnswer:answer,information,confirmedAgent:confirmed});await deliverMessage(msg);return true;
+ const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'extension-answer',status:'REPLY',body:contract.id+'\n'+JSON.stringify(data,null,2),replyTo:m.file,extensionAnswer:answer,information,subthread:subthreadOf(m),confirmedAgent:confirmed});await deliverMessage(msg);return true;
  }finally{extensionSending.delete(signature);}
 }
 async function persistExtensionPreferences(){try{await idbSet('extension-local-v1',{approvals:[...extensionApprovals],choices:[...extensionChoices].slice(-256),automatic:typeof extensionAutomaticRefresh==='undefined'?true:extensionAutomaticRefresh});}catch(e){toast(exText('Approval/preferences are session-only: local storage failed.','Ustawienia tylko na tę sesję: błąd zapisu lokalnego.'));}}
@@ -6213,7 +6446,7 @@ async function activateNotification(state,entry,reply){
  const model=B;try{await hydrateMessages([m],model);}catch{$("#notificationsResult").textContent=t("notify_changed");return;}
  if(!notificationCurrent(state)||B!==model||!notificationEligible(m))return;
  if(reply&&notificationHasDraft()){$("#notificationsResult").textContent=t("notify_draft");return;}
- $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};sel={scope:m.scope,dir:m.dir,thread:m.tkey};rememberView();build({preserveComposer:true});
+ $("#notificationsDialog").close();entry.unread=false;$("#q").value="";bodySearch={model:null,query:"",pending:false,hits:new Set()};sel={scope:m.scope,dir:m.dir,thread:m.tkey,...(m.subthread&&!S.flatView?{sub:m.subthread}:{})};rememberView();build({preserveComposer:true});
  const view=matchingMessages(),at=view.findIndex(x=>x.path===m.path),end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2));historyPage.end=end===view.length?null:view[end-1]?.path;build({preserveComposer:true});
  const element=document.getElementById("m-"+m.dkey+"|"+m.file);if(element){element.tabIndex=-1;element.scrollIntoView({block:"center"});element.focus({preventScroll:true});}if(reply)startReply(m);renderNotifications();
 }
@@ -6400,17 +6633,23 @@ let composerOptionsHeld=innerHeight<=640;
 function composerTarget(){
  const where=$('#cWhere')?.value||'',newRoom=slugify($('#cNewRoom')?.value||''),to=$('#cTo')?.value||'all',newTopic=$('#cNewThread')?.value||'';
  if(where==='newdirect')return {scope:'newdirect',dir:[currentUser(),to].sort().join('--'),thread:'',newRoom:'',newTopic,to};
- if(where.startsWith('direct:'))return {scope:'direct',dir:where.slice(7),thread:$('#cThread')?.value||'',newRoom:'',newTopic,to};
+ if(where.startsWith('direct:'))return composerSubTarget({scope:'direct',dir:where.slice(7),thread:$('#cThread')?.value||'',newRoom:'',newTopic,to});
  if(!where&&!newRoom)return {scope:null,dir:null,thread:'',newRoom:'',newTopic,to};
- return {scope:'room',dir:newRoom||where.slice(5),thread:newRoom?'':$('#cThread')?.value||'',newRoom,newTopic,to};
+ return composerSubTarget({scope:'room',dir:newRoom||where.slice(5),thread:newRoom?'':$('#cThread')?.value||'',newRoom,newTopic,to});
 }
-const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'');
+// SPEC-002-077: a sub-thread is one more destination dimension (backing input #cSub, the root filename).
+// It counts only while it belongs to the selected topic, so an Advanced Where/Thread change drops it.
+function composerSubTarget(x){
+ const sub=$('#cSub')?.value||'',r=sub&&x.thread&&B?B.messageIndex.get(x.scope+':'+x.dir+'|'+sub):null,i=sub&&x.thread&&B?subthreadsOf().get(x.scope+':'+x.dir+'|'+sub):null;
+ return {...x,sub:sub&&((r&&r.tkey===x.thread&&!r.subthread)||(i&&i.tkey===x.thread))?sub:''};
+}
+const composerTargetKey=x=>!x?.scope?'':x.scope==='newdirect'?'newdirect:'+x.to:x.scope+':'+x.dir+'|'+(x.newRoom?'+'+x.newRoom:x.thread||'')+(x.sub?'^'+x.sub:'');
 const sameComposerTarget=(a,b)=>composerTargetKey(a)===composerTargetKey(b);
 // What the visible view implies: a thread posts there, a room starts a new topic, a direct
 // conversation continues its most recent topic; All messages has no destination.
 function composerViewTarget(){
  if(!B||!sel.scope)return {scope:null};
- if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread};
+ if(sel.thread&&threadsOf()[sel.thread])return {scope:sel.scope,dir:sel.dir,thread:sel.thread,...(sel.sub?{sub:sel.sub}:{})};
  return sel.scope==='direct'?composerDirectTarget(sel.dir):{scope:sel.scope,dir:sel.dir,thread:''};
 }
 function composerDirectTarget(dir){
@@ -6425,6 +6664,7 @@ function setComposerTarget(target={}){
  composerPin=null;composerNewRoomMode=!!target.newRoom;composerTopicAuto=true;
  $('#cWhere').value=where;if(!target.newRoom)$('#cNewRoom').value='';
  fillThreads(where&&scope!=='newdirect'?target.thread||'':'');
+ $('#cSub').value=where&&scope!=='newdirect'&&target.thread?target.sub||'':'';
  let to=target.to||'all';
  if(scope==='direct'){const ids=target.dir.split('--'),me=currentUser();to=ids.includes(me)?ids.find(id=>id!==me)||'all':'all';}
  if(to.includes(',')&&![...$('#cTo').options].some(o=>o.value===to))$('#cTo').insertAdjacentHTML('beforeend',composerToOption(to));
@@ -6434,7 +6674,7 @@ function setComposerTarget(target={}){
 // Advanced fields and pin choices are explicit: they end any pending mismatch banner.
 function composerExplicit(){composerPin=null;composerTargetRender();}
 function composerFollowView(preserve){
- const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null]);
+ const key=JSON.stringify([sel.scope||null,sel.dir||null,sel.thread||null,sel.sub||null]);
  if(key===composerViewKey)return composerTargetRender();
  composerViewKey=key;
  if(preserve)return composerTargetRender();
@@ -6454,7 +6694,7 @@ function composerTargetText(target=composerTarget()){
  if(!target.scope)return {where:exText('Choose where to post','Wybierz, gdzie wysłać'),topic:''};
  const where=target.scope==='newdirect'?'✉ '+composerName(target.to):target.newRoom?'# '+target.newRoom:composerDirLabel(target.scope,target.dir);
  const th=target.thread?threadsOf()[target.thread]:null,name=target.newTopic.trim();
- return {where,topic:th?th.tid+' '+threadTitle(th):exText('New topic','Nowy wątek')+(name?': '+name:'')};
+ return {where,topic:(th?th.tid+' '+threadTitle(th):exText('New topic','Nowy wątek')+(name?': '+name:''))+(target.sub?' › 🧵 '+exText('sub-thread','podwątek'):'')};
 }
 function composerToText(to){
  if(!to||to==='all')return exText('to all','do wszystkich');
@@ -6640,6 +6880,8 @@ function wireComposerTarget(){
   else if(b.dataset.composerAction==='participant')composerMenuOpen('participant',composerAnchor());
  });
  $('#cNewThread').addEventListener('input',()=>{composerTopicAuto=false;composerTargetRender();});
+ // An explicit Advanced Where/Thread change leaves the sub-thread (the destination is then that topic).
+ for(const id of ['#cWhere','#cThread'])$(id).addEventListener('change',()=>{if($('#cSub').value){$('#cSub').value='';composerTargetRender();}});
  $('#cBody').addEventListener('input',composerTopicFromBody);
  $('#composerAdvanced').addEventListener('toggle',composerTargetRender);
  // The chip row, name fields and banners change the composer's height: keep a reader at the live edge there.
@@ -9431,22 +9673,25 @@ function wire(){
       return;
     }
     const more = e.target.closest("[data-more]"), rep = e.target.closest("[data-reply]"), cp = e.target.closest("[data-copy]"),
-          go = e.target.closest("[data-goto]"), jump = e.target.closest("[data-jump]");
-    if(more){ const msg = more.closest(".msg"), body = msg.querySelector(".body"); const clamped = body.classList.toggle("clamp");
+          go = e.target.closest("[data-goto]"), jump = e.target.closest("[data-jump]"), subOpen = e.target.closest("[data-subthread-open]"), subStart = e.target.closest("[data-subthread-start]");
+    if(subOpen){ openSubthread(subOpen.dataset.subthreadOpen, subOpen.dataset.subthreadFocus); }
+    else if(subStart){ if(!subStart.disabled) openSubthread(subStart.dataset.subthreadStart); }
+    else if(more){ const msg = more.closest(".msg"), body = msg.querySelector(".body"); const clamped = body.classList.toggle("clamp");
       more.textContent = (clamped ? t("show_all")+" \u25be" : t("collapse")+" \u25b4"); if(msg.id) MessageDisclosure.set(msg.id+"|more",!clamped); }
     else if(rep){ const m = B.msgs.find(x=>x.dkey+"|"+x.file===rep.dataset.reply); if(m) startReply(m); }
     else if(cp){ try{ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.copy); }catch(err){} toast(t("copied")); }
     else if(go){ const x = threadsOf()[go.dataset.goto]; if(x){ sel = {scope:x.scope,dir:x.dir,thread:x.key}; rememberView(); build(); } }
-    else if(jump){
-      let el = document.getElementById("m-"+jump.dataset.jump);
-      if(!el){
-        const view=matchingMessages(), at=view.findIndex(m=>m.dkey+"|"+m.file===jump.dataset.jump);
-        if(at>=0){ const end=Math.min(view.length,at+Math.ceil(MESSAGE_PAGE_SIZE/2)); historyPage.end=end===view.length?null:view[end-1].path; build({preserveComposer:true}); el=document.getElementById("m-"+jump.dataset.jump); }
-      }
-      if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); try{ el.animate([{background:"var(--mention)"},{background:"transparent"}],{duration:1600}); }catch(err){} }
-      else toast(t("outside_filter"));
-    }
+    else if(jump) jumpToMessage(jump.dataset.jump);
   });
+  $("#subBack").onclick=closeSubthread;
+  $("#subMenuPanel").addEventListener("click",e=>{ const b=e.target.closest("[data-subthread-open]"); if(b) openSubthread(b.dataset.subthreadOpen); });
+  $("#subMenuToggle").addEventListener("click",e=>{ e.preventDefault(); const menu=$("#subMenu"), panel=$("#subMenuPanel"), toggle=e.currentTarget; if(menu.open){ menu.open=false; return; }
+    menu.open=true; const r=toggle.getBoundingClientRect();
+    panel.style.left=Math.max(8,Math.min(r.right-panel.offsetWidth,innerWidth-panel.offsetWidth-8))+"px"; panel.style.top=Math.max(8,Math.min(r.bottom+6,innerHeight-panel.offsetHeight-8))+"px"; });
+  document.addEventListener("click",e=>{ const menu=$("#subMenu"); if(menu.open && !menu.contains(e.target)) menu.open=false; });
+  document.addEventListener("keydown",e=>{ const menu=$("#subMenu"); if(e.key==="Escape" && menu.open && !e.defaultPrevented){ e.preventDefault(); menu.open=false; $("#subMenuToggle").focus(); } });
+  addEventListener("resize",()=>{ $("#subMenu").open=false; });
+  $("#flatViewToggle").onclick=()=>{ S.flatView=!S.flatView; saveSettings(); build({preserveComposer:true}); };
   let readFrame=0, scrollIntent=0;
   const checkHistory=()=>{
     const feed=$("#feed"), direction=scrollIntent;

@@ -50,7 +50,7 @@ async function sendFormAnswer(path,definition,sender,answer){
    if(source.duplicates.length||!source.body.trim()||JSON.stringify(source.h)!==JSON.stringify(m.h))throw Error(t("form_stale"));
   }
   if(origin!==dirHandle||identity!==boardStorageId||currentUser()!==sender||B?.byPath.get(path)?.h.QUESTION!==definition)throw Error(t("form_stale"));
-  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,confirmedAgent:confirmed});
+  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,subthread:subthreadOf(m),confirmedAgent:confirmed});
   await deliverMessage(msg);saveFormDraft(key,m.question,BoardFormContract.initial(m.question),true);await formStorageWrites;return t(canWrite()?"choice_sent":"form_downloaded");
  }finally{submittingForms.delete(key);if(B)build({background:true,preserveComposer:true});}
 }
@@ -102,7 +102,7 @@ function bindAnswerChoices(){for(const button of $('#feed').querySelectorAll('[d
   const sender=signingSender(currentUser());if(sender!==q.author)throw Error('Select the question author identity');
   const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return;
   if(B!==origin||dirHandle!==root||boardStorageId!==identity)throw Error(t('form_stale'));
-  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},confirmedAgent:confirmed});
+  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},subthread:subthreadOf(q),confirmedAgent:confirmed});
   await deliverMessage(msg);
  }catch(e){toast(e.message);}finally{submittingForms.delete(pending);if(B)build({background:true,preserveComposer:true});}
 };}
