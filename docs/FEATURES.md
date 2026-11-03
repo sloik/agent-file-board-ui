@@ -486,18 +486,30 @@ refresh and bounded local diagnostics. Source commands are never run by the view
 
 ## Sub-threads under a message
 
+![The topic with a root's summary strip on the left and the sub-thread pane on the right: breadcrumb, Follow, pinned root, replies and the pane's own composer.](images/board-subthread-pane.png)
+
 A sub-thread is a side discussion under one message (board format 3.4: `SUBTHREAD`,
-`SUBTHREAD-ALSO`, `SUBTHREAD-STATE`, `PROMOTED-FROM`). Its replies are hidden from the topic;
-the root message shows a strip such as "🧵 3 replies · 35 min ago" with participant colour
-dots, an unread dot and a **Question for you**, **Decision needed** or **Resolved** capsule.
-Open it from the strip (or Enter on it), from **🧵 Start sub-thread** in a message's actions,
-from **Sub-threads (n)** in the topic bar, or from a search result. The topic view then shows
-the root and its replies under `# room › T001 Topic › 🧵 Sub-thread` with **‹ Back**, and the
-composer posts there. **Reply** works as before and stays in the topic. A reply marked
-`SUBTHREAD-ALSO: main` also shows in the topic as a stub that links to the sub-thread.
-**Flat view** in the topic **…** menu (saved) shows every message in the topic as before.
-Unread counts and thread follows include sub-thread replies; reading the topic does not mark
-hidden replies read, opening the sub-thread does.
+`SUBTHREAD-ALSO`, `SUBTHREAD-STATE`, `PROMOTED-FROM`). Its replies stay out of the topic; the root
+shows a strip such as "🧵 3 replies · 35 min ago" with participant colour dots, an unread dot and a
+**Question for you**, **Decision needed** or **Resolved** capsule. The strip (or Enter on it),
+**🧵 Start sub-thread** in a message's actions, **Sub-threads (n)** in the topic bar, a search result
+or an alert opens the sub-thread in its **pane**: a fourth column on windows 1200px wide or more
+(resizable, width remembered), a sheet over the transcript from 821 to 1199px, and full screen with
+**‹ Back** on phones. The topic keeps its place while the pane opens and closes.
+
+The pane has a breadcrumb (`# room › T001 Topic › 🧵 author: …`), **Follow**/**Muted** alerts, a
+**⋯** menu (**Resolve…**/**Reopen**, **Promote to topic…**, **Copy link to root**, **Flat view**) and
+**✕** (or Esc, which keeps the draft). The root is pinned above the replies; its form, report or
+choices work once, in the topic (**Show in main thread ↗**). Long sub-threads load the newest 50
+replies with **Older messages**, mark **New messages**, show **N new ↓** and **Latest ↓**, and fold
+long runs of routine agent messages. Its own composer posts into the sub-thread with its own draft
+(kept across refresh and reload, never moved to the topic's composer), the same options, signing
+status and Send rules, **Also send to the main thread** and replies to a specific message. **Resolve**
+posts an outcome with `SUBTHREAD-STATE: resolved`; **Promote** writes the same two messages as
+`boardctl promote` and opens the new topic, whose first message links back. **Reply** in the topic
+works as before, and **Flat view** in the topic **…** menu (saved) shows every reply in the topic.
+Unread counts and topic follows include sub-thread replies. See the
+[sub-threads guide](guides/SUBTHREADS.md).
 
 ## Follow rooms, threads or participants
 

@@ -5,6 +5,12 @@ threads or participant IDs. Any matching scope is sufficient; overlapping follow
 produce one alert. **Unfollow** removes a subscription. These are viewer
 preferences, never board messages or protocol changes.
 
+Sub-threads have their own rule, set with **🔔 Follow** in the sub-thread pane: **Following** alerts
+for its replies even when the topic is not followed, and **Muted** silences them even when the room,
+topic or author is followed. Posting in a sub-thread follows it unless you muted it. **Quick reply** on
+an alert for a sub-thread reply opens the pane and prepares its own composer. See
+[sub-threads](SUBTHREADS.md#alerts).
+
 ## In-page alerts and reply gallery
 
 ![Local notification center with a room follow and a newly observed request.](../images/board-notifications.png)

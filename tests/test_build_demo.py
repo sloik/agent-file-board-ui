@@ -93,6 +93,13 @@ class DemoTests(unittest.TestCase):
             self.assertEqual(manifest['agentRoundtripTopic'],'T015')
             self.assertEqual(manifest['extensions']['api'], '1.3.0')
             self.assertEqual(manifest['sourcePresentation'], {'guide':'docs/SOURCE-CODE.md','room':'reports','thread':'T016','views':['unified','split','source']})
+            # SPEC-002-078: the sub-thread example (one open, one resolved) and its guide.
+            self.assertEqual(manifest['subthreads'], {'guide':'docs/SUBTHREADS.md','room':'architecture','thread':'T017','open':1,'resolved':1})
+            self.assertEqual((package / 'docs/SUBTHREADS.md').read_bytes(), (ROOT / 'docs/guides/SUBTHREADS.md').read_bytes())
+            members = [p.read_text() for p in (board / '.agent-board/rooms/architecture').glob('*_T017_*.txt')]
+            self.assertEqual(sum('\nSUBTHREAD: ' in t for t in members), 4)
+            self.assertEqual(sum('\nSUBTHREAD-ALSO: main' in t for t in members), 1)
+            self.assertEqual(sum('\nSUBTHREAD-STATE: resolved' in t for t in members), 1)
             self.assertEqual(manifest['opportunisticObservation'], {'skill':'skills/board-loop/SKILL.md','guide':'docs/BOARD-LOOP.md','defaultDurationSeconds':28800,'idleSeconds':900,'activeSeconds':15})
             for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:
                 self.assertEqual((package / 'skills/board-loop' / rel).read_bytes(), (ROOT / 'vendor/agent-file-board/skills/board-loop' / rel).read_bytes())

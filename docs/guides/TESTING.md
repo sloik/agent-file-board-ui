@@ -11,8 +11,8 @@ menu, destination popover, Message options, key notice with 3 pending keys (also
 review opened from that notice (with a matching and with a mismatching pasted fingerprint), the Keys list on
 a board with a key in every state (the list, a detail with the review steps, a changed key, and the phone
 accordion at 390x640), the signing-board composer with its unlock offer, and sub-threads (the summary
-strip and stub in Light, Dark and Dracula and at 320x640, the **Sub-threads (n)** list, and the filtered
-sub-thread view at 1280x800 and 390x640). The composer scenes are also taken at
+strip and stub in Light, Dark and Dracula and at 320x640, the **Sub-threads (n)** list, and the sub-thread
+pane as a column at 1280x800 (also Dark and Dracula), as an overlay at 1000x700 and full screen at 390x640). The composer scenes are also taken at
 1280x460, 390x640 and 320x360, the topic view in the dark and Dracula themes and in Polish.
 
 Each scene is deterministic: a fixed board, persona, view, draft, clock (`2026-10-20 10:00 UTC`),

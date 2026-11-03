@@ -1,22 +1,46 @@
 # Release notes
 
-## 3.4.0 — unreleased (draft: SPEC-002-078 completes and dates this section)
+## 3.4.0 — unreleased
 
-- **Sub-threads, part A (SPEC-002-077, board format 3.4):** a side discussion under one message
-  no longer fills the topic. Messages with `SUBTHREAD: <root>` are hidden from the topic; the root
-  shows a summary strip (replies, up to three participant colours, last activity, an unread dot,
-  and **Question for you**, **Decision needed** or **Resolved** with its outcome line). Click the
-  strip, press Enter on it, or use **🧵 Start sub-thread** in a message's actions to read the root
-  and its replies under `Room › Topic › 🧵 Sub-thread` with **‹ Back**; the composer then posts
-  into the sub-thread (`SUBTHREAD`, `REPLY-TO` the root unless you reply to a member), and a draft
-  written elsewhere stays pinned as before. A plain **Reply** is unchanged and stays in the topic.
-  A reply sent with `SUBTHREAD-ALSO: main` also appears in the topic as a small stub with a link.
-  **Sub-threads (n)** in the topic bar lists active, resolved and orphaned sub-threads; search
-  finds sub-thread messages and opens them there; **Flat view** in the topic **…** menu shows the
-  topic as before. Answers, form answers, acceptances and extension answers to a question inside a
-  sub-thread carry its marker. Unread badges still count every message. The viewer applies the
-  canonical sub-thread validation; invalid headers isolate the file like other invalid messages.
-  The side pane with its own composer follows in SPEC-002-078.
+Board format 3.4 (agent-file-board `v3.4.0`) adds sub-threads: a side discussion under one message
+(`SUBTHREAD`, `SUBTHREAD-ALSO: main`, `SUBTHREAD-STATE`, `PROMOTED-FROM`). The viewer shows them
+from this release; the vendored standard is pinned to `v3.4.0`. [Guide](docs/guides/SUBTHREADS.md).
+
+- **Sub-threads keep the topic readable (SPEC-002-077):** messages with `SUBTHREAD: <root>` are
+  hidden from the topic. The root shows a summary strip: replies, up to three participant colours,
+  last activity, an unread dot, and **Question for you**, **Decision needed** or **Resolved** with
+  its outcome line. A plain **Reply** is unchanged and stays in the topic. A reply sent with
+  `SUBTHREAD-ALSO: main` also appears in the topic as a small stub with a link. **Sub-threads (n)**
+  in the topic bar lists active, resolved and orphaned sub-threads; search finds sub-thread
+  messages; **Flat view** in the topic **…** menu shows the topic as before. Unread badges and topic
+  follows still count every message. Answers, form answers, acceptances and extension answers to a
+  question inside a sub-thread carry its marker. The viewer applies the canonical sub-thread
+  validation; invalid headers isolate the file like other invalid messages.
+- **The sub-thread pane (SPEC-002-078):** the strip, **🧵 Start sub-thread** in a message's actions,
+  the list, a search result or an alert opens the sub-thread in a pane: a fourth column on windows
+  1200px wide or more (drag its edge or use the arrow keys; the width is remembered), a sheet over
+  the transcript from 821 to 1199px, full screen with **‹ Back** on phones. The topic keeps its
+  reading position. The header shows `Room › Topic › 🧵 root`, **Follow**, a **⋯** menu and **✕**;
+  Esc closes the pane and keeps its draft, and focus returns to the strip. The root is pinned (folded
+  when it is long or a form, report or question; its interactive part works once, in the topic,
+  through **Show in main thread ↗**). The newest 50 replies load first, with **Older messages**, a
+  **New messages** divider, **N new ↓** and **Latest ↓**; long runs of routine agent messages fold.
+- **Its own composer:** labelled **Posting to 🧵 sub-thread of …**, with its own draft per board,
+  room, topic and root (kept across refresh, closing the pane and reload), the same options, signing
+  status row and Send rules as the topic composer, **Also send to the main thread**
+  (`SUBTHREAD-ALSO: main`) and replies to a specific message (`REPLY-TO`). The topic composer stays on
+  the topic; a draft never moves between the two. Wide windows show both; smaller ones show only the
+  pane's while it is open.
+- **Resolve, reopen, promote:** **Resolve…** posts a one-line outcome with
+  `SUBTHREAD-STATE: resolved` and status DONE (never `STATUS: CLOSED`); **Reopen** posts `open`;
+  posting stays allowed. **Promote to topic…** writes the same two messages as `boardctl promote`
+  (the new topic's first message with `PROMOTED-FROM`, then a resolving sub-thread message naming
+  it) and opens the new topic, whose first message shows **🧵 Continued from a sub-thread ›**. A failed
+  second write is reported and nothing is deleted.
+- **Follow and mute per sub-thread:** stored with the other local notification rules. Following a
+  sub-thread alerts for its replies; muting it silences them even under a topic follow; posting
+  follows it unless muted. **Quick reply** on a sub-thread reply's alert opens the pane composer.
+- **Demo:** architecture / T017 has an open and a resolved sub-thread.
 
 ## 3.3.10 — 2026-10-24
 
