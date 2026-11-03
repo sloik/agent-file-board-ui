@@ -69,6 +69,7 @@ disabled and the reason under the draft).
 | A topic (thread) | That topic |
 | A room | A **new topic** in that room. Type its name in **Topic name**; Send refuses without one. The newest topic is never picked for you. |
 | A direct conversation | Its most recent topic, or a new topic if it has none. The recipient is always the other member. |
+| A topic with a sub-thread open in the pane | Still the topic. The pane has its own composer for the sub-thread (`SUBTHREAD: <root>`, `REPLY-TO` the root or the reply you chose) with its own draft; a draft never moves between the two. On windows 1200px or wider both composers are visible and the chip names the topic; on smaller windows only the pane's composer shows while the pane is open. See [sub-threads](SUBTHREADS.md). |
 | All messages, search results or notifications | Nowhere yet: the chip says **Choose where to post** and Send is disabled until you pick a destination or reply to a message. |
 
 **⇄ Change destination** next to Post (or the chip's **Change**, Enter/Space on

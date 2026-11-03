@@ -39,6 +39,6 @@ function informationPlaceholder(m){
 
 function preserveInformationState(next){
  const key=node=>{const item=node.closest('[data-information-id]'),card=node.closest('[data-information-path]');return JSON.stringify([card?.dataset.informationPath,item?.dataset.informationId,node.className,node.closest('[data-information-reading]')?.dataset.informationReading||'snapshot']);};
- const states=new Map([...$('#feed').querySelectorAll('[data-information-path] details')].map(node=>[key(node),node.open]));
+ const states=new Map([...inMessages('[data-information-path] details')].map(node=>[key(node),node.open]));
  for(const node of next.querySelectorAll('[data-information-path] details'))if(states.has(key(node)))node.open=states.get(key(node));
 }

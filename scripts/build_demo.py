@@ -56,6 +56,7 @@ def build_demo(root: Path, destination: Path):
     workflows_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 0)
     tools_enabled = tuple(map(int, version.split('.'))) >= (2, 4, 1)
     source_enabled = tuple(map(int, version.split('.'))) >= (2, 8, 0)
+    subthreads_enabled = tuple(map(int, version.split('.'))) >= (3, 4, 0)
     destination.mkdir(parents=True)
     board = destination / 'demo-board'
     base = board / '.agent-board'
@@ -144,6 +145,16 @@ def build_demo(root: Path, destination: Path):
             post('T015', 'agent-read-answer', 'I read the fictional typed answer: production/eu, requested150 within approved200, schema hours3 and the submitted row operations. No deployment was performed; the response remains a separate immutable file.', recipient='human-owner-01', minute=45, extra=('--reply-to', Path(response).name, '--status', 'REPLY'))
         if source_enabled:
             post('T016', 'source-review', (examples / 'source-code/review.md').read_text(), extra=('--content-type', 'text/markdown'))
+        if subthreads_enabled:
+            # SPEC-002-078: a topic with an open sub-thread (a reply also shown in the topic, a question for the
+            # owner) and a resolved one, written by the canonical CLI like every other demo message.
+            storage = Path(post('T017', 'pick-a-storage-engine', 'Fictional question: which storage engine should the demo service use? Discuss it in the sub-thread below; the topic stays readable.', room='architecture', sender='human-owner-01', minute=50)).name
+            first = Path(post('T017', 'storage-options', 'Two fictional candidates: an embedded database or a plain file store. Both run offline.', room='architecture', sender='research-agent-01', minute=51, extra=('--subthread', storage, '--status', 'REPLY'))).name
+            post('T017', 'benchmark-summary', 'Fictional benchmark summary: the embedded database is three times faster on the demo load.', room='architecture', minute=52, extra=('--subthread', storage, '--reply-to', first, '--also-main'))
+            post('T017', 'ask-retention', 'How long should the fictional demo keep its history? Reply in the sub-thread.', room='architecture', sender='research-agent-01', recipient='human-owner-01', minute=53, extra=('--subthread', storage, '--status', 'QUESTION'))
+            post('T017', 'plain-topic-note', 'A plain reply in the topic: sub-thread replies stay out of the main flow.', room='architecture', sender='human-owner-01', minute=54)
+            queue = Path(post('T017', 'pick-a-queue', 'Fictional question: which queue should the demo use?', room='architecture', minute=55)).name
+            post('T017', 'queue-outcome', 'Outcome: keep the fictional file queue.', room='architecture', sender='research-agent-01', minute=56, extra=('--subthread', queue, '--subthread-state', 'resolved', '--status', 'DONE'))
     cli(root, 'validate', '--path', board)
     implemented = set(json.loads((vendor / 'openui-upstream.json').read_text())['boardLibrary']['implementedTypes'])
     if types != implemented:
@@ -190,6 +201,9 @@ def build_demo(root: Path, destination: Path):
         shutil.copyfile(examples / 'extensions/source-review.afb-plugin.json', destination / 'examples/extensions/source-review.afb-plugin.json')
         manifest['extensions']['api'] = '1.3.0'
         manifest['sourcePresentation'] = {'guide': 'docs/SOURCE-CODE.md', 'room': 'reports', 'thread': 'T016', 'views': ['unified', 'split', 'source']}
+    if subthreads_enabled:
+        shutil.copyfile(root / 'docs/guides/SUBTHREADS.md', destination / 'docs/SUBTHREADS.md')
+        manifest['subthreads'] = {'guide': 'docs/SUBTHREADS.md', 'room': 'architecture', 'thread': 'T017', 'open': 1, 'resolved': 1}
     if tuple(map(int, version.split('.'))) >= (2, 9, 0):
         for rel in ['SKILL.md','agents/openai.yaml','scripts/board_loop.py','references/harnesses.md','references/opportunistic.md']:
             target = destination / 'skills/board-loop' / rel

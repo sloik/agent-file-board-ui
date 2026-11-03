@@ -30,6 +30,12 @@ test('extracted downloadable demo renders every gallery topic and posts a valid 
   await page.locator('.tcard[data-tk="room:reports|T016"]').click();await page.locator('.source-code').waitFor();assert.ok(await page.locator('.source-code .hljs-keyword').count()>0);
   const patch=page.locator('.source-diff').first();await patch.getByRole('button',{name:'Side by side',exact:true}).click();assert.equal(await patch.locator('.source-split').count(),1);
   await patch.getByRole('button',{name:'Source',exact:true}).click();assert.match(await patch.locator('pre code').textContent(),/@@/);
+  // SPEC-002-078: the sub-thread example. Members stay out of the topic; the strip opens them in the pane.
+  await page.locator('.tcard[data-tk="room:architecture|T017"]').click();await page.locator('#feed .sub-strip').first().waitFor();
+  assert.equal(await page.locator('#feed .sub-strip').count(),2);assert.equal(await page.locator('#feed .sub-stub').count(),1);
+  assert.match(await page.locator('#feed .sub-strip').last().innerText(),/Resolved/);
+  await page.locator('#feed .sub-strip').first().click();await page.locator('#subPane').waitFor();
+  assert.equal(await page.locator('#subFeed article.msg').count(),3);await page.locator('#subClose').click();
   assert.deepEqual(await page.evaluate(()=>window.__fakefs.dump()),before);
   await topic(page,'T010');await page.selectOption('#me','human-owner-01');await page.locator('.choice-form input[value=fix]').check();await page.locator('.choice-form textarea').fill('Demo answer: fix and retest.');await page.locator('.choice-form [type=submit]').click();
   await page.waitForFunction(()=>window.__fakefs.dump().some(f=>f.text.includes('ANSWER: {"question":"demo-next-step"')));

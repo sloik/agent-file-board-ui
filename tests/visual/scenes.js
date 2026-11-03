@@ -6,6 +6,7 @@ const {expect}=require('playwright/test');
 const h=require('../lib/helpers');
 const {importBoard,openSigning,closeSigning,trust,selectKey}=require('../lib/signing-browser');
 const {fixture:signingFixture}=require('../lib/signing-fixture');
+const SUB=require('../lib/subthread-fixture');
 
 const DIR=__dirname,LAYOUT_DIR=h.path.join(DIR,'layout'),PIXEL_DIR=h.path.join(DIR,'pixels','linux'),RESULTS=h.path.join(h.ROOT,'test-results','visual');
 const AT=new Date('2026-10-20T10:00:00Z');
@@ -34,6 +35,12 @@ const LANDMARKS=[
  ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
  ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingKeys',{flow:true,box:true,intrinsic:'h'}],['#signingKeyDetail',{flow:true,box:true,intrinsic:'h'}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
  ['#signingCompare',{flow:true}],['#signingDialog [data-action="trust"]',{flow:true}],
+ // SPEC-002-077: sub-threads in the main flow.
+ ['#subBack',{flow:true}],['#subMenuToggle',{flow:true}],['#subMenuPanel',{flow:true,box:true}],['#feed .sub-strip',{flow:true,box:true}],['#feed .sub-stub',{flow:true,box:true,intrinsic:'h'}],
+ // SPEC-002-078: the sub-thread pane (#subBack is its Back button on phones).
+ ['#subPane',{box:true}],['#subPaneTitle',{flow:true,intrinsic:'w'}],['#subFollow',{flow:true}],['#subPaneMenuToggle',{flow:true}],['#subClose',{flow:true}],['#subRoot',{box:true,flow:true}],
+ ['#subFeed',{box:true}],['#subFeed article.msg:last-of-type',{flow:true,box:true,intrinsic:'h'}],['#subComposer',{box:true}],['#subTarget',{flow:true,intrinsic:'w'}],['#subSigningNotice',{box:true}],
+ ['#subBody'],['#subSend'],['#subAlso',{flow:true}],
 ];
 const STYLES=['display','background-color','color','border-color','box-shadow','font-weight'];
 // Release versions, key fingerprints and board ids change without the page changing: masked in pixels, normalized in labels.
@@ -141,8 +148,8 @@ function exampleBoard(){
 }
 // The shortcut label follows navigator.platform; pin it so macOS and Linux render the same page.
 const PLATFORM=()=>{Object.defineProperty(Navigator.prototype,'platform',{configurable:true,get:()=>'Linux x86_64'});};
-async function bootExample(browser,{viewport={width:1280,height:800},html}={}){
- const project=exampleBoard();
+async function bootExample(browser,{viewport={width:1280,height:800},html,board=exampleBoard}={}){
+ const project=board();
  const s=await h.openPage(browser,{html,tree:h.readTree(project),dialog:'accept',viewport,fixedTime:AT,init:[PLATFORM],context:{...CONTEXT,viewport}});
  await h.openBoardViaUi(s.page);
  return {...s,cleanup:()=>h.fs.rmSync(h.path.dirname(project),{recursive:true,force:true})};
@@ -201,6 +208,18 @@ async function reviewValue(page,derive){
 }
 const S=(name,width=1280,height=800)=>({name,viewport:{width,height}});
 const COMPOSER_SIZES=name=>[S(name),S(name+'-1280x460',1280,460),S(name+'-390x640',390,640),S(name+'-320x360',320,360)];
+// SPEC-002-077: the example board plus room `planning` with two sub-threads (one open, one resolved) and an ALSO stub.
+const subthreadBoard=()=>SUB.subthreadBoard().proj;
+async function subthreadTopic(page){await page.selectOption('#me','human-owner-01');await h.openView(page,SUB.VIEW);await expect(page.locator('#feed .sub-strip')).toHaveCount(2);}
+async function subthreadOpen(page){await subthreadTopic(page);await page.locator(`#feed article[data-file="${SUB.F.root}"] .sub-strip`).click();await expect(page.locator('#subPane')).toBeVisible();await expect(page.locator('#subFeed article.msg')).toHaveCount(3);}
+// SPEC-002-078: the pane at the 4th-column, overlay and phone widths (the phone and overlay sizes are set before opening).
+async function subthreadPaneAt(page,width,height){await subthreadTopic(page);await page.setViewportSize({width,height});await page.locator(`#feed article[data-file="${SUB.F.root}"] .sub-strip`).click();await expect(page.locator('#subPane')).toBeVisible();await expect(page.locator('#subFeed article.msg')).toHaveCount(3);}
+// The first strip's top 8px under the feed's top, from measured boxes (not scrollIntoView, which leaves it to text heights).
+async function stripInView(page){
+ await page.setViewportSize({width:320,height:640});
+ await page.evaluate(()=>{const feed=document.querySelector('#feed'),strip=feed.querySelector('.sub-strip');feed.scrollTop+=strip.getBoundingClientRect().top-feed.getBoundingClientRect().top-8;});
+ await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+}
 // Each group boots once; its shots follow in order (a later shot may resize or add one step).
 const GROUPS=[
  {name:'topic',setup:topicDraft,shots:COMPOSER_SIZES('topic')},
@@ -229,6 +248,17 @@ const GROUPS=[
    await p.click('#keyNoticeLater');await expect(p.locator('#keyNotice')).toBeHidden();await topicDraft(p);
    await expect(p.locator('#signingNotice')).toHaveAttribute('data-signing-status','unsigned');await expect(p.locator('#signingNotice .signing-notice-action')).toContainText('Unlock');}},
   ...COMPOSER_SIZES('signing-composer').slice(1)]},
+ // SPEC-002-077: the summary strip and stub (every theme, phone width), the Sub-threads list and the filtered view.
+ {name:'subthread-strip',board:subthreadBoard,setup:subthreadTopic,shots:[S('subthread-strip'),{...S('subthread-strip-320x640',320,640),step:stripInView}]},
+ {name:'subthread-strip-dark',board:subthreadBoard,setup:async p=>{await subthreadTopic(p);await choose(p,'#sTheme','dark');},shots:[S('subthread-strip-dark')]},
+ {name:'subthread-strip-dracula',board:subthreadBoard,setup:async p=>{await subthreadTopic(p);await choose(p,'#sTheme','dracula');},shots:[S('subthread-strip-dracula')]},
+ {name:'subthread-list',board:subthreadBoard,setup:async p=>{await subthreadTopic(p);await p.click('#subMenuToggle');await expect(p.locator('#subMenuPanel')).toBeVisible();},pointer:'keep',shots:[S('subthread-list')]},
+ // SPEC-002-078: the sub-thread pane. Wide column, medium overlay, phone full screen; Dark and Dracula.
+ {name:'subthread-view',board:subthreadBoard,setup:subthreadOpen,shots:[S('subthread-view')]},
+ {name:'subthread-view-phone',board:subthreadBoard,setup:p=>subthreadPaneAt(p,390,640),shots:[S('subthread-view-390x640',390,640)]},
+ {name:'subthread-pane-medium',board:subthreadBoard,setup:p=>subthreadPaneAt(p,1000,700),shots:[S('subthread-pane-medium',1000,700)]},
+ {name:'subthread-pane-dark',board:subthreadBoard,setup:async p=>{await subthreadOpen(p);await choose(p,'#sTheme','dark');},shots:[S('subthread-pane-dark')]},
+ {name:'subthread-pane-dracula',board:subthreadBoard,setup:async p=>{await subthreadOpen(p);await choose(p,'#sTheme','dracula');},shots:[S('subthread-pane-dracula')]},
  // SPEC-002-073: the Keys list with a key in every state, a detail with the guided steps, a changed key, the phone accordion.
  {name:'keys',signing:true,keys:true,setup:async p=>{await openSigning(p);await p.locator('[data-signing-task=review]').click();await expect(p.locator('#signingKeys [data-key-row]')).toHaveCount(8);},shots:[
   S('keys-list'),
@@ -242,7 +272,7 @@ const SCENES=GROUPS.flatMap(g=>g.shots.map(s=>s.name));
 // Runs every group (or the named ones), calling onShot(shot, page) after each shot's step and viewport.
 async function run(browser,{url,groups=GROUPS,onShot}){
  for(const group of groups){
-  const s=group.signing?await bootSigning(browser,url,{keys:!!group.keys}):await bootExample(browser,{viewport:group.viewport});
+  const s=group.signing?await bootSigning(browser,url,{keys:!!group.keys}):await bootExample(browser,{viewport:group.viewport,board:group.board});
   try{
    await group.setup(s.page);
    for(const shot of group.shots){

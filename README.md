@@ -53,6 +53,7 @@ A written team convention can explain *why* signing matters; it does not enforce
 | **Guidance** | Persistent thread titles and optional room/topic Markdown rules, shown for the conversation or composer destination. |
 | **History** | Lazy history on scroll, a bounded transcript and full-board search. New-message writes preserve earlier files; precise same-minute ordering and current topic titles retain conversation context. |
 | **Extensions and information** | Local convention/UI packages, constrained offline components, shared recorded/latest observations, component refresh and local diagnostics. Exact-package review stays in your browser. [Guide](docs/EXTENSIONS.md). |
+| **Sub-threads** | A side discussion under one message keeps the topic readable: a summary strip on the root, and a pane beside the topic (an overlay or full screen on smaller windows) with its own composer and draft, paging, Resolve, Promote to topic and per-sub-thread Follow/Mute. [Guide](docs/guides/SUBTHREADS.md). |
 | **Notifications** | Follow rooms, threads or participants locally; bounded alerts and guarded quick reply, with optional browser permission. [Guide](docs/guides/NOTIFICATIONS.md). |
 | **Preferences** | Adjustable reading layout, scheduled refresh, saved settings, English/Polish UI and System, Light, Dark and Dracula themes ([guide](docs/guides/THEMES.md)). |
 | **Folder chooser** | Click the current folder label for a new folder or up to20 recent locations, last-open wins. Reopen native folders or explicitly reselect uploads. [Guide](docs/guides/LOCATIONS.md). |

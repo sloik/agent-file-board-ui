@@ -25,7 +25,7 @@ function disposeForms(){for(const saved of formRoots.values())saved.dispose();fo
 function mountForms(){
  bindAnswerChoices();
  for(const[path,saved]of formRoots)if(!saved.element.isConnected){saved.dispose();formRoots.delete(path);}
- for(const element of $('#feed').querySelectorAll('[data-form-path]')){
+ for(const element of inMessages('[data-form-path]')){
   const m=B?.byPath.get(element.dataset.formPath);if(!m?.question||m.metadataError)continue;
   const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:answerSubmissionOpen(m)&&signingEligible(m)&&!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
   const saved=formRoots.get(m.path);if(saved?.element===element&&saved.loading===loading){saved.dispose.update(options);continue;}if(saved?.element===element)saved.dispose();
@@ -50,7 +50,7 @@ async function sendFormAnswer(path,definition,sender,answer){
    if(source.duplicates.length||!source.body.trim()||JSON.stringify(source.h)!==JSON.stringify(m.h))throw Error(t("form_stale"));
   }
   if(origin!==dirHandle||identity!==boardStorageId||currentUser()!==sender||B?.byPath.get(path)?.h.QUESTION!==definition)throw Error(t("form_stale"));
-  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,confirmedAgent:confirmed});
+  const msg=composeMessage({sender:actualSender,to:m.author,scope:m.scope,room:m.dir,pair:m.scope==='direct'?m.dir:null,tid:m.tid,threadLabel:threadsOf()[m.tkey].label,slug:'answer-'+m.question.id,status:'REPLY',body:formAnswerBody(m.question,answer),replyTo:m.file,answer,subthread:subthreadOf(m),confirmedAgent:confirmed});
   await deliverMessage(msg);saveFormDraft(key,m.question,BoardFormContract.initial(m.question),true);await formStorageWrites;return t(canWrite()?"choice_sent":"form_downloaded");
  }finally{submittingForms.delete(key);if(B)build({background:true,preserveComposer:true});}
 }
@@ -92,17 +92,17 @@ function acceptedAnswerHtml(m){
  }
  return html+`<p class="hint">${text('Later submissions remain in message history.','Późniejsze odpowiedzi pozostają w historii wiadomości.')}</p></section>`;
 }
-function bindAnswerChoices(){for(const button of $('#feed').querySelectorAll('[data-accept-question]'))button.onclick=async()=>{
+function bindAnswerChoices(){for(const button of inMessages('[data-accept-question]'))button.onclick=async()=>{
  const q=B?.byPath.get(button.dataset.acceptQuestion),snapshot=q?.acceptance,origin=B,root=dirHandle,identity=boardStorageId;
  if(!q||currentUser()!==q.author||!['legacy','conflict'].includes(snapshot?.status))return;
  const winner=(snapshot.status==='legacy'?snapshot.history:snapshot.choices).find(r=>r.file===button.dataset.acceptFile);if(!winner)return;
  const pending=formKey(q);if(submittingForms.has(pending))return;submittingForms.add(pending);
- for(const control of $('#feed').querySelectorAll('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
+ for(const control of inMessages('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
  try{
   const sender=signingSender(currentUser());if(sender!==q.author)throw Error('Select the question author identity');
   const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return;
   if(B!==origin||dirHandle!==root||boardStorageId!==identity)throw Error(t('form_stale'));
-  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},confirmedAgent:confirmed});
+  const msg=composeMessage({sender,to:q.scope==='direct'?q.dir.split('--').find(p=>p!==sender):q.author,scope:q.scope,room:q.dir,pair:q.scope==='direct'?q.dir:null,tid:q.tid,threadLabel:q.label,slug:'answer-acceptance-'+crypto.randomUUID().replaceAll('-',''),status:'REPLY',body:exText('Explicitly accepted answer: ','Jawnie przyjęta odpowiedź: ')+winner.file,replyTo:q.file,answerState:{version:1,questionDigest:q.answerDigest,parents:snapshot.heads,winner},subthread:subthreadOf(q),confirmedAgent:confirmed});
   await deliverMessage(msg);
  }catch(e){toast(e.message);}finally{submittingForms.delete(pending);if(B)build({background:true,preserveComposer:true});}
 };}
