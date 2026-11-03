@@ -41,7 +41,7 @@ jobs:
     outputs:
       commit: ${{ steps.source.outputs.commit }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         id: source
         with:
           ref: ${{ inputs.ref || github.sha }}
@@ -50,7 +50,7 @@ jobs:
           persist-credentials: false
 
       # Keep current CI setup available when testing historical source tags.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           path: .ci-tools

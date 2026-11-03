@@ -40,12 +40,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Current tooling supports old tags that do not contain the release scripts.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Bind assets to the tested commit, even if a ref changes between jobs.
           ref: ${{ needs.test.outputs.commit }}
