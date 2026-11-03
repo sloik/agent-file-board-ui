@@ -301,3 +301,15 @@ test("#39 a post into a sub-thread whose root is excluded by signing is refused,
     assert.equal(await s.page.evaluate(() => window.__fakefs.dump().some(f => f.text.includes("Reply to a member of an excluded root"))), false, "nothing was written");
   } finally { await s.cleanup(); }
 });
+
+test("#37 an existing repair record whose replacement dropped SUBTHREAD is a repair error and quarantines nothing", async () => {
+  const bad = X.file("1302", "research-agent-01", "T009", "bad-state"), amend = X.file("1302", "research-agent-01", "T009", "amend-0123456789abcdef0123456789abcdef");
+  const original = X.message({ from: "research-agent-01", date: "13:02", reply: F.root, extra: [`SUBTHREAD: ${F.root}`, "SUBTHREAD-STATE: done"], body: "Resolved with a typo." });
+  const dropped = X.message({ from: "research-agent-01", date: "13:02", body: "Resolved with a typo." });
+  const record = { version: 1, target: `rooms/planning/${bad}`, sha256: require("node:crypto").createHash("sha256").update(original).digest("hex"), by: "human-owner-01", at: "2026-10-15T13:03:00.000Z", reason: "R9 replacement", replacement: `rooms/planning/${amend}` };
+  const s = await boot({ view: null, extra: { [bad]: original, [amend]: dropped }, files: { "repairs/0123456789abcdef0123456789abcdef.json": JSON.stringify(record) + "\n" } });
+  try {
+    assert.deepEqual(await s.page.evaluate(n => [B.msgs.find(m => m.file === n).quarantined || false, B.repairErrors], bad),
+      [false, [`repairs/0123456789abcdef0123456789abcdef.json: a replacement keeps the original's sub-thread headers: SUBTHREAD is ${F.root} in the original and absent in the replacement`]]);
+  } finally { await s.cleanup(); }
+});

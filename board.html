@@ -4393,6 +4393,9 @@ async function applyRepairs(model,files){
       try{ new TextDecoder("utf-8",{fatal:true}).decode(bytes); }catch(e){ m.metadataError=true; m.validationError="Invalid UTF-8"; }
       if(!m.metadataError) throw Error("Valid messages cannot be withdrawn");
       if(await shaBytes(bytes)!==r.sha256) throw Error("Repair original hash mismatch");
+      // Canonical message_repairs.scan (SPEC-002-080, audit #37): a record whose replacement changed the original's
+      // sub-thread headers is an error and quarantines nothing.
+      if(r.replacement!==null){ const x=model.msgs.find(x=>x.path===r.replacement), issue=repairSubthreadIssue(bytes,await rawBytes(x.source?.file || new Blob([files.find(f=>f.path===x.path)?.text ?? x.rawText ?? ""]))); if(issue) throw Error(issue); }
       m.quarantined=true; const replacement=model.msgs.find(x=>x.path===r.replacement); if(replacement) replacement.repairOf=r; model.repairs.push({...r,record:row.path});
     }catch(e){ model.repairErrors.push(row.path+": "+e.message); }
   }
@@ -4434,14 +4437,18 @@ async function loadRepairDraft(){
    The original's headers are recovered as canonical `repair` does: bytes decoded with replacement characters, line
    ends normalised, the first occurrence of a header wins (the original may be the malformed file being repaired). */
 const REPAIR_KEPT_HEADERS=["SUBTHREAD","SUBTHREAD-ALSO"];
-function repairSubthreadIssue(originalBytes,replacementHeaders){
-  const original=Object.create(null);
-  for(const line of new TextDecoder("utf-8").decode(originalBytes).replace(/\r\n/g,"\n").split("\n")){
+function repairRecoverableHeaders(bytes){
+  const out=Object.create(null);
+  for(const line of new TextDecoder("utf-8").decode(bytes).replace(/\r\n/g,"\n").split("\n")){
     if(line==="---") break;
-    const at=line.indexOf(": "); if(at>=0 && !Object.hasOwn(original,line.slice(0,at))) original[line.slice(0,at)]=line.slice(at+2);
+    const at=line.indexOf(": "); if(at>=0 && !Object.hasOwn(out,line.slice(0,at))) out[line.slice(0,at)]=line.slice(at+2);
   }
+  return out;
+}
+function repairSubthreadIssue(originalBytes,replacementBytes){
+  const original=repairRecoverableHeaders(originalBytes), replacement=repairRecoverableHeaders(replacementBytes);
   for(const key of REPAIR_KEPT_HEADERS){
-    const was=Object.hasOwn(original,key)?original[key]:undefined, now=Object.hasOwn(replacementHeaders,key)?replacementHeaders[key]:undefined;
+    const was=Object.hasOwn(original,key)?original[key]:undefined, now=Object.hasOwn(replacement,key)?replacement[key]:undefined;
     if(was!==now) return `a replacement keeps the original's sub-thread headers: ${key} is ${was ?? "absent"} in the original and ${now ?? "absent"} in the replacement`;
   }
   return "";
@@ -4460,7 +4467,7 @@ async function saveRepair(correct){
       if(!match) throw Error("Invalid DATE");
       const name=match[1]+"_"+match[2]+match[3]+"_"+h.FROM+"_"+(h.THREAD||"").split("-")[0]+"_amend-"+crypto.randomUUID().replaceAll("-","")+".txt";
       replacement=m.path.split("/").slice(0,-1).concat(name).join("/");
-      const keep=repairSubthreadIssue(original,h); if(keep) throw Error(keep);
+      const keep=repairSubthreadIssue(original,new TextEncoder().encode(raw)); if(keep) throw Error(keep);
       const candidate={...m,file:name,path:replacement,h,duplicates:parsed.duplicates,hasSeparator:parsed.hasSeparator,source:null};
       const error=nativeIssue(candidate,model.cfg,model.people,model.messageIndex); if(error) throw Error(error);
       if(h.FROM!==actor && !confirm(t("confirm_agent",{name:h.FROM}))) return;
