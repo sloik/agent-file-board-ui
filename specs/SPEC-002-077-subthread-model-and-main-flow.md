@@ -41,11 +41,11 @@ they differ.
 
 ## Acceptance criteria
 
-- [ ] AC1 (vendor): `vendor/agent-file-board` is pinned to the canonical commit that ships
+- [x] AC1 (vendor): `vendor/agent-file-board` is pinned to the canonical commit that ships
   SPEC-002-076 (tag `v3.4.0` for the release; the merged main commit is fine during
   development). `formal/check_alignment.py` and expected-board-version fixtures are
   updated, with no anchors weakened.
-- [ ] AC2 (model): `buildModel` parses the four headers into message fields. One index maps
+- [x] AC2 (model): `buildModel` parses the four headers into message fields. One index maps
   root filename to its member list (ordered by the canonical posting order), participants,
   last activity, latest state, and its `SUBTHREAD-ALSO` members. The viewer applies the same
   validation as canonical `check_message` (SPEC-002-076 AC2) through `nativeIssue` /
@@ -69,7 +69,7 @@ they differ.
   the sub-thread (writes `SUBTHREAD`, default `REPLY-TO` = root) through the existing
   composer-destination and draft-pin rules: a draft never moves silently.
   "Start sub-thread" on a member is not offered (one level).
-- [ ] AC6 (stamping): every writer that composes a message in the sub-thread destination
+- [x] AC6 (stamping): every writer that composes a message in the sub-thread destination
   stamps the canonical headers. That means `sendImpl`, `sendChoice`, form answer, form
   acceptance, extension answer, and topic-title (refused in a sub-thread). Answers to a
   member question carry the marker. Bytes are validated by canonical `boardctl validate` in
@@ -129,4 +129,14 @@ The side pane and its second composer, follow/mute per sub-thread, promote actio
 - Visual: scenes `subthread-strip` (+320x640, dark, dracula), `subthread-list`, `subthread-view`
   (+390x640) with layout snapshots; their Linux pixel baselines come from the `update_visual_baselines`
   workflow (pixels are compared on Linux only).
+- AC1: vendor pinned to canonical 73f4f18 (feat/subthreads, CONVENTION 3.4.0; the release tag v3.4.0
+  replaces it). Owner/coordinator decision (2026-11-03): 077 and 078 ship together as viewer 3.4.0 from
+  this branch, so VIEWER_VERSION, package.json/lock and the version-string tests move to 3.4.0 now
+  (a 3.3 viewer would show the version-mismatch banner on a 3.4 board); the CHANGELOG 3.4.0 section is
+  a draft that SPEC-002-078 completes. Repinned alignment anchors are version strings only.
+- AC2/AC6 parity: `tests/subthreads-canonical.test.js` runs canonical `boardctl validate --json` on the
+  shared fixtures (every rule compared word for word, orphan warnings) and on the bytes from send,
+  reply, choice answer and typed form answer, then reads them back with `boardctl recent --subthread`.
+- AC11 stays open until the Linux pixel baselines of the seven new scenes are rendered by the
+  `update_visual_baselines` workflow and committed.
 

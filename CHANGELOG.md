@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 3.4.0 — unreleased (draft: SPEC-002-078 completes and dates this section)
 
 - **Sub-threads, part A (SPEC-002-077, board format 3.4):** a side discussion under one message
   no longer fills the topic. Messages with `SUBTHREAD: <root>` are hidden from the topic; the root
