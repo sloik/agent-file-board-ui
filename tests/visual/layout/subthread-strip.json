@@ -67,5 +67,19 @@
  "#subMenuToggle":{"present":true,"visible":true,"box":{"x":1089,"y":59,"w":136,"h":23},"style":{"display":"list-item","background-color":"rgb(255, 255, 255)","color":"rgb(28, 34, 48)","border-color":"rgb(229, 231, 235)","box-shadow":"none","font-weight":"400"},"name":"Sub-threads (2)","text":"🧵 Sub-threads (2)","textBearing":true},
  "#subMenuPanel":{"present":true,"visible":false},
  "#feed .sub-strip":{"present":true,"visible":false},
- "#feed .sub-stub":{"present":true,"visible":true,"box":{"x":298,"y":133,"w":514,"h":100},"style":{"display":"grid","background-color":"color(srgb 0.848784 0.926588 0.944157)","color":"rgb(28, 34, 48)","border-color":"color(srgb 0.518627 0.741765 0.799804)","box-shadow":"none","font-weight":"400"},"name":"","text":null,"textBearing":true}
+ "#feed .sub-stub":{"present":true,"visible":true,"box":{"x":298,"y":133,"w":514,"h":100},"style":{"display":"grid","background-color":"color(srgb 0.848784 0.926588 0.944157)","color":"rgb(28, 34, 48)","border-color":"color(srgb 0.518627 0.741765 0.799804)","box-shadow":"none","font-weight":"400"},"name":"","text":null,"textBearing":true},
+ "#subPane":{"present":true,"visible":false},
+ "#subPaneTitle":{"present":true,"visible":false},
+ "#subFollow":{"present":true,"visible":false},
+ "#subPaneMenuToggle":{"present":true,"visible":false},
+ "#subClose":{"present":true,"visible":false},
+ "#subRoot":{"present":true,"visible":false},
+ "#subFeed":{"present":true,"visible":false},
+ "#subFeed article.msg:last-of-type":{"present":false},
+ "#subComposer":{"present":true,"visible":false},
+ "#subTarget":{"present":true,"visible":false},
+ "#subSigningNotice":{"present":true,"visible":false},
+ "#subBody":{"present":true,"visible":false},
+ "#subSend":{"present":true,"visible":false},
+ "#subAlso":{"present":true,"visible":false}
 }}

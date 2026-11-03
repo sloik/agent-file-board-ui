@@ -116,8 +116,8 @@ function composerTargetRender(){
    noteEl.querySelector('.composer-target-note-actions').replaceChildren(...note.actions.map(a=>{const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.composerAction=a.action;if(a.id)b.dataset.id=a.id;b.textContent=a.label;return b;}));}}
  $('#send').disabled=!!B&&(!target.scope||!!block);
  // The chip row only appears when the destination differs from what the view shows (SPEC-002-068), and always
- // while a sub-thread pane is open: two composers are on screen, each names its destination (SPEC-002-078 AC5).
- const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&!sel.sub&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
+ // while a sub-thread pane is open beside it: two composers are on screen, each names its destination (SPEC-002-078 AC5).
+ const row=$('#composerTargetRow'),same=!!B&&!!target.scope&&!composerPin&&!(sel.sub&&typeof subPaneMode==='function'&&subPaneMode()==='wide')&&(target.scope!=='room'||!target.to||target.to==='all')&&sameComposerTarget(composerViewTarget(),target);
  if(row.hidden!==same){if(same&&composerMenu?.anchor===chip)composerMenuClose();row.hidden=same;}
  const info=[B&&!target.scope?exText('Choose where to post: pick a room or topic in the sidebar, or use Change destination.','Wybierz, gdzie wysłać: wskaż pokój lub wątek w panelu bocznym albo użyj „Zmień cel”.'):'',composerInfoBase].filter(Boolean).join(' ');
  if($('#cInfo').textContent!==info)$('#cInfo').textContent=info;

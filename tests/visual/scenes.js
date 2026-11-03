@@ -35,8 +35,12 @@ const LANDMARKS=[
  ['#cBody'],['#composerTargetChange',{flow:true}],['#send'],['#cInfo',{flow:true}],
  ['#signingDialog',{box:true}],['#signingPendingSummary',{flow:true}],['#signingKeys',{flow:true,box:true,intrinsic:'h'}],['#signingKeyDetail',{flow:true,box:true,intrinsic:'h'}],['#signing-review h3',{flow:true}],['#signingFingerprint',{flow:true}],
  ['#signingCompare',{flow:true}],['#signingDialog [data-action="trust"]',{flow:true}],
- // SPEC-002-077: sub-threads in the main flow and the filtered sub-thread view.
+ // SPEC-002-077: sub-threads in the main flow.
  ['#subBack',{flow:true}],['#subMenuToggle',{flow:true}],['#subMenuPanel',{flow:true,box:true}],['#feed .sub-strip',{flow:true,box:true}],['#feed .sub-stub',{flow:true,box:true,intrinsic:'h'}],
+ // SPEC-002-078: the sub-thread pane (#subBack is its Back button on phones).
+ ['#subPane',{box:true}],['#subPaneTitle',{flow:true,intrinsic:'w'}],['#subFollow',{flow:true}],['#subPaneMenuToggle',{flow:true}],['#subClose',{flow:true}],['#subRoot',{box:true,flow:true}],
+ ['#subFeed',{box:true}],['#subFeed article.msg:last-of-type',{flow:true,box:true,intrinsic:'h'}],['#subComposer',{box:true}],['#subTarget',{flow:true,intrinsic:'w'}],['#subSigningNotice',{box:true}],
+ ['#subBody'],['#subSend'],['#subAlso',{flow:true}],
 ];
 const STYLES=['display','background-color','color','border-color','box-shadow','font-weight'];
 // Release versions, key fingerprints and board ids change without the page changing: masked in pixels, normalized in labels.
@@ -207,7 +211,9 @@ const COMPOSER_SIZES=name=>[S(name),S(name+'-1280x460',1280,460),S(name+'-390x64
 // SPEC-002-077: the example board plus room `planning` with two sub-threads (one open, one resolved) and an ALSO stub.
 const subthreadBoard=()=>SUB.subthreadBoard().proj;
 async function subthreadTopic(page){await page.selectOption('#me','human-owner-01');await h.openView(page,SUB.VIEW);await expect(page.locator('#feed .sub-strip')).toHaveCount(2);}
-async function subthreadOpen(page){await subthreadTopic(page);await page.locator(`article[data-file="${SUB.F.root}"] .sub-strip`).click();await expect(page.locator('#subBack')).toBeVisible();}
+async function subthreadOpen(page){await subthreadTopic(page);await page.locator(`#feed article[data-file="${SUB.F.root}"] .sub-strip`).click();await expect(page.locator('#subPane')).toBeVisible();await expect(page.locator('#subFeed article.msg')).toHaveCount(3);}
+// SPEC-002-078: the pane at the 4th-column, overlay and phone widths (the phone and overlay sizes are set before opening).
+async function subthreadPaneAt(page,width,height){await subthreadTopic(page);await page.setViewportSize({width,height});await page.locator(`#feed article[data-file="${SUB.F.root}"] .sub-strip`).click();await expect(page.locator('#subPane')).toBeVisible();await expect(page.locator('#subFeed article.msg')).toHaveCount(3);}
 // The first strip's top 8px under the feed's top, from measured boxes (not scrollIntoView, which leaves it to text heights).
 async function stripInView(page){
  await page.setViewportSize({width:320,height:640});
@@ -247,7 +253,12 @@ const GROUPS=[
  {name:'subthread-strip-dark',board:subthreadBoard,setup:async p=>{await subthreadTopic(p);await choose(p,'#sTheme','dark');},shots:[S('subthread-strip-dark')]},
  {name:'subthread-strip-dracula',board:subthreadBoard,setup:async p=>{await subthreadTopic(p);await choose(p,'#sTheme','dracula');},shots:[S('subthread-strip-dracula')]},
  {name:'subthread-list',board:subthreadBoard,setup:async p=>{await subthreadTopic(p);await p.click('#subMenuToggle');await expect(p.locator('#subMenuPanel')).toBeVisible();},pointer:'keep',shots:[S('subthread-list')]},
- {name:'subthread-view',board:subthreadBoard,setup:subthreadOpen,shots:[S('subthread-view'),S('subthread-view-390x640',390,640)]},
+ // SPEC-002-078: the sub-thread pane. Wide column, medium overlay, phone full screen; Dark and Dracula.
+ {name:'subthread-view',board:subthreadBoard,setup:subthreadOpen,shots:[S('subthread-view')]},
+ {name:'subthread-view-phone',board:subthreadBoard,setup:p=>subthreadPaneAt(p,390,640),shots:[S('subthread-view-390x640',390,640)]},
+ {name:'subthread-pane-medium',board:subthreadBoard,setup:p=>subthreadPaneAt(p,1000,700),shots:[S('subthread-pane-medium',1000,700)]},
+ {name:'subthread-pane-dark',board:subthreadBoard,setup:async p=>{await subthreadOpen(p);await choose(p,'#sTheme','dark');},shots:[S('subthread-pane-dark')]},
+ {name:'subthread-pane-dracula',board:subthreadBoard,setup:async p=>{await subthreadOpen(p);await choose(p,'#sTheme','dracula');},shots:[S('subthread-pane-dracula')]},
  // SPEC-002-073: the Keys list with a key in every state, a detail with the guided steps, a changed key, the phone accordion.
  {name:'keys',signing:true,keys:true,setup:async p=>{await openSigning(p);await p.locator('[data-signing-task=review]').click();await expect(p.locator('#signingKeys [data-key-row]')).toHaveCount(8);},shots:[
   S('keys-list'),
