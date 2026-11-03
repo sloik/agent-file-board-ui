@@ -41,7 +41,7 @@ async function main(){
   // Promote to topic: the dialog, then the new topic's "Continued from a sub-thread". Two writes, to the temporary copy only.
   await storage.locator('.sub-strip').click();await page.locator('#subPane').waitFor();
   await page.click('#subPaneMenuToggle');await page.click('#subPromote');await page.fill('#subAskInput','Storage engine decision');await shot('promote-dialog');
-  await page.click('#subAskOk');await page.locator('#feed .sub-promoted').waitFor();await page.evaluate(()=>document.querySelector('#toast').classList.remove('show'));await shot('promoted-topic');
+  await page.click('#subAskOk');await page.locator('#feed .sub-promoted').waitFor();await page.evaluate(()=>document.querySelector('#toast').classList.remove('show'));await page.waitForFunction(()=>getComputedStyle(document.querySelector('#toast')).opacity==='0');await shot('promoted-topic');
   const after=await messages(),added=after.filter(f=>!before.some(b=>b.path===f.path));
   assert.equal(added.length,2,'Promote wrote the new topic and the resolving message');for(const b of before)assert.deepEqual(after.find(f=>f.path===b.path),b,'nothing was modified or deleted');
   assert.deepEqual(log.pageErrors,[]);assert.deepEqual(log.consoleErrors,[]);assert.deepEqual(blocked,[]);assert.equal(log.requests.filter(u=>!u.startsWith('file:')).length,0);
