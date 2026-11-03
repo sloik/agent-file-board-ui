@@ -139,13 +139,26 @@ test("AC2 opening and closing never shifts the main feed's reading position", as
       const el = [...feed.querySelectorAll("article.msg")].find(e => e.getBoundingClientRect().bottom > top + 1); return { id: el.id, offset: Math.round(el.getBoundingClientRect().top - top) }; });
     await s.page.evaluate(() => { const feed = document.querySelector("#feed"); feed.scrollTop = Math.round(feed.scrollHeight / 3); });
     const before = await anchor();
+    // Measured after the layout settles: the composer's height change (its chip row) must not move the reader either.
+    const settle = () => s.page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     await s.page.evaluate(f => openSubthread("room:planning|" + f), F.root);
-    await expect(s.page.locator("#subPane")).toBeVisible();
+    await expect(s.page.locator("#subPane")).toBeVisible(); await settle();
     const open = await anchor();
     assert.equal(open.id, before.id); assert.ok(Math.abs(open.offset - before.offset) <= 2, `offset ${before.offset} -> ${open.offset}`);
-    await s.page.click("#subClose");
+    await s.page.click("#subClose"); await settle();
     const closed = await anchor();
     assert.equal(closed.id, before.id); assert.ok(Math.abs(closed.offset - before.offset) <= 2, `offset ${before.offset} -> ${closed.offset}`);
+    // A reader who has not scrolled stays at the top, also in a topic only slightly taller than the window
+    // (which the 80px live-edge rule would otherwise count as "at the end").
+    await s.page.evaluate(() => { document.querySelector("#feed").scrollTop = 0; });
+    await s.page.evaluate(f => openSubthread("room:planning|" + f), F.root); await settle();
+    assert.equal(await s.page.evaluate(() => document.querySelector("#feed").scrollTop), 0);
+    await s.page.click("#subClose"); await settle();
+    assert.equal(await s.page.evaluate(() => document.querySelector("#feed").scrollTop), 0);
+    // A reader at the end stays at the end.
+    await s.page.evaluate(() => { const f = document.querySelector("#feed"); f.scrollTop = f.scrollHeight; });
+    await s.page.evaluate(f => openSubthread("room:planning|" + f), F.root); await settle();
+    assert.ok(await s.page.evaluate(() => { const f = document.querySelector("#feed"); return f.scrollHeight - f.scrollTop - f.clientHeight < 2; }));
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 
@@ -222,6 +235,7 @@ test("AC5 also-send writes SUBTHREAD-ALSO: main and appears in the main flow as 
     const text = await written(s.page, "Decision: Postgres");
     assert.equal(header(text, "SUBTHREAD"), F.root); assert.equal(header(text, "SUBTHREAD-ALSO"), "main"); assert.equal(header(text, "REPLY-TO"), F.first);
     assert.equal(header(text, "TO"), "research-agent-01");
+    await expect.poll(() => s.page.evaluate(() => B.msgs.find(m => m.body.startsWith("Decision: Postgres"))?.file || null)).not.toBeNull();
     const file = await s.page.evaluate(() => B.msgs.find(m => m.body.startsWith("Decision: Postgres")).file);
     await s.page.click("#subClose");
     const stub = s.page.locator(`#feed article[data-file="${file}"]`);
@@ -229,7 +243,7 @@ test("AC5 also-send writes SUBTHREAD-ALSO: main and appears in the main flow as 
     await expect(stub.locator(".sub-chip")).toHaveText("🧵 Also in a sub-thread");
     await expect(s.page.locator("#subAlso")).not.toBeChecked();
     // Posting followed the sub-thread (AC8).
-    assert.equal(await s.page.evaluate(f => subFollowState(subFollowKey("room:planning|T009", f)), F.root), "following");
+    await expect.poll(() => s.page.evaluate(f => subFollowState(subFollowKey("room:planning|T009", f)), F.root)).toBe("following");
   } finally { await s.ctx.close(); s.cleanup(); }
 });
 

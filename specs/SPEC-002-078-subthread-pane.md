@@ -43,7 +43,7 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
   Medium (compact-layout breakpoint up to 1199 px): an overlay sheet over the transcript.
   Compact (SPEC-002-068 phone layout): full screen with a Back button. Opening and closing
   never shifts the main feed's reading position.
-- [x] AC3 (pane header): breadcrumb "Room › Topic › 🧵 <root preview>", follow bell toggle,
+- [ ] AC3 (pane header): breadcrumb "Room › Topic › 🧵 <root preview>", follow bell toggle,
   overflow menu (Resolve/Reopen, Promote to topic, Copy link to root, Flat view), close
   (✕). The pinned root is collapsible (collapsed by default when it is a long report, form
   or question; forms/reports open in their existing modal from the pane). Esc closes the
@@ -109,11 +109,14 @@ resolve, promote and follow. Research: `docs/design/subthreads/ux-subthreads.md`
   unchanged), a fixed sheet at 821-1199px, full screen under the top bar at <=820px with Back. Width `S.subW`
   (default 420, 320 to 60% of the conversation area) through `scripts/panel-layout.js` (`wireSubPaneLayout`, the
   Settings handle pattern). `holdFeedPosition` keeps the first visible main message at its offset on open and
-  close; a reader within 80px of the end stays at the live edge (the existing follow rule).
+  close, also against the composer's live-edge rule when its chip row appears: only a reader who scrolled to
+  the end keeps following it (`composerFeedFollowing`); a reader who has not scrolled keeps the top even in a topic
+  barely taller than the window.
 - Decision (medium windows): the spec names both composers only for wide windows. From 821 to 1199px the sheet
   covers the transcript's right side including Post, so, as on compact windows, only the pane composer is
   reachable while the pane is open; the main composer keeps its draft (hidden and inert, never removed).
-- AC3 deviation, to confirm: no generic modal exists for forms (reports have their own in-report Open modal), and
+- AC3 stays open for an owner decision; everything else in it is done (breadcrumb, Follow, overflow menu, close,
+  Esc with the draft kept and focus back on the strip, the collapsible pinned root). The deviation: no generic modal exists for forms (reports have their own in-report Open modal), and
   moving a mounted form between containers would break the one-rendering rule. The pinned root is a preview
   (folded for a long, form, report, question, extension or information root) with **Show in main thread ↗**,
   which scrolls the main feed to the one interactive rendering (compact: closes the pane and shows "Back to

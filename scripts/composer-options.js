@@ -9,6 +9,9 @@ function updateComposerSummary(){
 /* Composer routing (SPEC-002-064): the visible view picks the destination. The Where/Thread/To
    selects stay as hidden backing state (draft stamp, voice, signing and history read them);
    setComposerTarget() is the only writer outside the Advanced fields. */
+// Whether the reader follows the feed's live edge; composer height changes keep such a reader at the end.
+// holdFeedPosition (SPEC-002-078 AC2) sets it while the sub-thread pane opens or closes.
+let composerFeedFollowing=true;
 let composerViewKey=null,composerPin=null,composerNewRoomMode=false,composerTopicAuto=true,composerMenu=null,composerNoteKey='',composerInfoBase='',composerMarkKey='';
 // SPEC-002-068: options load collapsed in short windows without overwriting the saved preference.
 let composerOptionsHeld=innerHeight<=640;
@@ -269,9 +272,9 @@ function wireComposerTarget(){
  $('#cBody').addEventListener('input',composerTopicFromBody);
  $('#composerAdvanced').addEventListener('toggle',composerTargetRender);
  // The chip row, name fields and banners change the composer's height: keep a reader at the live edge there.
- let following=true;const feed=$('#feed');
- feed.addEventListener('scroll',()=>{following=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;},{passive:true});
- if(typeof ResizeObserver==='function')new ResizeObserver(()=>{if(following)feed.scrollTop=feed.scrollHeight;}).observe($('#composer'));
+ const feed=$('#feed');
+ feed.addEventListener('scroll',()=>{composerFeedFollowing=feed.scrollHeight-feed.scrollTop-feed.clientHeight<80;},{passive:true});
+ if(typeof ResizeObserver==='function')new ResizeObserver(()=>{if(composerFeedFollowing)feed.scrollTop=feed.scrollHeight;}).observe($('#composer'));
  $('#tree').addEventListener('click',e=>{if(e.target.closest('[data-message-participant]')){e.preventDefault();closeSidebarDrawer(false);composerMenuOpen('participant',composerAnchor());}});
  $('#presenceList').addEventListener('click',e=>{if(e.target.closest('[data-signing-open]'))$('#presenceDialog').close();const b=e.target.closest('[data-message-participant]');if(b){$('#presenceDialog').close();messageParticipant(b.dataset.messageParticipant);}});
  composerTargetRender();
