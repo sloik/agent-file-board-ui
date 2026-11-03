@@ -3531,7 +3531,7 @@ function reuseReportNodes(next,move){
 }
 function mountReports(){
   for(const [path,saved] of reportRoots) if(!saved.element.isConnected){saved.dispose();reportRoots.delete(path);}
-  for(const element of $("#feed").querySelectorAll("[data-report-path]")){
+  for(const element of inMessages("[data-report-path]")){
     if(reportRoots.get(element.dataset.reportPath)?.element===element){reportRoots.get(element.dataset.reportPath).dispose.updateLabels?.(reportLabels());continue;}
     const m=B?.byPath.get(element.dataset.reportPath);
     if(!m?.ui || m.metadataError) continue;
@@ -3651,6 +3651,63 @@ function closeSubthread(){
   else $("#feed").focus({preventScroll:true});
 }
 function subthreadStartable(m){ return B.layout.dialect==="native" && !m.subthread && !m.receipt && !m.metadataError && !m.quarantined && !!m.tid && !sessionNotice(m); }
+// Replaces a message container's content (SPEC-002-078 AC1: #feed and the sub-thread pane). Keeps the
+// reader's expanded messages, disclosures, review/information state, focused choice form and form caret, and
+// moves mounted report/form/extension nodes instead of rebuilding them. Scroll stays with the caller.
+function paintMessages(feed,html){
+  const next=document.createElement("div"); next.className="inner"; next.innerHTML=html; preserveReviewState(next); preserveInformationState(next); applyMessageDisclosure(next);
+  const expanded=new Set([...feed.querySelectorAll(".msg:has([data-more])")].filter(el=>!el.querySelector(".body").classList.contains("clamp")).map(el=>el.id));
+  for(const el of next.querySelectorAll(".msg:has([data-more])")) if(expanded.has(el.id)){
+    el.querySelector(".body").classList.remove("clamp"); el.querySelector("[data-more]").textContent=t("collapse")+" ▴";
+  }
+  const formFocused=document.activeElement?.closest(".board-form")?document.activeElement:null, formCaret=formFocused && formFocused.selectionStart!==null?{start:formFocused.selectionStart,end:formFocused.selectionEnd,direction:formFocused.selectionDirection}:null;
+  const focused=document.activeElement, activeForm=focused && focused.closest(".choice-form");
+  const focusState=activeForm?{path:activeForm.dataset.questionPath,option:focused.tagName==="INPUT"?focused.value:null,button:focused.tagName==="BUTTON"?(focused.type==="submit"?"[type=submit]":"[data-clear-choices]"):null,text:focused.tagName==="TEXTAREA",start:focused.selectionStart,end:focused.selectionEnd,direction:focused.selectionDirection,scroll:focused.scrollTop}:null;
+  reuseReportNodes(next,false);
+  if(feed.innerHTML!==next.outerHTML){
+    reuseReportNodes(next,true);
+    feed.replaceChildren(next);
+    if(focusState){ const form=[...feed.querySelectorAll(".choice-form")].find(el=>el.dataset.questionPath===focusState.path);
+      const target=form && (focusState.text?form.querySelector("textarea"):focusState.button?form.querySelector(focusState.button):[...form.querySelectorAll("input")].find(el=>el.value===focusState.option));
+      if(target){ target.focus({preventScroll:true}); if(focusState.text){ target.setSelectionRange(focusState.start,focusState.end,focusState.direction); target.scrollTop=focusState.scroll; } }
+    }
+  }
+  mountReports();
+  if(formFocused?.isConnected){formFocused.focus({preventScroll:true});if(formCaret && typeof formFocused.setSelectionRange==="function")try{formFocused.setSelectionRange(formCaret.start,formCaret.end,formCaret.direction);}catch(e){}}
+}
+// One message of a transcript (SPEC-002-078 AC1): the main feed and the sub-thread pane share this template.
+function messageArticleHtml(m,ctx){
+  const {q,me,meP,subs}=ctx;
+  const p = personOf(m.author, m.authorName), c = colorOf(m.author);
+  const mine = S.align==="split" && me && m.author===me;
+  if(subthreadStub(m)) return subthreadStubHtml(m,c,mine);
+  if(m.receipt){
+    const upTo = m.h["PRZECZYTANE-DO"];
+    return `<div class="receipt ${mine?"mine":""}" data-file="${esc(m.file)}" style="--c:${c}"><span class="dot"></span>${esc(t("receipt_line",{who:p.name}))}${upTo?` ${esc(t("receipt_to"))} <code>${esc(upTo.slice(0,40))}</code>`:""} \u00b7 ${esc(m.time.slice(11,16))}${signingMessageHtml(m)}</div>`;
+  }
+  const ht = humanThread(m.label);
+  const toList = m.to.split(",").map(s=>s.trim());
+  const toMe = !!me && (toList.includes(me) || (meP && toList.includes(meP.name)) || new RegExp("@"+me.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body) || (meP && new RegExp("@"+meP.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body)));
+  const long = m.body.length>700 && !$("#expandAll").checked && !q;
+  const reply = m.replyTo && m.replyTo!=="-" ? B.messageIndex.get(m.dkey+"|"+m.replyTo) || B.msgs.find(x=>x.file===m.replyTo) : null;
+  const toTitle = m.to==="all" ? t("c_all") : m.to;
+  return `<article class="msg ${toMe?"to-me":""} ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
+    <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
+    <div><div class="msg-head"><span class="who">${esc(p.name)}</span>${presenceBadge(m.author)}<span class="kind">${esc(kindLabel(p))}</span><span class="to">\u2192 ${esc(toTitle)}</span>
+      <span class="time ${m.fixed?"fixed":""}" title="${m.fixed?esc(t("time_in_file",{t:m.fixed,f:m.fixReason||"time-corrections"})):esc(m.file)}">${esc(m.time.slice(11,16))}${m.fixed?" \u00b7 "+esc(t("time_corrected")):""}</span>
+      ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
+      ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}${m.subthread && !sel.sub?`<button type="button" class="chip sub-chip" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">\u{1F9F5} ${esc(t("sub_in"))}</button>`:""}</div>
+      ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
+      ${signingMessageHtml(m)}
+      ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
+      <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
+      ${signingEligible(m)?informationPlaceholder(m)+reportPlaceholder(m)+extensionPlaceholder(m):""}
+      ${answerReview(m)}
+      ${!signingEligible(m)?signingExclusionHtml(m):m.metadataError?`<p class="metadata-error">${m.quarantined?"[withdrawn / original preserved] ":""}${esc(t("invalid_metadata"))}</p>`:(m.h.UI!==undefined && !m.bodyLoaded?"":choiceHtml(m))}
+      ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
+      ${!sel.sub && !S.flatView && subs.has(m.dkey+"|"+m.file) && !m.subthread ? subthreadStripHtml(subs.get(m.dkey+"|"+m.file)) : ""}
+      <div class="tools"><button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button>${!sel.sub && subthreadStartable(m)?`<button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-subthread-start="${esc(m.dkey+"|"+m.file)}" aria-label="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}" title="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}">\u{1F9F5}<span class="tools-label"> ${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}</span></button>`:""}<button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
+}
 function render(background = false){
   extensionContext();
   notificationsContext(); renderNotifications();
@@ -3679,64 +3736,16 @@ function render(background = false){
   const missing=page.rows.some(m=>!m.bodyLoaded), token=++bodyRenderToken;
   if(missing) hydrateMessages(page.rows,B).then(()=>{ if(token===bodyRenderToken) render(background); }).catch(e=>{ if(token===bodyRenderToken) toast(t("message_error",{m:e.message})); });
   let html = view.length>MESSAGE_PAGE_SIZE ? `<nav class="history-nav" aria-label="${esc(t("history_label"))}"><button class="btn" data-history="older" ${page.start===0?"disabled":""}>${esc(t("history_older"))}</button><span>${esc(t("history_range",{start:page.start+1,end:page.end,total:view.length}))}</span><button class="btn" data-history="newer" ${page.end===view.length?"disabled":""}>${esc(t("history_newer"))}</button><button class="btn" data-history="latest" ${page.end===view.length?"disabled":""}>${esc(t("history_latest"))}</button></nav>` : "", lastDay = "";
-  const subs = subthreadsOf();
+  const subs = subthreadsOf(), ctx={q,me,meP,subs};
   if(sel.sub && !page.rows.some(m=>m.subthread)) html += `<p class="hint sub-empty">${esc(t("sub_empty"))}</p>`;
   for(const m of page.rows){
     const day = m.time.slice(0,10);
     if(day!==lastDay){ html += `<div class="day">${esc(dayLabel(day))}</div>`; lastDay = day; }
-    const p = personOf(m.author, m.authorName), c = colorOf(m.author);
-    const mine = S.align==="split" && me && m.author===me;
-    if(subthreadStub(m)){ html += subthreadStubHtml(m,c,mine); continue; }
-    if(m.receipt){
-      const upTo = m.h["PRZECZYTANE-DO"];
-      html += `<div class="receipt ${mine?"mine":""}" data-file="${esc(m.file)}" style="--c:${c}"><span class="dot"></span>${esc(t("receipt_line",{who:p.name}))}${upTo?` ${esc(t("receipt_to"))} <code>${esc(upTo.slice(0,40))}</code>`:""} \u00b7 ${esc(m.time.slice(11,16))}${signingMessageHtml(m)}</div>`;
-      continue;
-    }
-    const ht = humanThread(m.label);
-    const toList = m.to.split(",").map(s=>s.trim());
-    const toMe = !!me && (toList.includes(me) || (meP && toList.includes(meP.name)) || new RegExp("@"+me.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body) || (meP && new RegExp("@"+meP.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i").test(m.body)));
-    const long = m.body.length>700 && !$("#expandAll").checked && !q;
-    const reply = m.replyTo && m.replyTo!=="-" ? B.messageIndex.get(m.dkey+"|"+m.replyTo) || B.msgs.find(x=>x.file===m.replyTo) : null;
-    const toTitle = m.to==="all" ? t("c_all") : m.to;
-    html += `<article class="msg ${toMe?"to-me":""} ${mine?"mine":""}" style="--c:${c}" data-file="${esc(m.file)}" data-author="${esc(m.author)}" id="m-${esc(m.dkey+"|"+m.file)}">
-      <div class="avatar" title="${esc(kindLabel(p))}">${iconOf(p)}<b>${esc((p.name||"?")[0].toUpperCase())}</b></div>
-      <div><div class="msg-head"><span class="who">${esc(p.name)}</span>${presenceBadge(m.author)}<span class="kind">${esc(kindLabel(p))}</span><span class="to">\u2192 ${esc(toTitle)}</span>
-        <span class="time ${m.fixed?"fixed":""}" title="${m.fixed?esc(t("time_in_file",{t:m.fixed,f:m.fixReason||"time-corrections"})):esc(m.file)}">${esc(m.time.slice(11,16))}${m.fixed?" \u00b7 "+esc(t("time_corrected")):""}</span>
-        ${ht.id?`<span class="chip thread-link" data-goto="${esc(m.tkey)}" title="${esc(m.label)}">${esc(ht.id)} \u00b7 ${esc(ht.title.slice(0,34))}</span>`:""}
-        ${m.status?`<span class="chip status status-tone s-${esc(m.status)}">${esc(m.status)}</span>`:""}${!sel.scope?`<span class="chip">${m.scope==="direct"?"\u2709":"#"} ${esc(dirTitle(m.scope,m.dir))}</span>`:""}${m.subthread && !sel.sub?`<button type="button" class="chip sub-chip" data-subthread-open="${esc(m.dkey+"|"+m.subthread)}" data-subthread-focus="${esc(m.file)}">\u{1F9F5} ${esc(t("sub_in"))}</button>`:""}</div>
-        ${reply?`<div class="reply-ref" data-jump="${esc(reply.dkey+"|"+reply.file)}">\u21a9 ${esc(t("in_reply_to",{who:personOf(reply.author,reply.authorName).name,when:reply.time.slice(5,16)}))}</div>`:""}
-        ${signingMessageHtml(m)}
-        ${m.repairOf?`<p class="hint">${esc(t("repair_reference",{path:m.repairOf.target,by:m.repairOf.by,reason:m.repairOf.reason}))}</p>`:""}
-        <div class="body ${long?"clamp":""}">${m.bodyLoaded?formatBody(m.body,q,m.metadataError?"text/plain":m.h["CONTENT-TYPE"]):esc(t("message_loading"))}</div>
-        ${signingEligible(m)?informationPlaceholder(m)+reportPlaceholder(m)+extensionPlaceholder(m):""}
-        ${answerReview(m)}
-        ${!signingEligible(m)?signingExclusionHtml(m):m.metadataError?`<p class="metadata-error">${m.quarantined?"[withdrawn / original preserved] ":""}${esc(t("invalid_metadata"))}</p>`:(m.h.UI!==undefined && !m.bodyLoaded?"":choiceHtml(m))}
-        ${long?`<button class="more" data-more>${esc(t("show_all"))} \u25be</button>`:""}
-        ${!sel.sub && !S.flatView && subs.has(m.dkey+"|"+m.file) && !m.subthread ? subthreadStripHtml(subs.get(m.dkey+"|"+m.file)) : ""}
-        <div class="tools"><button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-reply="${esc(m.dkey+"|"+m.file)}">\u21a9 ${esc(t("reply_btn"))}</button>${!sel.sub && subthreadStartable(m)?`<button ${signingEligible(m)?"":`disabled title="${esc(signingMessageBlock(m).message)}"`} data-subthread-start="${esc(m.dkey+"|"+m.file)}" aria-label="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}" title="${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}">\u{1F9F5}<span class="tools-label"> ${esc(t(subs.has(m.dkey+"|"+m.file)?"sub_open":"sub_start"))}</span></button>`:""}<button data-copy="${esc(m.file)}">\u29c9 ${esc(t("copy_name"))}</button></div></div></article>`;
+    html += messageArticleHtml(m,ctx);
   }
   const feed = $("#feed");
-  const atBottom = feed.scrollHeight-feed.scrollTop-feed.clientHeight < 80;
-  const next=document.createElement("div"); next.className="inner"; next.innerHTML=html; preserveReviewState(next); preserveInformationState(next); applyMessageDisclosure(next);
-  const oldTop=feed.scrollTop;
-  const expanded=new Set([...feed.querySelectorAll(".msg:has([data-more])")].filter(el=>!el.querySelector(".body").classList.contains("clamp")).map(el=>el.id));
-  for(const el of next.querySelectorAll(".msg:has([data-more])")) if(expanded.has(el.id)){
-    el.querySelector(".body").classList.remove("clamp"); el.querySelector("[data-more]").textContent=t("collapse")+" ▴";
-  }
-  const formFocused=document.activeElement?.closest(".board-form")?document.activeElement:null, formCaret=formFocused && formFocused.selectionStart!==null?{start:formFocused.selectionStart,end:formFocused.selectionEnd,direction:formFocused.selectionDirection}:null;
-  const focused=document.activeElement, activeForm=focused && focused.closest(".choice-form");
-  const focusState=activeForm?{path:activeForm.dataset.questionPath,option:focused.tagName==="INPUT"?focused.value:null,button:focused.tagName==="BUTTON"?(focused.type==="submit"?"[type=submit]":"[data-clear-choices]"):null,text:focused.tagName==="TEXTAREA",start:focused.selectionStart,end:focused.selectionEnd,direction:focused.selectionDirection,scroll:focused.scrollTop}:null;
-  reuseReportNodes(next,false);
-  if(feed.innerHTML!==next.outerHTML){
-    reuseReportNodes(next,true);
-    feed.replaceChildren(next);
-    if(focusState){ const form=[...feed.querySelectorAll(".choice-form")].find(el=>el.dataset.questionPath===focusState.path);
-      const target=form && (focusState.text?form.querySelector("textarea"):focusState.button?form.querySelector(focusState.button):[...form.querySelectorAll("input")].find(el=>el.value===focusState.option));
-      if(target){ target.focus({preventScroll:true}); if(focusState.text){ target.setSelectionRange(focusState.start,focusState.end,focusState.direction); target.scrollTop=focusState.scroll; } }
-    }
-  }
-  mountReports();
-  if(formFocused?.isConnected){formFocused.focus({preventScroll:true});if(formCaret && typeof formFocused.setSelectionRange==="function")try{formFocused.setSelectionRange(formCaret.start,formCaret.end,formCaret.direction);}catch(e){}}
+  const atBottom = feed.scrollHeight-feed.scrollTop-feed.clientHeight < 80, oldTop=feed.scrollTop;
+  paintMessages(feed,html);
   if((!background && lastCount!==view.length) || atBottom) feed.scrollTop = feed.scrollHeight;
   else feed.scrollTop=oldTop;
   lastCount = view.length;
@@ -4586,7 +4595,7 @@ function disposeForms(){for(const saved of formRoots.values())saved.dispose();fo
 function mountForms(){
  bindAnswerChoices();
  for(const[path,saved]of formRoots)if(!saved.element.isConnected){saved.dispose();formRoots.delete(path);}
- for(const element of $('#feed').querySelectorAll('[data-form-path]')){
+ for(const element of inMessages('[data-form-path]')){
   const m=B?.byPath.get(element.dataset.formPath);if(!m?.question||m.metadataError)continue;
   const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:answerSubmissionOpen(m)&&signingEligible(m)&&!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
   const saved=formRoots.get(m.path);if(saved?.element===element&&saved.loading===loading){saved.dispose.update(options);continue;}if(saved?.element===element)saved.dispose();
@@ -4653,12 +4662,12 @@ function acceptedAnswerHtml(m){
  }
  return html+`<p class="hint">${text('Later submissions remain in message history.','Późniejsze odpowiedzi pozostają w historii wiadomości.')}</p></section>`;
 }
-function bindAnswerChoices(){for(const button of $('#feed').querySelectorAll('[data-accept-question]'))button.onclick=async()=>{
+function bindAnswerChoices(){for(const button of inMessages('[data-accept-question]'))button.onclick=async()=>{
  const q=B?.byPath.get(button.dataset.acceptQuestion),snapshot=q?.acceptance,origin=B,root=dirHandle,identity=boardStorageId;
  if(!q||currentUser()!==q.author||!['legacy','conflict'].includes(snapshot?.status))return;
  const winner=(snapshot.status==='legacy'?snapshot.history:snapshot.choices).find(r=>r.file===button.dataset.acceptFile);if(!winner)return;
  const pending=formKey(q);if(submittingForms.has(pending))return;submittingForms.add(pending);
- for(const control of $('#feed').querySelectorAll('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
+ for(const control of inMessages('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
  try{
   const sender=signingSender(currentUser());if(sender!==q.author)throw Error('Select the question author identity');
   const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return;
@@ -5498,6 +5507,10 @@ function disclosureKey(details){
   const same=[...msg.querySelectorAll("details")].filter(d=>d.className===details.className);
   return msg.id+"|"+details.className+"|"+same.indexOf(details);
 }
+// Every container that renders messages (SPEC-002-078 AC1): the main feed and the sub-thread pane. A message's
+// interactive body renders in exactly one of them, so path-keyed mount registries stay unique.
+function messageContainers(){ return [...document.querySelectorAll("#feed,#subFeed")]; }
+function inMessages(selector){ return messageContainers().flatMap(c=>[...c.querySelectorAll(selector)]); }
 function applyMessageDisclosure(root){
   for(const d of root.querySelectorAll("article.msg details")){
     const key=disclosureKey(d),open=key && MessageDisclosure.get(key);
@@ -5780,7 +5793,7 @@ function informationPlaceholder(m){
 
 function preserveInformationState(next){
  const key=node=>{const item=node.closest('[data-information-id]'),card=node.closest('[data-information-path]');return JSON.stringify([card?.dataset.informationPath,item?.dataset.informationId,node.className,node.closest('[data-information-reading]')?.dataset.informationReading||'snapshot']);};
- const states=new Map([...$('#feed').querySelectorAll('[data-information-path] details')].map(node=>[key(node),node.open]));
+ const states=new Map([...inMessages('[data-information-path] details')].map(node=>[key(node),node.open]));
  for(const node of next.querySelectorAll('[data-information-path] details'))if(states.has(key(node)))node.open=states.get(key(node));
 }
 
@@ -5953,7 +5966,7 @@ function extensionUnavailable(element,issue,artifact,detail=''){
 }
 function mountExtensions(){
  for(const [path,saved]of extensionRoots)if(!saved.element.isConnected){saved.dispose();extensionRoots.delete(path);}
- for(const element of $('#feed').querySelectorAll('[data-extension-path]')){const m=B?.byPath.get(element.dataset.extensionPath);if(!m||m.metadataError||!m.body.trim())continue;let signature;try{signature=extensionSignature(m);}catch(e){element.textContent=e.message;continue;}const saved=extensionRoots.get(m.path);if(saved?.element===element&&saved.signature===signature&&saved.language===S.lang)continue;saved?.dispose();if(saved&&saved.signature!==signature)extensionDrafts.delete(saved.signature);element.replaceChildren();delete element.dataset.extensionState;const disposers=[];extensionRoots.set(m.path,{element,signature,language:S.lang,dispose:()=>disposers.splice(0).forEach(f=>f())});
+ for(const element of inMessages('[data-extension-path]')){const m=B?.byPath.get(element.dataset.extensionPath);if(!m||m.metadataError||!m.body.trim())continue;let signature;try{signature=extensionSignature(m);}catch(e){element.textContent=e.message;continue;}const saved=extensionRoots.get(m.path);if(saved?.element===element&&saved.signature===signature&&saved.language===S.lang)continue;saved?.dispose();if(saved&&saved.signature!==signature)extensionDrafts.delete(saved.signature);element.replaceChildren();delete element.dataset.extensionState;const disposers=[];extensionRoots.set(m.path,{element,signature,language:S.lang,dispose:()=>disposers.splice(0).forEach(f=>f())});
   let targetArtifact;try{const x=ExtensionContract.parse(m.h.EXTENSION,65536);targetArtifact=x.package;const contractPackage=extensionCatalog.get(x.package),contractIssue=extensionPackageIssue(contractPackage);if(contractIssue){extensionChrome(element,x.package,contractPackage?.package?.name);extensionUnavailable(element,contractIssue,x.package,contractPackage?.error||'');continue;}const {decoded,contract}=ExtensionContract.resolve(extensionCatalog,x);const label=document.createElement('p');label.textContent=contract.id+' '+contract.version;element.append(label);extensionChoicesSelect(element,x,contract,()=>build({background:true,preserveComposer:true}));
    const mount=document.createElement('div'),status=document.createElement('p');status.setAttribute('role','status');element.append(mount,status);let draft=extensionDrafts.get(signature);const answerSchema=contract.answerSchema&&decoded.entry(contract.answerSchema,true);if(answerSchema&&!draft){draft=extensionInitial(answerSchema);if(ExtensionContract.bytes(JSON.stringify(draft)).length>65536)draft=null;extensionDrafts.set(signature,draft);}let review=null;
    const current=()=>{ExtensionContract.require(extensionRoots.get(m.path)?.signature===signature&&element.isConnected,'component context changed');};
@@ -6057,7 +6070,7 @@ function answerReview(m){
  }
  return html+'</details>';
 }
-function preserveReviewState(next){const old=new Map([...$('#feed').querySelectorAll('[data-review-path]')].map(el=>[el.dataset.reviewPath,el.open]));for(const el of next.querySelectorAll('[data-review-path]'))if(old.has(el.dataset.reviewPath))el.open=old.get(el.dataset.reviewPath);}
+function preserveReviewState(next){const old=new Map([...inMessages('[data-review-path]')].map(el=>[el.dataset.reviewPath,el.open]));for(const el of next.querySelectorAll('[data-review-path]'))if(old.has(el.dataset.reviewPath))el.open=old.get(el.dataset.reviewPath);}
 
 /* Offline authoring: preview is isolated; attachment uses the normal composer. */
 let authoringValid=null,authoringDispose=null,composerStructured=null;
@@ -9672,46 +9685,16 @@ function wire(){
     const n = items[Math.min(items.length-1, Math.max(0, i+(e.key==="ArrowDown"?1:-1)))];
     if(n) n.focus();
   });
-  for(const event of ["input","change"]) $("#feed").addEventListener(event,e=>{ const form=e.target.closest(".choice-form"); if(form) rememberChoice(form); });
-  $("#feed").addEventListener("submit",e=>{ const form=e.target.closest(".choice-form"); if(form){ e.preventDefault(); sendChoice(form); } });
-  // Record explicit reader toggles of message sections (mouse, Enter and Space all click
-  // the summary); reports and extensions mounted later get the saved state reapplied.
+  wireMessageContainer($("#feed"));
   $("#feed").addEventListener("click", e=>{
-    const summary=e.target.closest("article.msg details > summary");
-    if(!summary) return;
-    const details=summary.parentElement,key=disclosureKey(details);
-    if(!key) return;
-    // Capture runs before the toggle: record the coming state now so a refresh in the same
-    // instant cannot restore the old one, then confirm it once the click has completed.
-    MessageDisclosure.set(key,!details.open);
-    setTimeout(()=>{ if(details.isConnected && MessageDisclosure.get(key)!==details.open) MessageDisclosure.set(key,details.open); },0);
-  }, true);
-  let disclosureQueued=false;
-  new MutationObserver(()=>{ if(disclosureQueued) return; disclosureQueued=true;
-    queueMicrotask(()=>{ disclosureQueued=false; applyMessageDisclosure($("#feed")); }); }).observe($("#feed"),{childList:true,subtree:true});
-  $("#feed").addEventListener("click", e=>{
-    const clear=e.target.closest("[data-clear-choices]");
-    if(clear){ const form=clear.closest("form"); for(const input of form.querySelectorAll("input")) input.checked=false; rememberChoice(form); form.querySelector("textarea").focus(); return; }
     const history=e.target.closest("[data-history]");
-    if(history){
-      scrollIntent=0;
-      const view=matchingMessages(), page=messagePage(view); historyPage.count=MESSAGE_PAGE_SIZE;
-      if(history.dataset.history==="latest") historyPage.end=null;
-      else{ const end=history.dataset.history==="older"?page.start:Math.min(view.length,page.end+MESSAGE_PAGE_SIZE); historyPage.end=end===view.length?null:view[Math.max(0,end-1)].path; }
-      build({preserveComposer:true});
-      $("#feed").scrollTop=history.dataset.history==="newer"?0:$("#feed").scrollHeight;
-      return;
-    }
-    const more = e.target.closest("[data-more]"), rep = e.target.closest("[data-reply]"), cp = e.target.closest("[data-copy]"),
-          go = e.target.closest("[data-goto]"), jump = e.target.closest("[data-jump]"), subOpen = e.target.closest("[data-subthread-open]"), subStart = e.target.closest("[data-subthread-start]");
-    if(subOpen){ openSubthread(subOpen.dataset.subthreadOpen, subOpen.dataset.subthreadFocus); }
-    else if(subStart){ if(!subStart.disabled) openSubthread(subStart.dataset.subthreadStart); }
-    else if(more){ const msg = more.closest(".msg"), body = msg.querySelector(".body"); const clamped = body.classList.toggle("clamp");
-      more.textContent = (clamped ? t("show_all")+" \u25be" : t("collapse")+" \u25b4"); if(msg.id) MessageDisclosure.set(msg.id+"|more",!clamped); }
-    else if(rep){ const m = B.msgs.find(x=>x.dkey+"|"+x.file===rep.dataset.reply); if(m) startReply(m); }
-    else if(cp){ try{ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.copy); }catch(err){} toast(t("copied")); }
-    else if(go){ const x = threadsOf()[go.dataset.goto]; if(x){ sel = {scope:x.scope,dir:x.dir,thread:x.key}; rememberView(); build(); } }
-    else if(jump) jumpToMessage(jump.dataset.jump);
+    if(!history) return;
+    scrollIntent=0;
+    const view=matchingMessages(), page=messagePage(view); historyPage.count=MESSAGE_PAGE_SIZE;
+    if(history.dataset.history==="latest") historyPage.end=null;
+    else{ const end=history.dataset.history==="older"?page.start:Math.min(view.length,page.end+MESSAGE_PAGE_SIZE); historyPage.end=end===view.length?null:view[Math.max(0,end-1)].path; }
+    build({preserveComposer:true});
+    $("#feed").scrollTop=history.dataset.history==="newer"?0:$("#feed").scrollHeight;
   });
   $("#subBack").onclick=closeSubthread;
   $("#subMenuPanel").addEventListener("click",e=>{ const b=e.target.closest("[data-subthread-open]"); if(b) openSubthread(b.dataset.subthreadOpen); });
@@ -9789,6 +9772,42 @@ function wire(){
   rz.ondblclick = ()=>{ S.sideW = DEF.sideW; saveSettings(); };
 }
 
+// The delegated handlers of a message container (SPEC-002-078 AC1): choices, disclosures, message tools,
+// reply links and sub-thread openers. #feed and the sub-thread pane's #subFeed both use them.
+function wireMessageContainer(el){
+  for(const event of ["input","change"]) el.addEventListener(event,e=>{ const form=e.target.closest(".choice-form"); if(form) rememberChoice(form); });
+  el.addEventListener("submit",e=>{ const form=e.target.closest(".choice-form"); if(form){ e.preventDefault(); sendChoice(form); } });
+  // Record explicit reader toggles of message sections (mouse, Enter and Space all click
+  // the summary); reports and extensions mounted later get the saved state reapplied.
+  el.addEventListener("click", e=>{
+    const summary=e.target.closest("article.msg details > summary");
+    if(!summary) return;
+    const details=summary.parentElement,key=disclosureKey(details);
+    if(!key) return;
+    // Capture runs before the toggle: record the coming state now so a refresh in the same
+    // instant cannot restore the old one, then confirm it once the click has completed.
+    MessageDisclosure.set(key,!details.open);
+    setTimeout(()=>{ if(details.isConnected && MessageDisclosure.get(key)!==details.open) MessageDisclosure.set(key,details.open); },0);
+  }, true);
+  let disclosureQueued=false;
+  new MutationObserver(()=>{ if(disclosureQueued) return; disclosureQueued=true;
+    queueMicrotask(()=>{ disclosureQueued=false; applyMessageDisclosure(el); }); }).observe(el,{childList:true,subtree:true});
+  el.addEventListener("click", e=>{
+    const clear=e.target.closest("[data-clear-choices]");
+    if(clear){ const form=clear.closest("form"); for(const input of form.querySelectorAll("input")) input.checked=false; rememberChoice(form); form.querySelector("textarea").focus(); return; }
+    if(e.target.closest("[data-history]")) return;          // the main feed's history window, wired in wire()
+    const more = e.target.closest("[data-more]"), rep = e.target.closest("[data-reply]"), cp = e.target.closest("[data-copy]"),
+          go = e.target.closest("[data-goto]"), jump = e.target.closest("[data-jump]"), subOpen = e.target.closest("[data-subthread-open]"), subStart = e.target.closest("[data-subthread-start]");
+    if(subOpen){ openSubthread(subOpen.dataset.subthreadOpen, subOpen.dataset.subthreadFocus); }
+    else if(subStart){ if(!subStart.disabled) openSubthread(subStart.dataset.subthreadStart); }
+    else if(more){ const msg = more.closest(".msg"), body = msg.querySelector(".body"); const clamped = body.classList.toggle("clamp");
+      more.textContent = (clamped ? t("show_all")+" \u25be" : t("collapse")+" \u25b4"); if(msg.id) MessageDisclosure.set(msg.id+"|more",!clamped); }
+    else if(rep){ const m = B.msgs.find(x=>x.dkey+"|"+x.file===rep.dataset.reply); if(m) (el.id==="subFeed"?subReplyStart:startReply)(m); }
+    else if(cp){ try{ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.copy); }catch(err){} toast(t("copied")); }
+    else if(go){ const x = threadsOf()[go.dataset.goto]; if(x){ sel = {scope:x.scope,dir:x.dir,thread:x.key}; rememberView(); build(); } }
+    else if(jump) jumpToMessage(jump.dataset.jump);
+  });
+}
 async function init(){
   document.body.inert=true; document.body.setAttribute("aria-busy","true");
   await loadSettings();

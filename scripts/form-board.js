@@ -25,7 +25,7 @@ function disposeForms(){for(const saved of formRoots.values())saved.dispose();fo
 function mountForms(){
  bindAnswerChoices();
  for(const[path,saved]of formRoots)if(!saved.element.isConnected){saved.dispose();formRoots.delete(path);}
- for(const element of $('#feed').querySelectorAll('[data-form-path]')){
+ for(const element of inMessages('[data-form-path]')){
   const m=B?.byPath.get(element.dataset.formPath);if(!m?.question||m.metadataError)continue;
   const key=formKey(m);if(!formDraftLoads.has(key))loadFormDraft(key,m.question);const loading=formDraftLoads.get(key)!==true;const sender=currentUser(),options={draft:formDrafts.get(key),busy:loading||submittingForms.has(key),eligible:answerSubmissionOpen(m)&&signingEligible(m)&&!!B.people[sender]&&(m.scope!=='direct'||m.dir.split('--').includes(sender)&&sender!==m.author),words:formWords(),storageStatus:t(formStorageNotes.get(key)||"form_draft_memory"),onDraft:(draft,clear)=>saveFormDraft(key,m.question,draft,clear),onSubmit:answer=>sendFormAnswer(m.path,m.h.QUESTION,sender,answer)};
   const saved=formRoots.get(m.path);if(saved?.element===element&&saved.loading===loading){saved.dispose.update(options);continue;}if(saved?.element===element)saved.dispose();
@@ -92,12 +92,12 @@ function acceptedAnswerHtml(m){
  }
  return html+`<p class="hint">${text('Later submissions remain in message history.','Późniejsze odpowiedzi pozostają w historii wiadomości.')}</p></section>`;
 }
-function bindAnswerChoices(){for(const button of $('#feed').querySelectorAll('[data-accept-question]'))button.onclick=async()=>{
+function bindAnswerChoices(){for(const button of inMessages('[data-accept-question]'))button.onclick=async()=>{
  const q=B?.byPath.get(button.dataset.acceptQuestion),snapshot=q?.acceptance,origin=B,root=dirHandle,identity=boardStorageId;
  if(!q||currentUser()!==q.author||!['legacy','conflict'].includes(snapshot?.status))return;
  const winner=(snapshot.status==='legacy'?snapshot.history:snapshot.choices).find(r=>r.file===button.dataset.acceptFile);if(!winner)return;
  const pending=formKey(q);if(submittingForms.has(pending))return;submittingForms.add(pending);
- for(const control of $('#feed').querySelectorAll('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
+ for(const control of inMessages('[data-accept-question]'))if(control.dataset.acceptQuestion===q.path)control.disabled=true;
  try{
   const sender=signingSender(currentUser());if(sender!==q.author)throw Error('Select the question author identity');
   const person=guardRegistered(sender),confirmed=person.kind==='agent'&&window.confirm(t('confirm_agent',{name:person.name}));if(person.kind==='agent'&&!confirmed)return;

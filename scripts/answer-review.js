@@ -31,4 +31,4 @@ function answerReview(m){
  }
  return html+'</details>';
 }
-function preserveReviewState(next){const old=new Map([...$('#feed').querySelectorAll('[data-review-path]')].map(el=>[el.dataset.reviewPath,el.open]));for(const el of next.querySelectorAll('[data-review-path]'))if(old.has(el.dataset.reviewPath))el.open=old.get(el.dataset.reviewPath);}
+function preserveReviewState(next){const old=new Map([...inMessages('[data-review-path]')].map(el=>[el.dataset.reviewPath,el.open]));for(const el of next.querySelectorAll('[data-review-path]'))if(old.has(el.dataset.reviewPath))el.open=old.get(el.dataset.reviewPath);}
