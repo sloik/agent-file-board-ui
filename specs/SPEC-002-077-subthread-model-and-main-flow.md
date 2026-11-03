@@ -52,17 +52,17 @@ they differ.
   `messageMetadata`. Invalid sub-thread headers isolate the message like other invalid
   files. An orphaned member (root missing) is listed under "Orphaned" and never dropped. A
   shared fixture set is checked against both the viewer and canonical `boardctl validate`.
-- [ ] AC3 (main flow): `matchingMessages()` excludes members unless they carry
+- [x] AC3 (main flow): `matchingMessages()` excludes members unless they carry
   `SUBTHREAD-ALSO: main` (shown as a stub) or Flat view is on. Flat view is a saved
   preference, default off. Reply links, history windows, Older/Newer/Latest, precise order
   and jump-to-message keep working. A jump to a hidden member opens its sub-thread (AC5).
-- [ ] AC4 (summary strip): under each root with at least one member, show the reply count,
+- [x] AC4 (summary strip): under each root with at least one member, show the reply count,
   up to 3 participant colour dots from the stable palette (+N), relative last activity, an
   unread dot, and a capsule (question for you / decision needed) or "Resolved". It is
   computed from headers only, with no extra body reads. It is a button labelled e.g.
   "5 replies, last 3 min ago". It works in all themes (System/Light/Dark/Dracula) and at
   320 px.
-- [ ] AC5 (opening): the strip, keyboard (Enter on the strip) and the per-message action
+- [x] AC5 (opening): the strip, keyboard (Enter on the strip) and the per-message action
   "Start sub-thread" (🧵, separate from Reply, in the message `.tools` row) select a
   sub-thread view. Before SPEC-002-078 this view is the main transcript filtered to root +
   members, under a "Room › Topic › 🧵 sub-thread" bar with Back. The composer then targets
@@ -74,18 +74,18 @@ they differ.
   acceptance, extension answer, and topic-title (refused in a sub-thread). Answers to a
   member question carry the marker. Bytes are validated by canonical `boardctl validate` in
   tests. Read-only browsers download the same file.
-- [ ] AC7 (unread and counts): `threadsOf()` and the sidebar keep counting members toward
+- [x] AC7 (unread and counts): `threadsOf()` and the sidebar keep counting members toward
   the topic's unread badge, status and activity. A hidden member still raises the topic
   badge and the root strip's unread dot. Marking read follows what is displayed: opening a
   sub-thread marks its displayed members read. The main flow does not mark hidden members
   read. Thread follow notifications still fire for members.
-- [ ] AC8 (discovery): the topic bar shows "Sub-threads (n)" when n > 0. It opens a list:
+- [x] AC8 (discovery): the topic bar shows "Sub-threads (n)" when n > 0. It opens a list:
   active first, then resolved, then orphaned. Each row shows the root preview, count, unread
   and last activity. Full-board search finds members and opens them in their sub-thread.
-- [ ] AC9 (refresh): background refresh preserves the selected sub-thread view, scroll
+- [x] AC9 (refresh): background refresh preserves the selected sub-thread view, scroll
   position, focus and drafts. Selection is stored as keys (room, thread, root filename) and
   re-resolved each render. Reload restores it through the existing remembered view.
-- [ ] AC10 (i18n): all new strings exist in English and Polish (no Polish copy equal to
+- [x] AC10 (i18n): all new strings exist in English and Polish (no Polish copy equal to
   English, placeholders matched). Counts use a plural-safe helper (add Polish
   one/few/many forms if missing).
 - [ ] AC11 (tests): unit tests for the index, validation parity fixture and stamping.
@@ -100,3 +100,33 @@ they differ.
 
 The side pane and its second composer, follow/mute per sub-thread, promote action
 (SPEC-002-078). Release (SPEC-002-078 AC10).
+
+## Implementation notes (2026-11-03)
+
+- Validation: `subthreadIssue()` (board.html, next to `nativeIssue`) mirrors canonical
+  `subthread_check` (agent-file-board SPEC-002-076): same rule order and messages, reading only the
+  headers of siblings in the same directory. `nativeIssue` calls it for every file (existing files:
+  a missing, unreadable or quarantined root is an orphan, not an error); `composeMessage` calls it with
+  `post:true` (a missing root is refused before writing). `messageMetadata` is unchanged.
+- Model: `m.subthread`, `m.subthreadAlso`, `m.subthreadState`, `m.promotedFrom` are set only on valid
+  native messages. `subthreadsOf()` is the memoised header-only index (root key `dkey|root` -> members
+  in posting order, participants, last activity, latest state, ALSO members); orphan state and the
+  counted members are read live because repairs and signing are applied after the model is built.
+- Main flow: `subthreadShown()` is the one filter used by `matchingMessages()` and `prepareModel()`.
+  `sel.sub` (root filename) selects the filtered sub-thread view; every `sel = {...}` navigation drops
+  it. `S.lastSub` restores it on reload; `loadBoard` closes a view whose root and members vanished.
+- Composer: the destination gains the backing input `#cSub` inside `#composer` (so the signing draft
+  stamp covers it) and `composerTargetKey` gains `^root`; the SPEC-002-064 draft pin applies unchanged.
+  An explicit Advanced Where/Thread change leaves the sub-thread.
+- Stamping: `sendImpl` (destination), `sendChoice`, form answer and acceptance (`scripts/form-board.js`),
+  extension answer (`scripts/extension-ui.js`) pass `subthread: subthreadOf(source)`; topic titles are
+  refused from a sub-thread view and by `composeMessage`. Stamped headers follow the other optional
+  headers, as in `boardctl post`.
+- For SPEC-002-078: `render()` is still bound to `#feed`; the strip (`subthreadStripHtml`), the stub
+  (`subthreadStubHtml`), the list (`subthreadListRender`) and `openSubthread`/`closeSubthread` are
+  separate functions the pane can reuse. The pane should key its state the same way (`sel.sub` or an
+  equivalent key triple) and must not render a root's interactive body twice.
+- Visual: scenes `subthread-strip` (+320x640, dark, dracula), `subthread-list`, `subthread-view`
+  (+390x640) with layout snapshots; their Linux pixel baselines come from the `update_visual_baselines`
+  workflow (pixels are compared on Linux only).
+
