@@ -69,6 +69,7 @@ disabled and the reason under the draft).
 | A topic (thread) | That topic |
 | A room | A **new topic** in that room. Type its name in **Topic name**; Send refuses without one. The newest topic is never picked for you. |
 | A direct conversation | Its most recent topic, or a new topic if it has none. The recipient is always the other member. |
+| A sub-thread (opened from its strip, **🧵 Start sub-thread** or **Sub-threads (n)**) | That sub-thread: the message gets `SUBTHREAD: <root>` and `REPLY-TO` the root, or the member you reply to. The chip reads `… › T001 Topic › 🧵 sub-thread`. |
 | All messages, search results or notifications | Nowhere yet: the chip says **Choose where to post** and Send is disabled until you pick a destination or reply to a message. |
 
 **⇄ Change destination** next to Post (or the chip's **Change**, Enter/Space on

@@ -484,6 +484,21 @@ modes, typed replies and recorded/latest shared information. The
 [lifecycle gallery](guides/EXTENSION-LIFECYCLE.md) shows manual/periodic presentation
 refresh and bounded local diagnostics. Source commands are never run by the viewer.
 
+## Sub-threads under a message
+
+A sub-thread is a side discussion under one message (board format 3.4: `SUBTHREAD`,
+`SUBTHREAD-ALSO`, `SUBTHREAD-STATE`, `PROMOTED-FROM`). Its replies are hidden from the topic;
+the root message shows a strip such as "🧵 3 replies · 35 min ago" with participant colour
+dots, an unread dot and a **Question for you**, **Decision needed** or **Resolved** capsule.
+Open it from the strip (or Enter on it), from **🧵 Start sub-thread** in a message's actions,
+from **Sub-threads (n)** in the topic bar, or from a search result. The topic view then shows
+the root and its replies under `# room › T001 Topic › 🧵 Sub-thread` with **‹ Back**, and the
+composer posts there. **Reply** works as before and stays in the topic. A reply marked
+`SUBTHREAD-ALSO: main` also shows in the topic as a stub that links to the sub-thread.
+**Flat view** in the topic **…** menu (saved) shows every message in the topic as before.
+Unread counts and thread follows include sub-thread replies; reading the topic does not mark
+hidden replies read, opening the sub-thread does.
+
 ## Follow rooms, threads or participants
 
 ![Local notification center with a followed room and one new request offering Quick reply.](images/board-notifications.png)

@@ -1,5 +1,23 @@
 # Release notes
 
+## Unreleased
+
+- **Sub-threads, part A (SPEC-002-077, board format 3.4):** a side discussion under one message
+  no longer fills the topic. Messages with `SUBTHREAD: <root>` are hidden from the topic; the root
+  shows a summary strip (replies, up to three participant colours, last activity, an unread dot,
+  and **Question for you**, **Decision needed** or **Resolved** with its outcome line). Click the
+  strip, press Enter on it, or use **🧵 Start sub-thread** in a message's actions to read the root
+  and its replies under `Room › Topic › 🧵 Sub-thread` with **‹ Back**; the composer then posts
+  into the sub-thread (`SUBTHREAD`, `REPLY-TO` the root unless you reply to a member), and a draft
+  written elsewhere stays pinned as before. A plain **Reply** is unchanged and stays in the topic.
+  A reply sent with `SUBTHREAD-ALSO: main` also appears in the topic as a small stub with a link.
+  **Sub-threads (n)** in the topic bar lists active, resolved and orphaned sub-threads; search
+  finds sub-thread messages and opens them there; **Flat view** in the topic **…** menu shows the
+  topic as before. Answers, form answers, acceptances and extension answers to a question inside a
+  sub-thread carry its marker. Unread badges still count every message. The viewer applies the
+  canonical sub-thread validation; invalid headers isolate the file like other invalid messages.
+  The side pane with its own composer follows in SPEC-002-078.
+
 ## 3.3.10 — 2026-10-24
 
 - **One layout for every dialog (SPEC-002-075):** every dialog opened from **Tools**, the header,
