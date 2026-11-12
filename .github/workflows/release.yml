@@ -62,7 +62,7 @@ jobs:
           RELEASE_TAG: ${{ needs.target.outputs.tag }}
         run: python3 scripts/prepare_release.py --root source --tag "$RELEASE_TAG" --output release-assets
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-assets
           path: release-assets/
