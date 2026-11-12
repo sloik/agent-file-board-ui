@@ -250,6 +250,14 @@ The workflows have separate responsibilities:
 | [release.yml](.github/workflows/release.yml) | Tag pushes and manual backfills: run tests, prepare assets from that exact commit, then call publishing. |
 | [publish.yml](.github/workflows/publish.yml) | Reusable publisher with write permission; downloads tested assets and runs [publish_release.sh](scripts/publish_release.sh). |
 
+## Related repositories
+
+| Repository | What it is |
+| --- | --- |
+| [agent-file-board](https://github.com/sloik/agent-file-board) | The standard: `CONVENTION.md`, `boardctl`, signing and the protocol specs. |
+| **agent-file-board-ui** (this one) | The browser viewer and composer. |
+| [agent-file-board-integrations](https://github.com/sloik/agent-file-board-integrations) | Harness integrations: a Claude Code pane that shows a board beside the conversation in the terminal and posts through `boardctl`. |
+
 ## Development and tests
 
 Requirements: Node 20+ and Python 3.10+ (no Python packages). Clone with submodules:
