@@ -49,7 +49,7 @@ jobs:
           AFB_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: python3 formal/status.py --prepare-request .formal-request
       - name: Retain immutable request for trusted dispatcher
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: formal-request-${{ github.run_id }}-${{ github.run_attempt }}
           path: .formal-request/request.json
@@ -67,7 +67,7 @@ jobs:
           fi
       - name: Retain preparation status
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: formal-preparation-status-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -100,7 +100,7 @@ jobs:
       - name: Retain enrolled bootstrap native evidence
         id: native-artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: formal-bootstrap-${{ inputs.bootstrap_source_run }}-${{ inputs.bootstrap_source_attempt }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
